@@ -1,0 +1,397 @@
+import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings } from '../types';
+import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS } from '../data/initialData';
+
+const KEYS = {
+  ARTICLES: 'grit_news_articles_v1',
+  CATEGORIES: 'grit_news_categories_v1',
+  AUTHORS: 'grit_news_authors_v1',
+  PARTNERS: 'grit_news_partners_v1',
+  OFFERS: 'grit_news_offers_v1',
+  ADS: 'grit_news_ads_v1',
+  SUBSCRIBERS: 'grit_news_subscribers_v1',
+  LEADS: 'grit_news_leads_v1',
+  COMMENTS: 'grit_news_comments_v1',
+  BOOKMARKS: 'grit_news_bookmarks_v1',
+  SETTINGS: 'grit_news_settings_v1',
+  CURRENT_ROLE: 'grit_news_current_role_v1'
+};
+
+function loadItem<T>(key: string, defaultValue: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw);
+  } catch (err) {
+    console.error(`Error loading key ${key}:`, err);
+  }
+  return defaultValue;
+}
+
+function saveItem<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (err) {
+    console.error(`Error saving key ${key}:`, err);
+  }
+}
+
+// Ensure initial seeds
+export function initStorage(): void {
+  if (!localStorage.getItem(KEYS.ARTICLES)) saveItem(KEYS.ARTICLES, INITIAL_ARTICLES);
+  if (!localStorage.getItem(KEYS.CATEGORIES)) saveItem(KEYS.CATEGORIES, INITIAL_CATEGORIES);
+  if (!localStorage.getItem(KEYS.AUTHORS)) saveItem(KEYS.AUTHORS, INITIAL_AUTHORS);
+  if (!localStorage.getItem(KEYS.PARTNERS)) saveItem(KEYS.PARTNERS, INITIAL_PARTNERS);
+  if (!localStorage.getItem(KEYS.OFFERS)) saveItem(KEYS.OFFERS, INITIAL_OFFERS);
+  if (!localStorage.getItem(KEYS.ADS)) saveItem(KEYS.ADS, INITIAL_AD_CAMPAIGNS);
+  if (!localStorage.getItem(KEYS.SETTINGS)) saveItem(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
+}
+
+// Articles
+export function getArticles(): Article[] {
+  initStorage();
+  return loadItem<Article[]>(KEYS.ARTICLES, INITIAL_ARTICLES);
+}
+
+export function saveArticle(article: Article): Article {
+  const articles = getArticles();
+  const index = articles.findIndex(a => a.id === article.id);
+  let updated: Article[];
+  
+  if (index >= 0) {
+    const existing = articles[index];
+    const versions = existing.versions || [];
+    versions.unshift({
+      version: versions.length + 1,
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'Redação GRIT NEWS',
+      title: existing.title,
+      summary: existing.summary,
+      blocks: existing.blocks
+    });
+    
+    const updatedArticle = {
+      ...article,
+      updatedAt: new Date().toISOString(),
+      versions
+    };
+    articles[index] = updatedArticle;
+    updated = articles;
+  } else {
+    updated = [article, ...articles];
+  }
+  
+  saveItem(KEYS.ARTICLES, updated);
+  return article;
+}
+
+export function deleteArticle(id: string): void {
+  const articles = getArticles().filter(a => a.id !== id);
+  saveItem(KEYS.ARTICLES, articles);
+}
+
+export function incrementArticleViews(id: string): void {
+  const articles = getArticles();
+  const art = articles.find(a => a.id === id);
+  if (art) {
+    art.viewsCount = (art.viewsCount || 0) + 1;
+    saveItem(KEYS.ARTICLES, articles);
+  }
+}
+
+export function incrementArticleLikes(id: string): void {
+  const articles = getArticles();
+  const art = articles.find(a => a.id === id);
+  if (art) {
+    art.likesCount = (art.likesCount || 0) + 1;
+    saveItem(KEYS.ARTICLES, articles);
+  }
+}
+
+// Categories
+export function getCategories(): Category[] {
+  initStorage();
+  return loadItem<Category[]>(KEYS.CATEGORIES, INITIAL_CATEGORIES).sort((a, b) => a.order - b.order);
+}
+
+export function saveCategory(category: Category): Category {
+  const cats = getCategories();
+  const index = cats.findIndex(c => c.id === category.id);
+  if (index >= 0) {
+    cats[index] = category;
+  } else {
+    cats.push(category);
+  }
+  saveItem(KEYS.CATEGORIES, cats);
+  return category;
+}
+
+export function deleteCategory(id: string): void {
+  const cats = getCategories().filter(c => c.id !== id);
+  saveItem(KEYS.CATEGORIES, cats);
+}
+
+// Authors
+export function getAuthors(): AuthorProfile[] {
+  initStorage();
+  return loadItem<AuthorProfile[]>(KEYS.AUTHORS, INITIAL_AUTHORS);
+}
+
+export function saveAuthor(author: AuthorProfile): AuthorProfile {
+  const authors = getAuthors();
+  const index = authors.findIndex(a => a.id === author.id);
+  if (index >= 0) {
+    authors[index] = author;
+  } else {
+    authors.push(author);
+  }
+  saveItem(KEYS.AUTHORS, authors);
+  return author;
+}
+
+// Partners
+export function getPartners(): Partner[] {
+  initStorage();
+  return loadItem<Partner[]>(KEYS.PARTNERS, INITIAL_PARTNERS);
+}
+
+export function savePartner(partner: Partner): Partner {
+  const partners = getPartners();
+  const index = partners.findIndex(p => p.id === partner.id);
+  if (index >= 0) {
+    partners[index] = partner;
+  } else {
+    partners.push(partner);
+  }
+  saveItem(KEYS.PARTNERS, partners);
+  return partner;
+}
+
+// Offers
+export function getOffers(): Offer[] {
+  initStorage();
+  return loadItem<Offer[]>(KEYS.OFFERS, INITIAL_OFFERS);
+}
+
+export function saveOffer(offer: Offer): Offer {
+  const offers = getOffers();
+  const index = offers.findIndex(o => o.id === offer.id);
+  if (index >= 0) {
+    offers[index] = offer;
+  } else {
+    offers.push(offer);
+  }
+  saveItem(KEYS.OFFERS, offers);
+  return offer;
+}
+
+export function incrementOfferClicks(id: string): void {
+  const offers = getOffers();
+  const offer = offers.find(o => o.id === id);
+  if (offer) {
+    offer.clicksCount = (offer.clicksCount || 0) + 1;
+    saveItem(KEYS.OFFERS, offers);
+  }
+}
+
+// Ads
+export function getAds(): AdCampaign[] {
+  initStorage();
+  return loadItem<AdCampaign[]>(KEYS.ADS, INITIAL_AD_CAMPAIGNS);
+}
+
+export function saveAd(ad: AdCampaign): AdCampaign {
+  const ads = getAds();
+  const index = ads.findIndex(a => a.id === ad.id);
+  if (index >= 0) {
+    ads[index] = ad;
+  } else {
+    ads.push(ad);
+  }
+  saveItem(KEYS.ADS, ads);
+  return ad;
+}
+
+export function recordAdImpression(id: string): void {
+  const ads = getAds();
+  const ad = ads.find(a => a.id === id);
+  if (ad) {
+    ad.impressionsCount = (ad.impressionsCount || 0) + 1;
+    saveItem(KEYS.ADS, ads);
+  }
+}
+
+export function recordAdClick(id: string): void {
+  const ads = getAds();
+  const ad = ads.find(a => a.id === id);
+  if (ad) {
+    ad.clicksCount = (ad.clicksCount || 0) + 1;
+    saveItem(KEYS.ADS, ads);
+  }
+}
+
+// Newsletter & Leads
+export function getSubscribers(): NewsletterSubscriber[] {
+  return loadItem<NewsletterSubscriber[]>(KEYS.SUBSCRIBERS, [
+    {
+      id: 'sub-1',
+      email: 'contato.empresa@saudebrasil.com.br',
+      name: 'Dr. Roberto Alves',
+      sectorInterests: ['Mercado de Saúde', 'Tecnologia e Inteligência Artificial'],
+      lgpdConsent: true,
+      consentTimestamp: new Date().toISOString(),
+      status: 'SUBSCRIBED',
+      sourcePage: 'Home Newsletter'
+    },
+    {
+      id: 'sub-2',
+      email: 'marcelo.log@transporte.com.br',
+      name: 'Marcelo Faria',
+      sectorInterests: ['Automação e Logística', 'Importação'],
+      lgpdConsent: true,
+      consentTimestamp: new Date().toISOString(),
+      status: 'SUBSCRIBED',
+      sourcePage: 'Artigo Logística'
+    }
+  ]);
+}
+
+export function addSubscriber(sub: Omit<NewsletterSubscriber, 'id' | 'consentTimestamp' | 'status'>): NewsletterSubscriber {
+  const subs = getSubscribers();
+  const existing = subs.find(s => s.email.toLowerCase() === sub.email.toLowerCase());
+  if (existing) {
+    return existing;
+  }
+  const newSub: NewsletterSubscriber = {
+    ...sub,
+    id: `sub-${Date.now()}`,
+    consentTimestamp: new Date().toISOString(),
+    status: 'SUBSCRIBED'
+  };
+  subs.unshift(newSub);
+  saveItem(KEYS.SUBSCRIBERS, subs);
+  return newSub;
+}
+
+export function getLeads(): Lead[] {
+  return loadItem<Lead[]>(KEYS.LEADS, [
+    {
+      id: 'lead-1',
+      name: 'Mariana Lima',
+      email: 'mariana@clinicapet.com.br',
+      phone: '(11) 98765-4321',
+      company: 'Clínica Vet Care',
+      sectorInterest: 'Mercado Pet',
+      offerId: 'offer-1',
+      message: 'Gostaria de agendar uma demonstração do software de gestão.',
+      lgpdConsent: true,
+      createdAt: new Date().toISOString(),
+      status: 'NEW'
+    }
+  ]);
+}
+
+export function addLead(leadData: Omit<Lead, 'id' | 'createdAt' | 'status'>): Lead {
+  const leads = getLeads();
+  const newLead: Lead = {
+    ...leadData,
+    id: `lead-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    status: 'NEW'
+  };
+  leads.unshift(newLead);
+  saveItem(KEYS.LEADS, leads);
+  return newLead;
+}
+
+// Comments
+export function getComments(articleId?: string): Comment[] {
+  const comments = loadItem<Comment[]>(KEYS.COMMENTS, [
+    {
+      id: 'c-1',
+      articleId: 'art-1',
+      authorName: 'Dr. Fernando Prado',
+      authorEmail: 'f.prado@hospital.com.br',
+      content: 'Excelente artigo! Na nossa unidade em Belo Horizonte, implementamos o laudo assistido por IA e vimos diminuição nos atrasos do pronto-socorro.',
+      createdAt: '2026-07-28T10:15:00Z',
+      status: 'APPROVED',
+      likesCount: 14
+    }
+  ]);
+  
+  if (articleId) {
+    return comments.filter(c => c.articleId === articleId);
+  }
+  return comments;
+}
+
+export function addComment(commentData: Omit<Comment, 'id' | 'createdAt' | 'status' | 'likesCount'>): Comment {
+  const comments = getComments();
+  const settings = getSiteSettings();
+  const newComment: Comment = {
+    ...commentData,
+    id: `c-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    status: settings.autoApproveComments ? 'APPROVED' : 'PENDING',
+    likesCount: 0
+  };
+  comments.unshift(newComment);
+  saveItem(KEYS.COMMENTS, comments);
+  return newComment;
+}
+
+export function updateCommentStatus(id: string, status: 'APPROVED' | 'REJECTED'): void {
+  const comments = getComments();
+  const comm = comments.find(c => c.id === id);
+  if (comm) {
+    comm.status = status;
+    saveItem(KEYS.COMMENTS, comments);
+  }
+}
+
+export function approveComment(id: string): void {
+  updateCommentStatus(id, 'APPROVED');
+}
+
+export function deleteComment(id: string): void {
+  const comments = getComments().filter(c => c.id !== id);
+  saveItem(KEYS.COMMENTS, comments);
+}
+
+export function getSiteConfig(): SiteSettings {
+  return getSiteSettings();
+}
+
+export function saveSiteConfig(settings: SiteSettings): void {
+  saveSiteSettings(settings);
+}
+
+export function initInitialDataIfEmpty(): void {
+  initStorage();
+}
+
+// Bookmarks
+export function getBookmarks(): string[] {
+  return loadItem<string[]>(KEYS.BOOKMARKS, []);
+}
+
+export function toggleBookmark(articleId: string): boolean {
+  const bookmarks = getBookmarks();
+  const exists = bookmarks.includes(articleId);
+  let updated: string[];
+  if (exists) {
+    updated = bookmarks.filter(id => id !== articleId);
+  } else {
+    updated = [...bookmarks, articleId];
+  }
+  saveItem(KEYS.BOOKMARKS, updated);
+  return !exists;
+}
+
+// Site Settings
+export function getSiteSettings(): SiteSettings {
+  initStorage();
+  return loadItem<SiteSettings>(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
+}
+
+export function saveSiteSettings(settings: SiteSettings): void {
+  saveItem(KEYS.SETTINGS, settings);
+}

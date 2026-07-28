@@ -1,0 +1,6 @@
+{
+  "name": "GRIT NEWS",
+  "description": "Plataforma de inteligência de mercado, notícias, análises, ofertas e ecossistema digital da GRIT.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
