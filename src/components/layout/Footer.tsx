@@ -21,17 +21,17 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenContactModal
 }) => {
   return (
-    <footer className="bg-[#0B2343] text-white pt-12 pb-8 border-t border-[#145EDB]/30">
+    <footer className="bg-[#0D182A] text-white pt-12 pb-8 border-t border-[#146EF5]/30">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-white/10">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <GritNewsLogo variant="footer" size="lg" showSlogan={true} />
-            <p className="text-sm text-[#EAF3FF] opacity-80 leading-relaxed max-w-sm">
+            <p className="text-sm text-[#F1F5F9] opacity-80 leading-relaxed max-w-sm">
               Plataforma de inteligência de mercado que conecta notícias, análises estratégicas, ofertas exclusivas e oportunidades de negócios no ecossistema GRIT.
             </p>
-            <div className="flex items-center gap-2 text-xs text-[#EAF3FF] font-medium pt-1">
-              <ShieldCheck className="w-4 h-4 text-[#22A06B]" />
+            <div className="flex items-center gap-2 text-xs text-[#F1F5F9] font-medium pt-1">
+              <ShieldCheck className="w-4 h-4 text-[#146EF5]" />
               <span>Domínio oficial: <strong>gritnews.com.br</strong></span>
             </div>
           </div>
@@ -44,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li key={cat.id}>
                   <button
                     onClick={() => onSelectCategory(cat.slug)}
-                    className="hover:text-[#FF8500] transition-colors"
+                    className="hover:text-[#FF8A00] transition-colors"
                   >
                     {cat.name}
                   </button>
@@ -62,7 +62,7 @@ export const Footer: React.FC<FooterProps> = ({
                   href="https://meli.la/1kXwMJQ"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-yellow-400 hover:text-yellow-300 font-extrabold transition-colors inline-flex items-center gap-1"
+                  className="text-amber-400 hover:text-amber-300 font-extrabold transition-colors inline-flex items-center gap-1"
                 >
                   <span>Lista Mercado Livre (Achados Tasso)</span>
                   <ArrowUpRight className="w-3 h-3" />
@@ -80,33 +80,33 @@ export const Footer: React.FC<FooterProps> = ({
                 </a>
               </li>
               <li>
-                <button onClick={onNavigateOffers} className="hover:text-[#FF8500] transition-colors">
+                <button onClick={onNavigateOffers} className="hover:text-[#FF8A00] transition-colors">
                   Central de Ofertas B2B
                 </button>
               </li>
               <li>
-                <button onClick={onOpenDocs} className="hover:text-[#FF8500] transition-colors">
+                <button onClick={onOpenDocs} className="hover:text-[#FF8A00] transition-colors">
                   Manual de Publicação & Hostinger
                 </button>
               </li>
               <li>
-                <a href="#editorial" onClick={e => { e.preventDefault(); onOpenDocs(); }} className="hover:text-[#FF8500]">
+                <a href="#editorial" onClick={e => { e.preventDefault(); onOpenDocs(); }} className="hover:text-[#FF8A00]">
                   Política Editorial & E-E-A-T
                 </a>
               </li>
               <li>
-                <a href="#lgpd" onClick={e => { e.preventDefault(); onOpenDocs(); }} className="hover:text-[#FF8500]">
+                <a href="#lgpd" onClick={e => { e.preventDefault(); onOpenDocs(); }} className="hover:text-[#FF8A00]">
                   Privacidade e LGPD
                 </a>
               </li>
               <li>
-                <a href="#affiliates" onClick={e => { e.preventDefault(); onOpenDocs(); }} className="hover:text-[#FF8500]">
+                <a href="#affiliates" onClick={e => { e.preventDefault(); onOpenDocs(); }} className="hover:text-[#FF8A00]">
                   Transparência de Afiliados
                 </a>
               </li>
               <li>
-                <a href="/api/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-[#FF8500] inline-flex items-center gap-1">
-                  <Rss className="w-3 h-3 text-[#FF8500]" />
+                <a href="/api/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-[#FF8A00] inline-flex items-center gap-1">
+                  <Rss className="w-3 h-3 text-[#FF8A00]" />
                   <span>Sitemap XML</span>
                 </a>
               </li>
@@ -121,7 +121,7 @@ export const Footer: React.FC<FooterProps> = ({
             </p>
             <button
               onClick={onOpenContactModal || onNavigateOffers}
-              className="bg-[#FF8500] hover:bg-[#e07500] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+              className="bg-[#FF8A00] hover:bg-[#e07900] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
             >
               <span>Seja Parceiro / Patrocinador</span>
               <ArrowUpRight className="w-3.5 h-3.5" />

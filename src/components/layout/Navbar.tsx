@@ -60,13 +60,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[#E2E8F0] shadow-xs">
       {/* Top Bar / Ticker */}
-      <div className="bg-[#0B2343] text-white text-xs py-1.5 px-4">
+      <div className="bg-[#0D182A] text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-            <span className="bg-[#FF8500] text-white font-bold px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-wider">
+            <span className="bg-[#FF8A00] text-white font-bold px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-wider">
               Destaque
             </span>
-            <p className="text-gray-200 font-medium truncate text-xs">
+            <p className="text-[#F1F5F9] font-medium truncate text-xs">
               M&A no setor de saúde cresce 34% em 2026 • IA Generativa já otimiza 80% dos chamados B2B
             </p>
           </div>
@@ -97,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               placeholder="Buscar notícias, mercado de saúde, pet, tecnologia, inteligência artificial..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-sm text-[#10233F] focus:outline-none focus:ring-2 focus:ring-[#145EDB] focus:bg-white transition-all placeholder-gray-400"
+              className="w-full pl-10 pr-4 py-2 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-sm text-[#0D182A] focus:outline-none focus:ring-2 focus:ring-[#146EF5] focus:bg-white transition-all placeholder-gray-400 font-medium"
             />
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
@@ -128,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={onNavigateOffers}
-            className="flex items-center gap-1.5 bg-[#FF8500] hover:bg-[#e07500] text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-md hover:scale-102 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 bg-[#FF8A00] hover:bg-[#e07900] text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-md hover:scale-102 transition-all cursor-pointer"
           >
             <Tag className="w-3.5 h-3.5" />
             <span>Ofertas</span>
@@ -136,12 +136,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={onNavigateBookmarks}
-            className="flex items-center gap-1.5 bg-[#F7F9FC] hover:bg-[#EAF3FF] text-[#0B2343] font-bold px-3.5 py-2 rounded-xl text-xs border border-[#E2E8F0] hover:border-[#145EDB] transition-all relative"
+            className="flex items-center gap-1.5 bg-[#F1F5F9] hover:bg-[#EAF3FF] text-[#0D182A] font-bold px-3.5 py-2 rounded-xl text-xs border border-[#E2E8F0] hover:border-[#146EF5] transition-all relative"
           >
-            <Bookmark className="w-3.5 h-3.5 text-[#145EDB]" />
+            <Bookmark className="w-3.5 h-3.5 text-[#146EF5]" />
             <span>Salvos</span>
             {bookmarksCount > 0 && (
-              <span className="bg-[#145EDB] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+              <span className="bg-[#146EF5] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
                 {bookmarksCount}
               </span>
             )}
@@ -168,14 +168,14 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Category Navigation Bar */}
-      <div className="bg-[#F7F9FC] border-t border-[#E2E8F0] overflow-x-auto scrollbar-none">
+      <div className="bg-[#F1F5F9] border-t border-[#E2E8F0] overflow-x-auto scrollbar-none">
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 whitespace-nowrap py-1">
           <button
             onClick={() => onSelectCategory(undefined)}
             className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               !activeCategorySlug
-                ? 'bg-[#0B2343] text-white shadow-xs'
-                : 'text-[#5C6B7A] hover:text-[#0B2343] hover:bg-white'
+                ? 'bg-[#0D182A] text-white shadow-xs'
+                : 'text-[#687280] hover:text-[#0D182A] hover:bg-white'
             }`}
           >
             Todas as Notícias
@@ -203,8 +203,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onSelectCategory(cat.slug)}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                   isActive
-                    ? 'bg-[#145EDB] text-white shadow-xs'
-                    : 'text-[#5C6B7A] hover:text-[#10233F] hover:bg-white'
+                    ? 'bg-[#146EF5] text-white shadow-xs'
+                    : 'text-[#687280] hover:text-[#0D182A] hover:bg-white'
                 }`}
               >
                 <IconComp className="w-3.5 h-3.5" style={{ color: isActive ? '#FFFFFF' : cat.color }} />

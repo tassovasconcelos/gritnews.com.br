@@ -2,7 +2,7 @@ import React from 'react';
 
 interface GritNewsLogoProps {
   variant?: 'default' | 'light' | 'icon-only' | 'stacked' | 'footer';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   showSlogan?: boolean;
   className?: string;
   onClick?: () => void;
@@ -19,25 +19,28 @@ export const GritNewsLogo: React.FC<GritNewsLogoProps> = ({
 
   // Sizing definitions
   const iconSizeMap = {
-    sm: 'w-8 h-8',
+    sm: 'w-7 h-7',
     md: 'w-10 h-10',
-    lg: 'w-12 h-12'
+    lg: 'w-12 h-12',
+    xl: 'w-16 h-16'
   };
 
   const titleSizeMap = {
-    sm: 'text-xl',
+    sm: 'text-lg',
     md: 'text-2xl',
-    lg: 'text-3xl'
+    lg: 'text-3xl',
+    xl: 'text-4xl'
   };
 
   const sloganSizeMap = {
     sm: 'text-[9px]',
     md: 'text-[10px]',
-    lg: 'text-xs'
+    lg: 'text-xs',
+    xl: 'text-sm'
   };
 
-  // Official Emblem Icon according to Brand Manual:
-  // Palette: Navy #0B1F3A | Blue #1565F5 | Orange #F7931E | White #FFFFFF
+  // Official Emblem Icon from Brand Manual 2026:
+  // Pointy-top rounded Hexagon in Azul Marinho (#0D182A) with Laranja (#FF8A00) ↗ Arrow
   const LogoIcon = (
     <div className={`relative flex items-center justify-center ${iconSizeMap[size]} shrink-0 transition-transform duration-300 group-hover:scale-105`}>
       <svg
@@ -46,34 +49,22 @@ export const GritNewsLogo: React.FC<GritNewsLogoProps> = ({
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-full drop-shadow-xs"
       >
-        {/* Navy Blue Badge Container */}
-        <rect width="100" height="100" rx="22" fill="#0B1F3A" />
-        
-        {/* Crisp "G" Outer Ring Arc in Brand Royal Blue */}
+        {/* Navy Blue Hexagon Badge Frame (#0D182A) */}
         <path
-          d="M 72 26 C 58 14 36 14 24 28 C 12 42 12 64 24 78 C 38 92 62 92 76 78 C 82 72 86 63 86 52 H 50 V 38 H 96 V 54 C 96 70 88 84 76 92 C 54 104 24 100 10 82 C -4 62 -2 34 14 16 C 34 -2 68 -2 88 18 Z"
-          fill="#1565F5"
-          className="hidden"
+          d="M 50 4 C 55 4 85 21 87 25 C 89 29 89 71 87 75 C 85 79 55 96 50 96 C 45 96 15 79 13 75 C 11 71 11 29 13 25 C 15 21 45 4 50 4 Z"
+          fill={isLight ? '#0D182A' : '#0D182A'}
+          stroke={isLight ? '#146EF5' : 'none'}
+          strokeWidth={isLight ? '3' : '0'}
         />
 
-        {/* Precision Geometric "G" Mark */}
+        {/* Orange Growth & Opportunity Arrow (#FF8A00) ↗ */}
         <path
-          d="M 66 26 C 55 18 38 18 28 28 C 16 38 16 58 28 68 C 38 78 55 78 66 70 C 72 65 74 58 74 50 H 50 V 38 H 86 V 54 C 86 66 80 76 70 84 C 52 96 26 92 12 76 C -2 60 -2 34 12 18 C 28 2 56 2 72 16 Z"
-          fill="#1565F5"
+          d="M 32 68 L 68 32 M 46 32 L 68 32 L 68 54"
+          stroke="#FF8A00"
+          strokeWidth="12"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-
-        {/* Central White "G" Counter Balance */}
-        <path
-          d="M 50 38 H 82 V 50 H 62 C 62 55 60 62 54 66 C 46 72 34 72 26 64 C 18 56 18 42 26 34 C 34 26 46 26 54 30 L 62 20 C 50 12 32 12 20 22 C 6 34 6 54 20 66 C 32 78 52 78 64 70 C 72 64 76 54 76 44 V 38 H 50 Z"
-          fill="#FFFFFF"
-        />
-
-        {/* Orange Opportunity Spark Indicator (#F7931E) */}
-        <path
-          d="M 68 22 L 88 22 L 88 42 Z"
-          fill="#F7931E"
-        />
-        <circle cx="82" cy="18" r="6" fill="#F7931E" />
       </svg>
     </div>
   );
@@ -86,6 +77,30 @@ export const GritNewsLogo: React.FC<GritNewsLogoProps> = ({
     );
   }
 
+  if (variant === 'stacked') {
+    return (
+      <div
+        onClick={onClick}
+        className={`inline-flex flex-col items-center text-center gap-1 select-none cursor-pointer group ${className}`}
+      >
+        {LogoIcon}
+        <div className="flex items-center gap-1 leading-none mt-1">
+          <span className={`font-black tracking-tighter ${titleSizeMap[size]} ${isLight ? 'text-white' : 'text-[#0D182A]'}`}>
+            GRIT
+          </span>
+          <span className={`font-black tracking-tighter ${titleSizeMap[size]} text-[#146EF5]`}>
+            NEWS
+          </span>
+        </div>
+        {showSlogan && (
+          <p className={`font-medium italic tracking-tight ${sloganSizeMap[size]} ${isLight ? 'text-[#F1F5F9]' : 'text-[#687280]'}`}>
+            Informações que geram oportunidades
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       onClick={onClick}
@@ -94,24 +109,25 @@ export const GritNewsLogo: React.FC<GritNewsLogoProps> = ({
       {LogoIcon}
 
       <div className="flex flex-col justify-center">
-        {/* Main Title Wordmark */}
+        {/* Main Title Wordmark: GRIT NEWS */}
         <div className="flex items-center gap-1.5 leading-none">
-          <span className={`font-black tracking-tighter ${titleSizeMap[size]} ${isLight ? 'text-white' : 'text-[#0B1F3A]'}`}>
+          <span className={`font-black tracking-tight ${titleSizeMap[size]} ${isLight ? 'text-white' : 'text-[#0D182A]'}`}>
             GRIT
           </span>
-          <span className={`font-black tracking-tighter ${titleSizeMap[size]} text-[#1565F5]`}>
+          <span className={`font-black tracking-tight ${titleSizeMap[size]} text-[#146EF5]`}>
             NEWS
           </span>
         </div>
 
-        {/* Official Slogan from Brand Manual */}
+        {/* Official Slogan from Brand Manual 2026: Informações que geram oportunidades */}
         {showSlogan && (
-          <p className={`font-bold tracking-wider uppercase mt-0.5 ${sloganSizeMap[size]} ${isLight ? 'text-[#EAF3FF] opacity-90' : 'text-[#5C6B7A]'}`}>
-            Informações que geram oportunidades.
+          <p className={`font-medium italic mt-0.5 ${sloganSizeMap[size]} ${isLight ? 'text-[#F1F5F9]/90' : 'text-[#687280]'}`}>
+            Informações que geram oportunidades
           </p>
         )}
       </div>
     </div>
   );
 };
+
 
