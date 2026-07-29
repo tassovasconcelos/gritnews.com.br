@@ -1,3 +1,3 @@
-// Entry point for Hostinger Node.js Application Selector / Phusion Passenger
+// Entry point for Node.js servers / Hostinger / Phusion Passenger
 // Loads the compiled production server from dist/server.cjs
-require('./dist/server.cjs');
+import('./dist/server.cjs');
