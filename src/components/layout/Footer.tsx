@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck, ArrowUpRight, Lock, FileText, Mail, Heart, Rss } from 'lucide-react';
 import { Category } from '../../types';
+import { GritNewsLogo } from '../ui/GritNewsLogo';
 
 interface FooterProps {
   categories: Category[];
@@ -25,15 +26,7 @@ export const Footer: React.FC<FooterProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-white/10">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-[#145EDB] text-white font-black text-xl rounded-xl flex items-center justify-center">
-                G
-              </div>
-              <div>
-                <span className="text-xl font-black text-white">GRIT</span>
-                <span className="text-xl font-black text-[#145EDB]">NEWS</span>
-              </div>
-            </div>
+            <GritNewsLogo variant="footer" size="lg" showSlogan={true} />
             <p className="text-sm text-[#EAF3FF] opacity-80 leading-relaxed max-w-sm">
               Plataforma de inteligência de mercado que conecta notícias, análises estratégicas, ofertas exclusivas e oportunidades de negócios no ecossistema GRIT.
             </p>
@@ -138,7 +131,7 @@ export const Footer: React.FC<FooterProps> = ({
 
         {/* Bottom Legal & Copyright */}
         <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400">
-          <p>© 2026 GRIT NEWS (gritnews.com.br) - Todos os direitos reservados. Informação que gera oportunidades.</p>
+          <p>© 2026 GRIT NEWS (gritnews.com.br) - Todos os direitos reservados. Informações que geram oportunidades.</p>
           <div className="flex items-center gap-4 text-[11px]">
             <span className="flex items-center gap-1">
               <Lock className="w-3 h-3 text-[#22A06B]" />

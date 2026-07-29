@@ -14,6 +14,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../../types';
+import { TenPetsLogo } from '../ui/TenPetsLogo';
 import { 
   getTenPetsArticles, 
   addTenPetsArticle, 
@@ -261,13 +262,13 @@ export const AdminTenPets: React.FC<AdminTenPetsProps> = ({ onShowToast }) => {
     <div className="space-y-8 p-6 bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-900 dark:text-slate-100">
       
       {/* Header & Subdomain Control */}
-      <div className="bg-gradient-to-r from-amber-700 via-amber-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-amber-500/20">
+      <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-emerald-500/30">
         <div>
-          <div className="flex items-center gap-2 text-amber-300 text-xs font-bold uppercase tracking-wider">
-            <PawPrint className="w-4 h-4" />
-            <span>Módulo Gerencial Exclusivo TenPets</span>
+          <div className="flex items-center gap-2 mb-2">
+            <TenPetsLogo variant="badge" size="sm" />
+            <span className="text-emerald-300 text-xs font-bold uppercase tracking-wider">Módulo Exclusivo TenPets</span>
           </div>
-          <h1 className="text-2xl font-extrabold mt-1">
+          <h1 className="text-2xl font-extrabold">
             Gestão de Ciência Veterinária & Casos de Resgate (Letícia Karla)
           </h1>
           <p className="text-xs text-amber-100 mt-1">

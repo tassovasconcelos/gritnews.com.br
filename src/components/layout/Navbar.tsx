@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag } from 'lucide-react';
 import { Category } from '../../types';
-import tenpetsLogoImg from '../../assets/images/tenpets_official_logo_1785288965710.jpg';
+import { GritNewsLogo } from '../ui/GritNewsLogo';
+import { TenPetsLogo } from '../ui/TenPetsLogo';
 
 interface NavbarProps {
   categories: Category[];
@@ -86,20 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Main Brand & Search Bar */}
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
         {/* Brand Logo */}
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={onNavigateHome}>
-          <div className="w-10 h-10 bg-gradient-to-br from-[#0B2343] to-[#145EDB] text-white font-black text-xl rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-            G
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-2xl font-black tracking-tighter text-[#0B2343]">GRIT</span>
-              <span className="text-2xl font-black tracking-tighter text-[#145EDB]">NEWS</span>
-            </div>
-            <p className="text-[10px] font-bold text-[#5C6B7A] tracking-wider uppercase -mt-1">
-              Informação que gera oportunidades.
-            </p>
-          </div>
-        </div>
+        <GritNewsLogo onClick={onNavigateHome} size="md" showSlogan={true} />
 
         {/* Desktop Search Bar */}
         <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-6">
@@ -196,19 +184,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* TenPets Subdomain Portal Button */}
           <button
             onClick={onNavigateTenPets}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white shadow-sm hover:scale-105 transition-all border border-amber-500/50"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-extrabold bg-[#587837] hover:bg-[#48632c] text-white shadow-xs hover:scale-105 transition-all border border-[#769b4e]"
           >
-            <img
-              src={tenpetsLogoImg}
-              alt="TenPets Logo"
-              className="w-4 h-4 rounded object-cover ring-1 ring-amber-300"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=300";
-              }}
-            />
-            <span>TenPets (Resgates & Ciência)</span>
-            <span className="bg-amber-900/80 text-amber-200 text-[9px] px-1.5 py-0.2 rounded font-mono">
+            <TenPetsLogo variant="dark" size="sm" />
+            <span>(Resgates & Ciência)</span>
+            <span className="bg-black/20 text-emerald-200 text-[9px] px-1.5 py-0.2 rounded font-mono">
               .gritnews
             </span>
           </button>

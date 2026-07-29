@@ -184,7 +184,7 @@ export function injectWebsiteSchema() {
     'name': 'GRIT NEWS',
     'url': BASE_URL,
     'logo': `${BASE_URL}/logo.png`,
-    'description': 'Informação que gera oportunidades. O portal que reúne notícias B2B, inovação, saúde, pet, automação e importação.',
+    'description': 'Informações que geram oportunidades. O portal que reúne notícias B2B, inovação, saúde, pet, automação e importação.',
     'contactPoint': {
       '@type': 'ContactPoint',
       'email': 'contato@gritnews.com.br',

@@ -1098,7 +1098,7 @@ export const INITIAL_ARTICLES: Article[] = [
 
 export const INITIAL_SITE_SETTINGS: SiteSettings = {
   siteTitle: 'GRIT NEWS',
-  tagline: 'Informação que gera oportunidades.',
+  tagline: 'Informações que geram oportunidades.',
   domain: 'gritnews.com.br',
   metaDescription: 'Plataforma de inteligência de mercado que reúne notícias, análises, inovação, ofertas e oportunidades B2B.',
   googleAnalyticsId: 'G-GRITNEWS2026',

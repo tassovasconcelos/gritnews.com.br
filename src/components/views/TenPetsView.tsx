@@ -28,8 +28,8 @@ import { TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../../types';
 import { getTenPetsArticles, getTenPetsRescues, getTenPetsPartners } from '../../lib/storage';
 
 import tenpetsHeroImg from '../../assets/images/tenpets_hero_banner_1785288987038.jpg';
-import tenpetsLogoImg from '../../assets/images/tenpets_official_logo_1785288965710.jpg';
 import leticiaProfileImg from '../../assets/images/leticia_karla_profile_1785288976216.jpg';
+import { TenPetsLogo } from '../ui/TenPetsLogo';
 
 interface TenPetsViewProps {
   onShowToast: (message: string, type?: 'success' | 'info') => void;
@@ -134,17 +134,8 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
           <div className="lg:col-span-8 space-y-6">
             <div className="flex flex-wrap items-center gap-3">
               {/* Official TenPets Logo Emblem */}
-              <div className="flex items-center gap-2.5 bg-white/10 border border-amber-400/40 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-lg">
-                <img
-                  src={tenpetsLogoImg}
-                  alt="TenPets Logo"
-                  className="w-7 h-7 rounded-lg object-cover ring-2 ring-amber-400/60"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=300";
-                  }}
-                />
-                <span className="font-extrabold text-amber-300 tracking-wide text-sm">TenPets</span>
+              <div className="bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-2xl shadow-lg border border-[#587837]/30">
+                <TenPetsLogo size="md" showSubtitle={false} />
               </div>
 
               <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-amber-200">
@@ -292,16 +283,8 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
         <section className="bg-gradient-to-br from-slate-900 via-amber-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl border border-amber-500/30 relative overflow-hidden">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-white/10 pb-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden ring-4 ring-rose-500/80 p-0.5 bg-slate-900 shrink-0 shadow-xl">
-                <img
-                  src={tenpetsLogoImg}
-                  alt="@tenpets_"
-                  className="w-full h-full object-cover rounded-xl"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=300";
-                  }}
-                />
+              <div className="w-16 h-16 rounded-2xl overflow-hidden ring-4 ring-[#587837] p-2 bg-white shrink-0 shadow-xl flex items-center justify-center">
+                <TenPetsLogo variant="icon-only" size="lg" />
               </div>
               <div>
                 <div className="flex items-center gap-2">

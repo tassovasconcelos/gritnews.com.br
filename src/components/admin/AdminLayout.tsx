@@ -36,6 +36,7 @@ import { AdminTenPets } from './AdminTenPets';
 import { AdminGuide } from './AdminGuide';
 import { AdminLoginScreen } from './AdminLoginScreen';
 import { DocumentationModal } from '../views/DocumentationModal';
+import { GritNewsLogo } from '../ui/GritNewsLogo';
 
 interface AdminLayoutProps {
   articles: Article[];
@@ -173,11 +174,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           {/* Header do Sidebar */}
           <div className="flex items-center justify-between pb-4 border-b border-white/10">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-xl text-white tracking-wider">GRIT</span>
-                <span className="bg-[#145EDB] text-[10px] font-bold px-1.5 py-0.5 rounded text-white uppercase">PAINEL</span>
-              </div>
-              <p className="text-[10px] text-gray-300 font-mono">Gestão Editorial & Comercial</p>
+              <GritNewsLogo variant="light" size="sm" showSlogan={false} />
+              <p className="text-[10px] text-amber-300 font-mono mt-1 uppercase font-bold tracking-wider">Painel de Gestão & Editoria</p>
             </div>
 
             <button
