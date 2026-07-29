@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag } from 'lucide-react';
+import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope } from 'lucide-react';
 import { Category } from '../../types';
 import { GritNewsLogo } from '../ui/GritNewsLogo';
 import { TenPetsLogo } from '../ui/TenPetsLogo';
@@ -12,6 +12,7 @@ interface NavbarProps {
   onNavigateBookmarks: () => void;
   onNavigateAdmin: () => void;
   onNavigateTenPets: () => void;
+  onNavigateSacProh?: () => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
   onOpenDocs: () => void;
@@ -40,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateBookmarks,
   onNavigateAdmin,
   onNavigateTenPets,
+  onNavigateSacProh,
   onSearch,
   onNavigateHome,
   onOpenDocs,
@@ -125,6 +127,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
             <span>Amazon</span>
           </a>
+
+          {onNavigateSacProh && (
+            <button
+              onClick={onNavigateSacProh}
+              className="flex items-center gap-1.5 bg-sky-700 hover:bg-sky-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-xs hover:scale-102 transition-all cursor-pointer"
+              title="SAC ProCirúrgica Hospitalar"
+            >
+              <Stethoscope className="w-3.5 h-3.5 text-sky-200" />
+              <span>SACPROH</span>
+            </button>
+          )}
 
           <button
             onClick={onNavigateOffers}
@@ -270,6 +283,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
               <span>Loja Amazon (Tasso Vasconcelos)</span>
             </a>
+
+            {onNavigateSacProh && (
+              <button
+                onClick={() => {
+                  onNavigateSacProh();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-sky-700 text-white font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2"
+              >
+                <Stethoscope className="w-4 h-4 text-sky-200" />
+                <span>SAC ProCirúrgica (SACPROH)</span>
+              </button>
+            )}
 
             <button
               onClick={() => {

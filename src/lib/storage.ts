@@ -1,5 +1,6 @@
-import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../types';
+import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner, SacProhTicket, SacProhProduct, SacProhFaq } from '../types';
 import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS, INITIAL_TENPETS_ARTICLES, INITIAL_TENPETS_RESCUES, INITIAL_TENPETS_PARTNERS } from '../data/initialData';
+import { INITIAL_SACPROH_PRODUCTS, INITIAL_SACPROH_TICKETS, INITIAL_SACPROH_FAQS } from '../data/sacprohData';
 
 const KEYS = {
   ARTICLES: 'grit_news_articles_v1',
@@ -18,7 +19,10 @@ const KEYS = {
   CURRENT_ROLE: 'grit_news_current_role_v1',
   TENPETS_ARTICLES: 'grit_news_tenpets_articles_v1',
   TENPETS_RESCUES: 'grit_news_tenpets_rescues_v1',
-  TENPETS_PARTNERS: 'grit_news_tenpets_partners_v1'
+  TENPETS_PARTNERS: 'grit_news_tenpets_partners_v1',
+  SACPROH_TICKETS: 'grit_news_sacproh_tickets_v1',
+  SACPROH_PRODUCTS: 'grit_news_sacproh_products_v1',
+  SACPROH_FAQS: 'grit_news_sacproh_faqs_v1'
 };
 
 function loadItem<T>(key: string, defaultValue: T): T {
@@ -76,6 +80,9 @@ export function initStorage(): void {
   syncSeedList(KEYS.TENPETS_ARTICLES, INITIAL_TENPETS_ARTICLES);
   syncSeedList(KEYS.TENPETS_RESCUES, INITIAL_TENPETS_RESCUES);
   syncSeedList(KEYS.TENPETS_PARTNERS, INITIAL_TENPETS_PARTNERS);
+  syncSeedList(KEYS.SACPROH_TICKETS, INITIAL_SACPROH_TICKETS);
+  syncSeedList(KEYS.SACPROH_PRODUCTS, INITIAL_SACPROH_PRODUCTS);
+  syncSeedList(KEYS.SACPROH_FAQS, INITIAL_SACPROH_FAQS);
 }
 
 const INITIAL_MEDIA: MediaAsset[] = [
@@ -652,5 +659,30 @@ export function addTenPetsPartner(partner: TenPetsPartner): void {
 export function deleteTenPetsPartner(id: string): void {
   const current = getTenPetsPartners().filter(item => item.id !== id);
   saveTenPetsPartners(current);
+}
+
+// SACPROH - Tickets, Products, FAQs
+export function getSacProhTickets(): SacProhTicket[] {
+  initStorage();
+  return loadItem<SacProhTicket[]>(KEYS.SACPROH_TICKETS, INITIAL_SACPROH_TICKETS);
+}
+
+export function saveSacProhTickets(tickets: SacProhTicket[]): void {
+  saveItem(KEYS.SACPROH_TICKETS, tickets);
+}
+
+export function addSacProhTicket(ticket: SacProhTicket): void {
+  const current = getSacProhTickets();
+  saveSacProhTickets([ticket, ...current]);
+}
+
+export function getSacProhProducts(): SacProhProduct[] {
+  initStorage();
+  return loadItem<SacProhProduct[]>(KEYS.SACPROH_PRODUCTS, INITIAL_SACPROH_PRODUCTS);
+}
+
+export function getSacProhFaqs(): SacProhFaq[] {
+  initStorage();
+  return loadItem<SacProhFaq[]>(KEYS.SACPROH_FAQS, INITIAL_SACPROH_FAQS);
 }
 
