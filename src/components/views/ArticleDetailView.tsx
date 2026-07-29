@@ -9,6 +9,7 @@ import { AdBanner } from '../ui/AdBanner';
 import { OfferCard } from '../ui/OfferCard';
 import { incrementArticleViews, getComments, addComment, getOffers } from '../../lib/storage';
 import { trackEvent } from '../../lib/analytics';
+import { updatePageSEO, injectArticleSchema } from '../../lib/seo';
 
 interface ArticleDetailViewProps {
   article: Article;
@@ -20,6 +21,7 @@ interface ArticleDetailViewProps {
   onBackToHome: () => void;
   onOpenLeadModal: (offer: Offer) => void;
   onShowToast: (msg: string, type?: 'success' | 'info') => void;
+  onSelectTag?: (tag: string) => void;
 }
 
 export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
@@ -31,7 +33,8 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   onSelectAuthor,
   onBackToHome,
   onOpenLeadModal,
-  onShowToast
+  onShowToast,
+  onSelectTag
 }) => {
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -47,6 +50,23 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
     incrementArticleViews(article.id);
     trackEvent('article_view', { articleId: article.id, categorySlug: category?.slug });
     setComments(getComments(article.id));
+
+    // Dynamic SEO Metadata Injection for Google Search Crawlers
+    updatePageSEO({
+      title: article.seo?.metaTitle || article.title,
+      description: article.seo?.metaDescription || article.summary || article.subtitle,
+      keywords: article.tags || ['GRIT NEWS', category?.name || 'Notícias'],
+      canonicalUrl: `https://www.gritnews.com.br/noticia/${article.slug || article.id}`,
+      imageUrl: article.featuredImage,
+      type: 'article',
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt,
+      authorName: author?.name || 'Redação Grit News',
+      categoryName: category?.name || 'Geral'
+    });
+
+    // Inject Schema.org NewsArticle JSON-LD
+    injectArticleSchema(article, category, author);
   }, [article.id]);
 
   const toggleSpeech = () => {
@@ -288,6 +308,27 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
           initialLikes={article.likesCount}
           onShowToast={onShowToast}
         />
+
+        {/* Article Tags Cloud & SEO Taxonomy */}
+        {article.tags && article.tags.length > 0 && (
+          <div className="bg-[#F8FAFC] border border-[#E2E8F0] p-5 rounded-2xl my-8 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#10233F]">
+              <Tag className="w-4 h-4 text-[#145EDB]" />
+              <span>Tags & Palavras-Chave de Indexação:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {article.tags.map((t, i) => (
+                <button
+                  key={i}
+                  onClick={() => onSelectTag && onSelectTag(t)}
+                  className="bg-white hover:bg-[#145EDB] hover:text-white text-[#10233F] border border-[#E2E8F0] text-xs font-bold px-3 py-1 rounded-full transition-all cursor-pointer shadow-2xl shadow-black/5"
+                >
+                  #{t}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Author Bio Card */}
         {author && (

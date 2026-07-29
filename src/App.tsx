@@ -9,6 +9,7 @@ import { AuthorView } from './components/views/AuthorView';
 import { PartnerView } from './components/views/PartnerView';
 import { SearchView } from './components/views/SearchView';
 import { BookmarksView } from './components/views/BookmarksView';
+import { TagView } from './components/views/TagView';
 import { DocumentationModal } from './components/views/DocumentationModal';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
@@ -26,6 +27,7 @@ import {
   initInitialDataIfEmpty
 } from './lib/storage';
 import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, Lead, NewsletterSubscriber } from './types';
+import { injectWebsiteSchema } from './lib/seo';
 
 type ViewMode =
   | 'home'
@@ -36,6 +38,7 @@ type ViewMode =
   | 'partner'
   | 'search'
   | 'bookmarks'
+  | 'tag'
   | 'admin';
 
 export default function App() {
@@ -44,6 +47,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedAuthor, setSelectedAuthor] = useState<AuthorProfile | null>(null);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+  const [selectedTag, setSelectedTag] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modal Lead Quote
@@ -88,6 +92,7 @@ export default function App() {
 
   useEffect(() => {
     loadData();
+    injectWebsiteSchema();
   }, []);
 
   const showToast = (message: string, type: 'success' | 'info' = 'success') => {
@@ -103,6 +108,12 @@ export default function App() {
   const handleSelectCategory = (cat: Category) => {
     setSelectedCategory(cat);
     setCurrentView('category');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectTag = (tag: string) => {
+    setSelectedTag(tag);
+    setCurrentView('tag');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -218,6 +229,17 @@ export default function App() {
             onBackToHome={() => setCurrentView('home')}
             onOpenLeadModal={setLeadModalOffer}
             onShowToast={showToast}
+            onSelectTag={handleSelectTag}
+          />
+        )}
+
+        {currentView === 'tag' && selectedTag && (
+          <TagView
+            tag={selectedTag}
+            articles={articles}
+            categories={categories}
+            onSelectArticle={handleSelectArticle}
+            onSelectTag={handleSelectTag}
           />
         )}
 
