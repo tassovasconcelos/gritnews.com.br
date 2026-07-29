@@ -39,13 +39,36 @@ function saveItem<T>(key: string, value: T): void {
   }
 }
 
+function syncSeedList<T extends { id: string }>(key: string, seedList: T[]): void {
+  const existing = loadItem<T[]>(key, []);
+  if (!existing || existing.length === 0) {
+    saveItem(key, seedList);
+    return;
+  }
+  let changed = false;
+  const updated = [...existing];
+  for (const seedItem of seedList) {
+    const foundIndex = updated.findIndex(item => item.id === seedItem.id);
+    if (foundIndex === -1) {
+      updated.unshift(seedItem);
+      changed = true;
+    } else {
+      updated[foundIndex] = { ...seedItem, ...updated[foundIndex] };
+      changed = true;
+    }
+  }
+  if (changed) {
+    saveItem(key, updated);
+  }
+}
+
 // Ensure initial seeds
 export function initStorage(): void {
-  if (!localStorage.getItem(KEYS.ARTICLES)) saveItem(KEYS.ARTICLES, INITIAL_ARTICLES);
-  if (!localStorage.getItem(KEYS.CATEGORIES)) saveItem(KEYS.CATEGORIES, INITIAL_CATEGORIES);
+  syncSeedList(KEYS.ARTICLES, INITIAL_ARTICLES);
+  syncSeedList(KEYS.CATEGORIES, INITIAL_CATEGORIES);
+  syncSeedList(KEYS.OFFERS, INITIAL_OFFERS);
   if (!localStorage.getItem(KEYS.AUTHORS)) saveItem(KEYS.AUTHORS, INITIAL_AUTHORS);
   if (!localStorage.getItem(KEYS.PARTNERS)) saveItem(KEYS.PARTNERS, INITIAL_PARTNERS);
-  if (!localStorage.getItem(KEYS.OFFERS)) saveItem(KEYS.OFFERS, INITIAL_OFFERS);
   if (!localStorage.getItem(KEYS.ADS)) saveItem(KEYS.ADS, INITIAL_AD_CAMPAIGNS);
   if (!localStorage.getItem(KEYS.SETTINGS)) saveItem(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
   if (!localStorage.getItem(KEYS.MEDIA)) saveItem(KEYS.MEDIA, INITIAL_MEDIA);

@@ -89,13 +89,13 @@ export const INITIAL_CATEGORIES: Category[] = [
     id: 'cat-curiosidades',
     name: 'Curiosidades',
     slug: 'curiosidades',
-    description: 'Dados surpreendentes, invenções históricas e fatos curiosos do mundo empresarial.',
+    description: 'Cartões Black, Salas VIP, Aviação Comercial e Guias de Estilo de Vida e Negócios.',
     color: '#8B5CF6',
     iconName: 'Lightbulb',
     order: 8,
-    featured: false,
-    metaTitle: 'Curiosidades e Histórias de Inovação | GRIT NEWS',
-    metaDescription: 'Histórias incríveis e fatos pouco conhecidos sobre grandes empresas.'
+    featured: true,
+    metaTitle: 'Curiosidades, Cartões Black e Aviação | GRIT NEWS',
+    metaDescription: 'Histórias incríveis, ranking de cartões de crédito sem anuidade, salas VIP e aviação comercial.'
   },
   {
     id: 'cat-ofertas',

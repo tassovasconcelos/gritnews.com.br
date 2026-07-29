@@ -129,10 +129,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="primary" size="sm">
-                          {art.categoryId === 'cat-saude' && 'Saúde'}
-                          {art.categoryId === 'cat-pet' && 'Pet'}
-                          {art.categoryId === 'cat-tech' && 'Tecnologia'}
-                          {art.categoryId === 'cat-logistica' && 'Logística'}
+                          {categories.find(c => c.id === art.categoryId)?.name || 'Grit News'}
                         </Badge>
                         <span className="text-[11px] text-[#5C6B7A]">
                           {art.readingTimeMinutes} min
@@ -277,6 +274,72 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
                 <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs font-bold text-[#145EDB]">
                   <span>Continuar lendo</span>
+                  <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Curiosidades & Tendências Section */}
+      <section className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between mb-6 pb-3 border-b border-[#E2E8F0]">
+          <div>
+            <div className="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 font-extrabold px-3 py-1 rounded-full text-xs mb-2">
+              <Lightbulb className="w-3.5 h-3.5" />
+              <span>Seção Curiosidades & Viagens</span>
+            </div>
+            <h2 className="text-2xl font-bold text-[#0B2343]">Curiosidades, Cartões Black & Aviação</h2>
+            <p className="text-sm text-[#5C6B7A]">Guias práticos, bastidores do setor aéreo e estratégias para voar melhor</p>
+          </div>
+          <button
+            onClick={() => onSelectCategory('curiosidades')}
+            className="text-xs font-bold text-[#145EDB] hover:text-[#0B2343] flex items-center gap-1 cursor-pointer"
+          >
+            <span>Ver tudo em Curiosidades</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {articles.filter(a => a.categoryId === 'cat-curiosidades').map(art => (
+            <div
+              key={art.id}
+              onClick={() => onSelectArticle(art)}
+              className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-purple-500 rounded-3xl overflow-hidden hover:shadow-xl transition-all flex flex-col md:flex-row"
+            >
+              <div className="relative md:w-2/5 h-48 md:h-auto overflow-hidden bg-gray-100 shrink-0">
+                <img
+                  src={art.featuredImage}
+                  alt={art.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3">
+                  <Badge variant="navy" size="sm">
+                    CURIOSIDADES
+                  </Badge>
+                </div>
+              </div>
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                    <span className="font-bold text-purple-600">{art.readingTimeMinutes} min de leitura</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      {art.viewsCount} acessos
+                    </span>
+                  </div>
+                  <h3 className="text-base font-extrabold text-[#0B2343] group-hover:text-purple-700 transition-colors mb-2 line-clamp-2 leading-snug">
+                    {art.title}
+                  </h3>
+                  <p className="text-xs text-[#5C6B7A] line-clamp-2 mb-4">
+                    {art.summary}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-xs font-bold text-purple-600">
+                  <span>Ler artigo completo</span>
                   <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
