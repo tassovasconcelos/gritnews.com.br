@@ -227,3 +227,28 @@ export interface SiteSettings {
 }
 
 export type SiteConfig = SiteSettings;
+
+export interface MediaAsset {
+  id: string;
+  title: string;
+  url: string;
+  altText: string;
+  category: string;
+  dimensions?: string;
+  source: 'unsplash' | 'upload' | 'ai';
+  createdAt: string;
+  tags: string[];
+}
+
+export interface TrendingTopic {
+  id: string;
+  topic: string;
+  category: string;
+  searchVolume: string;
+  growthRate: string;
+  status: 'TRENDING' | 'DRAFTED' | 'PUBLISHED';
+  suggestedTitle: string;
+  summary: string;
+  keywords: string[];
+  aiDraftId?: string;
+}

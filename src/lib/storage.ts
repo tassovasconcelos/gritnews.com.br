@@ -1,4 +1,4 @@
-import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings } from '../types';
+import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic } from '../types';
 import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS } from '../data/initialData';
 
 const KEYS = {
@@ -13,6 +13,8 @@ const KEYS = {
   COMMENTS: 'grit_news_comments_v1',
   BOOKMARKS: 'grit_news_bookmarks_v1',
   SETTINGS: 'grit_news_settings_v1',
+  MEDIA: 'grit_news_media_v1',
+  TRENDS: 'grit_news_trends_v1',
   CURRENT_ROLE: 'grit_news_current_role_v1'
 };
 
@@ -43,7 +45,158 @@ export function initStorage(): void {
   if (!localStorage.getItem(KEYS.OFFERS)) saveItem(KEYS.OFFERS, INITIAL_OFFERS);
   if (!localStorage.getItem(KEYS.ADS)) saveItem(KEYS.ADS, INITIAL_AD_CAMPAIGNS);
   if (!localStorage.getItem(KEYS.SETTINGS)) saveItem(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
+  if (!localStorage.getItem(KEYS.MEDIA)) saveItem(KEYS.MEDIA, INITIAL_MEDIA);
+  if (!localStorage.getItem(KEYS.TRENDS)) saveItem(KEYS.TRENDS, INITIAL_TRENDS);
 }
+
+const INITIAL_MEDIA: MediaAsset[] = [
+  {
+    id: 'm1',
+    title: 'Hospital Inteligente com Tecnologia',
+    url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=1200',
+    altText: 'Médicos e monitores tecnológicos em ambiente hospitalar moderno',
+    category: 'saude',
+    source: 'unsplash',
+    createdAt: new Date().toISOString(),
+    tags: ['saúde', 'hospital', 'tecnologia', 'medicina']
+  },
+  {
+    id: 'm2',
+    title: 'Alimentação Canina e Nutrição Pet',
+    url: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1200',
+    altText: 'Cão saudável com tigela de alimento natural',
+    category: 'pet',
+    source: 'unsplash',
+    createdAt: new Date().toISOString(),
+    tags: ['pet', 'cães', 'alimentação', 'nutrição']
+  },
+  {
+    id: 'm3',
+    title: 'Redes Neurais e Inteligência Artificial',
+    url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=1200',
+    altText: 'Conexões cibernéticas representando inteligência artificial',
+    category: 'tecnologia',
+    source: 'unsplash',
+    createdAt: new Date().toISOString(),
+    tags: ['ia', 'tecnologia', 'inovação', 'dados']
+  },
+  {
+    id: 'm4',
+    title: 'Automação Industrial e Robótica em Logística',
+    url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200',
+    altText: 'Braço robótico em centro logístico automatizado',
+    category: 'automacao',
+    source: 'unsplash',
+    createdAt: new Date().toISOString(),
+    tags: ['automação', 'logística', 'robótica', 'armagém']
+  },
+  {
+    id: 'm5',
+    title: 'Navio de Carga e Comércio Internacional',
+    url: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&q=80&w=1200',
+    altText: 'Porto de contêineres e navio cargueiro em manobra de importação',
+    category: 'importacao',
+    source: 'unsplash',
+    createdAt: new Date().toISOString(),
+    tags: ['importação', 'china', 'comércio', 'portos']
+  }
+];
+
+const INITIAL_TRENDS: TrendingTopic[] = [
+  {
+    id: 't1',
+    topic: 'Regulamentação de IA na Saúde Privada Brasil 2026',
+    category: 'saude',
+    searchVolume: '45.2K pesquisas/mês',
+    growthRate: '+320% este mês',
+    status: 'TRENDING',
+    suggestedTitle: 'Anvisa e Ministério da Saúde definem novas regras para diagnósticos guiados por IA',
+    summary: 'Adoção acelerada de robôs de triagem e inteligência preditiva nos principais complexos hospitalares do país.',
+    keywords: ['IA na Saúde', 'Anvisa', 'Telemedicina 2026', 'Tecnologia Hospitalar']
+  },
+  {
+    id: 't2',
+    topic: 'Alimentos Funcionais e Suplementos para Pets de Alta Performance',
+    category: 'pet',
+    searchVolume: '28.9K pesquisas/mês',
+    growthRate: '+180% este mês',
+    status: 'TRENDING',
+    suggestedTitle: 'Mercado de pet food natural e nutracêuticos atinge faturamento recorde no Brasil',
+    summary: 'Tutores buscam dietas customizadas e probióticos manipulados para longevidade dos pets.',
+    keywords: ['Nutrição Pet', 'Suplemento Canino', 'Mercado Pet 2026', 'Pet Food Premium']
+  },
+  {
+    id: 't3',
+    topic: 'Gêmeos Digitais em Centros de Distribuição e Modais Logísticos',
+    category: 'automacao',
+    searchVolume: '34.1K pesquisas/mês',
+    growthRate: '+240% este mês',
+    status: 'TRENDING',
+    suggestedTitle: 'Como os Digital Twins estão reduzindo o custo do frete em até 18% no e-commerce',
+    summary: 'Simulação em tempo real de frotas e estoques revoluciona a cadeia de suprimentos sul-americana.',
+    keywords: ['Digital Twins', 'Logística 4.0', 'Automação de Estoque', 'Frete Eficiente']
+  },
+  {
+    id: 't4',
+    topic: 'Taxação de Importação e Simplificação da Remessa Conforme 2026',
+    category: 'importacao',
+    searchVolume: '89.4K pesquisas/mês',
+    growthRate: '+410% este mês',
+    status: 'TRENDING',
+    suggestedTitle: 'Novas alíquotas de importação B2B da China: Guia prático para compradores e indústrias',
+    summary: 'Ajustes fiscais e desembaraço aduaneiro expresso impactam fornecedores e varejistas nacionais.',
+    keywords: ['Importação China', 'Remessa Conforme', 'Alíquota B2B', 'Comércio Exterior']
+  }
+];
+
+export function getMediaAssets(): MediaAsset[] {
+  initStorage();
+  return loadItem<MediaAsset[]>(KEYS.MEDIA, INITIAL_MEDIA);
+}
+
+export function addMediaAsset(asset: Omit<MediaAsset, 'id' | 'createdAt'>): MediaAsset {
+  const assets = getMediaAssets();
+  const newAsset: MediaAsset = {
+    ...asset,
+    id: 'media_' + Date.now(),
+    createdAt: new Date().toISOString()
+  };
+  const updated = [newAsset, ...assets];
+  saveItem(KEYS.MEDIA, updated);
+  return newAsset;
+}
+
+export function deleteMediaAsset(id: string): void {
+  const assets = getMediaAssets().filter(a => a.id !== id);
+  saveItem(KEYS.MEDIA, assets);
+}
+
+export function getTrendingTopics(): TrendingTopic[] {
+  initStorage();
+  return loadItem<TrendingTopic[]>(KEYS.TRENDS, INITIAL_TRENDS);
+}
+
+export function addTrendingTopic(topic: Omit<TrendingTopic, 'id'>): TrendingTopic {
+  const topics = getTrendingTopics();
+  const newTopic: TrendingTopic = {
+    ...topic,
+    id: 'trend_' + Date.now()
+  };
+  const updated = [newTopic, ...topics];
+  saveItem(KEYS.TRENDS, updated);
+  return newTopic;
+}
+
+export function updateTrendingTopicStatus(id: string, status: 'TRENDING' | 'DRAFTED' | 'PUBLISHED', aiDraftId?: string): void {
+  const topics = getTrendingTopics();
+  const item = topics.find(t => t.id === id);
+  if (item) {
+    item.status = status;
+    if (aiDraftId) item.aiDraftId = aiDraftId;
+    saveItem(KEYS.TRENDS, topics);
+  }
+}
+
 
 // Articles
 export function getArticles(): Article[] {
