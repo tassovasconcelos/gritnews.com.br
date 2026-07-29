@@ -6,6 +6,7 @@ import { AdBanner } from '../ui/AdBanner';
 import { NewsletterBlock } from '../ui/NewsletterBlock';
 import { OfferCard } from '../ui/OfferCard';
 import { PartnerCard } from '../ui/PartnerCard';
+import { AmazonShopSection } from '../ui/AmazonShopSection';
 
 interface HomeViewProps {
   articles: Article[];
@@ -347,6 +348,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           ))}
         </div>
       </section>
+
+      {/* Amazon Products Showcase Section - Tasso Vasconcelos */}
+      <div className="max-w-7xl mx-auto px-4">
+        <AmazonShopSection onShowToast={onShowToast} />
+      </div>
 
       {/* Featured B2B Offers Section */}
       <section className="bg-[#F7F9FC] py-12 border-y border-[#E2E8F0]">

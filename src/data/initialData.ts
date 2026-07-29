@@ -184,6 +184,21 @@ export const INITIAL_AUTHORS: AuthorProfile[] = [
     },
     followersCount: 2890,
     articlesCount: 42
+  },
+  {
+    id: 'author-moacir-rocha',
+    name: 'Dr. Moacir Rocha',
+    roleTitle: 'Advogado Tributarista, Sócio de Moacir Rocha Advocacia e Consultoria Especializada',
+    avatar: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&q=80&w=300',
+    bio: 'Advogado tributarista e consultor empresarial. Sócio-fundador do escritório Moacir Rocha Advocacia e Consultoria Especializada. Especialista em Direito Tributário, Planejamento Fiscal Corporativo, IBS/CBS e reestruturação fiscal de empresas, compartilhando artigos e orientações estratégicas no LinkedIn.',
+    specialties: ['Direito Tributário', 'Reforma Tributária', 'IBS e CBS', 'Planejamento Fiscal', 'Consultoria Jurídica B2B'],
+    email: 'contato@moacirrochaadvocacia.com.br',
+    socialLinks: {
+      linkedin: 'https://www.linkedin.com/in/moacirrocha-advocacia',
+      website: 'https://moacirrochaadvocacia.com.br'
+    },
+    followersCount: 14200,
+    articlesCount: 19
   }
 ];
 
@@ -899,6 +914,99 @@ export const INITIAL_ARTICLES: Article[] = [
       metaTitle: 'Cadeias de Suprimentos Descarbonizadas | GRIT NEWS',
       metaDescription: 'Veja como a logística verde, frotas elétricas e metas ESG transformam o transporte de cargas B2B.',
       keywords: ['logistica verde', 'descarbonizacao transporte', 'esg logistica', 'frota eletrica']
+    }
+  },
+  {
+    id: 'art-moacir-rocha-reforma-tributaria',
+    title: 'A Nova Tributação no Brasil: Guia Estratégico de Transição Fiscal para Empresas por Dr. Moacir Rocha',
+    slug: 'nova-tributacao-brasil-reforma-tributaria-dr-moacir-rocha-advocacia',
+    subtitle: 'Análise aprofundada dos impactos do IBS, CBS e do imposto seletivo na margem e no fluxo de caixa corporativo, diretamente das reflexões publicadas no LinkedIn.',
+    summary: 'O especialista tributário Dr. Moacir Rocha, do escritório Moacir Rocha Advocacia e Consultoria Especializada, detalha o cronograma de transição da Reforma Tributária, a não cumulatividade plena do IBS/CBS e as estratégias de planejamento fiscal indispensáveis para companhias B2B.',
+    categoryId: 'cat-negocios',
+    tags: ['Reforma Tributária', 'IBS e CBS', 'Dr. Moacir Rocha', 'Planejamento Fiscal', 'Direito Tributário', 'Consultoria Empresarial'],
+    authorId: 'author-moacir-rocha',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Dr. Moacir Rocha (Moacir Rocha Advocacia e Consultoria Especializada) em análise de contencioso e planejamento tributário.',
+    publishedAt: '2026-07-28T19:30:00Z',
+    updatedAt: '2026-07-28T20:00:00Z',
+    readingTimeMinutes: 7,
+    viewsCount: 6180,
+    likesCount: 520,
+    sharesCount: 310,
+    isSponsored: false,
+    isEvergreen: true,
+    blocks: [
+      {
+        id: 'mr1',
+        type: 'paragraph',
+        content: 'A promulgação da regulamentação da **Reforma Tributária sobre o Consumo** inaugurou a maior reestruturação fiscal da história recente do Brasil. Diante da substituição progressiva do PIS, COFINS, IPI, ICMS e ISS pelo **IBS (Imposto sobre Bens e Serviços)** e pela **CBS (Contribuição sobre Bens e Serviços)**, os conselhos de administração e diretorias financeiras enfrentam um duplo desafio: adequação operacional imediata e inteligência de planejamento tributário.'
+      },
+      {
+        id: 'mr2',
+        type: 'quote',
+        content: '“A Reforma Tributária não é um mero ajuste de alíquotas — é a redefinição de como o valor agregado é precificado e tributado no Brasil. Quem deixar o planejamento para a última hora comprometerá irremediavelmente sua margem de lucro e competitividade.” — **Dr. Moacir Rocha** (*Moacir Rocha Advocacia e Consultoria Especializada*).'
+      },
+      {
+        id: 'mr3',
+        type: 'heading2',
+        content: '1. O Dual IVA (IBS + CBS) e o Princípio do Destino'
+      },
+      {
+        id: 'mr4',
+        type: 'paragraph',
+        content: 'Conforme amplamente debatido em nossas análises jurídicas e artigos publicados no LinkedIn pelo escritório **Moacir Rocha Advocacia**, a adoção do IVA Dual elimina a pulverização de leis estaduais e municipais. A arrecadação passa a seguir rigorosamente o **princípio do destino**, tributando a mercadoria ou serviço onde ocorre o consumo efetivo, desonerando exportações e reequilibrando a competitividade regional.'
+      },
+      {
+        id: 'mr5',
+        type: 'heading2',
+        content: '2. Não Cumulatividade Plena: Onde Residem as Oportunidades Fiscais'
+      },
+      {
+        id: 'mr6',
+        type: 'paragraph',
+        content: 'Com a não cumulatividade irrestrita, todo tributo recolhido nas etapas anteriores da cadeia de suprimentos gerará crédito imediato para o comprador. Isso altera significativamente a contratação de fornecedores B2B e terceirizações. Empresas que compram de optantes pelo Simples Nacional ou fornecedores não tributados precisarão reavaliar o custo efetivo de seus insumos líquidos de crédito.'
+      },
+      {
+        id: 'mr7',
+        type: 'callout',
+        content: '⚖️ **Recomendação Moacir Rocha Advocacia:** Mapeie imediatamente todos os contratos de suprimentos, TI e locações da sua empresa para projetar a apropriação de créditos de CBS/IBS sob a nova legislação.'
+      },
+      {
+        id: 'mr8',
+        type: 'heading2',
+        content: '3. A Regra do Imposto Seletivo e o Impacto no Varejo e Indústria'
+      },
+      {
+        id: 'mr9',
+        type: 'paragraph',
+        content: 'O chamado “Imposto Seletivo” incidirá sobre bens e serviços prejudiciais à saúde ou ao meio ambiente. Indústrias automotivas, bebidas, extrativistas e de insumos específicos devem prever esse gravame extra, que não gerará crédito para as etapas posteriores.'
+      },
+      {
+        id: 'mr10',
+        type: 'heading2',
+        content: '4. Matriz de Transição e Governança de TI/Fiscal'
+      },
+      {
+        id: 'mr11',
+        type: 'paragraph',
+        content: 'O período de convivência entre o regime antigo e o novo exigirá a emissão simultânea de notas fiscais sob os dois sistemas. Os ERPs corporativos precisarão calcular IPI/ICMS/ISS em paralelo com as alíquotas de teste de CBS e IBS.'
+      },
+      {
+        id: 'mr12',
+        type: 'heading3',
+        content: 'Como a Consultoria Especializada Pode Blindar seu Negócio'
+      },
+      {
+        id: 'mr13',
+        type: 'paragraph',
+        content: 'O escritório **Moacir Rocha Advocacia e Consultoria Especializada** realiza diagnósticos tributários personalizados, auditoria de contencioso fiscal e estruturação de holdings patrimoniais e societárias para garantir máxima eficiência operacional sob o novo arcabouço legal. Acompanhe nossas análises e insights no LinkedIn para manter sua empresa um passo à frente.'
+      }
+    ],
+    seo: {
+      metaTitle: 'A Nova Tributação no Brasil: Guia com Dr. Moacir Rocha | GRIT NEWS',
+      metaDescription: 'Análise completa da Nova Reforma Tributária (IBS/CBS) por Dr. Moacir Rocha (Moacir Rocha Advocacia e Consultoria Especializada).',
+      keywords: ['moacir rocha', 'moacir rocha advocacia', 'reforma tributaria', 'ibs cbs', 'direito tributario', 'planejamento fiscal']
     }
   }
 ];

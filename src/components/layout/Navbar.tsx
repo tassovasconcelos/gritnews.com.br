@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb } from 'lucide-react';
+import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag } from 'lucide-react';
 import { Category } from '../../types';
 
 interface NavbarProps {
@@ -115,7 +115,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         </form>
 
         {/* Action Buttons */}
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-2.5">
+          <a
+            href="https://www.amazon.com.br/shop/tassovasconcelos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-3.5 py-2 rounded-xl text-xs border border-amber-500/40 shadow-xs hover:scale-102 transition-all cursor-pointer"
+          >
+            <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+            <span>Loja Amazon (Tasso)</span>
+          </a>
+
           <button
             onClick={onNavigateOffers}
             className="flex items-center gap-1.5 bg-[#FF8500] hover:bg-[#e07500] text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md hover:scale-102 transition-all cursor-pointer"
@@ -249,6 +259,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+            <a
+              href="https://www.amazon.com.br/shop/tassovasconcelos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-slate-900 text-amber-300 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-amber-500/40"
+            >
+              <ShoppingBag className="w-4 h-4 text-amber-400" />
+              <span>Loja Amazon (Tasso Vasconcelos)</span>
+            </a>
+
             <button
               onClick={() => {
                 onNavigateOffers();

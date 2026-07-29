@@ -65,6 +65,17 @@ export const Footer: React.FC<FooterProps> = ({
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Institucional</h4>
             <ul className="space-y-2 text-xs text-gray-300">
               <li>
+                <a
+                  href="https://www.amazon.com.br/shop/tassovasconcelos"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-amber-400 hover:text-amber-300 font-bold transition-colors inline-flex items-center gap-1"
+                >
+                  <span>Loja Amazon (Tasso Vasconcelos)</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </a>
+              </li>
+              <li>
                 <button onClick={onNavigateOffers} className="hover:text-[#FF8500] transition-colors">
                   Central de Ofertas B2B
                 </button>

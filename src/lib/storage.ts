@@ -67,7 +67,7 @@ export function initStorage(): void {
   syncSeedList(KEYS.ARTICLES, INITIAL_ARTICLES);
   syncSeedList(KEYS.CATEGORIES, INITIAL_CATEGORIES);
   syncSeedList(KEYS.OFFERS, INITIAL_OFFERS);
-  if (!localStorage.getItem(KEYS.AUTHORS)) saveItem(KEYS.AUTHORS, INITIAL_AUTHORS);
+  syncSeedList(KEYS.AUTHORS, INITIAL_AUTHORS);
   if (!localStorage.getItem(KEYS.PARTNERS)) saveItem(KEYS.PARTNERS, INITIAL_PARTNERS);
   if (!localStorage.getItem(KEYS.ADS)) saveItem(KEYS.ADS, INITIAL_AD_CAMPAIGNS);
   if (!localStorage.getItem(KEYS.SETTINGS)) saveItem(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);

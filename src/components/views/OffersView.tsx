@@ -3,6 +3,7 @@ import { Tag, Search, ArrowLeft, ShieldAlert, Sparkles, Filter } from 'lucide-re
 import { Offer, Category } from '../../types';
 import { OfferCard } from '../ui/OfferCard';
 import { NewsletterBlock } from '../ui/NewsletterBlock';
+import { AmazonShopSection } from '../ui/AmazonShopSection';
 
 interface OffersViewProps {
   offers: Offer[];
@@ -117,6 +118,9 @@ export const OffersView: React.FC<OffersViewProps> = ({
             <p className="text-sm text-[#5C6B7A]">Tente alterar seus termos de busca.</p>
           </div>
         )}
+
+        {/* Amazon Shop Section */}
+        <AmazonShopSection onShowToast={onShowToast} />
 
         <NewsletterBlock sourcePage="Central de Ofertas" onSuccessToast={onShowToast} />
       </div>
