@@ -91,6 +91,7 @@ export interface AuthorProfile {
     linkedin?: string;
     twitter?: string;
     website?: string;
+    instagram?: string;
   };
   followersCount: number;
   articlesCount: number;

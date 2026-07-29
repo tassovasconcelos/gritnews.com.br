@@ -76,7 +76,7 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
           href="https://www.instagram.com/tenpets_"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1 bg-amber-700 hover:bg-amber-800 text-amber-100 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all border border-amber-500"
+          className="inline-flex items-center gap-1.5 bg-amber-700 hover:bg-amber-800 text-amber-100 px-3 py-1 rounded-full text-xs font-bold transition-all border border-amber-500 shadow-sm"
         >
           <Instagram className="w-3.5 h-3.5 text-rose-300" />
           <span>Instagram @tenpets_</span>
@@ -84,38 +84,61 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
         </a>
       </div>
 
-      {/* Hero Section - Letícia Karla Profile */}
-      <section className="bg-gradient-to-br from-amber-700 via-amber-800 to-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8 shadow-xl">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      {/* Hero Section with Official Branding & Letícia Karla Profile */}
+      <section className="bg-gradient-to-br from-amber-800 via-amber-900 to-slate-950 text-white py-12 px-4 sm:px-6 lg:px-8 shadow-xl relative overflow-hidden">
+        {/* Background Subtle Image Overlay */}
+        <div className="absolute inset-0 opacity-15 mix-blend-overlay">
+          <img
+            src="/src/assets/images/tenpets_hero_banner_1785288987038.jpg"
+            alt="TenPets Hero"
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
           <div className="lg:col-span-8 space-y-6">
-            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-amber-200">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Plataforma TenPets | Medicina & Direito Animal</span>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Official TenPets Logo Emblem */}
+              <div className="flex items-center gap-2.5 bg-white/10 border border-amber-400/40 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-lg">
+                <img
+                  src="/src/assets/images/tenpets_official_logo_1785288965710.jpg"
+                  alt="TenPets Logo"
+                  className="w-7 h-7 rounded-lg object-cover ring-2 ring-amber-400/60"
+                  referrerPolicy="no-referrer"
+                />
+                <span className="font-extrabold text-amber-300 tracking-wide text-sm">TenPets</span>
+              </div>
+
+              <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-amber-200">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>Medicina Veterinária & Direito Animal</span>
+              </div>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
-              Ciência Veterinária, Proteção Animal & Histórias de Superação
+              Ciência Veterinária, Proteção Animal & Direitos Pet
             </h1>
 
             <p className="text-slate-200 text-base sm:text-lg leading-relaxed font-light">
-              Espaço dedicado à divulgação de pesquisas científicas veterinárias, cases jurídicos em defesa dos animais de rua e narrativas romanceadas de resgates vitoriosos desenvolvidos e liderados por <strong>Letícia Karla</strong>.
+              Espaço oficial de pesquisas científicas veterinárias, cases jurídicos em defesa dos animais e relatos de reabilitação e resgate produzidos e assinados por <strong>Letícia Karla</strong>.
             </p>
 
             {/* Badges of Letícia Karla */}
-            <div className="flex flex-wrap gap-3 pt-2">
-              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium text-amber-100">
+            <div className="flex flex-wrap gap-2.5 pt-2">
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-amber-100 shadow-xs">
                 <GraduationCap className="w-4 h-4 text-amber-300" />
                 Estudante de Medicina Veterinária
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium text-amber-100">
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-amber-100 shadow-xs">
                 <Heart className="w-4 h-4 text-rose-400" />
-                Protetora Independente de Animais
+                Protetora de Animais
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium text-amber-100">
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-amber-100 shadow-xs">
                 <BookOpen className="w-4 h-4 text-emerald-300" />
-                Escritora de Produções Científicas
+                Escritora de Artigos Científicos
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium text-amber-100">
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-amber-100 shadow-xs">
                 <Scale className="w-4 h-4 text-sky-300" />
                 Advogada em Direito Animal
               </span>
@@ -125,9 +148,9 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
             <div className="flex flex-wrap items-center gap-2 pt-4">
               <button
                 onClick={() => setActiveTab('all')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'all'
-                    ? 'bg-amber-500 text-slate-950 shadow-lg'
+                    ? 'bg-amber-500 text-slate-950 shadow-lg scale-105'
                     : 'bg-white/10 hover:bg-white/20 text-white'
                 }`}
               >
@@ -135,9 +158,9 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
               </button>
               <button
                 onClick={() => setActiveTab('articles')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'articles'
-                    ? 'bg-amber-500 text-slate-950 shadow-lg'
+                    ? 'bg-amber-500 text-slate-950 shadow-lg scale-105'
                     : 'bg-white/10 hover:bg-white/20 text-white'
                 }`}
               >
@@ -145,9 +168,9 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
               </button>
               <button
                 onClick={() => setActiveTab('rescues')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'rescues'
-                    ? 'bg-amber-500 text-slate-950 shadow-lg'
+                    ? 'bg-amber-500 text-slate-950 shadow-lg scale-105'
                     : 'bg-white/10 hover:bg-white/20 text-white'
                 }`}
               >
@@ -155,9 +178,9 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
               </button>
               <button
                 onClick={() => setActiveTab('partners')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'partners'
-                    ? 'bg-amber-500 text-slate-950 shadow-lg'
+                    ? 'bg-amber-500 text-slate-950 shadow-lg scale-105'
                     : 'bg-white/10 hover:bg-white/20 text-white'
                 }`}
               >
@@ -166,25 +189,33 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
             </div>
           </div>
 
-          {/* Author Card Profile */}
-          <div className="lg:col-span-4 bg-white/10 border border-amber-400/30 backdrop-blur-xl rounded-2xl p-6 text-center shadow-2xl relative overflow-hidden">
-            <div className="absolute -right-8 -top-8 w-28 h-28 bg-amber-500/20 rounded-full blur-2xl"></div>
+          {/* Author Card Profile Letícia Karla */}
+          <div className="lg:col-span-4 bg-white/10 border border-amber-400/40 backdrop-blur-2xl rounded-3xl p-6 text-center shadow-2xl relative overflow-hidden group">
+            <div className="absolute -right-8 -top-8 w-32 h-32 bg-amber-500/30 rounded-full blur-2xl"></div>
             <div className="relative z-10 space-y-4">
-              <div className="w-28 h-28 mx-auto rounded-full ring-4 ring-amber-400/50 p-1 overflow-hidden shadow-xl bg-slate-800">
+              
+              {/* Photo Letícia Karla */}
+              <div className="w-28 h-28 mx-auto rounded-full ring-4 ring-amber-400/70 p-1 overflow-hidden shadow-2xl bg-slate-900 transition-transform duration-300 group-hover:scale-105">
                 <img
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300"
+                  src="/src/assets/images/leticia_karla_profile_1785288976216.jpg"
                   alt="Letícia Karla"
                   className="w-full h-full object-cover rounded-full"
+                  referrerPolicy="no-referrer"
                 />
               </div>
+
               <div>
-                <h3 className="text-xl font-bold text-white">Letícia Karla</h3>
-                <p className="text-xs text-amber-300 font-medium mt-1">
-                  Pesquisadora, Protetora & Advogada
+                <h3 className="text-xl font-extrabold text-white flex items-center justify-center gap-1.5">
+                  <span>Letícia Karla</span>
+                  <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                </h3>
+                <p className="text-xs text-amber-300 font-medium mt-1 leading-snug">
+                  Estudante de Medicina Veterinária • Protetora • Escritora • Advogada
                 </p>
               </div>
-              <p className="text-xs text-slate-200 leading-relaxed font-light italic">
-                "A verdadeira compaixão une a precisão da ciência médica à justiça do Direito para transformar vidas que não têm voz."
+
+              <p className="text-xs text-slate-200 leading-relaxed font-light italic bg-black/20 p-3 rounded-2xl border border-white/10">
+                "A verdadeira compaixão une a precisão da ciência médica à justiça do Direito para transformar a vida dos animais."
               </p>
 
               {/* Instagram Official @tenpets_ button */}
@@ -192,7 +223,7 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
                 href="https://www.instagram.com/tenpets_"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-lg transition-all"
+                className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-xl transition-all hover:scale-[1.02]"
               >
                 <Instagram className="w-4 h-4" />
                 <span>Siga @tenpets_ no Instagram</span>
@@ -202,11 +233,11 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
               <div className="pt-2 border-t border-white/10 flex justify-around text-center text-xs">
                 <div>
                   <span className="block font-bold text-lg text-amber-300">100%</span>
-                  <span className="text-slate-300 text-[10px]">Compromisso Vet</span>
+                  <span className="text-slate-300 text-[10px]">Científico & Legal</span>
                 </div>
                 <div>
                   <span className="block font-bold text-lg text-amber-300">+50</span>
-                  <span className="text-slate-300 text-[10px]">Animais Atendidos</span>
+                  <span className="text-slate-300 text-[10px]">Casos de Reabilitação</span>
                 </div>
               </div>
             </div>
@@ -217,6 +248,125 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-16">
         
+        {/* INSTAGRAM OFFICIAL SHOWCASE @tenpets_ */}
+        <section className="bg-gradient-to-br from-slate-900 via-amber-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl border border-amber-500/30 relative overflow-hidden">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-white/10 pb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl overflow-hidden ring-4 ring-rose-500/80 p-0.5 bg-slate-900 shrink-0 shadow-xl">
+                <img
+                  src="/src/assets/images/tenpets_official_logo_1785288965710.jpg"
+                  alt="@tenpets_"
+                  className="w-full h-full object-cover rounded-xl"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl font-extrabold text-white">@tenpets_</h3>
+                  <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Instagram Oficial
+                  </span>
+                </div>
+                <p className="text-xs text-amber-200 mt-1">
+                  Ciência Veterinária • Direito Animal • Proteção & Resgates com Letícia Karla
+                </p>
+              </div>
+            </div>
+
+            <a
+              href="https://www.instagram.com/tenpets_"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-lg hover:scale-105 shrink-0"
+            >
+              <Instagram className="w-4 h-4" />
+              <span>Acessar @tenpets_ no Instagram</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
+          {/* Instagram Post Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+            <a
+              href="https://www.instagram.com/tenpets_"
+              target="_blank"
+              rel="noreferrer"
+              className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-amber-400/50 transition-all group"
+            >
+              <div className="relative h-44 overflow-hidden bg-slate-900">
+                <img
+                  src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=600"
+                  alt="Post Instagram Dermatologia Vet"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-amber-300 p-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                  <Instagram className="w-3 h-3 text-rose-400" />
+                  <span>Post Vet</span>
+                </div>
+              </div>
+              <div className="p-3.5 space-y-1">
+                <span className="text-[10px] text-amber-300 font-mono">Dermatologia & Imunologia</span>
+                <p className="text-xs font-semibold text-white line-clamp-2 leading-snug">
+                  Entenda como a imunoterapia monoclonal melhora a qualidade de vida de cães com dermatite.
+                </p>
+              </div>
+            </a>
+
+            <a
+              href="https://www.instagram.com/tenpets_"
+              target="_blank"
+              rel="noreferrer"
+              className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-amber-400/50 transition-all group"
+            >
+              <div className="relative h-44 overflow-hidden bg-slate-900">
+                <img
+                  src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=600"
+                  alt="Post Instagram Resgate Thor"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-emerald-300 p-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                  <Heart className="w-3 h-3 text-rose-400" />
+                  <span>Resgate</span>
+                </div>
+              </div>
+              <div className="p-3.5 space-y-1">
+                <span className="text-[10px] text-emerald-300 font-mono">Reabilitação Thor</span>
+                <p className="text-xs font-semibold text-white line-clamp-2 leading-snug">
+                  De sobrevivente de atropelamento a campeão do afeto: veja a jornada do Valente Thor.
+                </p>
+              </div>
+            </a>
+
+            <a
+              href="https://www.instagram.com/tenpets_"
+              target="_blank"
+              rel="noreferrer"
+              className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-amber-400/50 transition-all group"
+            >
+              <div className="relative h-44 overflow-hidden bg-slate-900">
+                <img
+                  src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=600"
+                  alt="Post Instagram Direito Animal"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-sky-300 p-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                  <Scale className="w-3 h-3 text-sky-400" />
+                  <span>Direito Pet</span>
+                </div>
+              </div>
+              <div className="p-3.5 space-y-1">
+                <span className="text-[10px] text-sky-300 font-mono">Direito Animal com Letícia Karla</span>
+                <p className="text-xs font-semibold text-white line-clamp-2 leading-snug">
+                  Como funciona a tutela de urgência e a Lei Sansão no resgate judicial de animais vitimados.
+                </p>
+              </div>
+            </a>
+          </div>
+        </section>
+
         {/* SECTION 1: Scientific Articles & Publications */}
         {(activeTab === 'all' || activeTab === 'articles') && (
           <section className="space-y-6">

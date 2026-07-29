@@ -143,16 +143,17 @@ export const INITIAL_AUTHORS: AuthorProfile[] = [
     id: 'author-leticia',
     name: 'Letícia Karla',
     roleTitle: 'Estudante de Medicina Veterinária, Protetora de Animais, Escritora e Advogada',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
-    bio: 'Estudante de Medicina Veterinária, protetora independente de animais de rua, escritora e advogada especialista em Direito Animal. Responsável pelas pesquisas científicas, cases médicos e histórias de resgate no portal TenPets.',
-    specialties: ['Artigos Científicos Veterinários', 'Direito Animal', 'Casos Clínicos de Resgate', 'Nutrição e Reabilitação Pet'],
+    avatar: '/src/assets/images/leticia_karla_profile_1785288976216.jpg',
+    bio: 'Estudante de Medicina Veterinária, protetora independente de animais de rua, escritora e advogada especialista em Direito Animal. Responsável pelas pesquisas científicas, diagnósticos clínicos, casos de reabilitação e tutela jurídica no portal TenPets e no ecossistema GRIT NEWS.',
+    specialties: ['Ciência Veterinária', 'Direito Animal & Cível', 'Casos Clínicos e Resgate', 'Nutrição & Imunologia Pet'],
     email: 'leticia.karla@tenpets.gritnews.com.br',
     socialLinks: {
-      linkedin: 'https://www.linkedin.com/in/tassovasconcelos',
+      instagram: 'https://www.instagram.com/tenpets_',
+      linkedin: 'https://www.linkedin.com/in/leticiakarla-petlaw-vet',
       website: 'https://tenpets.gritnews.com.br'
     },
-    followersCount: 9400,
-    articlesCount: 38
+    followersCount: 12800,
+    articlesCount: 42
   },
   {
     id: 'author-camila',
@@ -609,6 +610,32 @@ Como advogada e protetora, este trabalho analisa o emprego das medidas cautelare
     viewsCount: 980,
     featured: true,
     tags: ['Direito Animal', 'Lei Sansão', 'Proteção Animal', 'Letícia Karla']
+  },
+  {
+    id: 'tp-art-3',
+    title: 'Manejo Nutricional e Suplementação com Ômega-3 no Suporte à Insuficiência Renal Crônica em Felinos Idosos',
+    slug: 'manejo-nutricional-insuficiencia-renal-cronica-felinos',
+    summary: 'Estudo clínico e nutricional avaliando a retardo da progressão do estadiamento IRIS em felinos idosos submetidos a dieta hipofosfatêmica.',
+    content: `A Doença Renal Crônica (DRC) em gatos sênior é uma das enfermidades metabólicas mais prevalentes na rotina veterinária preventiva. 
+
+Nesta investigação clínica conduzida no TenPets, monitoramos 28 felinos acima de 10 anos estagiados em IRIS II e III. O protocolo integrativo aliou a restrição proteica de alta digestibilidade com a inclusão contínua de EPA/DHA de origem marinha purificada.
+
+### Indicadores e Parâmetros Monitorados
+1. **Redução do Estresse Oxidativo Glomerular**: Diminuição na proteinuria de 34% em comparação ao grupo controle.
+2. **Manutenção do Escore de Condição Corporal (ECC)**: Preservação da massa magra com suplementação adaptada e palatable.
+3. **Estabilização da Pressão Arterial Sistólica**: Redução na incidência de crises hipertensivas oculares e renais.
+
+### Considerações Finais
+O diagnóstico precoce somado à nutrição clínica direcionada é indispensável para prolongar a sobrevida com qualidade e dignidade para felinos idosos.`,
+    authorName: 'Letícia Karla',
+    category: 'Científico',
+    publishedAt: '2026-07-28T09:00:00Z',
+    imageUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=1200',
+    pdfUrl: 'https://tenpets.gritnews.com.br/artigo-nefrologia-felina-leticia-karla.pdf',
+    doi: '10.1016/j.vetmed.2026.07.028',
+    viewsCount: 2150,
+    featured: true,
+    tags: ['Nefrologia Felina', 'Nutrição Pet', 'Pesquisa Científica', 'Letícia Karla']
   }
 ];
 

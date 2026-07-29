@@ -180,11 +180,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* TenPets Subdomain Portal Button */}
           <button
             onClick={onNavigateTenPets}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-extrabold bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm hover:scale-102 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white shadow-sm hover:scale-105 transition-all border border-amber-500/50"
           >
-            <PawPrint className="w-3.5 h-3.5 text-amber-200" />
+            <img
+              src="/src/assets/images/tenpets_official_logo_1785288965710.jpg"
+              alt="TenPets Logo"
+              className="w-4 h-4 rounded object-cover ring-1 ring-amber-300"
+              referrerPolicy="no-referrer"
+            />
             <span>TenPets (Resgates & Ciência)</span>
-            <span className="bg-amber-800 text-amber-100 text-[9px] px-1.5 py-0.2 rounded font-mono">
+            <span className="bg-amber-900/80 text-amber-200 text-[9px] px-1.5 py-0.2 rounded font-mono">
               .gritnews
             </span>
           </button>
