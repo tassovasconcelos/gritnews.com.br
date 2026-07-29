@@ -62,16 +62,27 @@ export const Footer: React.FC<FooterProps> = ({
 
           {/* Institutional Links */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Institucional</h4>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Recomendações & Curadoria</h4>
             <ul className="space-y-2 text-xs text-gray-300">
+              <li>
+                <a
+                  href="https://meli.la/1kXwMJQ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-yellow-400 hover:text-yellow-300 font-extrabold transition-colors inline-flex items-center gap-1"
+                >
+                  <span>Lista Mercado Livre (Achados Tasso)</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </a>
+              </li>
               <li>
                 <a
                   href="https://www.amazon.com.br/shop/tassovasconcelos"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-amber-400 hover:text-amber-300 font-bold transition-colors inline-flex items-center gap-1"
+                  className="text-slate-300 hover:text-amber-300 font-medium transition-colors inline-flex items-center gap-1"
                 >
-                  <span>Loja Amazon (Tasso Vasconcelos)</span>
+                  <span>Vitrine Amazon (Tasso Vasconcelos)</span>
                   <ArrowUpRight className="w-3 h-3" />
                 </a>
               </li>

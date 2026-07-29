@@ -115,26 +115,34 @@ export const Navbar: React.FC<NavbarProps> = ({
         </form>
 
         {/* Action Buttons */}
-        <div className="hidden lg:flex items-center gap-2.5">
+        <div className="hidden lg:flex items-center gap-2">
+          <a
+            href="https://meli.la/1kXwMJQ"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-black px-3 py-2 rounded-xl text-xs border border-yellow-500/40 shadow-xs hover:scale-102 transition-all cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 fill-current text-slate-900" />
+            <span>Lista Mercado Livre</span>
+          </a>
+
           <a
             href="https://www.amazon.com.br/shop/tassovasconcelos"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-3.5 py-2 rounded-xl text-xs border border-amber-500/40 shadow-xs hover:scale-102 transition-all cursor-pointer"
+            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-2 rounded-xl text-xs border border-slate-200 transition-all cursor-pointer"
+            title="Loja Amazon de Tasso Vasconcelos"
           >
-            <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
-            <span>Loja Amazon (Tasso)</span>
+            <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
+            <span>Amazon</span>
           </a>
 
           <button
             onClick={onNavigateOffers}
-            className="flex items-center gap-1.5 bg-[#FF8500] hover:bg-[#e07500] text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md hover:scale-102 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 bg-[#FF8500] hover:bg-[#e07500] text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-md hover:scale-102 transition-all cursor-pointer"
           >
             <Tag className="w-3.5 h-3.5" />
-            <span>Central de Ofertas</span>
-            <span className="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full font-extrabold ml-1">
-              PROMO
-            </span>
+            <span>Ofertas</span>
           </button>
 
           <button
@@ -260,12 +268,22 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
             <a
+              href="https://meli.la/1kXwMJQ"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-yellow-500/40"
+            >
+              <Sparkles className="w-4 h-4 text-slate-900 fill-current" />
+              <span>Lista de Achados no Mercado Livre</span>
+            </a>
+
+            <a
               href="https://www.amazon.com.br/shop/tassovasconcelos"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full bg-slate-900 text-amber-300 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-amber-500/40"
+              className="w-full bg-slate-100 text-slate-700 font-bold py-2 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-slate-200"
             >
-              <ShoppingBag className="w-4 h-4 text-amber-400" />
+              <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
               <span>Loja Amazon (Tasso Vasconcelos)</span>
             </a>
 
