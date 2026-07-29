@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, ArrowLeft, ArrowRight, Eye, Filter } from 'lucide-react';
 import { Article, Category } from '../../types';
+import { ArticleShareActions } from '../ui/ArticleShareActions';
 
 interface SearchViewProps {
   initialQuery: string;
@@ -8,6 +9,7 @@ interface SearchViewProps {
   categories: Category[];
   onSelectArticle: (article: Article) => void;
   onBackToHome: () => void;
+  onShowToast?: (msg: string) => void;
 }
 
 export const SearchView: React.FC<SearchViewProps> = ({
@@ -15,7 +17,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
   articles,
   categories,
   onSelectArticle,
-  onBackToHome
+  onBackToHome,
+  onShowToast = () => {}
 }) => {
   const [query, setQuery] = useState(initialQuery);
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
@@ -92,7 +95,15 @@ export const SearchView: React.FC<SearchViewProps> = ({
               onClick={() => onSelectArticle(art)}
               className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-[#145EDB] rounded-2xl overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between"
             >
-              <img src={art.featuredImage} alt={art.title} className="w-full h-48 object-cover group-hover:scale-105 transition-transform" />
+              <img
+                src={art.featuredImage}
+                alt=""
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
+                }}
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+              />
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="text-base font-bold text-[#10233F] group-hover:text-[#145EDB] transition-colors mb-2 line-clamp-2">
@@ -100,9 +111,12 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   </h3>
                   <p className="text-xs text-[#5C6B7A] line-clamp-2 mb-4">{art.summary}</p>
                 </div>
-                <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs font-bold text-[#145EDB]">
-                  <span>Ver matéria</span>
-                  <ArrowRight className="w-4 h-4 text-[#FF8500]" />
+                <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#145EDB]">
+                    <span>Ver matéria</span>
+                    <ArrowRight className="w-4 h-4 text-[#FF8500]" />
+                  </div>
+                  <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
                 </div>
               </div>
             </div>

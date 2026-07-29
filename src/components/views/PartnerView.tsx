@@ -129,7 +129,15 @@ export const PartnerView: React.FC<PartnerViewProps> = ({
                     onClick={() => onSelectArticle(art)}
                     className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-[#145EDB] p-4 rounded-2xl flex items-center gap-4 hover:shadow-md transition-all"
                   >
-                    <img src={art.featuredImage} alt={art.title} className="w-24 h-20 rounded-xl object-cover" />
+                    <img
+                      src={art.featuredImage}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
+                      }}
+                      className="w-24 h-20 rounded-xl object-cover"
+                    />
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-bold text-[#10233F] group-hover:text-[#145EDB] line-clamp-2">
                         {art.title}

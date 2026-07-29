@@ -44,7 +44,7 @@ export const RatingReactions: React.FC<RatingReactionsProps> = ({ articleId, ini
     if (navigator.clipboard) {
       navigator.clipboard.writeText(currentUrl);
       setCopied(true);
-      trackEvent('article_share', { articleId, channel: 'copy_link' });
+      trackEvent('article_share', { articleId, metadata: { channel: 'copy_link' } });
       onShowToast('Link do artigo copiado para a área de transferência!', 'success');
       setTimeout(() => setCopied(false), 2500);
     }
@@ -53,30 +53,30 @@ export const RatingReactions: React.FC<RatingReactionsProps> = ({ articleId, ini
   const shareWhatsApp = () => {
     const text = encodeURIComponent(`📰 *${pageTitle}*\nConfira esta análise no GRIT NEWS:\n${currentUrl}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
-    trackEvent('article_share', { articleId, channel: 'whatsapp' });
+    trackEvent('article_share', { articleId, metadata: { channel: 'whatsapp' } });
   };
 
   const shareLinkedIn = () => {
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`, '_blank');
-    trackEvent('article_share', { articleId, channel: 'linkedin' });
+    trackEvent('article_share', { articleId, metadata: { channel: 'linkedin' } });
   };
 
   const shareTwitter = () => {
     const text = encodeURIComponent(`Confira no GRIT NEWS: ${pageTitle}`);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(currentUrl)}`, '_blank');
-    trackEvent('article_share', { articleId, channel: 'twitter' });
+    trackEvent('article_share', { articleId, metadata: { channel: 'twitter' } });
   };
 
   const shareFacebook = () => {
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`, '_blank');
-    trackEvent('article_share', { articleId, channel: 'facebook' });
+    trackEvent('article_share', { articleId, metadata: { channel: 'facebook' } });
   };
 
   const copyTikTokCaption = () => {
     const tiktokCaption = `“${pageTitle}” 🚀 Leia a matéria completa no link do perfil da GRIT NEWS! #GritNews #NoticiasB2B #Negocios2026 #InteligenciaDeMercado #Viral ${currentUrl}`;
     navigator.clipboard.writeText(tiktokCaption);
     setCopiedTikTok(true);
-    trackEvent('article_share', { articleId, channel: 'tiktok_caption' });
+    trackEvent('article_share', { articleId, metadata: { channel: 'tiktok_caption' } });
     onShowToast('Legenda e link para TikTok/Reels copiados!', 'success');
     setTimeout(() => setCopiedTikTok(false), 3000);
   };

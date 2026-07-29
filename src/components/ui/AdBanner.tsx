@@ -45,21 +45,21 @@ export const AdBanner: React.FC<AdBannerProps> = ({ location, categoryId, classN
   }, [location, categoryId]);
 
   if (!activeAd) {
-    // Return Google AdSense responsive container + Monetization badge
+    // Return Google AdSense responsive container with subtle, soft light branding
     return (
-      <div className={`bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border border-blue-500/30 rounded-2xl p-4 text-center text-xs text-slate-300 shadow-md ${className}`}>
-        <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2 mb-3">
-          <div className="flex items-center gap-1.5 font-bold text-amber-400">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Publicidade Google AdSense / GRIT Monetization</span>
+      <div className={`bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3 sm:p-4 text-center text-xs text-slate-500 shadow-xs ${className}`}>
+        <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-[#E2E8F0]">
+          <div className="flex items-center gap-1.5 font-bold text-slate-400 text-[10px] uppercase tracking-wider">
+            <Sparkles className="w-3 h-3 text-[#145EDB]" />
+            <span>Publicidade Google AdSense</span>
           </div>
-          <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">
+          <span className="text-[9px] bg-slate-200/60 text-slate-600 px-2 py-0.5 rounded-full font-medium">
             Anúncio Programático
           </span>
         </div>
 
         {/* AdSense ins container */}
-        <div className="min-h-[90px] flex items-center justify-center bg-slate-950/60 rounded-xl p-3 border border-white/5 my-2 overflow-hidden">
+        <div className="min-h-[90px] flex items-center justify-center bg-white rounded-xl p-2 border border-[#E2E8F0] my-1 overflow-hidden">
           <ins
             className="adsbygoogle"
             style={{ display: 'block', width: '100%' }}
@@ -71,7 +71,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({ location, categoryId, classN
         </div>
 
         <p className="text-[10px] text-slate-400 mt-1">
-          Espaço publicitário verificado • Rentabilização ativa via Google AdSense & Afiliados B2B
+          Espaço de mídias verificado via Google AdSense & Parcerias B2B
         </p>
       </div>
     );

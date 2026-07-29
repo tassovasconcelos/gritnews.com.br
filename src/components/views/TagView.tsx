@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Tag, Sparkles, Filter, Calendar, Eye, ArrowRight, TrendingUp } from 'lucide-react';
 import { Article, Category } from '../../types';
 import { updatePageSEO } from '../../lib/seo';
+import { ArticleShareActions } from '../ui/ArticleShareActions';
 
 interface TagViewProps {
   tag: string;
@@ -9,6 +10,7 @@ interface TagViewProps {
   categories: Category[];
   onSelectArticle: (article: Article) => void;
   onSelectTag: (tag: string) => void;
+  onShowToast?: (msg: string) => void;
 }
 
 export const TagView: React.FC<TagViewProps> = ({
@@ -16,7 +18,8 @@ export const TagView: React.FC<TagViewProps> = ({
   articles,
   categories,
   onSelectArticle,
-  onSelectTag
+  onSelectTag,
+  onShowToast = () => {}
 }) => {
   useEffect(() => {
     updatePageSEO({
@@ -106,7 +109,11 @@ export const TagView: React.FC<TagViewProps> = ({
                   <div className="relative aspect-video overflow-hidden bg-gray-100">
                     <img
                       src={art.featuredImage}
-                      alt={art.title}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
+                      }}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     {catObj && (
@@ -126,14 +133,17 @@ export const TagView: React.FC<TagViewProps> = ({
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {new Date(art.publishedAt).toLocaleDateString('pt-BR')}
-                      </span>
-                      <span className="flex items-center gap-1 text-[#145EDB] font-bold">
-                        Ler matéria <ArrowRight className="w-3.5 h-3.5" />
-                      </span>
+                    <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
+                      <div className="flex items-center justify-between text-[11px] text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {new Date(art.publishedAt).toLocaleDateString('pt-BR')}
+                        </span>
+                        <span className="flex items-center gap-1 text-[#145EDB] font-bold">
+                          Ler matéria <ArrowRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                      <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
                     </div>
                   </div>
                 </article>

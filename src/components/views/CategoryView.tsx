@@ -5,6 +5,7 @@ import { Badge } from '../ui/Badge';
 import { AdBanner } from '../ui/AdBanner';
 import { OfferCard } from '../ui/OfferCard';
 import { NewsletterBlock } from '../ui/NewsletterBlock';
+import { ArticleShareActions } from '../ui/ArticleShareActions';
 
 interface CategoryViewProps {
   category: Category;
@@ -130,7 +131,11 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
             <div className="md:col-span-7 relative h-64 md:h-80 overflow-hidden bg-gray-100">
               <img
                 src={featuredInCat.featuredImage}
-                alt={featuredInCat.title}
+                alt=""
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=1200';
+                }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute top-4 left-4">
@@ -153,9 +158,12 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
                 </p>
               </div>
 
-              <div className="flex items-center justify-between text-xs font-bold text-[#145EDB] pt-4 border-t border-[#E2E8F0]">
-                <span>Ler matéria completa</span>
-                <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+              <div>
+                <div className="flex items-center justify-between text-xs font-bold text-[#145EDB] pt-4 border-t border-[#E2E8F0] mb-2">
+                  <span>Ler matéria completa</span>
+                  <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                </div>
+                <ArticleShareActions article={featuredInCat} onShowToast={onShowToast} variant="card" />
               </div>
             </div>
           </div>
@@ -172,7 +180,11 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
               <div className="relative h-48 overflow-hidden bg-gray-100">
                 <img
                   src={art.featuredImage}
-                  alt={art.title}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
@@ -195,9 +207,12 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs font-bold text-[#145EDB]">
-                  <span>Ver artigo</span>
-                  <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#145EDB]">
+                    <span>Ver artigo</span>
+                    <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                  </div>
+                  <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
                 </div>
               </div>
             </div>

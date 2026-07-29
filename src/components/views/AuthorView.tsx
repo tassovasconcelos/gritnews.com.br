@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, BookOpen, UserCheck, Mail, Linkedin, Twitter, Globe, ArrowRight, Eye } from 'lucide-react';
 import { AuthorProfile, Article } from '../../types';
 import { Modal } from '../ui/Modal';
+import { ArticleShareActions } from '../ui/ArticleShareActions';
 
 interface AuthorViewProps {
   author: AuthorProfile;
@@ -120,7 +121,11 @@ export const AuthorView: React.FC<AuthorViewProps> = ({
             >
               <img
                 src={art.featuredImage}
-                alt={art.title}
+                alt=""
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
+                }}
                 className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
               />
               <div className="p-5 flex-1 flex flex-col justify-between">
@@ -130,9 +135,12 @@ export const AuthorView: React.FC<AuthorViewProps> = ({
                   </h3>
                   <p className="text-xs text-[#5C6B7A] line-clamp-2 mb-4">{art.summary}</p>
                 </div>
-                <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs font-bold text-[#145EDB]">
-                  <span>Ler artigo</span>
-                  <ArrowRight className="w-4 h-4 text-[#FF8500]" />
+                <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#145EDB]">
+                    <span>Ler artigo</span>
+                    <ArrowRight className="w-4 h-4 text-[#FF8500]" />
+                  </div>
+                  <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
                 </div>
               </div>
             </div>

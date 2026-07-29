@@ -16,8 +16,9 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare,
   Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe,
-  Database, PawPrint, LogOut, Lock, HelpCircle
+  Database, PawPrint, LogOut, Lock, HelpCircle, Flame
 } from 'lucide-react';
+import { ViralPautasWidget } from '../ui/ViralPautasWidget';
 import { UserRole, Article, Category, Lead, NewsletterSubscriber, Offer, AdCampaign, AuthorProfile } from '../../types';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminArticles } from './AdminArticles';
@@ -54,6 +55,7 @@ type AdminTab =
   | 'guide'
   | 'articles'
   | 'tenpets'
+  | 'viral'
   | 'categories'
   | 'media'
   | 'trends'
@@ -145,6 +147,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   // Itens de Menu do Painel Gerencial
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'COMMERCIAL_MANAGER'] },
+    { id: 'viral', label: 'Estratégia 1M Views (Virais)', icon: Flame, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'guide', label: 'Guia Mídias & Banners', icon: HelpCircle, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR', 'COMMERCIAL_MANAGER'] },
     { id: 'articles', label: 'CMS Artigos & Notícias', icon: FileText, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'tenpets', label: 'TenPets (Resgates & Ciência)', icon: PawPrint, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
@@ -268,6 +271,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             subscribers={subscribers}
             offers={offers}
             ads={ads}
+          />
+        )}
+
+        {activeTab === 'viral' && (
+          <ViralPautasWidget
+            onShowToast={onShowToast}
+            onArticleCreated={() => onRefreshData()}
           />
         )}
 

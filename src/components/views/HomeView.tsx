@@ -7,7 +7,7 @@ import { NewsletterBlock } from '../ui/NewsletterBlock';
 import { OfferCard } from '../ui/OfferCard';
 import { PartnerCard } from '../ui/PartnerCard';
 import { AmazonShopSection } from '../ui/AmazonShopSection';
-import { ViralPautasWidget } from '../ui/ViralPautasWidget';
+import { ArticleShareActions } from '../ui/ArticleShareActions';
 
 interface HomeViewProps {
   articles: Article[];
@@ -106,13 +106,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
 
                 <div className="p-6 bg-white flex-1 flex flex-col justify-between">
-                  <p className="text-[#5C6B7A] text-base leading-relaxed mb-4">
-                    {featuredHero.subtitle}
-                  </p>
-                  <div className="flex items-center justify-between text-xs font-bold text-[#145EDB]">
-                    <span>Ler matéria completa com dados de mercado</span>
-                    <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                  <div>
+                    <p className="text-[#5C6B7A] text-base leading-relaxed mb-4">
+                      {featuredHero.subtitle}
+                    </p>
+                    <div className="flex items-center justify-between text-xs font-bold text-[#145EDB] mb-4">
+                      <span>Ler matéria completa com dados de mercado</span>
+                      <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
+                  <ArticleShareActions article={featuredHero} onShowToast={onShowToast} variant="card" />
                 </div>
               </div>
 
@@ -203,11 +206,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <AdBanner location="HOME_BETWEEN_BLOCKS" />
       </section>
 
-      {/* 1M Views Viral Daily Agenda Widget */}
-      <section className="max-w-7xl mx-auto px-4">
-        <ViralPautasWidget onShowToast={onShowToast} />
-      </section>
-
       {/* Trending & Period Filters Section */}
       <section className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#E2E8F0]">
@@ -287,9 +285,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs font-bold text-[#145EDB]">
-                  <span>Continuar lendo</span>
-                  <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#145EDB]">
+                    <span>Continuar lendo</span>
+                    <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                  </div>
+                  <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
                 </div>
               </div>
             </div>
@@ -327,7 +328,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="relative md:w-2/5 h-48 md:h-auto overflow-hidden bg-gray-100 shrink-0">
                 <img
                   src={art.featuredImage}
-                  alt={art.title}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-3 left-3">
@@ -353,9 +358,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     {art.summary}
                   </p>
                 </div>
-                <div className="flex items-center justify-between text-xs font-bold text-purple-600">
-                  <span>Ler artigo completo</span>
-                  <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                <div>
+                  <div className="flex items-center justify-between text-xs font-bold text-purple-600 mb-2">
+                    <span>Ler artigo completo</span>
+                    <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
+                  </div>
+                  <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
                 </div>
               </div>
             </div>

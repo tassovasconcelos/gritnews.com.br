@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, Sparkles, Send, CheckCircle2, RefreshCw, Globe, ArrowRight, Layers, FileText, Search, Zap, Check } from 'lucide-react';
 import { TrendingTopic, Article, Category } from '../../types';
 import { getTrendingTopics, addTrendingTopic, updateTrendingTopicStatus, saveArticle, getCategories } from '../../lib/storage';
+import { ViralPautasWidget } from '../ui/ViralPautasWidget';
 
 interface AdminTrendsAIProps {
   onRefreshData: () => void;
@@ -263,6 +264,14 @@ export const AdminTrendsAI: React.FC<AdminTrendsAIProps> = ({ onRefreshData, onS
             </div>
           ))}
         </div>
+      </div>
+
+      {/* 1M Views Strategy Widget Section */}
+      <div className="pt-6">
+        <ViralPautasWidget
+          onShowToast={(msg) => onShowToast(msg)}
+          onArticleCreated={() => onRefreshData()}
+        />
       </div>
 
       {/* AI Generated Article Preview Modal */}

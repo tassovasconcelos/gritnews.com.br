@@ -2,6 +2,7 @@ import React from 'react';
 import { Bookmark, ArrowLeft, ArrowRight, Trash2 } from 'lucide-react';
 import { Article } from '../../types';
 import { getBookmarks, toggleBookmark } from '../../lib/storage';
+import { ArticleShareActions } from '../ui/ArticleShareActions';
 
 interface BookmarksViewProps {
   articles: Article[];
@@ -60,7 +61,15 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
             className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-[#145EDB] rounded-2xl overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between"
           >
             <div className="relative">
-              <img src={art.featuredImage} alt={art.title} className="w-full h-48 object-cover group-hover:scale-105 transition-transform" />
+              <img
+                src={art.featuredImage}
+                alt=""
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
+                }}
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+              />
               <button
                 onClick={e => handleRemove(e, art.id)}
                 className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-red-500 hover:text-white text-gray-600 rounded-full shadow-md transition-colors"
@@ -77,9 +86,12 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
                 </h3>
                 <p className="text-xs text-[#5C6B7A] line-clamp-2 mb-4">{art.summary}</p>
               </div>
-              <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs font-bold text-[#145EDB]">
-                <span>Continuar leitura</span>
-                <ArrowRight className="w-4 h-4 text-[#FF8500]" />
+              <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+                <div className="flex items-center justify-between text-xs font-bold text-[#145EDB]">
+                  <span>Continuar leitura</span>
+                  <ArrowRight className="w-4 h-4 text-[#FF8500]" />
+                </div>
+                <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
               </div>
             </div>
           </div>

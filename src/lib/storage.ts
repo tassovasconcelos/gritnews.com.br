@@ -555,6 +555,10 @@ export function getBookmarks(): string[] {
   return loadItem<string[]>(KEYS.BOOKMARKS, []);
 }
 
+export function isBookmarked(articleId: string): boolean {
+  return getBookmarks().includes(articleId);
+}
+
 export function toggleBookmark(articleId: string): boolean {
   const bookmarks = getBookmarks();
   const exists = bookmarks.includes(articleId);

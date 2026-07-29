@@ -5,6 +5,7 @@ import { Badge } from '../ui/Badge';
 import { ReadingProgressBar } from '../ui/ReadingProgressBar';
 import { TableOfContents } from '../ui/TableOfContents';
 import { RatingReactions } from '../ui/RatingReactions';
+import { ArticleShareActions } from '../ui/ArticleShareActions';
 import { AdBanner } from '../ui/AdBanner';
 import { OfferCard } from '../ui/OfferCard';
 import { incrementArticleViews, getComments, addComment, getOffers } from '../../lib/storage';
@@ -215,13 +216,20 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Share & Interactions Bar Top */}
+          <ArticleShareActions article={article} onShowToast={onShowToast} variant="bar" className="mt-4" />
         </header>
 
         {/* Hero Featured Image */}
         <div className="mb-8">
           <img
             src={article.featuredImage}
-            alt={article.title}
+            alt=""
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=1200';
+            }}
             className="w-full h-80 sm:h-96 md:h-[450px] object-cover rounded-3xl shadow-md border border-[#E2E8F0]"
           />
           {article.imageCaption && (
@@ -330,12 +338,25 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
           </div>
         )}
 
+        {/* Bottom Share & Reactions Bar */}
+        <div className="my-8 space-y-6">
+          <div>
+            <h4 className="text-sm font-bold text-[#0B2343] mb-2">Gostou da reportagem? Compartilhe e avalie:</h4>
+            <ArticleShareActions article={article} onShowToast={onShowToast} variant="bar" />
+          </div>
+          <RatingReactions articleId={article.id} onShowToast={onShowToast} />
+        </div>
+
         {/* Author Bio Card */}
         {author && (
           <div className="bg-[#F7F9FC] border border-[#E2E8F0] rounded-3xl p-6 md:p-8 my-10 flex flex-col md:flex-row items-center gap-6">
             <img
               src={author.avatar}
-              alt={author.name}
+              alt=""
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300';
+              }}
               className="w-20 h-20 rounded-full object-cover border-4 border-[#145EDB] shadow-md shrink-0"
             />
             <div className="flex-1 text-center md:text-left space-y-2">
