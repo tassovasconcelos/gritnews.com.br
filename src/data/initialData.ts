@@ -289,6 +289,57 @@ export const INITIAL_OFFERS: Offer[] = [
     clicksCount: 180,
     conversionsCount: 19,
     badgeText: 'ORÇAMENTO GRÁTIS'
+  },
+  {
+    id: 'offer-cartao-black',
+    title: 'Solicitação & Pré-Aprovação Cartão Black Sem Anuidade',
+    slug: 'solicitacao-cartao-black-sem-anuidade-salas-vip',
+    type: 'PRODUCT',
+    categoryId: 'cat-curiosidades',
+    shortDescription: 'Receba o comparativo exclusivo e saiba como conseguir acessos ilimitados às Salas VIPs com isenção total de anuidade.',
+    fullDescription: 'Análise de perfil para emissores XP Visa Infinite, C6 Carbon, Inter Black e BTG Pactual. Inclui acessos DragonPass, LoungeKey e programa de milhas acelerado.',
+    image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=600',
+    couponCode: 'BLACKVIP2026',
+    affiliateUrl: 'https://gritnews.com.br/oferta/cartao-black-vip',
+    affiliateProgramName: 'GRIT Financial Affiliates',
+    expiresAt: '2026-12-31',
+    featured: true,
+    clicksCount: 1240,
+    conversionsCount: 180,
+    badgeText: 'SEM ANUIDADE'
+  },
+  {
+    id: 'offer-agente-aeroporto',
+    title: 'Mentoria Agente de Aeroporto Online - Priscila Loren',
+    slug: 'mentoria-agente-de-aeroporto-online-priscila-loren',
+    type: 'INFOPRODUCT',
+    categoryId: 'cat-curiosidades',
+    shortDescription: 'Aprenda a rotina de atendimento VIP, check-in e embarque no aeroporto com Priscila Loren (@agentedeaeroportoonline).',
+    fullDescription: 'Capacitação prática para profissionais que desejam ingressar no mercado de aviação comercial, companhias aéreas e serviços de aviação executiva.',
+    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=600',
+    couponCode: 'AGENTE2026',
+    affiliateUrl: 'https://www.instagram.com/agentedeaeroportoonline/',
+    affiliateProgramName: 'Instagram Priscila Loren',
+    expiresAt: '2026-12-31',
+    featured: true,
+    clicksCount: 980,
+    conversionsCount: 112,
+    badgeText: 'MENTORIA OFICIAL'
+  },
+  {
+    id: 'offer-patrocinio-grit',
+    title: 'Programa de Patrocínios & Mídias B2B (GRIT Soluções)',
+    slug: 'programa-patrocinios-midia-b2b-grit-solucoes',
+    type: 'LEAD_QUOTE',
+    categoryId: 'cat-patrocinados',
+    shortDescription: 'Divulgue sua marca, publique conteúdos patrocinados e gere leads qualificados no portal GRIT NEWS.',
+    fullDescription: 'Envie sua proposta ou solicitação de patrocínio diretamente para gritsolucoes@gmail.com. Atendimento personalizado para anunciantes e parceiros.',
+    image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80&w=600',
+    affiliateUrl: 'mailto:gritsolucoes@gmail.com',
+    featured: true,
+    clicksCount: 610,
+    conversionsCount: 84,
+    badgeText: 'ANUNCIE AQUI'
   }
 ];
 

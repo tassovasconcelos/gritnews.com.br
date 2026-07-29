@@ -50,7 +50,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
 
       // Credenciais aceitas no ambiente gerencial
       const isUserValid = ['admin', 'editor', 'leticia', 'tasso', 'comercial', 'leticia@tenpets.gritnews.com.br', 'admin@gritnews.com.br'].includes(trimmedUser);
-      const isPassValid = ['gritnews2026', 'tenpets2026', 'admin123', 'grit123', 'admin'].includes(trimmedPass);
+      const isPassValid = ['gritnews@2026Tj#', 'gritnews2026', 'tenpets2026', 'admin123', 'grit123', 'admin'].includes(trimmedPass);
 
       if (isUserValid && isPassValid) {
         setIsLoading(false);
@@ -253,23 +253,23 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
               </p>
               <div className="space-y-2 text-slate-300">
                 <div
-                  onClick={() => applyQuickCredentials('admin', 'gritnews2026', 'SUPERADMIN')}
+                  onClick={() => applyQuickCredentials('admin', 'gritnews@2026Tj#', 'SUPERADMIN')}
                   className="bg-slate-900 p-2 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer flex justify-between items-center"
                 >
                   <div>
                     <span className="font-bold text-white block">Superadmin:</span>
-                    <span className="text-[11px] font-mono text-slate-400">admin / gritnews2026</span>
+                    <span className="text-[11px] font-mono text-slate-400">admin / gritnews@2026Tj#</span>
                   </div>
                   <span className="text-[10px] bg-blue-900/60 text-blue-200 px-2 py-0.5 rounded-md font-bold">Usar</span>
                 </div>
 
                 <div
-                  onClick={() => applyQuickCredentials('leticia', 'tenpets2026', 'EDITOR_IN_CHIEF')}
+                  onClick={() => applyQuickCredentials('leticia', 'gritnews@2026Tj#', 'EDITOR_IN_CHIEF')}
                   className="bg-slate-900 p-2 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer flex justify-between items-center"
                 >
                   <div>
                     <span className="font-bold text-white block">Editora TenPets (Letícia Karla):</span>
-                    <span className="text-[11px] font-mono text-slate-400">leticia / tenpets2026</span>
+                    <span className="text-[11px] font-mono text-slate-400">leticia / gritnews@2026Tj#</span>
                   </div>
                   <span className="text-[10px] bg-amber-900/60 text-amber-200 px-2 py-0.5 rounded-md font-bold">Usar</span>
                 </div>

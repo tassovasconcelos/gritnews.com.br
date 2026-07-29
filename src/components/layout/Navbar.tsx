@@ -67,12 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </p>
           </div>
           <div className="hidden md:flex items-center gap-4 shrink-0 text-xs text-gray-300">
-            <button
-              onClick={onOpenDocs}
-              className="hover:text-[#FF8500] font-semibold transition-colors flex items-center gap-1"
-            >
-              <span>Documentação & Deploy</span>
-            </button>
+            <span className="text-[11px] font-mono text-gray-400">gritnews.com.br</span>
           </div>
         </div>
       </div>
@@ -253,15 +248,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Tag className="w-4 h-4" />
               <span>Central de Ofertas</span>
-            </button>
-            <button
-              onClick={() => {
-                onOpenDocs();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full border border-[#E2E8F0] text-[#0B2343] font-bold py-2 rounded-xl text-xs text-center"
-            >
-              Documentação & Deploy Hostinger
             </button>
           </div>
         </div>
