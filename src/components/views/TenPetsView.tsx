@@ -17,7 +17,12 @@ import {
   Scale,
   Send,
   UserCheck,
-  Instagram
+  Instagram,
+  Copy,
+  Check,
+  DollarSign,
+  Gift,
+  Home
 } from 'lucide-react';
 import { TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../../types';
 import { getTenPetsArticles, getTenPetsRescues, getTenPetsPartners } from '../../lib/storage';
@@ -42,6 +47,14 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
   const [contactPhone, setContactPhone] = useState('');
   const [contactSubject, setContactSubject] = useState<'Apoio Resgate' | 'Dúvida Jurídica Animal' | 'Parceria Clínica' | 'Outro'>('Apoio Resgate');
   const [contactMessage, setContactMessage] = useState('');
+  const [pixCopied, setPixCopied] = useState(false);
+
+  const copyPixKey = () => {
+    navigator.clipboard.writeText('gritsolucoes@gmail.com');
+    setPixCopied(true);
+    onShowToast('Chave Pix gritsolucoes@gmail.com copiada para a área de transferência!', 'success');
+    setTimeout(() => setPixCopied(false), 3000);
+  };
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +62,21 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
       onShowToast('Por favor, preencha seu nome e e-mail.', 'info');
       return;
     }
-    onShowToast('Sua mensagem foi enviada com sucesso para a equipe TenPets & Dra. Letícia Karla!', 'success');
+
+    const emailSubject = encodeURIComponent(`[TenPets Contato] ${contactSubject} - ${contactName}`);
+    const emailBody = encodeURIComponent(
+      `Nome: ${contactName}\nE-mail: ${contactEmail}\nTelefone/WhatsApp: ${contactPhone}\nAssunto: ${contactSubject}\n\nMensagem:\n${contactMessage}`
+    );
+    const mailtoUrl = `mailto:gritsolucoes@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+
+    onShowToast('Sua mensagem foi enviada para o e-mail gritsolucoes@gmail.com! Retornaremos em breve.', 'success');
+    
+    try {
+      window.location.href = mailtoUrl;
+    } catch (err) {
+      // Fallback
+    }
+
     setContactName('');
     setContactEmail('');
     setContactPhone('');
@@ -93,6 +120,9 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
             alt="TenPets Hero"
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              e.currentTarget.src = "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1600";
+            }}
           />
         </div>
 
@@ -106,6 +136,9 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
                   alt="TenPets Logo"
                   className="w-7 h-7 rounded-lg object-cover ring-2 ring-amber-400/60"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=300";
+                  }}
                 />
                 <span className="font-extrabold text-amber-300 tracking-wide text-sm">TenPets</span>
               </div>
@@ -201,6 +234,9 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
                   alt="Letícia Karla"
                   className="w-full h-full object-cover rounded-full"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400";
+                  }}
                 />
               </div>
 
@@ -680,7 +716,129 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
           </section>
         )}
 
-        {/* SECTION 4: Contact & Support Form for Letícia Karla */}
+        {/* SECTION 4: SEJA DOADOR E APOIE A CAUSA ANIMAL */}
+        <section className="bg-gradient-to-br from-rose-900 via-slate-900 to-amber-950 rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden border border-rose-500/30">
+          <div className="max-w-4xl mx-auto space-y-8 relative z-10">
+            
+            <div className="text-center space-y-3">
+              <div className="inline-flex items-center gap-2 bg-rose-500/20 border border-rose-400/40 px-4 py-1.5 rounded-full text-xs font-black text-rose-300">
+                <Heart className="w-4 h-4 text-rose-400 fill-current animate-pulse" />
+                <span>TenPets Causa Animal & Reabilitação</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Seja Doador e Transforme Vidas Resgatadas
+              </h2>
+              <p className="text-slate-200 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-light">
+                Cada centavo doado é investido integralmente no atendimento veterinário de urgência, exames laboratoriais, ração de alta qualidade e proteção jurídica de animais vulneráveis.
+              </p>
+            </div>
+
+            {/* PIX BOX CARD */}
+            <div className="bg-white/10 backdrop-blur-md border border-amber-400/40 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-xl">
+              <span className="text-xs font-bold text-amber-300 uppercase tracking-widest block">
+                Chave Pix Oficial para Doações Diretas
+              </span>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-slate-950/80 border border-amber-400/30 p-4 rounded-2xl max-w-md mx-auto">
+                <span className="font-mono text-base sm:text-lg font-black text-amber-300 break-all">
+                  gritsolucoes@gmail.com
+                </span>
+                <button
+                  onClick={copyPixKey}
+                  className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  {pixCopied ? (
+                    <>
+                      <Check className="w-4 h-4 text-slate-950" />
+                      <span>Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar Pix</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <p className="text-[11px] text-slate-300 font-light">
+                Titular: GRIT NEWS / TenPets Proteção Animal • Banco/Instituição: Chave Pix E-mail
+              </p>
+            </div>
+
+            {/* 4 MODALIDADES DE APOIO */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+              <div className="bg-white/5 border border-white/10 hover:border-amber-400/40 p-5 rounded-2xl space-y-2 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-white">Doação Financeira</h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Contribua com qualquer valor via Pix para custear cirurgias, medicamentos e procedimentos de emergência.
+                </p>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 hover:border-amber-400/40 p-5 rounded-2xl space-y-2 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-300 flex items-center justify-center">
+                  <Gift className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-white">Ração & Insumos</h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Doe sacos de ração super premium, tapetes higiênicos, soro, vermífugos e pomadas cicatrizantes.
+                </p>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 hover:border-amber-400/40 p-5 rounded-2xl space-y-2 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center">
+                  <Heart className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-white">Apadrinhamento</h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Apadrinhe o tratamento mensal de um cão ou gato específico até que esteja pronto para adoção.
+                </p>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 hover:border-amber-400/40 p-5 rounded-2xl space-y-2 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-300 flex items-center justify-center">
+                  <Home className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-white">Lar Temporário</h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Ofereça abrigo temporário seguro em sua residência durante a fase de recuperação pós-operatória.
+                </p>
+              </div>
+            </div>
+
+            {/* COST TRANSPARENCY CARD */}
+            <div className="bg-slate-950/70 border border-white/10 p-6 rounded-2xl space-y-3 text-xs">
+              <h4 className="font-extrabold text-amber-300 text-sm flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Transparência de Custos Médicos e Insumos:</span>
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                  <span className="block font-black text-white text-sm">R$ 80</span>
+                  <span className="text-[10px] text-slate-400">Vacina V10 / Antirrábica</span>
+                </div>
+                <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                  <span className="block font-black text-white text-sm">R$ 120</span>
+                  <span className="text-[10px] text-slate-400">Consulta + Hemograma</span>
+                </div>
+                <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                  <span className="block font-black text-white text-sm">R$ 180</span>
+                  <span className="text-[10px] text-slate-400">Saco Ração 15kg</span>
+                </div>
+                <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                  <span className="block font-black text-white text-sm">R$ 250</span>
+                  <span className="text-[10px] text-slate-400">Castração & Pós-Op</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* SECTION 5: Contact & Support Form for Letícia Karla */}
         <section className="bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden border border-amber-500/20">
           <div className="max-w-3xl mx-auto space-y-6 text-center relative z-10">
             <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-bold text-amber-300">

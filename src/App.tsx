@@ -16,7 +16,6 @@ import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
 import { ContactPartnershipModal } from './components/ui/ContactPartnershipModal';
-import { WhatsAppButton } from './components/ui/WhatsAppButton';
 import {
   getArticles,
   getCategories,
@@ -447,9 +446,6 @@ export default function App() {
         onClose={() => setIsContactModalOpen(false)}
         onShowToast={showToast}
       />
-
-      {/* Floating WhatsApp Direct Chat */}
-      <WhatsAppButton phoneNumber="5585921716546" />
 
       {/* Global Toast */}
       <Toast

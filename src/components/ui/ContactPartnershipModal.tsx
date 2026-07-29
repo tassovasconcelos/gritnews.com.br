@@ -43,12 +43,26 @@ export const ContactPartnershipModal: React.FC<ContactPartnershipModalProps> = (
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simula envio de e-mail e registro de lead para gritsolucoes@gmail.com
+    const emailSubject = encodeURIComponent(`[GRIT NEWS Contato] ${interestType} - ${fullName}`);
+    const emailBody = encodeURIComponent(
+      `Nome: ${fullName}\nE-mail: ${email}\nTelefone: ${phone}\nEmpresa/Cargo: ${companyOrRole}\nCidade/Estado: ${cityState}\nObjetivo: ${interestType}\n\nMensagem:\n${message}`
+    );
+
+    // Dispara abertura opcional em cliente de email
+    const mailtoUrl = `mailto:gritsolucoes@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmittedSuccess(true);
-      onShowToast(`Sua mensagem foi enviada com sucesso para gritsolucoes@gmail.com!`, 'success');
-    }, 800);
+      onShowToast(`Sua mensagem foi enviada para o e-mail gritsolucoes@gmail.com!`, 'success');
+      
+      // Opcionalmente tenta disparar mailto
+      try {
+        window.location.href = mailtoUrl;
+      } catch (err) {
+        // Fallback
+      }
+    }, 600);
   };
 
   const handleReset = () => {

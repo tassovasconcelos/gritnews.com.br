@@ -743,6 +743,163 @@ export const INITIAL_ARTICLES: Article[] = [
       metaDescription: 'Descubra como se capacitar para agente de aeroporto com Priscila Loren (@agentedeaeroportoonline) e conquistar sua vaga nas companhias aéreas.',
       keywords: ['agente de aeroporto', 'priscila loren', 'agentedeaeroportoonline', 'atendimento aeroporto', 'emprego aviacao', 'azul gol latam']
     }
+  },
+  {
+    id: 'art-saude-b2b-telessaude-ia',
+    title: 'Telessaúde B2B e IA na Medicina Diagnóstica em 2026: A Nova Era da Gestão de Saúde Corporativa',
+    slug: 'telessaude-b2b-ia-medicina-diagnostica-saude-corporativa',
+    subtitle: 'Como grandes operadoras e empresas utilizam algoritmos preditivos e atendimento remoto para reduzir em até 35% o absenteísmo do trabalho.',
+    summary: 'A integração de telessaúde B2B com inteligência artificial revolucionou o diagnóstico precoce em planos corporativos e reduziu sinistralidade em multinacionais.',
+    categoryId: 'cat-saude',
+    tags: ['Saúde B2B', 'Telessaúde', 'Inteligência Artificial', 'Saúde Corporativa', 'Planos de Saúde', 'Inovação'],
+    authorId: 'author-marta',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Profissional de saúde utilizando plataforma B2B de telessaúde com auxílio de IA.',
+    publishedAt: '2026-07-28T18:00:00Z',
+    updatedAt: '2026-07-28T19:10:00Z',
+    readingTimeMinutes: 5,
+    viewsCount: 4320,
+    likesCount: 310,
+    sharesCount: 180,
+    isSponsored: false,
+    isEvergreen: true,
+    blocks: [
+      {
+        id: 'sb1',
+        type: 'paragraph',
+        content: 'A gestão da saúde corporativa passou por uma transformação radical nos últimos anos. Com o avanço das ferramentas de **telessaúde B2B** integradas a modelos preditivos de inteligência artificial, departamentos de RH e gestores de benefícios conseguiram frear a alta da sinistralidade e promover exames preventivos contínuos.'
+      },
+      {
+        id: 'sb2',
+        type: 'heading2',
+        content: 'Diagnósticos Preditivos e Redução de Custos com Sinistralidade'
+      },
+      {
+        id: 'sb3',
+        type: 'paragraph',
+        content: 'Plataformas modernas analisam exames de imagem, triagens laboratoriais e prontuários eletrônicos em segundos, identificando riscos de doenças crônicas antes que elas evoluam para internações de urgência.'
+      },
+      {
+        id: 'sb4',
+        type: 'callout',
+        content: '🏥 **Dado de Impacto:** Empresas que adotaram programas contínuos de telessaúde preditiva relatam redução de 35% na sinistralidade anual e queda de 40% em faltas não justificadas.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Telessaúde B2B e IA na Saúde Corporativa | GRIT NEWS',
+      metaDescription: 'Veja como a telessaúde B2B e inteligência artificial reduzem a sinistralidade corporativa e melhoram o bem-estar dos colaboradores.',
+      keywords: ['telessaude b2b', 'saude corporativa', 'ia na medicina', 'sinistralidade plano de saude']
+    }
+  },
+  {
+    id: 'art-pet-mercado-luxo-nutricao',
+    title: 'O Boom do Mercado Pet de Luxo e Nutrição Funcional Veterinária no Brasil',
+    slug: 'boom-mercado-pet-luxo-nutricao-funcional-veterinaria',
+    subtitle: 'Alimentos naturais super premium, fitoterápicos e planos de saúde pet ganham espaço acelerado no varejo e nas clínicas especializadas.',
+    summary: 'O setor pet brasileiro ultrapassou marcas históricas em 2026, impulsionado por proprietários humanizados que buscam dieta natural, nutracêuticos e cuidados dermatológicos.',
+    categoryId: 'cat-pet',
+    tags: ['Mercado Pet', 'Veterinária', 'TenPets', 'Nutrição Pet', 'Suplementação', 'Varejo B2B'],
+    authorId: 'author-tasso',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Cão saudável alimentado com dieta natural funcional desenvolvida por médicos veterinários.',
+    publishedAt: '2026-07-28T18:15:00Z',
+    updatedAt: '2026-07-28T19:20:00Z',
+    readingTimeMinutes: 6,
+    viewsCount: 5120,
+    likesCount: 420,
+    sharesCount: 210,
+    isSponsored: false,
+    isEvergreen: true,
+    blocks: [
+      {
+        id: 'pb1',
+        type: 'paragraph',
+        content: 'A humanização dos animais de estimação consolidou o Brasil como o terceiro maior mercado pet do planeta. Em 2026, a busca por alimentos funcionais, dietas reidratadas, nutracêuticos e suplementação veterinária sob medida abriu margens atrativas para pet shops, clínicas e redes de franquias.'
+      },
+      {
+        id: 'pb2',
+        type: 'heading2',
+        content: 'A Ascensão da Medicina Integrativa Pet e TenPets'
+      },
+      {
+        id: 'pb3',
+        type: 'paragraph',
+        content: 'O projeto TenPets, liderado por **Letícia Karla**, ressalta a relevância da nutrição clínica aliada ao suporte jurídico e científico no resgate e bem-estar de cães e gatos vitimados por patologias crônicas.'
+      }
+    ],
+    seo: {
+      metaTitle: 'O Boom do Mercado Pet de Luxo e Nutrição Veterinária | GRIT NEWS',
+      metaDescription: 'Análise B2B do mercado pet de luxo, alimentos super premium e suplementos veterinários no Brasil.',
+      keywords: ['mercado pet luxo', 'nutricao funcional pet', 'tenpets', 'suplemento veterinario']
+    }
+  },
+  {
+    id: 'art-tech-agentes-ia-nuvem',
+    title: 'Agentes Autônomos de IA e Computação em Nuvem em 2026: Guia Estratégico para PMEs e Grandes Empresas',
+    slug: 'agentes-autonomos-ia-computacao-nuvem-guia-b2b',
+    subtitle: 'Como fluxos autônomos de trabalho reduzem em 60% o tempo operacional de processos corporativos e otimizam a decisão de investimentos.',
+    summary: 'A migração dos modelos conversacionais para agentes autônomos de execução permite automatizar atuações em CRM, ERPs e atendimento ao cliente com segurança enterprise.',
+    categoryId: 'cat-tech',
+    tags: ['Tecnologia', 'Inteligência Artificial', 'Agentes IA', 'Cloud Computing', 'Automação B2B'],
+    authorId: 'author-carlos',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Infraestrutura de nuvem com agentes de IA orquestrando processos empresariais.',
+    publishedAt: '2026-07-28T18:30:00Z',
+    updatedAt: '2026-07-28T19:30:00Z',
+    readingTimeMinutes: 5,
+    viewsCount: 3890,
+    likesCount: 290,
+    sharesCount: 150,
+    isSponsored: false,
+    isEvergreen: true,
+    blocks: [
+      {
+        id: 'tb1',
+        type: 'paragraph',
+        content: 'O ano de 2026 marca a transição definitiva dos chats de inteligência artificial para os **Agentes Autônomos de Execução**. Essas ferramentas inteligentes interagem com APIs, consultam bancos de dados em tempo real e realizam tarefas complexas sem necessidade de supervisão humana constante.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Agentes Autônomos de IA e Nuvem em 2026 | GRIT NEWS',
+      metaDescription: 'Descubra como os agentes autônomos de inteligência artificial otimizam a produtividade nas empresas.',
+      keywords: ['agentes de ia', 'automacao b2b', 'cloud computing', 'inteligencia artificial empresas']
+    }
+  },
+  {
+    id: 'art-logistica-verdes-descarbonizacao',
+    title: 'Cadeias de Suprimentos Descarbonizadas e Logística Reversa: O Novo Padrão do Transporte B2B',
+    slug: 'cadeias-suprimentos-descarbonizadas-logistica-reversa-b2b',
+    subtitle: 'Frotas elétricas, biometano e roteirização inteligente reduzem emissões de carbono e abrem portas para financiamentos ESG verde.',
+    summary: 'O cumprimento das metas ESG nas grandes indústrias exige transportadores alinhados com a neutralidade de carbono e embalagens sustentáveis.',
+    categoryId: 'cat-logistica',
+    tags: ['Logística 4.0', 'ESG', 'Transporte Sustentável', 'Frota Elétrica', 'Cadeia de Suprimentos'],
+    authorId: 'author-marta',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Galpão logístico moderno com frota elétrica e monitoramento de pegada de carbono.',
+    publishedAt: '2026-07-28T18:45:00Z',
+    updatedAt: '2026-07-28T19:35:00Z',
+    readingTimeMinutes: 6,
+    viewsCount: 2940,
+    likesCount: 195,
+    sharesCount: 110,
+    isSponsored: false,
+    isEvergreen: true,
+    blocks: [
+      {
+        id: 'lb1',
+        type: 'paragraph',
+        content: 'A neutralidade de carbono deixou de ser um slogan publicitário e virou pré-requisito licitatório na contratação de operadores logísticos. Empresas de grande porte exigem que fornecedores de frota apresentem métricas comprovadas de redução de CO2 e descarte sustentável de baterias e pneus.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Cadeias de Suprimentos Descarbonizadas | GRIT NEWS',
+      metaDescription: 'Veja como a logística verde, frotas elétricas e metas ESG transformam o transporte de cargas B2B.',
+      keywords: ['logistica verde', 'descarbonizacao transporte', 'esg logistica', 'frota eletrica']
+    }
   }
 ];
 
