@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare, Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe } from 'lucide-react';
+import { LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare, Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe, Database } from 'lucide-react';
 import { UserRole, Article, Category, Lead, NewsletterSubscriber, Offer, AdCampaign, AuthorProfile } from '../../types';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminArticles } from './AdminArticles';
@@ -12,6 +12,7 @@ import { AdminSettings } from './AdminSettings';
 import { AdminMedia } from './AdminMedia';
 import { AdminTrendsAI } from './AdminTrendsAI';
 import { AdminSEO } from './AdminSEO';
+import { AdminSupabase } from './AdminSupabase';
 import { DocumentationModal } from '../views/DocumentationModal';
 
 interface AdminLayoutProps {
@@ -27,7 +28,7 @@ interface AdminLayoutProps {
   onShowToast: (msg: string) => void;
 }
 
-type AdminTab = 'dashboard' | 'articles' | 'categories' | 'media' | 'trends' | 'seo' | 'ads' | 'offers' | 'leads' | 'comments' | 'settings';
+type AdminTab = 'dashboard' | 'articles' | 'categories' | 'media' | 'trends' | 'seo' | 'supabase' | 'ads' | 'offers' | 'leads' | 'comments' | 'settings';
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   articles,
@@ -51,6 +52,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'trends', label: 'Automação Trends & IA', icon: Sparkles, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'media', label: 'Gerenciador de Mídia', icon: Image, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'seo', label: 'SEO & Indexação Google', icon: Globe, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
+    { id: 'supabase', label: 'Banco Supabase', icon: Database, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
     { id: 'categories', label: 'Categorias', icon: FolderPlus, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
     { id: 'ads', label: 'Anúncios & Mídia', icon: Megaphone, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER'] },
     { id: 'offers', label: 'Ofertas & Afiliados', icon: Tag, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER'] },
@@ -174,6 +176,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         {activeTab === 'seo' && (
           <AdminSEO
+            onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'supabase' && (
+          <AdminSupabase
             onShowToast={onShowToast}
           />
         )}
