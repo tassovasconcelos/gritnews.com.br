@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TenPets & GRIT NEWS</title>
+    <script type="text/javascript">
+      // GitHub Pages & Hostinger SPA Redirection Script
+      // Preserves path and query parameters when loading subdomains or subroutes like /tenpets
+      var segmentCount = 0;
+      var loc = window.location;
+      loc.replace(
+        loc.protocol + '//' + loc.hostname + (loc.port ? ':' + loc.port : '') +
+        loc.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/?p=' +
+        encodeURIComponent(loc.pathname.slice(1) + loc.search) +
+        (loc.hash ? '&h=' + encodeURIComponent(loc.hash.slice(1)) : '')
+      );
+    </script>
+  </head>
+  <body style="font-family: sans-serif; text-align: center; padding: 50px; background-color: #0b1329; color: #ffffff;">
+    <h2>Carregando TenPets / GRIT NEWS...</h2>
+    <p>Redirecionando você para o portal de notícias e medicina veterinária.</p>
+  </body>
+</html>

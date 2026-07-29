@@ -44,8 +44,36 @@ type ViewMode =
   | 'tenpets'
   | 'admin';
 
+const detectRouteFromLocation = (): ViewMode => {
+  if (typeof window === 'undefined') return 'home';
+
+  const host = window.location.hostname.toLowerCase();
+  const path = window.location.pathname.toLowerCase();
+  const search = window.location.search.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+
+  // If host is tenpets.gritnews.com.br or tenpets.* or pathname contains /tenpets or query view=tenpets or hash #tenpets
+  if (
+    host.startsWith('tenpets') ||
+    host.includes('tenpets.') ||
+    path.includes('/tenpets') ||
+    search.includes('view=tenpets') ||
+    search.includes('subdomain=tenpets') ||
+    search.includes('tenpets') ||
+    hash.includes('tenpets')
+  ) {
+    return 'tenpets';
+  }
+
+  if (search.includes('view=offers') || path.includes('/offers')) return 'offers';
+  if (search.includes('view=admin') || path.includes('/admin')) return 'admin';
+  if (search.includes('view=bookmarks') || path.includes('/bookmarks')) return 'bookmarks';
+
+  return 'home';
+};
+
 export default function App() {
-  const [currentView, setCurrentView] = useState<ViewMode>('home');
+  const [currentView, setCurrentView] = useState<ViewMode>(detectRouteFromLocation);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedAuthor, setSelectedAuthor] = useState<AuthorProfile | null>(null);
@@ -96,6 +124,14 @@ export default function App() {
   useEffect(() => {
     loadData();
     injectWebsiteSchema();
+
+    // Route detection on popstate
+    const handlePopState = () => {
+      setCurrentView(detectRouteFromLocation());
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const showToast = (message: string, type: 'success' | 'info' = 'success') => {

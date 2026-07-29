@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
-import { FileText, Download, Check, Server, Shield, Database, Search, Edit3 } from 'lucide-react';
+import { FileText, Download, Check, Server, Shield, Database, Search, Edit3, Globe } from 'lucide-react';
 
 interface DocumentationModalProps {
   isOpen: boolean;
@@ -9,6 +9,28 @@ interface DocumentationModalProps {
 }
 
 const DOCS_DATA = {
+  subdomain: {
+    title: 'SUBDOMAIN_TENPETS.md',
+    icon: Globe,
+    content: `# Guia de Configuração do Subdomínio tenpets.gritnews.com.br no GitHub e DNS
+
+## 1. O que foi ajustado no Código do App
+- **Roteamento Automático de Subdomínio:** O aplicativo agora detecta automaticamente se o visitante acessa por \`tenpets.gritnews.com.br\`, \`/tenpets\` ou \`?view=tenpets\` e exibe diretamente a página **TenPets**.
+- **Ajustes de SPA para GitHub Pages / Hostinger:** Adicionados os arquivos \`public/404.html\`, \`public/_redirects\` e \`public/.htaccess\` para evitar erro 404 em recarregamentos de página.
+
+## 2. Configuração de DNS no Registro.br / Hostinger / Cloudflare
+Para habilitar o subdomínio **tenpets.gritnews.com.br**:
+1. Acesse a Zona DNS do domínio **gritnews.com.br**.
+2. Adicione um novo registro **CNAME**:
+   - **Nome / Host:** \`tenpets\`
+   - **Alvo / Valor:** \`gritnews.com.br\` (ou \`seu-usuario.github.io\` se hospedado no GitHub Pages)
+   - **TTL:** Auto ou 3600
+
+## 3. Configuração no GitHub Pages (se utilizado)
+1. No repositório GitHub em **Settings > Pages**:
+   - Certifique-se de que o arquivo \`public/404.html\` está presente na branch de deploy.
+   - O aplicativo direcionará qualquer tráfego vindo de \`tenpets.gritnews.com.br\` diretamente para o Portal TenPets assinado por Letícia Karla.`
+  },
   hostinger: {
     title: 'DEPLOY_HOSTINGER.md',
     icon: Server,
@@ -96,7 +118,7 @@ Monólito modular construído em Next.js (React + TypeScript) com renderização
 };
 
 export const DocumentationModal: React.FC<DocumentationModalProps> = ({ isOpen, onClose, onShowToast }) => {
-  const [activeTab, setActiveTab] = useState<keyof typeof DOCS_DATA>('hostinger');
+  const [activeTab, setActiveTab] = useState<keyof typeof DOCS_DATA>('subdomain');
   const [copied, setCopied] = useState(false);
 
   const doc = DOCS_DATA[activeTab];
