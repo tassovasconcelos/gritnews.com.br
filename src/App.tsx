@@ -15,6 +15,8 @@ import { TenPetsView } from './components/views/TenPetsView';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
+import { ContactPartnershipModal } from './components/ui/ContactPartnershipModal';
+import { WhatsAppButton } from './components/ui/WhatsAppButton';
 import {
   getArticles,
   getCategories,
@@ -91,6 +93,7 @@ export default function App() {
 
   // Manuals Modal
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   // Toast
   const [toast, setToast] = useState<{ message: string; type?: 'success' | 'info'; isVisible: boolean }>({
@@ -238,6 +241,7 @@ export default function App() {
         onNavigateAdmin={() => setCurrentView('admin')}
         onNavigateTenPets={() => setCurrentView('tenpets')}
         onOpenDocs={() => setIsDocModalOpen(true)}
+        onOpenContactModal={() => setIsContactModalOpen(true)}
         bookmarksCount={getBookmarks().length}
       />
 
@@ -361,6 +365,7 @@ export default function App() {
         onNavigateOffers={() => setCurrentView('offers')}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onNavigateAdmin={() => setCurrentView('admin')}
+        onOpenContactModal={() => setIsContactModalOpen(true)}
       />
 
       {/* Lead Quote Modal */}
@@ -435,6 +440,16 @@ export default function App() {
         onClose={() => setIsDocModalOpen(false)}
         onShowToast={showToast}
       />
+
+      {/* Contact & Partnerships Modal */}
+      <ContactPartnershipModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        onShowToast={showToast}
+      />
+
+      {/* Floating WhatsApp Direct Chat */}
+      <WhatsAppButton phoneNumber="5585921716546" />
 
       {/* Global Toast */}
       <Toast

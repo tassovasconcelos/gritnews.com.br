@@ -13,6 +13,7 @@ interface NavbarProps {
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
   onOpenDocs: () => void;
+  onOpenContactModal?: () => void;
   bookmarksCount: number;
 }
 
@@ -40,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSearch,
   onNavigateHome,
   onOpenDocs,
+  onOpenContactModal,
   bookmarksCount
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,6 +69,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             </p>
           </div>
           <div className="hidden md:flex items-center gap-4 shrink-0 text-xs text-gray-300">
+            {onOpenContactModal && (
+              <button
+                onClick={onOpenContactModal}
+                className="hover:text-amber-300 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span>Anuncie / Parcerias & Pautas</span>
+              </button>
+            )}
             <span className="text-[11px] font-mono text-gray-400">gritnews.com.br</span>
           </div>
         </div>

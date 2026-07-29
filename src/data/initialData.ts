@@ -597,6 +597,152 @@ export const INITIAL_ARTICLES: Article[] = [
       metaDescription: 'Veja como a robótica e o software de roteirização revolucionam as entregas no e-commerce.',
       keywords: ['logistica 4.0', 'automacao de galpoes', 'same day delivery', 'wms']
     }
+  },
+  {
+    id: 'art-cartao-black-salas-vip',
+    title: 'Os Melhores Cartões Black Sem Anuidade do Brasil em 2026: Como Acessar Salas VIP Ilimitadas nos Aeroportos Sem Pagar Nada',
+    slug: 'melhores-cartoes-black-sem-anuidade-salas-vip-aeroportos',
+    subtitle: 'Guia definitivo de curiosidades e estratégias financeiras para viajar com conforto máximo em salas VIP DragonPass, LoungeKey e Priority Pass sem mensalidade.',
+    summary: 'Descubra os cartões de alta renda com isenção total de anuidade por investimentos, relacionamento ou cashback e garanta acesso aos lounges mais exclusivos do mundo.',
+    categoryId: 'cat-curiosidades',
+    tags: ['Cartão Black', 'Salas VIP', 'DragonPass', 'LoungeKey', 'Sem Anuidade', 'Milhas', 'Curiosidades', 'Viagens', 'Google SEO'],
+    authorId: 'author-tasso',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Sala VIP executiva de aeroporto internacional com acesso via cartão Black sem anuidade.',
+    publishedAt: '2026-07-28T16:00:00Z',
+    updatedAt: '2026-07-28T18:30:00Z',
+    readingTimeMinutes: 7,
+    viewsCount: 8420,
+    likesCount: 680,
+    sharesCount: 390,
+    isSponsored: false,
+    isEvergreen: true,
+    blocks: [
+      {
+        id: 'cb1',
+        type: 'paragraph',
+        content: 'Viajar com acesso livre a bebidas premium, buffet internacional, duchas privativas e ambientes de descanso silenciosos nos maiores aeroportos do Brasil e do mundo deixou de ser um privilégio exclusivo de milionários. Em 2026, a concorrência entre emissores bancários e fintechs facilitou drasticamente a obtenção de cartões **Visa Infinite**, **Mastercard Black** e **Elo Nanquim** com isenção total de anuidade.'
+      },
+      {
+        id: 'cb2',
+        type: 'heading2',
+        content: 'O Que Torna um Cartão Black Sem Anuidade Tão Cobiçado?'
+      },
+      {
+        id: 'cb3',
+        type: 'paragraph',
+        content: 'O grande segredo por trás do engajamento diário dos viajantes inteligentes é a combinação de três benefícios: **acesso ilimitado ou com cotas gratuitas a Salas VIP**, **pontuação turbinada para milhas aéreas** e **seguro de viagem gratuito de alto valor**.'
+      },
+      {
+        id: 'cb4',
+        type: 'callout',
+        content: '✈️ **Curiosidade do Setor Aéreo:** Uma única entrada em sala VIP em aeroportos como Guarulhos (GRU) ou Galeão (GIG) custa em média R$ 220 a R$ 350 por pessoa. Ao utilizar um cartão Black sem anuidade apenas 4 vezes ao ano, você economiza mais de R$ 1.000 diretamente!'
+      },
+      {
+        id: 'cb5',
+        type: 'heading2',
+        content: 'Ranking 2026 dos Principais Cartões Black Isentos'
+      },
+      {
+        id: 'cb6',
+        type: 'paragraph',
+        content: '1. **XP Visa Infinite**: Isenção permanente a partir de R$ 5.000 investidos na corretora. Dá direito a até 4 acessos gratuitos por ano via DragonPass e cashback de até 1% investback.\n2. **C6 Carbon Mastercard Black**: Isenção por gastos mensais ou R$ 50.000 em CDBs. Garante 4 acessos LoungeKey e até 3,5 pontos C6 Átomos por dólar.\n3. **Banco Inter Black**: Obtido via comunidade de investimentos ou assinatura do programa Inter Loop. Acessos ilimitados às Salas VIP Inter e cotas mundiais sem anuidade extra.\n4. **BTG Pactual Black**: Módulo flexível onde você paga apenas os benefícios que usa, zerando a anuidade com gastos mínimos ou investimentos no banco.'
+      },
+      {
+        id: 'cb7',
+        type: 'product_card',
+        content: 'offer-cartao-black'
+      },
+      {
+        id: 'cb8',
+        type: 'heading3',
+        content: 'Como Potencializar Suas Milhas e Garantir a Pré-Aprovação'
+      },
+      {
+        id: 'cb9',
+        type: 'paragraph',
+        content: 'Mantenha seu Open Finance ativo entre as instituições, concentre contas do dia a dia no cartão escolhido e solicite cartões adicionais gratuitos para familiares para acelerar a pontuação mensal.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Os Melhores Cartões Black Sem Anuidade de 2026 e Salas VIP | GRIT NEWS',
+      metaDescription: 'Veja como conseguir os melhores cartões de crédito Black sem anuidade com acesso gratuito às Salas VIP DragonPass e LoungeKey.',
+      keywords: ['cartao black sem anuidade', 'salas vip aeroporto', 'xp visa infinite', 'c6 carbon black', 'inter black', 'dragonpass loungekey']
+    }
+  },
+  {
+    id: 'art-agente-aeroporto-priscila-loren',
+    title: 'Agente de Aeroporto Online: Como Priscila Loren Está Transformando a Capacitação e o Atendimento VIP na Aviação Comercial',
+    slug: 'agente-de-aeroporto-online-priscila-loren-capacitacao-aviacao-comercial',
+    subtitle: 'Conheça o fenômeno das redes sociais que prepara profissionais de elite para check-in, embarque e experiência do passageiro no setor aéreo.',
+    summary: 'Com milhares de seguidores no Instagram @agentedeaeroportoonline, a especialista Priscila Loren desmistifica a rotina aeroportuária e capacita talentos para companhias aéreas do Brasil e do mundo.',
+    categoryId: 'cat-curiosidades',
+    tags: ['Agente de Aeroporto', 'Priscila Loren', 'Aviação Comercial', 'Atendimento VIP', 'Embarque', 'Check-in', 'Curiosidades', 'Instagram', 'Google SEO', 'Meta Ads'],
+    authorId: 'author-tasso',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Profissional de atendimento no saguão e portão de embarque de aeroporto internacional.',
+    publishedAt: '2026-07-28T17:00:00Z',
+    updatedAt: '2026-07-28T18:45:00Z',
+    readingTimeMinutes: 6,
+    viewsCount: 6180,
+    likesCount: 520,
+    sharesCount: 290,
+    isSponsored: false,
+    isEvergreen: true,
+    blocks: [
+      {
+        id: 'al1',
+        type: 'paragraph',
+        content: 'A aviação comercial e executiva é um dos ecossistemas mais dinâmicos e fascinantes da economia global. Por trás do brilho das turbinas e do conforto do voo, existe uma engrenagem crítica em solo: o trabalho minucioso dos **Agentes de Aeroporto**, responsáveis por check-in, inspeção de bagagens, despacho operacional, atendimento VIP e embarque de passageiros.'
+      },
+      {
+        id: 'al2',
+        type: 'heading2',
+        content: 'O Impacto do Projeto "Agente de Aeroporto Online" de Priscila Loren'
+      },
+      {
+        id: 'al3',
+        type: 'paragraph',
+        content: 'Conhecida nacionalmente através do seu perfil oficial no Instagram [@agentedeaeroportoonline](https://www.instagram.com/agentedeaeroportoonline/), a mentora e especialista **Priscila Loren** revolucionou a forma como futuros profissionais se preparam para os processos seletivos de companhias aéreas como Azul, LATAM, GOL e voos internacionais.'
+      },
+      {
+        id: 'al4',
+        type: 'quote',
+        content: '“A aviação não busca apenas quem lê manuais, mas quem domina a empatia, a compostura sob pressão e a excelência no acolhimento ao passageiro.” — Priscila Loren (@agentedeaeroportoonline)'
+      },
+      {
+        id: 'al5',
+        type: 'heading2',
+        content: 'Quais São as Atribuições de um Agente de Aeroporto de Sucesso?'
+      },
+      {
+        id: 'al6',
+        type: 'paragraph',
+        content: '• **Atendimento no Balcão de Check-in**: Verificação de documentação de viagem, conexões internacionais e pesagem regulamentar de bagagens.\n• **Gestão de Saguão e Pista**: Orientação fluida a passageiros com necessidades de assistência especial (PNAE) e prioridades corporativas.\n• **Controle de Embarque e Portões**: Coordenação ágil do fluxo de passageiros no finger para garantir a pontualidade da decolagem (D0).\n• **Gestão de Irregularidades**: Solução amigável para conexões perdidas, cancelamentos por mau tempo ou extravio pontual de bagagens.'
+      },
+      {
+        id: 'al7',
+        type: 'product_card',
+        content: 'offer-agente-aeroporto'
+      },
+      {
+        id: 'al8',
+        type: 'heading3',
+        content: 'Oportunidades de Carreira e Mentoria Especializada'
+      },
+      {
+        id: 'al9',
+        type: 'paragraph',
+        content: 'Para quem busca ingressar na aviação ou migrar de área profissional, acompanhar as orientações de Priscila Loren no Instagram traz dicas diárias de oratória, uniforme, postura em entrevista e etiqueta aeroportuária de alta performance.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Agente de Aeroporto Online: Priscila Loren e a Aviação | GRIT NEWS',
+      metaDescription: 'Descubra como se capacitar para agente de aeroporto com Priscila Loren (@agentedeaeroportoonline) e conquistar sua vaga nas companhias aéreas.',
+      keywords: ['agente de aeroporto', 'priscila loren', 'agentedeaeroportoonline', 'atendimento aeroporto', 'emprego aviacao', 'azul gol latam']
+    }
   }
 ];
 

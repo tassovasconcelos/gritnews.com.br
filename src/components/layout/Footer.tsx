@@ -8,6 +8,7 @@ interface FooterProps {
   onNavigateOffers: () => void;
   onOpenDocs: () => void;
   onNavigateAdmin?: () => void;
+  onOpenContactModal?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -15,7 +16,8 @@ export const Footer: React.FC<FooterProps> = ({
   onSelectCategory,
   onNavigateOffers,
   onOpenDocs,
-  onNavigateAdmin
+  onNavigateAdmin,
+  onOpenContactModal
 }) => {
   return (
     <footer className="bg-[#0B2343] text-white pt-12 pb-8 border-t border-[#145EDB]/30">
@@ -103,10 +105,10 @@ export const Footer: React.FC<FooterProps> = ({
               Anuncie sua marca, publique conteúdos patrocinados e gere leads qualificados no portal GRIT NEWS.
             </p>
             <button
-              onClick={onNavigateOffers}
-              className="bg-[#FF8500] hover:bg-[#e07500] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md"
+              onClick={onOpenContactModal || onNavigateOffers}
+              className="bg-[#FF8500] hover:bg-[#e07500] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
             >
-              <span>Seja um Parceiro GRIT</span>
+              <span>Seja Parceiro / Patrocinador</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
