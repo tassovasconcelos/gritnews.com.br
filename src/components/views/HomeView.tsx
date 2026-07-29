@@ -69,8 +69,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div className="relative h-72 md:h-96 overflow-hidden bg-gray-100">
                   <img
                     src={featuredHero.featuredImage}
-                    alt={featuredHero.title}
+                    alt=""
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=1200';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B2343]/90 via-[#0B2343]/30 to-transparent" />
                   <div className="absolute top-4 left-4 flex gap-2">
@@ -246,8 +250,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="relative h-48 overflow-hidden bg-gray-100">
                 <img
                   src={art.featuredImage}
-                  alt={art.title}
+                  alt=""
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
+                  }}
                 />
                 <div className="absolute top-3 left-3 bg-[#0B2343] text-white text-xs font-extrabold w-7 h-7 rounded-full flex items-center justify-center border border-white/30">
                   #{idx + 1}

@@ -155,7 +155,7 @@ export const INITIAL_AUTHORS: AuthorProfile[] = [
     id: 'author-leticia',
     name: 'Letícia Karla',
     roleTitle: 'Estudante de Medicina Veterinária, Protetora de Animais, Escritora e Advogada',
-    avatar: '/src/assets/images/leticia_karla_profile_1785288976216.jpg',
+    avatar: '/images/leticia_karla_profile_1785288976216.jpg',
     bio: 'Estudante de Medicina Veterinária, protetora independente de animais de rua, escritora e advogada especialista em Direito Animal. Responsável pelas pesquisas científicas, diagnósticos clínicos, casos de reabilitação e tutela jurídica no portal TenPets e no ecossistema GRIT NEWS.',
     specialties: ['Ciência Veterinária', 'Direito Animal & Cível', 'Casos Clínicos e Resgate', 'Nutrição & Imunologia Pet'],
     email: 'leticia.karla@tenpets.gritnews.com.br',

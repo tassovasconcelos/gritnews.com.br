@@ -15,8 +15,12 @@ export const AuthorCard: React.FC<AuthorCardProps> = ({ author, onSelectAuthor }
     >
       <img
         src={author.avatar}
-        alt={author.name}
+        alt=""
         className="w-16 h-16 rounded-full object-cover border-2 border-[#145EDB]/20 group-hover:scale-105 transition-transform shrink-0"
+        referrerPolicy="no-referrer"
+        onError={(e) => {
+          e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300';
+        }}
       />
       <div className="flex-1 min-w-0">
         <h4 className="text-base font-bold text-[#0B2343] group-hover:text-[#145EDB] transition-colors truncate">

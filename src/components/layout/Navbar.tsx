@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag } from 'lucide-react';
 import { Category } from '../../types';
+import tenpetsLogoImg from '../../assets/images/tenpets_official_logo_1785288965710.jpg';
 
 interface NavbarProps {
   categories: Category[];
@@ -198,10 +199,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white shadow-sm hover:scale-105 transition-all border border-amber-500/50"
           >
             <img
-              src="/src/assets/images/tenpets_official_logo_1785288965710.jpg"
+              src={tenpetsLogoImg}
               alt="TenPets Logo"
               className="w-4 h-4 rounded object-cover ring-1 ring-amber-300"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=300";
+              }}
             />
             <span>TenPets (Resgates & Ciência)</span>
             <span className="bg-amber-900/80 text-amber-200 text-[9px] px-1.5 py-0.2 rounded font-mono">
