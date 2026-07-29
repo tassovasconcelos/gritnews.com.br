@@ -357,13 +357,10 @@ export default function App() {
       {/* Footer */}
       <Footer
         categories={categories}
-        partners={partners}
         onSelectCategory={handleSelectCategory}
-        onSelectPartner={handleSelectPartner}
-        onGoHome={() => setCurrentView('home')}
-        onGoOffers={() => setCurrentView('offers')}
-        onOpenAdmin={() => setCurrentView('admin')}
+        onNavigateOffers={() => setCurrentView('offers')}
         onOpenDocs={() => setIsDocModalOpen(true)}
+        onNavigateAdmin={() => setCurrentView('admin')}
       />
 
       {/* Lead Quote Modal */}

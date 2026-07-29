@@ -73,14 +73,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>Documentação & Deploy</span>
             </button>
-            <span>|</span>
-            <button
-              onClick={onNavigateAdmin}
-              className="bg-[#145EDB] hover:bg-[#0f4eb8] text-white font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1 text-[11px] transition-colors"
-            >
-              <LayoutDashboard className="w-3 h-3" />
-              <span>Painel Admin / CMS</span>
-            </button>
           </div>
         </div>
       </div>
@@ -261,16 +253,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Tag className="w-4 h-4" />
               <span>Central de Ofertas</span>
-            </button>
-            <button
-              onClick={() => {
-                onNavigateAdmin();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full bg-[#0B2343] text-white font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2"
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Painel Admin / CMS</span>
             </button>
             <button
               onClick={() => {

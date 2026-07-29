@@ -7,13 +7,15 @@ interface FooterProps {
   onSelectCategory: (slug?: string) => void;
   onNavigateOffers: () => void;
   onOpenDocs: () => void;
+  onNavigateAdmin?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   categories,
   onSelectCategory,
   onNavigateOffers,
-  onOpenDocs
+  onOpenDocs,
+  onNavigateAdmin
 }) => {
   return (
     <footer className="bg-[#0B2343] text-white pt-12 pb-8 border-t border-[#145EDB]/30">
@@ -119,7 +121,20 @@ export const Footer: React.FC<FooterProps> = ({
               Conexão Segura SSL 256-bit
             </span>
             <span>|</span>
-            <span>Conformidade com a LGPD (Lei nº 13.709/2018)</span>
+            <span>Conformidade com a LGPD</span>
+            {onNavigateAdmin && (
+              <>
+                <span>|</span>
+                <button
+                  onClick={onNavigateAdmin}
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 font-mono text-[10px]"
+                  title="Acesso Gerencial Restrito"
+                >
+                  <Lock className="w-2.5 h-2.5 text-amber-400" />
+                  <span>Acesso Restrito CMS</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
