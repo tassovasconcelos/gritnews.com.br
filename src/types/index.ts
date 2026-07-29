@@ -252,3 +252,52 @@ export interface TrendingTopic {
   keywords: string[];
   aiDraftId?: string;
 }
+
+export interface TenPetsArticle {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  content: string;
+  authorName: string; // Dra/Estudante Letícia Karla
+  category: 'Científico' | 'Direito Animal' | 'Casos Clínicos' | 'Opinião Vet';
+  publishedAt: string;
+  imageUrl: string;
+  pdfUrl?: string;
+  doi?: string;
+  viewsCount: number;
+  featured: boolean;
+  tags: string[];
+}
+
+export interface TenPetsRescue {
+  id: string;
+  animalName: string;
+  species: 'Cão' | 'Gato' | 'Silvestre' | 'Outro';
+  breed?: string;
+  title: string; // Ex: "A Jornada do Valente Pipoca"
+  summary: string;
+  romanticStory: string; // História romanceada do resgate
+  rescueDate: string;
+  status: 'EM_TRATAMENTO' | 'RECUPERADO' | 'ADOTADO' | 'VITORIA_MEDICA';
+  beforeImageUrl: string;
+  afterImageUrl: string;
+  videoUrl?: string; // YouTube/Vimeo embed
+  vetCareNotes: string;
+  sponsorGoal?: number; // R$ arrecadado ou meta
+  currentSponsorTotal?: number;
+  featured: boolean;
+}
+
+export interface TenPetsPartner {
+  id: string;
+  name: string;
+  type: 'Clínica Veterinária' | 'ONG Proteção' | 'Laboratório' | 'Pet Food' | 'Apoiador';
+  logoUrl: string;
+  description: string;
+  websiteUrl: string;
+  contactEmail?: string;
+  discountBenefit?: string;
+  featured: boolean;
+}
+

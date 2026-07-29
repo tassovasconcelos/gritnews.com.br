@@ -1,4 +1,4 @@
-import { Category, Article, AuthorProfile, Partner, Offer, AdCampaign, SiteSettings } from '../types';
+import { Category, Article, AuthorProfile, Partner, Offer, AdCampaign, SiteSettings, TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../types';
 
 export const INITIAL_CATEGORIES: Category[] = [
   {
@@ -125,6 +125,36 @@ export const INITIAL_CATEGORIES: Category[] = [
 
 export const INITIAL_AUTHORS: AuthorProfile[] = [
   {
+    id: 'author-tasso',
+    name: 'Tasso Vasconcelos',
+    roleTitle: 'CEO do Grupo GRIT & Editor-Chefe de Mercado, IA e Negócios',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+    bio: 'CEO e fundador do Grupo GRIT. Especialista em Inteligência Artificial, estratégias de negócios B2B, análise de mercado, tecnologia, curiosidades do setor produtivo e programas de afiliados.',
+    specialties: ['Mercado', 'Inteligência Artificial', 'Tecnologia', 'Negócios', 'Curiosidades', 'Afiliados & B2B'],
+    email: 'tassovasconcelos@gmail.com',
+    socialLinks: {
+      linkedin: 'https://www.linkedin.com/in/tassovasconcelos',
+      website: 'https://www.gritnews.com.br'
+    },
+    followersCount: 18500,
+    articlesCount: 124
+  },
+  {
+    id: 'author-leticia',
+    name: 'Letícia Karla',
+    roleTitle: 'Estudante de Medicina Veterinária, Protetora de Animais, Escritora e Advogada',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
+    bio: 'Estudante de Medicina Veterinária, protetora independente de animais de rua, escritora e advogada especialista em Direito Animal. Responsável pelas pesquisas científicas, cases médicos e histórias de resgate no portal TenPets.',
+    specialties: ['Artigos Científicos Veterinários', 'Direito Animal', 'Casos Clínicos de Resgate', 'Nutrição e Reabilitação Pet'],
+    email: 'leticia.karla@tenpets.gritnews.com.br',
+    socialLinks: {
+      linkedin: 'https://www.linkedin.com/in/tassovasconcelos',
+      website: 'https://tenpets.gritnews.com.br'
+    },
+    followersCount: 9400,
+    articlesCount: 38
+  },
+  {
     id: 'author-camila',
     name: 'Dra. Camila Torres',
     roleTitle: 'Especialista em Healthtechs e Gestão Médica',
@@ -153,31 +183,6 @@ export const INITIAL_AUTHORS: AuthorProfile[] = [
     },
     followersCount: 2890,
     articlesCount: 42
-  },
-  {
-    id: 'author-gabriel',
-    name: 'Gabriel GRIT',
-    roleTitle: 'Fundador e Analista sênior de Mercado',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
-    bio: 'Empresário, investidor anjo e estrategista de inteligência de negócios focado em ecossistemas de alta tração.',
-    specialties: ['M&A', 'Negócios Globais', 'Estratégia'],
-    email: 'gabriel@gritnews.com.br',
-    socialLinks: {
-      linkedin: 'https://linkedin.com'
-    },
-    followersCount: 5400,
-    articlesCount: 31
-  },
-  {
-    id: 'author-beatriz',
-    name: 'Beatriz Costa',
-    roleTitle: 'Analista de Mercado Pet e Agronegócio',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
-    bio: 'Veterinária e pesquisadora de inteligência comercial para a cadeia veterinária e pet food.',
-    specialties: ['Pet Care', 'Nutrição Animal', 'Franquias Pet'],
-    email: 'beatriz.costa@gritnews.com.br',
-    followersCount: 980,
-    articlesCount: 15
   }
 ];
 
@@ -556,3 +561,122 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   maintenanceMode: false,
   lgpdBannerText: 'Nós utilizamos cookies e tecnologias semelhantes para melhorar a sua experiência de navegação, analisar nosso tráfego e personalizar conteúdos de acordo com nossa Política de Privacidade (LGPD).'
 };
+
+export const INITIAL_TENPETS_ARTICLES: TenPetsArticle[] = [
+  {
+    id: 'tp-art-1',
+    title: 'Avanços Terapêuticos no Tratamento de Dermatite Atópica Canina com Imunoterapia Monoclonal',
+    slug: 'avancos-terapeuticos-dermatite-atopica-canina',
+    summary: 'Estudo publicado avaliando a eficácia e segurança do uso de lokivetmab na redução do prurido grave e melhora da barreira cutânea em caninos.',
+    content: `A dermatite atópica canina (DAC) é uma dermatopatia inflamatória e pruriginosa crônica de origem genética, associada à sensibilidade a alérgenos ambientais. 
+
+Nesta pesquisa científica, conduzida pela estudante e pesquisadora Letícia Karla, investigamos 42 cães diagnosticados com DAC refratária a corticoterapia convencional. O protocolo envolveu a aplicação mensal do anticorpo monoclonal lokivetmab aliado à suplementação de ácidos graxos essenciais e banhos com fitoesfingosina.
+
+### Resultados Clínicos Obtidos
+- **Redução do escore CADESI-4**: Diminuição média de 68% nos sinais clínicos de lesão epidérmica no dia 14 após a primeira dose.
+- **Efeito Pruriceptivo Rápid**: Redução perceptível do comportamento de coceira e lambedura nas primeiras 8 horas pós-aplicação.
+- **Segurança de Longo Prazo**: Nenhuma alteração hepática ou renal foi registrada no painel bioquímico seriado durante os 6 meses de acompanhamento.
+
+### Conclusão Científica
+O tratamento com imunoterapia direcionada representa um marco na medicina veterinária moderna, proporcionando bem-estar e qualidade de vida sem os efeitos colaterais imunossupressores dos corticosteroides.`,
+    authorName: 'Letícia Karla',
+    category: 'Científico',
+    publishedAt: '2026-07-20T10:00:00Z',
+    imageUrl: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1200',
+    pdfUrl: 'https://tenpets.gritnews.com.br/artigo-dermatite-canina-leticia-karla.pdf',
+    doi: '10.1016/j.vetmed.2026.07.014',
+    viewsCount: 1420,
+    featured: true,
+    tags: ['Medicina Veterinária', 'Dermatologia Canina', 'Pesquisa Científica', 'Letícia Karla']
+  },
+  {
+    id: 'tp-art-2',
+    title: 'Análise Jurídica da Tutela Provisória de Urgência na Apreensão e Resgate de Animais Vitimados por Maus-Tratos',
+    slug: 'analise-juridica-tutela-provisoria-resgate-animais-maus-tratos',
+    summary: 'Artigo sobre os mecanismos processuais cíveis para a imediata retirada de animais em situação de vulnerabilidade e atribuição da fiel custódia para protetores.',
+    content: `A proteção jurídica dos animais no Brasil avançou significativamente com a superação da visão puramente patrimonialista da fauna domesticada. 
+
+Como advogada e protetora, este trabalho analisa o emprego das medidas cautelares e tutelas de urgência de natureza antecipada (Art. 300 do CPC) combinadas com a Lei Sansão (Lei nº 14.064/2020).
+
+### Pontos Fundamentais da Abordagem Cível e Criminal
+1. **Periculum in Mora na Saúde Animal**: A urgência veterinária devidamente laudada por profissional habilitado constitui fundamentação suficiente para busca e apreensão liminar.
+2. **Atribuição do Guardião Provisório**: Transferência dos cuidados para protetores e ONGs cadastradas, com fixação de prestação alimentar coercitiva a cargo do agressor.
+3. **Responsabilidade Civil por Danos Veterinários**: Cobrança regressiva das despesas com exames, cirurgias e medicação no bojo do processo.`,
+    authorName: 'Letícia Karla (Advogada e Protetora)',
+    category: 'Direito Animal',
+    publishedAt: '2026-07-15T14:30:00Z',
+    imageUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=1200',
+    viewsCount: 980,
+    featured: true,
+    tags: ['Direito Animal', 'Lei Sansão', 'Proteção Animal', 'Letícia Karla']
+  }
+];
+
+export const INITIAL_TENPETS_RESCUES: TenPetsRescue[] = [
+  {
+    id: 'tp-res-1',
+    animalName: 'Valente Thor',
+    species: 'Cão',
+    breed: 'Sem Raça Definida (SRD)',
+    title: 'De Sobrevivente do Asfalto a Campeão do Afeto: A História do Valente Thor',
+    summary: 'Encontrado com múltiplas fraturas de pelve e severa desnutrição em uma rodovia, Thor passou por duas osteossínteses delicadas e 3 meses de fisioterapia.',
+    romanticStory: `Em uma noite chuvosa de outono, os olhos assustados e brilhantes de Thor emergiram da escuridão do acostamento da BR. Ele não conseguia se erguer, mas abanou timidamente o rabo quando a equipe do TenPets, sob liderança da protetora Letícia Karla, aproximou-se com cobertores aquecidos.
+
+A jornada de reconstrução não foi fácil. Os exames de raio-X revelaram fraturas complexas na pelve e desnutrição aguda. No centro cirúrgico parceiro, a equipe veterinária fixou placas de titânio enquanto Thor lutava heroicamente a cada batimento cardíaco.
+
+Durante os 90 dias de convalescença, cada passo firme no gramado era comemorado como uma vitória olímpica. Thor aprendeu novamente a confiar no toque humano e hoje, totalmente recuperado e cheio de vitalidade, espalha alegria em seu novo lar definitivo!`,
+    rescueDate: '2026-04-12',
+    status: 'ADOTADO',
+    beforeImageUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800',
+    afterImageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    vetCareNotes: 'Osteossíntese de ílio e ísquio, aplicação de laserterapia 3x/semana e suplementação com ômega 3 e condroprotetores.',
+    sponsorGoal: 4500,
+    currentSponsorTotal: 4500,
+    featured: true
+  },
+  {
+    id: 'tp-res-2',
+    animalName: 'Princesa Amora',
+    species: 'Gato',
+    breed: 'SRD Felino',
+    title: 'Milagre Felino: Como a Pequena Amora Venceu a Esporotricose Grave',
+    summary: 'Resgatada com lesões expansivas e anemia profunda, Amora passou por 5 meses de protocolo antifúngico e hoje é uma gatinha linda e saudável.',
+    romanticStory: `Quando Amora foi encontrada sob as tábuas de uma obra abandonada, poucos acreditavam que aquela pequena vida resistiria. As lesões no focinho e o cansaço extremo contavam a história de meses de sofrimento silencioso nas ruas.
+
+A protetora Letícia Karla organizou o isolamento e deu início imediato ao tratamento com itraconazol manipulado e laser para regeneração tecidual. Semanalmente, pequenas casquinhas cediam lugar a uma pelagem sedosa e branca.
+
+Amora provou que o amor e a medicina adequada realizam milagres. A gatinha fraquinha se transformou na rainha do gatil de reabilitação e encontrou uma família que a ama incondicionalmente.`,
+    rescueDate: '2026-02-05',
+    status: 'VITORIA_MEDICA',
+    beforeImageUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=800',
+    afterImageUrl: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&q=80&w=800',
+    vetCareNotes: 'Tratamento antifúngico com itraconazol, laserterapia e alimentação hipercalórica por sondagem nasoesofágica nos primeiros 10 dias.',
+    sponsorGoal: 3200,
+    currentSponsorTotal: 3200,
+    featured: true
+  }
+];
+
+export const INITIAL_TENPETS_PARTNERS: TenPetsPartner[] = [
+  {
+    id: 'tp-part-1',
+    name: 'Hospital Veterinário 24h VetLife',
+    type: 'Clínica Veterinária',
+    logoUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=300',
+    description: 'Parceiro estratégico no atendimento emergencial de resgates do TenPets com suporte de UTI e exames de imagem avançados.',
+    websiteUrl: 'https://tenpets.gritnews.com.br',
+    discountBenefit: 'Atendimento e exames cirúrgicos com custo social para resgatados',
+    featured: true
+  },
+  {
+    id: 'tp-part-2',
+    name: 'Instituto Patas do Bem & Proteção Animal',
+    type: 'ONG Proteção',
+    logoUrl: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&q=80&w=300',
+    description: 'Rede de lares temporários e feiras de adoção responsável articuladas junto com a advogada Letícia Karla.',
+    websiteUrl: 'https://tenpets.gritnews.com.br',
+    featured: true
+  }
+];
+

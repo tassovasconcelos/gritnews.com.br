@@ -9,7 +9,10 @@ import {
   getLeads,
   getSubscribers,
   getComments,
-  getSiteSettings
+  getSiteSettings,
+  getTenPetsArticles,
+  getTenPetsRescues,
+  getTenPetsPartners
 } from './storage';
 
 const SUPABASE_STORAGE_KEYS = {
@@ -289,6 +292,60 @@ CREATE TABLE IF NOT EXISTS site_settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 11. Tabela TenPets: Artigos Científicos e Jurídicos (Letícia Karla)
+CREATE TABLE IF NOT EXISTS tenpets_articles (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  summary TEXT NOT NULL,
+  content TEXT NOT NULL,
+  author_name TEXT DEFAULT 'Letícia Karla',
+  category TEXT DEFAULT 'Científico',
+  published_at TIMESTAMPTZ DEFAULT NOW(),
+  image_url TEXT NOT NULL,
+  pdf_url TEXT,
+  doi TEXT,
+  views_count INT DEFAULT 0,
+  featured BOOLEAN DEFAULT TRUE,
+  tags TEXT[],
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 12. Tabela TenPets: Casos de Resgate e Histórias Romanceadas
+CREATE TABLE IF NOT EXISTS tenpets_rescues (
+  id TEXT PRIMARY KEY,
+  animal_name TEXT NOT NULL,
+  species TEXT NOT NULL,
+  breed TEXT,
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  romantic_story TEXT NOT NULL,
+  rescue_date DATE,
+  status TEXT DEFAULT 'EM_TRATAMENTO',
+  before_image_url TEXT NOT NULL,
+  after_image_url TEXT NOT NULL,
+  video_url TEXT,
+  vet_care_notes TEXT,
+  sponsor_goal NUMERIC,
+  current_sponsor_total NUMERIC DEFAULT 0,
+  featured BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. Tabela TenPets: Parceiros e Apadrinhamento
+CREATE TABLE IF NOT EXISTS tenpets_partners (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  logo_url TEXT NOT NULL,
+  description TEXT NOT NULL,
+  website_url TEXT,
+  contact_email TEXT,
+  discount_benefit TEXT,
+  featured BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- HABILITAR ROW LEVEL SECURITY (RLS) - Permissões de Leitura Pública
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE authors ENABLE ROW LEVEL SECURITY;
@@ -299,14 +356,20 @@ ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tenpets_articles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tenpets_rescues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tenpets_partners ENABLE ROW LEVEL SECURITY;
 
--- Políticas de acesso público para leitura das notícias
+-- Políticas de acesso público para leitura das notícias e tenpets
 CREATE POLICY "Leitura publica de categorias" ON categories FOR SELECT USING (true);
 CREATE POLICY "Leitura publica de autores" ON authors FOR SELECT USING (true);
 CREATE POLICY "Leitura publica de artigos" ON articles FOR SELECT USING (true);
 CREATE POLICY "Leitura publica de anuncios" ON ad_campaigns FOR SELECT USING (true);
 CREATE POLICY "Leitura publica de ofertas" ON offers FOR SELECT USING (true);
 CREATE POLICY "Leitura publica de comentarios" ON comments FOR SELECT USING (true);
+CREATE POLICY "Leitura publica tenpets_articles" ON tenpets_articles FOR SELECT USING (true);
+CREATE POLICY "Leitura publica tenpets_rescues" ON tenpets_rescues FOR SELECT USING (true);
+CREATE POLICY "Leitura publica tenpets_partners" ON tenpets_partners FOR SELECT USING (true);
 CREATE POLICY "Inscricao publica na newsletter" ON newsletter_subscribers FOR INSERT WITH CHECK (true);
 CREATE POLICY "Envio publico de leads B2B" ON leads FOR INSERT WITH CHECK (true);
 
@@ -467,6 +530,72 @@ export async function syncLocalDataToSupabase(): Promise<{
       }));
       const { error } = await client.from('newsletter_subscribers').upsert(subPayload, { onConflict: 'id' });
       if (!error) totalSynced += subscribers.length;
+    }
+
+    // 8. Sync TenPets Articles
+    const tpArticles = getTenPetsArticles();
+    if (tpArticles.length > 0) {
+      const tpArtPayload = tpArticles.map(a => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        summary: a.summary,
+        content: a.content,
+        author_name: a.authorName,
+        category: a.category,
+        published_at: a.publishedAt,
+        image_url: a.imageUrl,
+        pdf_url: a.pdfUrl || '',
+        doi: a.doi || '',
+        views_count: a.viewsCount || 0,
+        featured: a.featured ?? true,
+        tags: a.tags || []
+      }));
+      const { error } = await client.from('tenpets_articles').upsert(tpArtPayload, { onConflict: 'id' });
+      if (!error) totalSynced += tpArticles.length;
+    }
+
+    // 9. Sync TenPets Rescues
+    const tpRescues = getTenPetsRescues();
+    if (tpRescues.length > 0) {
+      const tpResPayload = tpRescues.map(r => ({
+        id: r.id,
+        animal_name: r.animalName,
+        species: r.species,
+        breed: r.breed || '',
+        title: r.title,
+        summary: r.summary,
+        romantic_story: r.romanticStory,
+        rescue_date: r.rescueDate,
+        status: r.status,
+        before_image_url: r.beforeImageUrl,
+        after_image_url: r.afterImageUrl,
+        video_url: r.videoUrl || '',
+        vet_care_notes: r.vetCareNotes || '',
+        sponsor_goal: r.sponsorGoal || 0,
+        current_sponsor_total: r.currentSponsorTotal || 0,
+        featured: r.featured ?? true
+      }));
+      const { error } = await client.from('tenpets_rescues').upsert(tpResPayload, { onConflict: 'id' });
+      if (!error) totalSynced += tpRescues.length;
+    }
+
+    // 10. Sync TenPets Partners
+    const tpPartners = getTenPetsPartners();
+    if (tpPartners.length > 0) {
+      const tpPartPayload = tpPartners.map(p => ({
+        id: p.id,
+        name: p.name,
+        type: p.type,
+        logo_url: p.logoUrl,
+        description: p.description,
+        website_url: p.websiteUrl,
+        contact_email: p.contactEmail || '',
+        discount_benefit: p.discountBenefit || '',
+        featured: p.featured ?? true
+      }));
+      const { error } = await client.from('tenpets_partners').upsert(tpPartPayload, { onConflict: 'id' });
+      if (!error) totalSynced += tpPartners.length;
     }
 
     return {

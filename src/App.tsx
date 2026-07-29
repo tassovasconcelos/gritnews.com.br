@@ -11,6 +11,7 @@ import { SearchView } from './components/views/SearchView';
 import { BookmarksView } from './components/views/BookmarksView';
 import { TagView } from './components/views/TagView';
 import { DocumentationModal } from './components/views/DocumentationModal';
+import { TenPetsView } from './components/views/TenPetsView';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
@@ -24,6 +25,7 @@ import {
   getLeads,
   getSubscribers,
   addLead,
+  getBookmarks,
   initInitialDataIfEmpty
 } from './lib/storage';
 import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, Lead, NewsletterSubscriber } from './types';
@@ -39,6 +41,7 @@ type ViewMode =
   | 'search'
   | 'bookmarks'
   | 'tag'
+  | 'tenpets'
   | 'admin';
 
 export default function App() {
@@ -193,11 +196,13 @@ export default function App() {
         categories={categories}
         onSelectCategory={handleSelectCategory}
         onSearch={handleSearch}
-        onGoHome={() => setCurrentView('home')}
-        onGoOffers={() => setCurrentView('offers')}
-        onGoBookmarks={() => setCurrentView('bookmarks')}
-        onOpenAdmin={() => setCurrentView('admin')}
+        onNavigateHome={() => setCurrentView('home')}
+        onNavigateOffers={() => setCurrentView('offers')}
+        onNavigateBookmarks={() => setCurrentView('bookmarks')}
+        onNavigateAdmin={() => setCurrentView('admin')}
+        onNavigateTenPets={() => setCurrentView('tenpets')}
         onOpenDocs={() => setIsDocModalOpen(true)}
+        bookmarksCount={getBookmarks().length}
       />
 
       {/* Main Content Router */}
@@ -214,6 +219,12 @@ export default function App() {
             onSelectAuthor={handleSelectAuthor}
             onSelectPartner={handleSelectPartner}
             onOpenLeadModal={setLeadModalOffer}
+            onShowToast={showToast}
+          />
+        )}
+
+        {currentView === 'tenpets' && (
+          <TenPetsView
             onShowToast={showToast}
           />
         )}

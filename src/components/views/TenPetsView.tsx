@@ -1,0 +1,710 @@
+import React, { useState } from 'react';
+import { 
+  Heart, 
+  Award, 
+  BookOpen, 
+  Sparkles, 
+  ExternalLink, 
+  FileText, 
+  ShieldCheck, 
+  Video, 
+  CheckCircle2, 
+  Share2, 
+  MessageSquare, 
+  Search, 
+  PawPrint,
+  GraduationCap,
+  Scale,
+  Send,
+  UserCheck
+} from 'lucide-react';
+import { TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../../types';
+import { getTenPetsArticles, getTenPetsRescues, getTenPetsPartners } from '../../lib/storage';
+
+interface TenPetsViewProps {
+  onShowToast: (message: string, type?: 'success' | 'info') => void;
+}
+
+export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
+  const [articles] = useState<TenPetsArticle[]>(getTenPetsArticles());
+  const [rescues] = useState<TenPetsRescue[]>(getTenPetsRescues());
+  const [partners] = useState<TenPetsPartner[]>(getTenPetsPartners());
+
+  const [activeTab, setActiveTab] = useState<'all' | 'articles' | 'rescues' | 'partners'>('all');
+  const [selectedArticle, setSelectedArticle] = useState<TenPetsArticle | null>(null);
+  const [selectedRescue, setSelectedRescue] = useState<TenPetsRescue | null>(null);
+  const [beforeAfterToggle, setBeforeAfterToggle] = useState<Record<string, 'after' | 'before'>>({});
+
+  // Contact / Support form
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactSubject, setContactSubject] = useState<'Apoio Resgate' | 'Dúvida Jurídica Animal' | 'Parceria Clínica' | 'Outro'>('Apoio Resgate');
+  const [contactMessage, setContactMessage] = useState('');
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactEmail || !contactName) {
+      onShowToast('Por favor, preencha seu nome e e-mail.', 'info');
+      return;
+    }
+    onShowToast('Sua mensagem foi enviada com sucesso para a equipe TenPets & Dra. Letícia Karla!', 'success');
+    setContactName('');
+    setContactEmail('');
+    setContactPhone('');
+    setContactMessage('');
+  };
+
+  const toggleImageMode = (rescueId: string) => {
+    setBeforeAfterToggle(prev => ({
+      ...prev,
+      [rescueId]: prev[rescueId] === 'before' ? 'after' : 'before'
+    }));
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-16 transition-colors">
+      {/* Subdomain Header Bar */}
+      <div className="bg-amber-600 text-white text-xs py-2 px-4 text-center font-medium shadow-inner flex items-center justify-center gap-2">
+        <PawPrint className="w-4 h-4 animate-bounce" />
+        <span>Subdomínio Oficial: <strong>tenpets.gritnews.com.br</strong> — Portal de Ciência Veterinária, Direito Animal e Resgates do Grupo GRIT</span>
+      </div>
+
+      {/* Hero Section - Letícia Karla Profile */}
+      <section className="bg-gradient-to-br from-amber-700 via-amber-800 to-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8 shadow-xl">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-8 space-y-6">
+            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-amber-200">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Plataforma TenPets | Medicina & Direito Animal</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              Ciência Veterinária, Proteção Animal & Histórias de Superação
+            </h1>
+
+            <p className="text-slate-200 text-base sm:text-lg leading-relaxed font-light">
+              Espaço dedicado à divulgação de pesquisas científicas veterinárias, cases jurídicos em defesa dos animais de rua e narrativas romanceadas de resgates vitoriosos desenvolvidos e liderados por <strong>Letícia Karla</strong>.
+            </p>
+
+            {/* Badges of Letícia Karla */}
+            <div className="flex flex-wrap gap-3 pt-2">
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium text-amber-100">
+                <GraduationCap className="w-4 h-4 text-amber-300" />
+                Estudante de Medicina Veterinária
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium text-amber-100">
+                <Heart className="w-4 h-4 text-rose-400" />
+                Protetora Independente de Animais
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium text-amber-100">
+                <BookOpen className="w-4 h-4 text-emerald-300" />
+                Escritora de Produções Científicas
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium text-amber-100">
+                <Scale className="w-4 h-4 text-sky-300" />
+                Advogada em Direito Animal
+              </span>
+            </div>
+
+            {/* Navigation Quick Filter */}
+            <div className="flex flex-wrap items-center gap-2 pt-4">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'all'
+                    ? 'bg-amber-500 text-slate-950 shadow-lg'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+              >
+                Todos os Conteúdos
+              </button>
+              <button
+                onClick={() => setActiveTab('articles')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'articles'
+                    ? 'bg-amber-500 text-slate-950 shadow-lg'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+              >
+                Artigos Científicos ({articles.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('rescues')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'rescues'
+                    ? 'bg-amber-500 text-slate-950 shadow-lg'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+              >
+                Casos de Resgate ({rescues.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('partners')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'partners'
+                    ? 'bg-amber-500 text-slate-950 shadow-lg'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+              >
+                Rede de Parceiros ({partners.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Author Card Profile */}
+          <div className="lg:col-span-4 bg-white/10 border border-amber-400/30 backdrop-blur-xl rounded-2xl p-6 text-center shadow-2xl relative overflow-hidden">
+            <div className="absolute -right-8 -top-8 w-28 h-28 bg-amber-500/20 rounded-full blur-2xl"></div>
+            <div className="relative z-10 space-y-4">
+              <div className="w-28 h-28 mx-auto rounded-full ring-4 ring-amber-400/50 p-1 overflow-hidden shadow-xl bg-slate-800">
+                <img
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300"
+                  alt="Letícia Karla"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Letícia Karla</h3>
+                <p className="text-xs text-amber-300 font-medium mt-1">
+                  Pesquisadora, Protetora & Advogada
+                </p>
+              </div>
+              <p className="text-xs text-slate-200 leading-relaxed font-light italic">
+                "A verdadeira compaixão une a precisão da ciência médica à justiça do Direito para transformar vidas que não têm voz."
+              </p>
+              <div className="pt-2 border-t border-white/10 flex justify-around text-center text-xs">
+                <div>
+                  <span className="block font-bold text-lg text-amber-300">100%</span>
+                  <span className="text-slate-300 text-[10px]">Compromisso Vet</span>
+                </div>
+                <div>
+                  <span className="block font-bold text-lg text-amber-300">+50</span>
+                  <span className="text-slate-300 text-[10px]">Animais Atendidos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-16">
+        
+        {/* SECTION 1: Scientific Articles & Publications */}
+        {(activeTab === 'all' || activeTab === 'articles') && (
+          <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div>
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider">
+                  <BookOpen className="w-4 h-4" />
+                  <span>Produção Científica & Jurídica</span>
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                  Artigos e Pesquisas Publicadas por Letícia Karla
+                </h2>
+              </div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Revisão por pares & Casos Clínicos
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {articles.map(art => (
+                <div
+                  key={art.id}
+                  className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="relative h-52 overflow-hidden bg-slate-900">
+                      <img
+                        src={art.imageUrl}
+                        alt={art.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute top-3 left-3 bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow-md uppercase">
+                        {art.category}
+                      </div>
+                      {art.doi && (
+                        <div className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-md text-amber-300 text-[10px] font-mono px-2 py-0.5 rounded border border-amber-400/30">
+                          DOI: {art.doi}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-6 space-y-3">
+                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <UserCheck className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Autora: {art.authorName}</span>
+                        <span>•</span>
+                        <span>{new Date(art.publishedAt).toLocaleDateString('pt-BR')}</span>
+                      </div>
+
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors leading-snug">
+                        {art.title}
+                      </h3>
+
+                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed">
+                        {art.summary}
+                      </p>
+
+                      <div className="flex flex-wrap gap-1.5 pt-2">
+                        {art.tags?.map((t, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] px-2 py-0.5 rounded font-medium"
+                          >
+                            #{t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 pt-0 border-t border-slate-100 dark:border-slate-700/50 mt-4 flex items-center justify-between">
+                    <button
+                      onClick={() => setSelectedArticle(art)}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>Ler Artigo Completo</span>
+                    </button>
+
+                    {art.pdfUrl && (
+                      <a
+                        href={art.pdfUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>PDF Oficial</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* SECTION 2: Romantic Stories of Rescue & Success (Casos de Resgate) */}
+        {(activeTab === 'all' || activeTab === 'rescues') && (
+          <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div>
+                <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wider">
+                  <Heart className="w-4 h-4" />
+                  <span>Histórias de Amor & Recuperação</span>
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                  Cases de Resgate & Histórias Romanceadas de Vitória
+                </h2>
+              </div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Acompanhe fotos Antes/Depois e reabilitação veterinária
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {rescues.map(rescue => {
+                const currentMode = beforeAfterToggle[rescue.id] || 'after';
+                const displayedImage = currentMode === 'before' ? rescue.beforeImageUrl : rescue.afterImageUrl;
+
+                return (
+                  <div
+                    key={rescue.id}
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Image Viewer with Before / After Toggle */}
+                      <div className="relative h-64 overflow-hidden bg-slate-950 group">
+                        <img
+                          src={displayedImage}
+                          alt={rescue.animalName}
+                          className="w-full h-full object-cover transition-all duration-500"
+                        />
+
+                        {/* Status Badge */}
+                        <div className="absolute top-3 left-3 flex items-center gap-2">
+                          <span className="bg-emerald-600 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md">
+                            {rescue.status.replace('_', ' ')}
+                          </span>
+                          <span className="bg-slate-900/80 backdrop-blur-md text-amber-300 text-[10px] font-medium px-2 py-1 rounded-full">
+                            {rescue.species} • {rescue.breed || 'SRD'}
+                          </span>
+                        </div>
+
+                        {/* Before / After Switch Button */}
+                        <div className="absolute bottom-3 right-3 flex items-center bg-slate-900/90 backdrop-blur-md border border-white/20 rounded-lg p-1 shadow-xl">
+                          <button
+                            onClick={() => toggleImageMode(rescue.id)}
+                            className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                              currentMode === 'before'
+                                ? 'bg-rose-600 text-white shadow'
+                                : 'text-slate-300 hover:text-white'
+                            }`}
+                          >
+                            Antes
+                          </button>
+                          <button
+                            onClick={() => toggleImageMode(rescue.id)}
+                            className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                              currentMode === 'after'
+                                ? 'bg-emerald-600 text-white shadow'
+                                : 'text-slate-300 hover:text-white'
+                            }`}
+                          >
+                            Depois (Recuperado)
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Content details */}
+                      <div className="p-6 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                            {rescue.animalName}
+                          </h3>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                            Resgatado em: {new Date(rescue.rescueDate).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+
+                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-300 italic">
+                          "{rescue.title}"
+                        </p>
+
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-4">
+                          {rescue.romanticStory}
+                        </p>
+
+                        {/* Vet Care Highlights */}
+                        {rescue.vetCareNotes && (
+                          <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                            <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
+                              <ShieldCheck className="w-3.5 h-3.5" /> Tratamento e Cuidados Médicos:
+                            </span>
+                            <p className="italic text-[11px] leading-relaxed">{rescue.vetCareNotes}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Footer Actions & Sponsorship Goal */}
+                    <div className="p-6 pt-0 border-t border-slate-100 dark:border-slate-700/50 mt-2 space-y-4">
+                      {rescue.sponsorGoal && rescue.sponsorGoal > 0 && (
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            <span>Custos Médicos & Reabilitação:</span>
+                            <span className="text-emerald-600 dark:text-emerald-400">
+                              R$ {rescue.currentSponsorTotal?.toLocaleString('pt-BR')} / R$ {rescue.sponsorGoal?.toLocaleString('pt-BR')}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  ((rescue.currentSponsorTotal || 0) / rescue.sponsorGoal) * 100
+                                )}%`
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-3">
+                        <button
+                          onClick={() => setSelectedRescue(rescue)}
+                          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors shadow-md flex items-center justify-center gap-2"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Ler História Romanceada</span>
+                        </button>
+
+                        {rescue.videoUrl && (
+                          <a
+                            href={rescue.videoUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-white p-2.5 rounded-xl transition-colors"
+                            title="Assistir Vídeo do Resgate"
+                          >
+                            <Video className="w-4 h-4 text-rose-500" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* SECTION 3: Partners Network (Rede de Apoio e Clínicas) */}
+        {(activeTab === 'all' || activeTab === 'partners') && (
+          <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div>
+                <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400 text-xs font-bold uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Rede Credenciada & ONGs</span>
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                  Parceiros e Apoiadores Estratégicos TenPets
+                </h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {partners.map(p => (
+                <div
+                  key={p.id}
+                  className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all space-y-4 flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                        <img src={p.logoUrl} alt={p.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-900 dark:text-white text-sm">{p.name}</h4>
+                        <span className="inline-block bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300 text-[10px] font-bold px-2 py-0.5 rounded-md mt-0.5">
+                          {p.type}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      {p.description}
+                    </p>
+
+                    {p.discountBenefit && (
+                      <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 p-2.5 rounded-lg text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                        <span>{p.discountBenefit}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <a
+                    href={p.websiteUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 block text-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-white text-xs font-bold py-2 rounded-xl transition-colors"
+                  >
+                    Conhecer Parceiro
+                  </a>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* SECTION 4: Contact & Support Form for Letícia Karla */}
+        <section className="bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden border border-amber-500/20">
+          <div className="max-w-3xl mx-auto space-y-6 text-center relative z-10">
+            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-bold text-amber-300">
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Fale com a Protetora e Advogada Letícia Karla</span>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+              Sua Parceria ou Dúvida Pode Salvar Vidas
+            </h2>
+
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+              Deseja indicar um caso clínico veterinário, solicitar apoio jurídico animal, oferecer abrigo temporário ou apadrinhar um resgatado? Preencha o formulário abaixo para contato direto.
+            </p>
+
+            <form onSubmit={handleContactSubmit} className="space-y-4 text-left bg-slate-900/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Seu Nome Completo *</label>
+                  <input
+                    type="text"
+                    required
+                    value={contactName}
+                    onChange={e => setContactName(e.target.value)}
+                    placeholder="Ex: Maria Oliveira"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">E-mail para Retorno *</label>
+                  <input
+                    type="email"
+                    required
+                    value={contactEmail}
+                    onChange={e => setContactEmail(e.target.value)}
+                    placeholder="maria@exemplo.com"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Telefone / WhatsApp</label>
+                  <input
+                    type="tel"
+                    value={contactPhone}
+                    onChange={e => setContactPhone(e.target.value)}
+                    placeholder="(11) 99999-9999"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Assunto do Contato</label>
+                  <select
+                    value={contactSubject}
+                    onChange={e => setContactSubject(e.target.value as any)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option value="Apoio Resgate">Apoio a Caso de Resgate</option>
+                    <option value="Dúvida Jurídica Animal">Dúvida Jurídica em Direito Animal</option>
+                    <option value="Parceria Clínica">Parceria Clínica / Laboratório</option>
+                    <option value="Outro">Outro Assunto</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Sua Mensagem</label>
+                <textarea
+                  rows={4}
+                  value={contactMessage}
+                  onChange={e => setContactMessage(e.target.value)}
+                  placeholder="Escreva detalhes da sua mensagem, história ou solicitação..."
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-6 rounded-xl text-xs transition-all shadow-xl flex items-center justify-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                <span>Enviar Mensagem para TenPets</span>
+              </button>
+            </form>
+          </div>
+        </section>
+
+      </main>
+
+      {/* ARTICLE READER MODAL */}
+      {selectedArticle && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl">
+            <div className="flex justify-between items-start border-b border-slate-200 dark:border-slate-700 pb-4">
+              <div>
+                <span className="bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase">
+                  {selectedArticle.category}
+                </span>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2">
+                  {selectedArticle.title}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Publicado por {selectedArticle.authorName} em {new Date(selectedArticle.publishedAt).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedArticle(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-line text-slate-700 dark:text-slate-200">
+              {selectedArticle.content}
+            </div>
+
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-4 flex justify-between items-center">
+              {selectedArticle.pdfUrl && (
+                <a
+                  href={selectedArticle.pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-amber-600 text-white font-bold text-xs py-2 px-4 rounded-xl hover:bg-amber-700 transition-colors inline-flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Baixar Artigo em PDF</span>
+                </a>
+              )}
+              <button
+                onClick={() => setSelectedArticle(null)}
+                className="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs py-2 px-4 rounded-xl hover:bg-slate-300 transition-colors ml-auto"
+              >
+                Fechar Leitura
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESCUE ROMANTIC STORY MODAL */}
+      {selectedRescue && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl">
+            <div className="flex justify-between items-start border-b border-slate-200 dark:border-slate-700 pb-4">
+              <div>
+                <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase">
+                  {selectedRescue.animalName} • {selectedRescue.status.replace('_', ' ')}
+                </span>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-2">
+                  {selectedRescue.title}
+                </h2>
+              </div>
+              <button
+                onClick={() => setSelectedRescue(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Before vs After Images Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1 text-center">
+                <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase">Antes do Resgate</span>
+                <img src={selectedRescue.beforeImageUrl} alt="Antes" className="w-full h-44 object-cover rounded-xl border border-slate-200 dark:border-slate-700" />
+              </div>
+              <div className="space-y-1 text-center">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Depois (Recuperado)</span>
+                <img src={selectedRescue.afterImageUrl} alt="Depois" className="w-full h-44 object-cover rounded-xl border border-slate-200 dark:border-slate-700" />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="font-bold text-slate-900 dark:text-white text-sm">A História Romanceada:</h4>
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-line italic bg-amber-50/50 dark:bg-slate-900/50 p-4 rounded-xl border border-amber-200/50 dark:border-slate-700">
+                {selectedRescue.romanticStory}
+              </p>
+            </div>
+
+            {selectedRescue.vetCareNotes && (
+              <div className="bg-slate-100 dark:bg-slate-900 p-4 rounded-xl text-xs space-y-1 text-slate-700 dark:text-slate-300">
+                <span className="font-bold text-amber-600 dark:text-amber-400 block">Prontuário Veterinário & Procedimentos:</span>
+                <p>{selectedRescue.vetCareNotes}</p>
+              </div>
+            )}
+
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-4 flex justify-end">
+              <button
+                onClick={() => setSelectedRescue(null)}
+                className="bg-amber-600 text-white font-bold text-xs py-2 px-5 rounded-xl hover:bg-amber-700 transition-colors"
+              >
+                Fechar História
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};

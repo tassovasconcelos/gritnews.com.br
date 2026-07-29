@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare, Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe, Database } from 'lucide-react';
+import { LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare, Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe, Database, PawPrint } from 'lucide-react';
 import { UserRole, Article, Category, Lead, NewsletterSubscriber, Offer, AdCampaign, AuthorProfile } from '../../types';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminArticles } from './AdminArticles';
@@ -13,6 +13,7 @@ import { AdminMedia } from './AdminMedia';
 import { AdminTrendsAI } from './AdminTrendsAI';
 import { AdminSEO } from './AdminSEO';
 import { AdminSupabase } from './AdminSupabase';
+import { AdminTenPets } from './AdminTenPets';
 import { DocumentationModal } from '../views/DocumentationModal';
 
 interface AdminLayoutProps {
@@ -28,7 +29,7 @@ interface AdminLayoutProps {
   onShowToast: (msg: string) => void;
 }
 
-type AdminTab = 'dashboard' | 'articles' | 'categories' | 'media' | 'trends' | 'seo' | 'supabase' | 'ads' | 'offers' | 'leads' | 'comments' | 'settings';
+type AdminTab = 'dashboard' | 'articles' | 'tenpets' | 'categories' | 'media' | 'trends' | 'seo' | 'supabase' | 'ads' | 'offers' | 'leads' | 'comments' | 'settings';
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   articles,
@@ -49,6 +50,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'COMMERCIAL_MANAGER'] },
     { id: 'articles', label: 'CMS Artigos', icon: FileText, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
+    { id: 'tenpets', label: 'TenPets (Resgates & Ciência)', icon: PawPrint, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'trends', label: 'Automação Trends & IA', icon: Sparkles, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'media', label: 'Gerenciador de Mídia', icon: Image, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'seo', label: 'SEO & Indexação Google', icon: Globe, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
@@ -157,6 +159,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             categories={categories}
             authors={authors}
             onRefresh={onRefreshData}
+            onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'tenpets' && (
+          <AdminTenPets
             onShowToast={onShowToast}
           />
         )}

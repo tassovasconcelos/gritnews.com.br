@@ -9,6 +9,7 @@ interface NavbarProps {
   onNavigateOffers: () => void;
   onNavigateBookmarks: () => void;
   onNavigateAdmin: () => void;
+  onNavigateTenPets: () => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
   onOpenDocs: () => void;
@@ -35,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateOffers,
   onNavigateBookmarks,
   onNavigateAdmin,
+  onNavigateTenPets,
   onSearch,
   onNavigateHome,
   onOpenDocs,
@@ -173,6 +175,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             Todas as Notícias
+          </button>
+
+          {/* TenPets Subdomain Portal Button */}
+          <button
+            onClick={onNavigateTenPets}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-extrabold bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm hover:scale-102 transition-all"
+          >
+            <PawPrint className="w-3.5 h-3.5 text-amber-200" />
+            <span>TenPets (Resgates & Ciência)</span>
+            <span className="bg-amber-800 text-amber-100 text-[9px] px-1.5 py-0.2 rounded font-mono">
+              .gritnews
+            </span>
           </button>
 
           {categories.map(cat => {

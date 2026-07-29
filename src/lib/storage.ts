@@ -1,5 +1,5 @@
-import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic } from '../types';
-import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS } from '../data/initialData';
+import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../types';
+import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS, INITIAL_TENPETS_ARTICLES, INITIAL_TENPETS_RESCUES, INITIAL_TENPETS_PARTNERS } from '../data/initialData';
 
 const KEYS = {
   ARTICLES: 'grit_news_articles_v1',
@@ -15,7 +15,10 @@ const KEYS = {
   SETTINGS: 'grit_news_settings_v1',
   MEDIA: 'grit_news_media_v1',
   TRENDS: 'grit_news_trends_v1',
-  CURRENT_ROLE: 'grit_news_current_role_v1'
+  CURRENT_ROLE: 'grit_news_current_role_v1',
+  TENPETS_ARTICLES: 'grit_news_tenpets_articles_v1',
+  TENPETS_RESCUES: 'grit_news_tenpets_rescues_v1',
+  TENPETS_PARTNERS: 'grit_news_tenpets_partners_v1'
 };
 
 function loadItem<T>(key: string, defaultValue: T): T {
@@ -47,6 +50,9 @@ export function initStorage(): void {
   if (!localStorage.getItem(KEYS.SETTINGS)) saveItem(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
   if (!localStorage.getItem(KEYS.MEDIA)) saveItem(KEYS.MEDIA, INITIAL_MEDIA);
   if (!localStorage.getItem(KEYS.TRENDS)) saveItem(KEYS.TRENDS, INITIAL_TRENDS);
+  if (!localStorage.getItem(KEYS.TENPETS_ARTICLES)) saveItem(KEYS.TENPETS_ARTICLES, INITIAL_TENPETS_ARTICLES);
+  if (!localStorage.getItem(KEYS.TENPETS_RESCUES)) saveItem(KEYS.TENPETS_RESCUES, INITIAL_TENPETS_RESCUES);
+  if (!localStorage.getItem(KEYS.TENPETS_PARTNERS)) saveItem(KEYS.TENPETS_PARTNERS, INITIAL_TENPETS_PARTNERS);
 }
 
 const INITIAL_MEDIA: MediaAsset[] = [
@@ -548,3 +554,76 @@ export function getSiteSettings(): SiteSettings {
 export function saveSiteSettings(settings: SiteSettings): void {
   saveItem(KEYS.SETTINGS, settings);
 }
+
+// TenPets - Articles
+export function getTenPetsArticles(): TenPetsArticle[] {
+  initStorage();
+  return loadItem<TenPetsArticle[]>(KEYS.TENPETS_ARTICLES, INITIAL_TENPETS_ARTICLES);
+}
+
+export function saveTenPetsArticles(articles: TenPetsArticle[]): void {
+  saveItem(KEYS.TENPETS_ARTICLES, articles);
+}
+
+export function addTenPetsArticle(article: TenPetsArticle): void {
+  const current = getTenPetsArticles();
+  saveTenPetsArticles([article, ...current]);
+}
+
+export function updateTenPetsArticle(article: TenPetsArticle): void {
+  const current = getTenPetsArticles();
+  const updated = current.map(item => item.id === article.id ? article : item);
+  saveTenPetsArticles(updated);
+}
+
+export function deleteTenPetsArticle(id: string): void {
+  const current = getTenPetsArticles().filter(item => item.id !== id);
+  saveTenPetsArticles(current);
+}
+
+// TenPets - Rescues
+export function getTenPetsRescues(): TenPetsRescue[] {
+  initStorage();
+  return loadItem<TenPetsRescue[]>(KEYS.TENPETS_RESCUES, INITIAL_TENPETS_RESCUES);
+}
+
+export function saveTenPetsRescues(rescues: TenPetsRescue[]): void {
+  saveItem(KEYS.TENPETS_RESCUES, rescues);
+}
+
+export function addTenPetsRescue(rescue: TenPetsRescue): void {
+  const current = getTenPetsRescues();
+  saveTenPetsRescues([rescue, ...current]);
+}
+
+export function updateTenPetsRescue(rescue: TenPetsRescue): void {
+  const current = getTenPetsRescues();
+  const updated = current.map(item => item.id === rescue.id ? rescue : item);
+  saveTenPetsRescues(updated);
+}
+
+export function deleteTenPetsRescue(id: string): void {
+  const current = getTenPetsRescues().filter(item => item.id !== id);
+  saveTenPetsRescues(current);
+}
+
+// TenPets - Partners
+export function getTenPetsPartners(): TenPetsPartner[] {
+  initStorage();
+  return loadItem<TenPetsPartner[]>(KEYS.TENPETS_PARTNERS, INITIAL_TENPETS_PARTNERS);
+}
+
+export function saveTenPetsPartners(partners: TenPetsPartner[]): void {
+  saveItem(KEYS.TENPETS_PARTNERS, partners);
+}
+
+export function addTenPetsPartner(partner: TenPetsPartner): void {
+  const current = getTenPetsPartners();
+  saveTenPetsPartners([partner, ...current]);
+}
+
+export function deleteTenPetsPartner(id: string): void {
+  const current = getTenPetsPartners().filter(item => item.id !== id);
+  saveTenPetsPartners(current);
+}
+
