@@ -27,6 +27,10 @@ import {
 import { TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../../types';
 import { getTenPetsArticles, getTenPetsRescues, getTenPetsPartners } from '../../lib/storage';
 
+import tenpetsHeroImg from '../../assets/images/tenpets_hero_banner_1785288987038.jpg';
+import tenpetsLogoImg from '../../assets/images/tenpets_official_logo_1785288965710.jpg';
+import leticiaProfileImg from '../../assets/images/leticia_karla_profile_1785288976216.jpg';
+
 interface TenPetsViewProps {
   onShowToast: (message: string, type?: 'success' | 'info') => void;
 }
@@ -116,7 +120,7 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
         {/* Background Subtle Image Overlay */}
         <div className="absolute inset-0 opacity-15 mix-blend-overlay">
           <img
-            src="/src/assets/images/tenpets_hero_banner_1785288987038.jpg"
+            src={tenpetsHeroImg}
             alt="TenPets Hero"
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
@@ -132,7 +136,7 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
               {/* Official TenPets Logo Emblem */}
               <div className="flex items-center gap-2.5 bg-white/10 border border-amber-400/40 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-lg">
                 <img
-                  src="/src/assets/images/tenpets_official_logo_1785288965710.jpg"
+                  src={tenpetsLogoImg}
                   alt="TenPets Logo"
                   className="w-7 h-7 rounded-lg object-cover ring-2 ring-amber-400/60"
                   referrerPolicy="no-referrer"
@@ -230,7 +234,7 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
               {/* Photo Letícia Karla */}
               <div className="w-28 h-28 mx-auto rounded-full ring-4 ring-amber-400/70 p-1 overflow-hidden shadow-2xl bg-slate-900 transition-transform duration-300 group-hover:scale-105">
                 <img
-                  src="/src/assets/images/leticia_karla_profile_1785288976216.jpg"
+                  src={leticiaProfileImg}
                   alt="Letícia Karla"
                   className="w-full h-full object-cover rounded-full"
                   referrerPolicy="no-referrer"
@@ -290,10 +294,13 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl overflow-hidden ring-4 ring-rose-500/80 p-0.5 bg-slate-900 shrink-0 shadow-xl">
                 <img
-                  src="/src/assets/images/tenpets_official_logo_1785288965710.jpg"
+                  src={tenpetsLogoImg}
                   alt="@tenpets_"
                   className="w-full h-full object-cover rounded-xl"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=300";
+                  }}
                 />
               </div>
               <div>

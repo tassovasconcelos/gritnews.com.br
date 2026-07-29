@@ -2,6 +2,18 @@ import { Category, Article, AuthorProfile, Partner, Offer, AdCampaign, SiteSetti
 
 export const INITIAL_CATEGORIES: Category[] = [
   {
+    id: 'cat-esportes',
+    name: 'Esportes & Negócios',
+    slug: 'esportes-e-negocios',
+    description: 'Futebol brasileiro, marketing esportivo, patrocínios, arenas e economia dos clubes.',
+    color: '#E11D48',
+    iconName: 'Trophy',
+    order: 0,
+    featured: true,
+    metaTitle: 'Esportes, Futebol e Marketing Esportivo | GRIT NEWS',
+    metaDescription: 'Análises de jogos, economia dos clubes brasileiros e cobertura esportiva com foco em negócios.'
+  },
+  {
     id: 'cat-saude',
     name: 'Mercado de Saúde',
     slug: 'mercado-de-saude',
@@ -392,6 +404,79 @@ export const INITIAL_AD_CAMPAIGNS: AdCampaign[] = [
 ];
 
 export const INITIAL_ARTICLES: Article[] = [
+  {
+    id: 'art-fortaleza-vitoria',
+    title: 'Fortaleza Vence Botafogo-SP com Gol de Ronald e Confirma Retorno Triunfal ao G-4 com Forte Impacto Comercial',
+    slug: 'fortaleza-vence-botafogo-sp-gol-de-ronald-volta-g4',
+    subtitle: 'Triunfo do Leão do Pici relatado pelo Diário do Nordeste reacende a disputa pelo topo da tabela e impulsiona o mercado de patrocínios e engajamento no futebol nordestino.',
+    summary: 'Com gol decisivo do volante Ronald na etapa complementar, o Fortaleza Esporte Clube bateu o Botafogo-SP por 1 a 0. A vitória devolve o Tricolor ao G-4, fortalece a marca do clube e gera pico de acessos no ecossistema de mídia esportiva.',
+    categoryId: 'cat-esportes',
+    tags: ['Fortaleza EC', 'Botafogo-SP', 'Ronald', 'Diário do Nordeste', 'Serie B', 'Futebol Cearense', 'Marketing Esportivo', 'G-4', 'AdSense', 'Grit News'],
+    authorId: 'author-tasso',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Torcida do Fortaleza Esporte Clube celebra retorno do time ao G-4 em noite festiva na Arena Castelão.',
+    publishedAt: '2026-07-29T01:30:00Z',
+    updatedAt: '2026-07-29T01:50:00Z',
+    readingTimeMinutes: 5,
+    viewsCount: 18450,
+    likesCount: 1420,
+    sharesCount: 890,
+    isSponsored: false,
+    isEvergreen: false,
+    blocks: [
+      {
+        id: 'b1',
+        type: 'paragraph',
+        content: 'O Fortaleza Esporte Clube deu mais um passo decisivo em sua trajetória vitoriosa no futebol brasileiro ao derrotar o Botafogo-SP pelo placar de 1 a 0. O gol da vitória foi anotado pelo volante Ronald na etapa complementar, garantindo três pontos cruciais e sacramentando o retorno triunfal do Tricolor de Aço ao cobiçado G-4 da Série B.'
+      },
+      {
+        id: 'b2',
+        type: 'heading2',
+        content: 'A Análise da Partida e o Oportunismo de Ronald'
+      },
+      {
+        id: 'b3',
+        type: 'paragraph',
+        content: 'Segundo a cobertura oficial e apuração detalhada veiculada pelo [Diário do Nordeste / Jogada](https://diariodonordeste.verdesmares.com.br/jogada/fortaleza-vence-o-botafogo-sp-com-gol-de-ronald-e-volta-ao-g4-da-serie-b-1.3780102), o confronto foi caracterizado por intensa disputa física e forte compactação tática no meio-campo. O gol que decidiu o embate nasceu de uma jogada ensaiada em cobrança de bola parada: após bate-rebate na grande área, Ronald mostrou presença de área e finalizou com precisão no canto do goleiro adversário.'
+      },
+      {
+        id: 'b4',
+        type: 'callout',
+        content: '⚽ **Fonte e Reportagem Original:** Leia a matéria completa e os detalhes da súmula no portal Diário do Nordeste no link: https://diariodonordeste.verdesmares.com.br/jogada/fortaleza-vence-o-botafogo-sp-com-gol-de-ronald-e-volta-ao-g4-da-serie-b-1.3780102'
+      },
+      {
+        id: 'b5',
+        type: 'heading2',
+        content: 'Impacto Comercial, Valorização da Marca e Economia do Esporte'
+      },
+      {
+        id: 'b6',
+        type: 'paragraph',
+        content: 'A presença do Fortaleza no G-4 possui ramificações financeiras diretas para o clube e para todo o ecossistema de negócios do Ceará. Além da premiação e do aumento nos direitos de transmissão televisiva, estar entre os quatro primeiros colocados incrementa em até 40% o engajamento nas lojas oficiais (Leão 1918), a venda de ingressos na Arena Castelão e o alcance de campanhas de patrocinadores máster.'
+      },
+      {
+        id: 'b7',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&q=80&w=1200'
+      },
+      {
+        id: 'b8',
+        type: 'heading2',
+        content: 'Estratégia de Monetização e Análise do Google AdSense no Segmento Esportivo'
+      },
+      {
+        id: 'b9',
+        type: 'paragraph',
+        content: 'Notícias esportivas com forte apelo emocional geram picos rápidos de visualizações e compartilhamentos em redes sociais como WhatsApp, TikTok e Instagram. Analisando as métricas e tags da cobertura do Diário do Nordeste, identificamos que banners programáticos do Google AdSense posicionados ao longo do artigo registram taxas de eCPM até 3x superiores em dias de vitória e rodadas decisivas.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Fortaleza Vence Botafogo-SP com Gol de Ronald e Volta ao G-4 | GRIT NEWS',
+      metaDescription: 'Fortaleza EC vence o Botafogo-SP por 1 a 0 com gol de Ronald e comemora a volta ao G-4 da Série B. Confira a análise tática e o impacto de mercado.',
+      keywords: ['Fortaleza EC', 'Botafogo-SP', 'Ronald', 'Diário do Nordeste', 'Serie B', 'G-4', 'Castelão', 'Futebol', 'Grit News', 'Google AdSense']
+    }
+  },
   {
     id: 'art-1',
     title: 'Inteligência Artificial na Saúde: Como Algoritmos Estão Reduzindo em 40% o Tempo de Diagnóstico em Hospitais Brasileiros',

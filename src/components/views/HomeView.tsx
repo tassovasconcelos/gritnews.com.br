@@ -7,6 +7,7 @@ import { NewsletterBlock } from '../ui/NewsletterBlock';
 import { OfferCard } from '../ui/OfferCard';
 import { PartnerCard } from '../ui/PartnerCard';
 import { AmazonShopSection } from '../ui/AmazonShopSection';
+import { ViralPautasWidget } from '../ui/ViralPautasWidget';
 
 interface HomeViewProps {
   articles: Article[];
@@ -196,6 +197,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* Ad Placement Top */}
       <section className="max-w-7xl mx-auto px-4">
         <AdBanner location="HOME_BETWEEN_BLOCKS" />
+      </section>
+
+      {/* 1M Views Viral Daily Agenda Widget */}
+      <section className="max-w-7xl mx-auto px-4">
+        <ViralPautasWidget onShowToast={onShowToast} />
       </section>
 
       {/* Trending & Period Filters Section */}

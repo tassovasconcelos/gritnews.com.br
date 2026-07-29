@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { ExternalLink, Sparkles } from 'lucide-react';
+import { ExternalLink, Sparkles, DollarSign } from 'lucide-react';
 import { AdCampaign, AdPlacementLocation } from '../../types';
-import { getAds, recordAdImpression, recordAdClick } from '../../lib/storage';
+import { getAds, recordAdImpression, recordAdClick, getSiteSettings } from '../../lib/storage';
 
 interface AdBannerProps {
   location: AdPlacementLocation;
@@ -9,7 +9,16 @@ interface AdBannerProps {
   className?: string;
 }
 
+declare global {
+  interface Window {
+    adsbygoogle?: Array<Record<string, unknown>>;
+  }
+}
+
 export const AdBanner: React.FC<AdBannerProps> = ({ location, categoryId, className = '' }) => {
+  const settings = getSiteSettings();
+  const adClientId = settings.adSenseClientId || 'ca-pub-9694565734615841';
+
   const ads = getAds().filter(a => a.status === 'ACTIVE' && a.location === location);
   
   // Filter by category if specified
@@ -25,15 +34,45 @@ export const AdBanner: React.FC<AdBannerProps> = ({ location, categoryId, classN
     }
   }, [activeAd?.id]);
 
+  useEffect(() => {
+    try {
+      if (window.adsbygoogle) {
+        window.adsbygoogle.push({});
+      }
+    } catch (e) {
+      // AdSense already initialized or blocked by browser extension
+    }
+  }, [location, categoryId]);
+
   if (!activeAd) {
-    // Return fallback AdSense simulation slot or empty
+    // Return Google AdSense responsive container + Monetization badge
     return (
-      <div className={`p-4 bg-[#F7F9FC] border border-dashed border-[#E2E8F0] rounded-xl text-center text-xs text-[#5C6B7A] ${className}`}>
-        <div className="flex items-center justify-center gap-1.5 font-medium text-gray-500 mb-1">
-          <Sparkles className="w-3.5 h-3.5 text-[#145EDB]" />
-          <span>Publicidade GRIT NEWS</span>
+      <div className={`bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border border-blue-500/30 rounded-2xl p-4 text-center text-xs text-slate-300 shadow-md ${className}`}>
+        <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2 mb-3">
+          <div className="flex items-center gap-1.5 font-bold text-amber-400">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Publicidade Google AdSense / GRIT Monetization</span>
+          </div>
+          <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">
+            Anúncio Programático
+          </span>
         </div>
-        <p>Espaço reservado para campanhas parceiras ou Google AdSense</p>
+
+        {/* AdSense ins container */}
+        <div className="min-h-[90px] flex items-center justify-center bg-slate-950/60 rounded-xl p-3 border border-white/5 my-2 overflow-hidden">
+          <ins
+            className="adsbygoogle"
+            style={{ display: 'block', width: '100%' }}
+            data-ad-client={adClientId}
+            data-ad-slot="1234567890"
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          ></ins>
+        </div>
+
+        <p className="text-[10px] text-slate-400 mt-1">
+          Espaço publicitário verificado • Rentabilização ativa via Google AdSense & Afiliados B2B
+        </p>
       </div>
     );
   }
@@ -47,8 +86,8 @@ export const AdBanner: React.FC<AdBannerProps> = ({ location, categoryId, classN
 
   if (activeAd.type === 'ADSENSE_CODE' && activeAd.codeSnippet) {
     return (
-      <div className={`p-2 bg-white rounded-xl border border-[#E2E8F0] text-center ${className}`}>
-        <span className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Publicidade</span>
+      <div className={`p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm ${className}`}>
+        <span className="text-[10px] uppercase font-bold text-amber-500 block mb-1">Publicidade Google AdSense</span>
         <div dangerouslySetInnerHTML={{ __html: activeAd.codeSnippet }} />
       </div>
     );
@@ -70,6 +109,9 @@ export const AdBanner: React.FC<AdBannerProps> = ({ location, categoryId, classN
             src={activeAd.imageUrl}
             alt={activeAd.headline || activeAd.name}
             className="w-full md:w-48 h-32 object-cover rounded-xl border border-white/20 group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.src = "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800";
+            }}
           />
         )}
         <div className="flex-1">
