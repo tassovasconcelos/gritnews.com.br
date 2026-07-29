@@ -53,7 +53,7 @@ function syncSeedList<T extends { id: string }>(key: string, seedList: T[]): voi
       updated.unshift(seedItem);
       changed = true;
     } else {
-      updated[foundIndex] = { ...seedItem, ...updated[foundIndex] };
+      updated[foundIndex] = { ...updated[foundIndex], ...seedItem };
       changed = true;
     }
   }

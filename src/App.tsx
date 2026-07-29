@@ -45,36 +45,102 @@ type ViewMode =
   | 'tenpets'
   | 'admin';
 
-const detectRouteFromLocation = (): ViewMode => {
-  if (typeof window === 'undefined') return 'home';
+const resolveRouteFromUrl = (
+  allArticles: Article[],
+  allCategories: Category[],
+  allAuthors: AuthorProfile[],
+  allPartners: Partner[]
+) => {
+  if (typeof window === 'undefined') return { view: 'home' as ViewMode };
 
   const host = window.location.hostname.toLowerCase();
-  const path = window.location.pathname.toLowerCase();
-  const search = window.location.search.toLowerCase();
-  const hash = window.location.hash.toLowerCase();
+  const path = window.location.pathname;
+  const pathLower = path.toLowerCase();
+  const search = window.location.search;
+  const params = new URLSearchParams(search);
+  const hash = window.location.hash;
 
-  // If host is tenpets.gritnews.com.br or tenpets.* or pathname contains /tenpets or query view=tenpets or hash #tenpets
+  // 1. TenPets Subdomain / View
   if (
     host.startsWith('tenpets') ||
     host.includes('tenpets.') ||
-    path.includes('/tenpets') ||
-    search.includes('view=tenpets') ||
-    search.includes('subdomain=tenpets') ||
-    search.includes('tenpets') ||
+    pathLower.includes('/tenpets') ||
+    params.get('view') === 'tenpets' ||
+    params.get('subdomain') === 'tenpets' ||
     hash.includes('tenpets')
   ) {
-    return 'tenpets';
+    return { view: 'tenpets' as ViewMode };
   }
 
-  if (search.includes('view=offers') || path.includes('/offers')) return 'offers';
-  if (search.includes('view=admin') || path.includes('/admin')) return 'admin';
-  if (search.includes('view=bookmarks') || path.includes('/bookmarks')) return 'bookmarks';
+  // 2. Admin / Offers / Bookmarks
+  if (params.get('view') === 'admin' || pathLower.includes('/admin')) return { view: 'admin' as ViewMode };
+  if (params.get('view') === 'offers' || pathLower.includes('/offers')) return { view: 'offers' as ViewMode };
+  if (params.get('view') === 'bookmarks' || pathLower.includes('/bookmarks')) return { view: 'bookmarks' as ViewMode };
 
-  return 'home';
+  // 3. Article Lookup by slug, artigo, article, noticia, art, id
+  const articleParam =
+    params.get('artigo') ||
+    params.get('article') ||
+    params.get('noticia') ||
+    params.get('art') ||
+    params.get('slug') ||
+    params.get('id');
+
+  let targetSlugOrId = articleParam;
+
+  if (!targetSlugOrId) {
+    if (pathLower.includes('/noticia/') || pathLower.includes('/artigo/') || pathLower.includes('/materia/')) {
+      const parts = path.split('/').filter(Boolean);
+      targetSlugOrId = parts[parts.length - 1];
+    } else if (hash.includes('noticia/') || hash.includes('artigo/')) {
+      const parts = hash.split('/').filter(Boolean);
+      targetSlugOrId = parts[parts.length - 1];
+    }
+  }
+
+  if (targetSlugOrId) {
+    const foundArt = allArticles.find(
+      a => a.slug === targetSlugOrId || a.id === targetSlugOrId || a.slug?.toLowerCase() === targetSlugOrId?.toLowerCase()
+    );
+    if (foundArt) {
+      return { view: 'article' as ViewMode, article: foundArt };
+    }
+  }
+
+  // 4. Category Lookup
+  const catParam = params.get('categoria') || params.get('category') || params.get('cat');
+  if (catParam) {
+    const foundCat = allCategories.find(c => c.slug === catParam || c.id === catParam);
+    if (foundCat) return { view: 'category' as ViewMode, category: foundCat };
+  }
+
+  // 5. Author Lookup
+  const autParam = params.get('autor') || params.get('author');
+  if (autParam) {
+    const foundAut = allAuthors.find(a => a.id === autParam);
+    if (foundAut) return { view: 'author' as ViewMode, author: foundAut };
+  }
+
+  // 6. Partner Lookup
+  const prtParam = params.get('parceiro') || params.get('partner');
+  if (prtParam) {
+    const foundPrt = allPartners.find(p => p.id === prtParam || p.slug === prtParam);
+    if (foundPrt) return { view: 'partner' as ViewMode, partner: foundPrt };
+  }
+
+  // 7. Tag Lookup
+  const tagParam = params.get('tag');
+  if (tagParam) return { view: 'tag' as ViewMode, tag: decodeURIComponent(tagParam) };
+
+  // 8. Search Lookup
+  const searchParam = params.get('busca') || params.get('search') || params.get('q');
+  if (searchParam) return { view: 'search' as ViewMode, searchQuery: decodeURIComponent(searchParam) };
+
+  return { view: 'home' as ViewMode };
 };
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<ViewMode>(detectRouteFromLocation);
+  const [currentView, setCurrentView] = useState<ViewMode>('home');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedAuthor, setSelectedAuthor] = useState<AuthorProfile | null>(null);
@@ -111,25 +177,47 @@ export default function App() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
 
+  const syncRouteState = (
+    loadedArticles = articles,
+    loadedCategories = categories,
+    loadedAuthors = authors,
+    loadedPartners = partners
+  ) => {
+    const route = resolveRouteFromUrl(loadedArticles, loadedCategories, loadedAuthors, loadedPartners);
+    setCurrentView(route.view);
+    if (route.article) setSelectedArticle(route.article);
+    if (route.category) setSelectedCategory(route.category);
+    if (route.author) setSelectedAuthor(route.author);
+    if (route.partner) setSelectedPartner(route.partner);
+    if (route.tag) setSelectedTag(route.tag);
+    if (route.searchQuery) setSearchQuery(route.searchQuery);
+  };
+
   const loadData = () => {
     initInitialDataIfEmpty();
-    setArticles(getArticles());
-    setCategories(getCategories());
-    setAuthors(getAuthors());
-    setPartners(getPartners());
+    const fetchedArticles = getArticles();
+    const fetchedCategories = getCategories();
+    const fetchedAuthors = getAuthors();
+    const fetchedPartners = getPartners();
+
+    setArticles(fetchedArticles);
+    setCategories(fetchedCategories);
+    setAuthors(fetchedAuthors);
+    setPartners(fetchedPartners);
     setOffers(getOffers());
     setAds(getAds());
     setLeads(getLeads());
     setSubscribers(getSubscribers());
+
+    syncRouteState(fetchedArticles, fetchedCategories, fetchedAuthors, fetchedPartners);
   };
 
   useEffect(() => {
     loadData();
     injectWebsiteSchema();
 
-    // Route detection on popstate
     const handlePopState = () => {
-      setCurrentView(detectRouteFromLocation());
+      syncRouteState();
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -143,36 +231,85 @@ export default function App() {
   const handleSelectArticle = (art: Article) => {
     setSelectedArticle(art);
     setCurrentView('article');
+    const targetSlug = art.slug || art.id;
+    const newUrl = `?artigo=${targetSlug}`;
+    if (window.location.search !== newUrl) {
+      window.history.pushState({ view: 'article', articleId: art.id, slug: art.slug }, '', newUrl);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectCategory = (cat: Category) => {
     setSelectedCategory(cat);
     setCurrentView('category');
+    const newUrl = `?categoria=${cat.slug}`;
+    window.history.pushState({ view: 'category', categoryId: cat.id }, '', newUrl);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectTag = (tag: string) => {
     setSelectedTag(tag);
     setCurrentView('tag');
+    const newUrl = `?tag=${encodeURIComponent(tag)}`;
+    window.history.pushState({ view: 'tag', tag }, '', newUrl);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectAuthor = (aut: AuthorProfile) => {
     setSelectedAuthor(aut);
     setCurrentView('author');
+    const newUrl = `?autor=${aut.id}`;
+    window.history.pushState({ view: 'author', authorId: aut.id }, '', newUrl);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectPartner = (prt: Partner) => {
     setSelectedPartner(prt);
     setCurrentView('partner');
+    const newUrl = `?parceiro=${prt.id}`;
+    window.history.pushState({ view: 'partner', partnerId: prt.id }, '', newUrl);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSearch = (q: string) => {
     setSearchQuery(q);
     setCurrentView('search');
+    const newUrl = `?q=${encodeURIComponent(q)}`;
+    window.history.pushState({ view: 'search', q }, '', newUrl);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateHome = () => {
+    setSelectedArticle(null);
+    setSelectedCategory(null);
+    setCurrentView('home');
+    if (window.location.search || window.location.pathname !== '/') {
+      window.history.pushState({ view: 'home' }, '', '/');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateOffers = () => {
+    setCurrentView('offers');
+    window.history.pushState({ view: 'offers' }, '', '?view=offers');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateBookmarks = () => {
+    setCurrentView('bookmarks');
+    window.history.pushState({ view: 'bookmarks' }, '', '?view=bookmarks');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateAdmin = () => {
+    setCurrentView('admin');
+    window.history.pushState({ view: 'admin' }, '', '?view=admin');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateTenPets = () => {
+    setCurrentView('tenpets');
+    window.history.pushState({ view: 'tenpets' }, '', '?view=tenpets');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -234,11 +371,11 @@ export default function App() {
         categories={categories}
         onSelectCategory={handleSelectCategory}
         onSearch={handleSearch}
-        onNavigateHome={() => setCurrentView('home')}
-        onNavigateOffers={() => setCurrentView('offers')}
-        onNavigateBookmarks={() => setCurrentView('bookmarks')}
-        onNavigateAdmin={() => setCurrentView('admin')}
-        onNavigateTenPets={() => setCurrentView('tenpets')}
+        onNavigateHome={handleNavigateHome}
+        onNavigateOffers={handleNavigateOffers}
+        onNavigateBookmarks={handleNavigateBookmarks}
+        onNavigateAdmin={handleNavigateAdmin}
+        onNavigateTenPets={handleNavigateTenPets}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onOpenContactModal={() => setIsContactModalOpen(true)}
         bookmarksCount={getBookmarks().length}
@@ -276,7 +413,7 @@ export default function App() {
             relatedArticles={articles.filter(a => a.categoryId === selectedArticle.categoryId && a.id !== selectedArticle.id)}
             onSelectArticle={handleSelectArticle}
             onSelectAuthor={handleSelectAuthor}
-            onBackToHome={() => setCurrentView('home')}
+            onBackToHome={handleNavigateHome}
             onOpenLeadModal={setLeadModalOffer}
             onShowToast={showToast}
             onSelectTag={handleSelectTag}

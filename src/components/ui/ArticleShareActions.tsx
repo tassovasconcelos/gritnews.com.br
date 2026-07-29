@@ -22,8 +22,8 @@ export const ArticleShareActions: React.FC<ArticleShareActionsProps> = ({
   const [copied, setCopied] = useState(false);
 
   const articleUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/#noticia-${article.slug || article.id}`
-    : `https://www.gritnews.com.br/noticia/${article.slug || article.id}`;
+    ? `${window.location.origin}${window.location.pathname}?artigo=${article.slug || article.id}`
+    : `https://www.gritnews.com.br/?artigo=${article.slug || article.id}`;
 
   const shareText = `*${article.title}*\n\nRead full report on GRIT NEWS: ${articleUrl}`;
 

@@ -473,8 +473,8 @@ export const INITIAL_ARTICLES: Article[] = [
     ],
     seo: {
       metaTitle: 'Fortaleza Vence Botafogo-SP com Gol de Ronald e Volta ao G-4 | GRIT NEWS',
-      metaDescription: 'Fortaleza EC vence o Botafogo-SP por 1 a 0 com gol de Ronald e comemora a volta ao G-4 da Série B. Confira a análise tática e o impacto de mercado.',
-      keywords: ['Fortaleza EC', 'Botafogo-SP', 'Ronald', 'Diário do Nordeste', 'Serie B', 'G-4', 'Castelão', 'Futebol', 'Grit News', 'Google AdSense']
+      metaDescription: 'Fortaleza vence Botafogo-SP com gol de Ronald e volta ao G-4. Veja o impacto nos patrocínios, marcas e no ecossistema de mídia do futebol nordestino.',
+      keywords: ['Fortaleza', 'G-4', 'patrocínios', 'futebol nordestino', 'Fortaleza EC', 'Botafogo-SP', 'Ronald', 'Diário do Nordeste', 'Serie B', 'Grit News']
     }
   },
   {
@@ -651,8 +651,8 @@ export const INITIAL_ARTICLES: Article[] = [
     ],
     seo: {
       metaTitle: 'Agentes Autônomos de IA na Empresa: Guia Completo | GRIT NEWS',
-      metaDescription: 'Descubra como funcionam os agentes autônomos de IA e como aumentar a produtividade corporativa.',
-      keywords: ['agentes de IA', 'automação empresarial', 'produtividade B2B', 'IA generativa']
+      metaDescription: 'AI Agents vão além dos chatbots: saiba como agentes autônomos de IA estão transformando a produtividade corporativa e como implementá-los com segurança.',
+      keywords: ['agentes autônomos IA', 'AI agents', 'produtividade corporativa', 'automação empresarial', 'IA generativa']
     }
   },
   {
@@ -767,8 +767,8 @@ export const INITIAL_ARTICLES: Article[] = [
     ],
     seo: {
       metaTitle: 'Os Melhores Cartões Black Sem Anuidade de 2026 e Salas VIP | GRIT NEWS',
-      metaDescription: 'Veja como conseguir os melhores cartões de crédito Black sem anuidade com acesso gratuito às Salas VIP DragonPass e LoungeKey.',
-      keywords: ['cartao black sem anuidade', 'salas vip aeroporto', 'xp visa infinite', 'c6 carbon black', 'inter black', 'dragonpass loungekey']
+      metaDescription: 'Os melhores cartões Black sem anuidade do Brasil em 2026: acesse salas VIP ilimitadas nos aeroportos sem pagar nada. Guia completo para executivos.',
+      keywords: ['cartões black', 'sem anuidade', 'salas VIP', 'aeroporto', 'xp visa infinite', 'c6 carbon black', 'inter black', 'dragonpass loungekey']
     }
   },
   {
@@ -840,8 +840,8 @@ export const INITIAL_ARTICLES: Article[] = [
     ],
     seo: {
       metaTitle: 'Agente de Aeroporto Online: Priscila Loren e a Aviação | GRIT NEWS',
-      metaDescription: 'Descubra como se capacitar para agente de aeroporto com Priscila Loren (@agentedeaeroportoonline) e conquistar sua vaga nas companhias aéreas.',
-      keywords: ['agente de aeroporto', 'priscila loren', 'agentedeaeroportoonline', 'atendimento aeroporto', 'emprego aviacao', 'azul gol latam']
+      metaDescription: 'Priscila Loren revoluciona a capacitação de agentes de aeroporto no Brasil. Saiba como ela forma talentos para companhias aéreas do mundo todo.',
+      keywords: ['agente de aeroporto', 'Priscila Loren', 'capacitação', 'aviação', 'agentedeaeroportoonline', 'atendimento aeroporto', 'azul gol latam']
     }
   },
   {
@@ -1090,8 +1090,8 @@ export const INITIAL_ARTICLES: Article[] = [
     ],
     seo: {
       metaTitle: 'A Nova Tributação no Brasil: Guia com Dr. Moacir Rocha | GRIT NEWS',
-      metaDescription: 'Análise completa da Nova Reforma Tributária (IBS/CBS) por Dr. Moacir Rocha (Moacir Rocha Advocacia e Consultoria Especializada).',
-      keywords: ['moacir rocha', 'moacir rocha advocacia', 'reforma tributaria', 'ibs cbs', 'direito tributario', 'planejamento fiscal']
+      metaDescription: 'Guia estratégico da Reforma Tributária: Dr. Moacir Rocha explica IBS, CBS e o cronograma de transição fiscal para empresas B2B se prepararem agora.',
+      keywords: ['reforma tributária', 'IBS', 'CBS', 'planejamento fiscal', 'empresas B2B', 'moacir rocha', 'moacir rocha advocacia', 'direito tributario']
     }
   }
 ];

@@ -57,7 +57,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
       title: article.seo?.metaTitle || article.title,
       description: article.seo?.metaDescription || article.summary || article.subtitle,
       keywords: article.tags || ['GRIT NEWS', category?.name || 'Notícias'],
-      canonicalUrl: `https://www.gritnews.com.br/noticia/${article.slug || article.id}`,
+      canonicalUrl: `https://www.gritnews.com.br/?artigo=${article.slug || article.id}`,
       imageUrl: article.featuredImage,
       type: 'article',
       publishedTime: article.publishedAt,

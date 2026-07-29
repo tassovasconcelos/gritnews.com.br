@@ -86,7 +86,7 @@ export function updatePageSEO(config: SEOConfig) {
  * Injects Google JSON-LD Schema.org for NewsArticle
  */
 export function injectArticleSchema(article: Article, category?: Category, author?: AuthorProfile) {
-  const articleUrl = `${BASE_URL}/noticia/${article.slug || article.id}`;
+  const articleUrl = `${BASE_URL}/?artigo=${article.slug || article.id}`;
   
   const schemaData = {
     '@context': 'https://schema.org',
