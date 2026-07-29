@@ -16,7 +16,8 @@ import {
   GraduationCap,
   Scale,
   Send,
-  UserCheck
+  UserCheck,
+  Instagram
 } from 'lucide-react';
 import { TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../../types';
 import { getTenPetsArticles, getTenPetsRescues, getTenPetsPartners } from '../../lib/storage';
@@ -65,9 +66,22 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-16 transition-colors">
       {/* Subdomain Header Bar */}
-      <div className="bg-amber-600 text-white text-xs py-2 px-4 text-center font-medium shadow-inner flex items-center justify-center gap-2">
-        <PawPrint className="w-4 h-4 animate-bounce" />
-        <span>Subdomínio Oficial: <strong>tenpets.gritnews.com.br</strong> — Portal de Ciência Veterinária, Direito Animal e Resgates do Grupo GRIT</span>
+      <div className="bg-amber-600 text-white text-xs py-2 px-4 text-center font-medium shadow-inner flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1.5">
+          <PawPrint className="w-4 h-4 animate-bounce" />
+          <span>Subdomínio Oficial: <strong>tenpets.gritnews.com.br</strong></span>
+        </div>
+        <span>•</span>
+        <a
+          href="https://www.instagram.com/tenpets_"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 bg-amber-700 hover:bg-amber-800 text-amber-100 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all border border-amber-500"
+        >
+          <Instagram className="w-3.5 h-3.5 text-rose-300" />
+          <span>Instagram @tenpets_</span>
+          <ExternalLink className="w-3 h-3 text-amber-300" />
+        </a>
       </div>
 
       {/* Hero Section - Letícia Karla Profile */}
@@ -172,6 +186,19 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
               <p className="text-xs text-slate-200 leading-relaxed font-light italic">
                 "A verdadeira compaixão une a precisão da ciência médica à justiça do Direito para transformar vidas que não têm voz."
               </p>
+
+              {/* Instagram Official @tenpets_ button */}
+              <a
+                href="https://www.instagram.com/tenpets_"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-700 hover:to-amber-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-lg transition-all"
+              >
+                <Instagram className="w-4 h-4" />
+                <span>Siga @tenpets_ no Instagram</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </a>
+
               <div className="pt-2 border-t border-white/10 flex justify-around text-center text-xs">
                 <div>
                   <span className="block font-bold text-lg text-amber-300">100%</span>

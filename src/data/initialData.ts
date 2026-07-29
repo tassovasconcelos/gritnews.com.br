@@ -406,7 +406,7 @@ export const INITIAL_ARTICLES: Article[] = [
     summary: 'Mesmo em cenários econômicos desafiadores, o setor pet nacional mantém crescimento duplo dígito impulsionado por tecnologia e novas franquias.',
     categoryId: 'cat-pet',
     tags: ['Mercado Pet', 'Negócios', 'Franquias', 'Veterinária'],
-    authorId: 'author-beatriz',
+    authorId: 'author-leticia',
     status: 'PUBLISHED',
     featuredImage: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1200',
     imageCaption: 'Clínica veterinária moderna equipada com sistemas digitais de monitoramento pet.',
