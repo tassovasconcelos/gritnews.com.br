@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 
 async function startServer() {
@@ -18,19 +19,23 @@ async function startServer() {
     });
   });
 
-  // Serve static files or Vite dev middleware
-  if (process.env.NODE_ENV !== "production") {
+  // Determine if running in production mode or if built dist assets exist
+  const distPath = path.resolve(process.cwd(), "dist");
+  const hasDist = fs.existsSync(path.join(distPath, "index.html"));
+
+  if (process.env.NODE_ENV === "production" || hasDist) {
+    console.log(`[GRIT NEWS] Serving static production build from ${distPath}`);
+    app.use(express.static(distPath, { index: 'index.html' }));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  } else {
+    console.log(`[GRIT NEWS] Starting Vite dev middleware...`);
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
