@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sunBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+    <linearGradient id="blueGate" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sunny Background -->
+  <rect width="800" height="500" fill="url(#sunBg)"/>
+
+  <!-- Blue Gate Net / Fence in Background -->
+  <rect x="520" y="50" width="240" height="400" fill="none" stroke="url(#blueGate)" stroke-width="8" rx="12"/>
+  <!-- Net Grid -->
+  <path d="M 520,100 L 760,100 M 520,160 L 760,160 M 520,220 L 760,220 M 520,280 L 760,280 M 520,340 L 760,340 M 520,400 L 760,400" stroke="#3B82F6" stroke-width="3" opacity="0.6"/>
+  <path d="M 580,50 L 580,450 M 640,50 L 640,450 M 700,50 L 700,450" stroke="#3B82F6" stroke-width="3" opacity="0.6"/>
+
+  <!-- Vida Sitting Upright with Joyful Eyes Closed -->
+  <!-- Fluffy White Chest and Shoulders -->
+  <path d="M 180,240 Q 320,180 460,240 L 480,480 L 160,480 Z" fill="#FFFFFF"/>
+
+  <!-- Colorful Harness -->
+  <path d="M 220,300 Q 320,340 420,300" stroke="#EC4899" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <path d="M 240,280 L 260,380 M 400,280 L 380,380" stroke="#3B82F6" stroke-width="12"/>
+
+  <!-- Head -->
+  <ellipse cx="320" cy="180" rx="90" ry="75" fill="#FFFDF9"/>
+
+  <!-- Ears perk up in happiness -->
+  <path d="M 230,130 L 190,40 L 270,100 Z" fill="#EAD7BC"/>
+  <path d="M 410,130 L 450,40 L 370,100 Z" fill="#EAD7BC"/>
+
+  <!-- Closed Eyes in Pure Happiness -->
+  <path d="M 260,170 Q 280,185 300,170" stroke="#5C4033" stroke-width="5" fill="none"/>
+  <path d="M 340,170 Q 360,185 380,170" stroke="#5C4033" stroke-width="5" fill="none"/>
+
+  <!-- Big Open Mouth with Tongue Out in Sunshine -->
+  <ellipse cx="320" cy="205" rx="18" ry="12" fill="#D98A8A"/> <!-- Pink Nose -->
+  <path d="M 280,220 Q 320,270 360,220 Z" fill="#881337"/>
+  <path d="M 290,225 Q 320,290 350,225 Z" fill="#FF4D8D"/> <!-- Long happy tongue -->
+
+  <!-- Sunlight Rays -->
+  <path d="M 50,50 L 120,120 M 150,30 L 180,110 M 30,150 L 110,170" stroke="#FBBF24" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Badge Overlay -->
+  <rect x="20" y="20" width="410" height="40" rx="8" fill="#0B2343" opacity="0.9"/>
+  <text x="35" y="45" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="bold" fill="#FFFFFF">6. O Sorriso do Renascimento na Varanda</text>
+</svg>

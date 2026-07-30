@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gardenBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3E8FF"/>
+      <stop offset="100%" stop-color="#DDD6FE"/>
+    </linearGradient>
+    <linearGradient id="crownGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="crownPink" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#DB2777"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Garden Background -->
+  <rect width="800" height="500" fill="url(#gardenBg)"/>
+
+  <!-- Potted Purple Plant Leaves on Side -->
+  <path d="M 600,100 Q 660,180 720,120 Q 750,220 680,260 Q 760,320 650,400 Z" fill="#581C87" opacity="0.85"/>
+  <path d="M 640,140 Q 700,200 750,160 Q 780,250 720,290 Z" fill="#7E22CE" opacity="0.9"/>
+
+  <!-- Princess Vida Close-Up -->
+  <!-- Fluffy White Fur -->
+  <path d="M 120,250 Q 280,180 480,230 L 520,480 L 100,480 Z" fill="#FFFFFF"/>
+
+  <!-- Head -->
+  <ellipse cx="320" cy="200" rx="100" ry="85" fill="#FFFDF9"/>
+
+  <!-- Perky Ears -->
+  <path d="M 220,140 L 170,40 L 260,100 Z" fill="#EAD7BC"/>
+  <path d="M 420,140 L 470,40 L 380,100 Z" fill="#EAD7BC"/>
+
+  <!-- Gorgeous Blue Eyes looking warmly -->
+  <ellipse cx="260" cy="190" rx="22" ry="16" fill="#3B82F6"/>
+  <circle cx="260" cy="190" r="9" fill="#0F172A"/>
+  <circle cx="254" cy="184" r="4" fill="#FFFFFF"/>
+
+  <ellipse cx="380" cy="190" rx="22" ry="16" fill="#3B82F6"/>
+  <circle cx="380" cy="190" r="9" fill="#0F172A"/>
+  <circle cx="374" cy="184" r="4" fill="#FFFFFF"/>
+
+  <!-- Pink Nose & Sweet Smile -->
+  <ellipse cx="320" cy="225" rx="18" ry="12" fill="#D98A8A"/>
+  <path d="M 290,240 Q 320,275 350,240 Z" fill="#991B1B"/>
+  <path d="M 300,245 Q 320,285 340,245 Z" fill="#FF70A6"/> <!-- Tongue out -->
+
+  <!-- PINK PRINCESS CROWN STICKER ON FOREHEAD -->
+  <path d="M 290,115 L 300,85 L 320,105 L 340,85 L 350,115 Z" fill="url(#crownPink)" stroke="#FBBF24" stroke-width="3"/>
+  <circle cx="300" cy="82" r="4" fill="#FBBF24"/>
+  <circle cx="320" cy="100" r="5" fill="#3B82F6"/>
+  <circle cx="340" cy="82" r="4" fill="#FBBF24"/>
+
+  <!-- Glitter Gem Stickers on Forehead -->
+  <path d="M 320,130 L 324,138 L 332,142 L 324,146 L 320,154 L 316,146 L 308,142 L 316,138 Z" fill="#EC4899"/>
+  <path d="M 280,125 L 283,130 L 288,133 L 283,136 L 280,141 L 277,136 L 272,133 L 277,130 Z" fill="#3B82F6"/>
+  <path d="M 360,125 L 363,130 L 368,133 L 363,136 L 360,141 L 357,136 L 352,133 L 357,130 Z" fill="#F59E0B"/>
+
+  <!-- Sparkle Effects -->
+  <path d="M 160,100 L 165,110 L 175,115 L 165,120 L 160,130 L 155,120 L 145,115 L 155,110 Z" fill="#F472B6"/>
+  <path d="M 480,90 L 484,98 L 492,102 L 484,106 L 480,114 L 476,106 L 468,102 L 476,98 Z" fill="#FBBF24"/>
+
+  <!-- Badge Overlay -->
+  <rect x="20" y="20" width="460" height="40" rx="8" fill="#0B2343" opacity="0.9"/>
+  <text x="35" y="45" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="bold" fill="#FFFFFF">7. A Princesa Vida • Rainha de Nossos Corações</text>
+</svg>

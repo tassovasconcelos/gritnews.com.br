@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="porchFloor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAE5D9"/>
+      <stop offset="100%" stop-color="#D5CDBF"/>
+    </linearGradient>
+    <linearGradient id="floralGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2D6A4F"/>
+      <stop offset="100%" stop-color="#1B4332"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Porch Tile Floor -->
+  <rect width="800" height="500" fill="url(#porchFloor)"/>
+  <path d="M 0,200 L 800,200 M 0,350 L 800,350 M 250,0 L 250,500 M 550,0 L 550,500" stroke="#B8AFA1" stroke-width="2"/>
+
+  <!-- Vida relaxing on porch -->
+  <!-- Fluffy White/Cream Body -->
+  <path d="M 200,220 Q 380,180 580,240 Q 640,300 580,380 Q 380,440 180,380 Q 120,300 200,220 Z" fill="#FFFFFF"/>
+
+  <!-- Green Floral Bandana around Neck -->
+  <path d="M 320,220 L 480,230 L 400,340 Z" fill="url(#floralGreen)"/>
+  <!-- Pink & Yellow Flowers on Bandana -->
+  <circle cx="360" cy="250" r="10" fill="#FF85A1"/>
+  <circle cx="360" cy="250" r="4" fill="#FFD166"/>
+  
+  <circle cx="430" cy="260" r="10" fill="#FF85A1"/>
+  <circle cx="430" cy="260" r="4" fill="#FFD166"/>
+
+  <circle cx="390" cy="290" r="12" fill="#F472B6"/>
+  <circle cx="390" cy="290" r="5" fill="#FBBF24"/>
+
+  <!-- Head with big happy smile -->
+  <ellipse cx="400" cy="170" rx="75" ry="60" fill="#FFFDF9"/>
+
+  <!-- Ears -->
+  <path d="M 330,140 L 300,70 L 360,110 Z" fill="#EAD7BC"/>
+  <path d="M 470,140 L 500,70 L 440,110 Z" fill="#EAD7BC"/>
+
+  <!-- Happy closed eyes -->
+  <path d="M 350,165 Q 365,175 380,165" stroke="#5C4033" stroke-width="4" fill="none"/>
+  <path d="M 420,165 Q 435,175 450,165" stroke="#5C4033" stroke-width="4" fill="none"/>
+
+  <!-- Pink Nose & Open Tongue Smile -->
+  <ellipse cx="400" cy="195" rx="16" ry="11" fill="#D98A8A"/>
+  <!-- Open mouth with pink tongue -->
+  <path d="M 370,205 Q 400,245 430,205 Z" fill="#991B1B"/>
+  <path d="M 380,210 Q 400,260 420,210 Z" fill="#FF70A6"/> <!-- Tongue hanging out -->
+
+  <!-- Badge Overlay -->
+  <rect x="20" y="20" width="410" height="40" rx="8" fill="#0B2343" opacity="0.9"/>
+  <text x="35" y="45" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="bold" fill="#FFFFFF">5. A Doce Vida de Bandana Floral Verde</text>
+</svg>

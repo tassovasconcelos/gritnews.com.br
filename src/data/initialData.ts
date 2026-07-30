@@ -465,8 +465,8 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-1',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1200',
-        caption: '1. O Resgate na Praça: Imóvel sobre o colchão de espuma rasgado, doado com carinho por moradores em situação de rua, Vida esperava o amanhecer sem mover as patas.'
+        content: '/images/vida_foto_1_resgate.svg',
+        caption: '1. O Resgate na Praça: Imóvel sobre o colchão de espuma rasgado, acolhida por moradores em situação de rua com sacos de lixo e mochila ao lado, Vida aguardava o resgate na praça pública.'
       },
       {
         id: 'vida-p4',
@@ -496,8 +496,8 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-2',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1200',
-        caption: '2. Aconchego e Dignidade: De fraldinha hospitalar no tatame azul, com sua almofadinha de rosquinha rosa e potinho d’água, Vida iniciou a jornada no seu quarto de hospital.'
+        content: '/images/vida_foto_2_quarto_hospital.svg',
+        caption: '2. Aconchego e Dignidade no Quarto de Hospital: De fraldinha hospitalar no tatame de EVA azul, com sua almofadinha de rosquinha rosa e potinho de água, Vida recebia os primeiros cuidados.'
       },
       {
         id: 'vida-p7',
@@ -522,8 +522,8 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-3',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&q=80&w=1200',
-        caption: '3. Medicina com Afeto: Agulhas de acupuntura na testa estimulando os caminhos neurais e dois mimosos lacinhos coloridos nas orelhas para resgatar a alegria.'
+        content: '/images/vida_foto_3_acupuntura_lacinhos.svg',
+        caption: '3. Medicina com Afeto: Agulhas de acupuntura na testa estimulando os caminhos neurais e dois mimosos lacinhos coloridos nas orelhas para resgatar a alegria e a vaidade.'
       },
       {
         id: 'vida-p10',
@@ -543,8 +543,8 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-4',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200',
-        caption: '4. Fisioterapia Diária e Eletroestimulação: A Dra. Renata Pessoa (@renatapessoa.vet) e a equipe dedicadas a estimular os músculos traseiros da Vida. "Tô fazendo fisioterapia, titios!"'
+        content: '/images/vida_foto_4_fisioterapia_dra_renata.svg',
+        caption: '4. Fisioterapia Diária e Eletroestimulação TENS/FES: A Dra. Renata Pessoa (@renatapessoa.vet e @dramarciasm) dedicada a aplicar eletroterapia no quadril da Vida. "Tô fazendo minha fisioterapia, titios!"'
       },
       {
         id: 'vida-p12',
@@ -554,7 +554,7 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-p13',
         type: 'paragraph',
-        content: 'Como em todo processo de cura profunda, o caminho não foi uma linha reta em ascensão. Tivemos dias sombrios em que a apatia dela me fazia duvidar, dias em que as pernas traseiras pareciam ceder ainda mais, me levando às lágrimas escondidas. Mas a natureza é fascinante. O corpo responde à esperança. E então começaram a surgir as vitórias invisíveis para o mundo, mas imensas para nós: o dia em que ela firmou a pata esquerda sem deslizar; a tarde em que ela conseguiu se sustentar em pé por dez segundos sozinha; a manhã épica em que, desajeitada, ela deu o primeiro trote pelo gramado do quintal.'
+        content: 'Como em todo processo de cura profunda, o caminho não foi uma linha reta em ascension. Tivemos dias sombrios em que a apatia dela me fazia duvidar, dias em que as pernas traseiras pareciam ceder ainda mais, me levando às lágrimas escondidas. Mas a natureza é fascinante. O corpo responde à esperança. E então começaram a surgir as vitórias invisíveis para o mundo, mas imensas para nós: o dia em que ela firmou a pata esquerda sem deslizar; a tarde em que ela conseguiu se sustentar em pé por dez segundos sozinha; a manhã épica em que, desajeitada, ela deu o primeiro trote pelo gramado do quintal.'
       },
       {
         id: 'vida-callout-filosofia',
@@ -569,14 +569,14 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-5',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1200',
-        caption: '5. O Sorriso do Renascimento: De peito aberto na varanda, olhos fechados e língua de fora, Vida celebra a vida sem dores nem medos.'
+        content: '/images/vida_foto_5_bandana_floral.svg',
+        caption: '5. A Doce Vida de Bandana: Relaxada no piso de cerâmica com sua bandana floral verde com flores rosa e amarelas, esbanjando doçura e tranquilidade.'
       },
       {
         id: 'vida-img-6',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&q=80&w=1200',
-        caption: '6. A Doce Vida de Bandana: Relaxada no piso de azulejo com sua bandana floral verde, esbanjando doçura e uma pelagem fofíssima.'
+        content: '/images/vida_foto_6_sorriso_varanda.svg',
+        caption: '6. O Sorriso do Renascimento: De peito aberto na varanda ao lado do portão de rede azul, olhos suavemente fechados e língua de fora, Vida celebra a vida sem dores nem medos.'
       },
       {
         id: 'vida-p14',
@@ -596,8 +596,8 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-7',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1583511655826-05700d52f4d9?auto=format&fit=crop&q=80&w=1200',
-        caption: '7. A Coroazinha da Vitória: A Princesa Vida com sua coroa rosa colada na testa — o símbolo eterno do amor, da dignidade restaurada e de um lar onde ela é amada incondicionalmente.'
+        content: '/images/vida_foto_7_princesa_coroa.svg',
+        caption: '7. A Coroazinha da Vitória: A Princesa Vida com sua coroazinha rosa colada na testa e brilhos — o símbolo eterno do amor, da dignidade restaurada e de um lar onde ela é amada incondicionalmente.'
       },
       {
         id: 'vida-p16',
