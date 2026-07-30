@@ -97,28 +97,28 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-16 transition-colors">
       {/* Subdomain Header Bar */}
-      <div className="bg-amber-600 text-white text-xs py-2 px-4 text-center font-medium shadow-inner flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-        <div className="flex items-center gap-1.5">
-          <PawPrint className="w-4 h-4 animate-bounce" />
-          <span>Subdomínio Oficial: <strong>tenpets.gritnews.com.br</strong></span>
+      <div className="bg-[#0F172A] text-slate-100 text-xs py-2 px-4 text-center font-medium border-b border-[#587837]/40 shadow-xs flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1.5 text-slate-200">
+          <PawPrint className="w-3.5 h-3.5 text-[#8CB863]" />
+          <span>Portal Científico Oficial: <strong className="text-white font-bold">tenpets.gritnews.com.br</strong></span>
         </div>
-        <span>•</span>
+        <span className="text-slate-600">•</span>
         <a
           href="https://www.instagram.com/tenpets_"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1.5 bg-amber-700 hover:bg-amber-800 text-amber-100 px-3 py-1 rounded-full text-xs font-bold transition-all border border-amber-500 shadow-sm"
+          className="inline-flex items-center gap-1.5 bg-[#587837]/30 hover:bg-[#587837]/50 text-emerald-200 px-3 py-0.5 rounded-full text-[11px] font-bold transition-all border border-[#587837]/60"
         >
-          <Instagram className="w-3.5 h-3.5 text-rose-300" />
-          <span>Instagram @tenpets_</span>
-          <ExternalLink className="w-3 h-3 text-amber-300" />
+          <Instagram className="w-3 h-3 text-emerald-300" />
+          <span>@tenpets_</span>
+          <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
         </a>
       </div>
 
-      {/* Hero Section with Official Branding & Letícia Karla Profile */}
-      <section className="bg-gradient-to-br from-amber-800 via-amber-900 to-slate-950 text-white py-12 px-4 sm:px-6 lg:px-8 shadow-xl relative overflow-hidden">
+      {/* Hero Section with Corporate Scientific Branding */}
+      <section className="bg-gradient-to-br from-[#0D182A] via-[#102D22] to-[#0B1220] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md relative overflow-hidden">
         {/* Background Subtle Image Overlay */}
-        <div className="absolute inset-0 opacity-15 mix-blend-overlay">
+        <div className="absolute inset-0 opacity-10 mix-blend-overlay">
           <img
             src={tenpetsHeroImg}
             alt="TenPets Hero"
@@ -131,15 +131,15 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
         </div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-5">
             <div className="flex flex-wrap items-center gap-3">
               {/* Official TenPets Logo Emblem */}
-              <div className="bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-2xl shadow-lg border border-[#587837]/30">
+              <div className="bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-xl shadow-sm border border-[#587837]/40">
                 <TenPetsLogo size="md" showSubtitle={false} />
               </div>
 
-              <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-amber-200">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <div className="inline-flex items-center gap-2 bg-emerald-900/40 border border-emerald-500/30 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-emerald-200">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Medicina Veterinária & Direito Animal</span>
               </div>
             </div>
@@ -148,26 +148,26 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
               Ciência Veterinária, Proteção Animal & Direitos Pet
             </h1>
 
-            <p className="text-slate-200 text-base sm:text-lg leading-relaxed font-light">
+            <p className="text-slate-300 text-base sm:text-lg leading-relaxed font-normal max-w-3xl">
               Espaço oficial de pesquisas científicas veterinárias, cases jurídicos em defesa dos animais e relatos de reabilitação e resgate produzidos e assinados por <strong>Letícia Karla</strong>.
             </p>
 
             {/* Badges of Letícia Karla */}
-            <div className="flex flex-wrap gap-2.5 pt-2">
-              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-amber-100 shadow-xs">
-                <GraduationCap className="w-4 h-4 text-amber-300" />
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-slate-200">
+                <GraduationCap className="w-4 h-4 text-emerald-400" />
                 Estudante de Medicina Veterinária
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-amber-100 shadow-xs">
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-slate-200">
                 <Heart className="w-4 h-4 text-rose-400" />
                 Protetora de Animais
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-amber-100 shadow-xs">
-                <BookOpen className="w-4 h-4 text-emerald-300" />
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-slate-200">
+                <BookOpen className="w-4 h-4 text-sky-300" />
                 Escritora de Artigos Científicos
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-amber-100 shadow-xs">
-                <Scale className="w-4 h-4 text-sky-300" />
+              <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-medium text-slate-200">
+                <Scale className="w-4 h-4 text-amber-300" />
                 Advogada em Direito Animal
               </span>
             </div>

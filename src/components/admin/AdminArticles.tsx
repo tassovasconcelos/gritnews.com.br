@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Eye, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, Save, History, Image as ImageIcon, Video as VideoIcon, Film, Upload, FileImage } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, Save, History, Image as ImageIcon, Video as VideoIcon, Film, Upload, FileImage, ArrowUp, ArrowDown, HelpCircle, Info, Layers } from 'lucide-react';
 import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBlock } from '../../types';
-import { saveArticle, deleteArticle } from '../../lib/storage';
+import { saveArticle, deleteArticle, getMediaAssets } from '../../lib/storage';
 import { Modal } from '../ui/Modal';
 
 interface AdminArticlesProps {
@@ -33,9 +33,21 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
   const [tagsInput, setTagsInput] = useState('');
   const [isSponsored, setIsSponsored] = useState(false);
   const [isEvergreen, setIsEvergreen] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
   const [blocks, setBlocks] = useState<ArticleBlock[]>([
     { id: 'b-1', type: 'paragraph', content: 'Escreva a introdução da matéria...' }
   ]);
+
+  const handleMoveBlock = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === blocks.length - 1) return;
+    const newBlocks = [...blocks];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const temp = newBlocks[index];
+    newBlocks[index] = newBlocks[targetIndex];
+    newBlocks[targetIndex] = temp;
+    setBlocks(newBlocks);
+  };
 
   const handleOpenNew = () => {
     setEditingArticle(null);
@@ -283,68 +295,122 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                 />
               </div>
 
-              {/* Block Editor */}
-              <div className="pt-4 border-t border-[#E2E8F0]">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              {/* Block Editor & Media Manager */}
+              <div className="pt-4 border-t border-[#E2E8F0] space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <h4 className="text-sm font-bold text-[#0B2343] flex items-center gap-2">
                     <FileImage className="w-4 h-4 text-[#145EDB]" />
-                    Conteúdo da Matéria em Blocos ({blocks.length})
+                    <span>Conteúdo do Artigo por Blocos ({blocks.length})</span>
                   </h4>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => handleAddBlock('paragraph')}
-                      className="px-2 py-1 bg-gray-100 text-xs rounded-md font-bold hover:bg-gray-200"
-                    >
-                      + Parágrafo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleAddBlock('heading2')}
-                      className="px-2 py-1 bg-gray-100 text-xs rounded-md font-bold hover:bg-gray-200"
-                    >
-                      + Título H2
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleAddBlock('image')}
-                      className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-md font-bold flex items-center gap-1 hover:bg-emerald-200"
-                    >
-                      <ImageIcon className="w-3 h-3" />
-                      <span>+ Foto</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleAddBlock('video')}
-                      className="px-2 py-1 bg-purple-100 text-purple-900 text-xs rounded-md font-bold flex items-center gap-1 hover:bg-purple-200"
-                    >
-                      <VideoIcon className="w-3 h-3 text-purple-700" />
-                      <span>+ Vídeo</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleAddBlock('callout')}
-                      className="px-2 py-1 bg-[#EAF3FF] text-[#145EDB] text-xs rounded-md font-bold"
-                    >
-                      + Destaque
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleAddBlock('ad_slot')}
-                      className="px-2 py-1 bg-orange-100 text-[#FF8500] text-xs rounded-md font-bold"
-                    >
-                      + Anúncio
-                    </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowGuide(!showGuide)}
+                    className="text-[11px] text-[#145EDB] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    <span>{showGuide ? 'Ocultar Guia de Publicação' : 'Como publicar Fotos & Vídeos?'}</span>
+                  </button>
+                </div>
+
+                {/* Step-by-step Publishing Instructions Banner */}
+                {showGuide && (
+                  <div className="bg-sky-50/90 border border-sky-200 rounded-2xl p-3.5 text-xs text-sky-950 space-y-2.5 animate-fadeIn">
+                    <div className="flex items-center gap-2 font-bold text-sky-900 border-b border-sky-200/80 pb-2">
+                      <Info className="w-4 h-4 text-sky-600 shrink-0" />
+                      <span>Guia Prático: Como Inserir e Renderizar Fotos & Vídeos em cada Bloco</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-[11px]">
+                      <div className="bg-white/80 p-2.5 rounded-xl border border-sky-100 space-y-1">
+                        <p className="font-bold text-sky-900 flex items-center gap-1">
+                          <Upload className="w-3 h-3 text-sky-600" />
+                          <span>1. Upload Direto</span>
+                        </p>
+                        <p className="text-slate-600 leading-snug">
+                          Clique em <strong>"Upload Foto"</strong> ou <strong>"Upload Vídeo"</strong> em qualquer bloco para enviar arquivos do seu celular ou computador. Ele é renderizado instantaneamente!
+                        </p>
+                      </div>
+
+                      <div className="bg-white/80 p-2.5 rounded-xl border border-sky-100 space-y-1">
+                        <p className="font-bold text-sky-900 flex items-center gap-1">
+                          <ImageIcon className="w-3 h-3 text-emerald-600" />
+                          <span>2. Fotos Locais do Projeto</span>
+                        </p>
+                        <p className="text-slate-600 leading-snug">
+                          Adicione suas fotos na pasta <code className="bg-slate-100 px-1 rounded text-[10px]">/public/images/</code> ou vídeos em <code className="bg-slate-100 px-1 rounded text-[10px]">/public/videos/</code> e digite <code className="bg-slate-100 px-1 rounded text-[10px]">/images/nome.jpg</code>.
+                        </p>
+                      </div>
+
+                      <div className="bg-white/80 p-2.5 rounded-xl border border-sky-100 space-y-1">
+                        <p className="font-bold text-sky-900 flex items-center gap-1">
+                          <VideoIcon className="w-3 h-3 text-purple-600" />
+                          <span>3. YouTube, Vimeo ou CDN</span>
+                        </p>
+                        <p className="text-slate-600 leading-snug">
+                          Cole links de vídeos do YouTube (<code className="bg-slate-100 px-1 rounded text-[10px]">youtube.com/watch?v=...</code>) ou imagens da sua hospedagem Hostinger/Unsplash.
+                        </p>
+                      </div>
+                    </div>
                   </div>
+                )}
+
+                {/* Add Block Toolbar */}
+                <div className="flex flex-wrap items-center gap-1.5 bg-[#F7F9FC] p-2 rounded-xl border border-[#E2E8F0]">
+                  <span className="text-[11px] font-bold text-gray-500 mr-1">Inserir:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleAddBlock('paragraph')}
+                    className="px-2.5 py-1.5 bg-white text-slate-800 text-xs rounded-lg font-bold border border-slate-200 hover:bg-slate-100 cursor-pointer shadow-2xs"
+                  >
+                    + Parágrafo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddBlock('heading2')}
+                    className="px-2.5 py-1.5 bg-white text-slate-800 text-xs rounded-lg font-bold border border-slate-200 hover:bg-slate-100 cursor-pointer shadow-2xs"
+                  >
+                    + Título H2
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddBlock('image')}
+                    className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    <span>+ Bloco Foto</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddBlock('video')}
+                    className="px-2.5 py-1.5 bg-purple-700 hover:bg-purple-800 text-white text-xs rounded-lg font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <VideoIcon className="w-3.5 h-3.5" />
+                    <span>+ Bloco Vídeo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddBlock('callout')}
+                    className="px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-900 text-xs rounded-lg font-bold cursor-pointer"
+                  >
+                    + Destaque
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddBlock('quote')}
+                    className="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs rounded-lg font-bold cursor-pointer"
+                  >
+                    + Citação
+                  </button>
                 </div>
 
                 {/* Article Photos Quick Picker */}
-                <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-3 mb-4 space-y-2 text-xs">
+                <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-3 space-y-2 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="font-extrabold text-[#10233F] flex items-center gap-1.5">
-                      📸 Fotos Reais do Acervo para Inserir no Artigo:
+                      📸 Fotos do Acervo TenPets & Matérias para Inserir num Clique:
                     </span>
-                    <span className="text-[10px] text-amber-800">Clique para adicionar ao artigo</span>
+                    <span className="text-[10px] text-amber-800">Clique no botão para criar o bloco da foto</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[
@@ -360,7 +426,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                         key={idx}
                         type="button"
                         onClick={() => handleAddBlock('image', p.url, `📷 ${p.title}`)}
-                        className="bg-white hover:bg-amber-100 text-slate-800 border border-amber-300 rounded-lg px-2.5 py-1 text-[11px] font-bold shadow-xs transition-colors flex items-center gap-1.5"
+                        className="bg-white hover:bg-amber-100 text-slate-800 border border-amber-300 rounded-lg px-2.5 py-1 text-[11px] font-bold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
                         <img src={p.url} alt={p.title} className="w-4 h-4 rounded object-cover" />
                         <span>+ {p.title}</span>
@@ -369,31 +435,73 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                   </div>
                 </div>
 
+                {/* Render Blocks with Live Media & Controls */}
                 <div className="space-y-3">
-                  {blocks.map((block) => (
-                    <div key={block.id} className="p-3 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl relative group space-y-2">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-gray-500">
-                        <span className="uppercase px-2 py-0.5 rounded bg-gray-200 text-gray-700">{block.type}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveBlock(block.id)}
-                          className="text-red-500 hover:text-red-700 font-bold"
-                        >
-                          Remover Bloco
-                        </button>
+                  {blocks.map((block, idx) => (
+                    <div key={block.id} className="p-3.5 bg-white border border-[#E2E8F0] rounded-2xl space-y-3 shadow-2xs hover:border-[#145EDB]/40 transition-colors">
+                      {/* Block Controls Header */}
+                      <div className="flex items-center justify-between text-xs font-bold border-b border-[#E2E8F0] pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400 font-mono">#{idx + 1}</span>
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
+                            block.type === 'image' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                            block.type === 'video' ? 'bg-purple-100 text-purple-900 border border-purple-300' :
+                            block.type === 'heading2' ? 'bg-blue-100 text-blue-800' :
+                            block.type === 'callout' ? 'bg-sky-100 text-sky-800' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {block.type === 'image' ? '📷 Bloco de Imagem' :
+                             block.type === 'video' ? '🎥 Bloco de Vídeo' :
+                             block.type === 'heading2' ? '📌 Título H2' :
+                             block.type === 'callout' ? '💡 Destaque' :
+                             block.type === 'quote' ? '💬 Citação' : '📝 Parágrafo'}
+                          </span>
+                        </div>
+
+                        {/* Action Buttons: Move Up, Move Down, Delete */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleMoveBlock(idx, 'up')}
+                            disabled={idx === 0}
+                            className="p-1 text-gray-500 hover:text-[#145EDB] disabled:opacity-30 cursor-pointer"
+                            title="Mover para Cima"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveBlock(idx, 'down')}
+                            disabled={idx === blocks.length - 1}
+                            className="p-1 text-gray-500 hover:text-[#145EDB] disabled:opacity-30 cursor-pointer"
+                            title="Mover para Baixo"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBlock(block.id)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded font-bold cursor-pointer ml-1"
+                            title="Remover Bloco"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
+                      {/* Block Specific Input & Live Visual Render */}
                       {block.type === 'image' ? (
-                        <div className="space-y-2">
-                          <div className="flex gap-2 items-center">
+                        <div className="space-y-3">
+                          <div className="flex flex-col sm:flex-row gap-2 items-center">
                             <input
                               type="text"
                               value={block.content}
                               onChange={e => handleUpdateBlock(block.id, e.target.value)}
-                              placeholder="URL da imagem (/images/... ou https://...)"
-                              className="flex-1 p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs font-mono"
+                              placeholder="Caminho da Imagem (/images/exemplo.jpg ou https://...)"
+                              className="w-full sm:flex-1 p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-mono"
                             />
-                            <label className="bg-[#145EDB] hover:bg-[#0f4bb3] text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer shrink-0 flex items-center gap-1">
+
+                            <label className="w-full sm:w-auto bg-[#145EDB] hover:bg-[#0f4bb3] text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs">
                               <Upload className="w-3.5 h-3.5" />
                               <span>Upload Foto</span>
                               <input
@@ -407,7 +515,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                                     reader.onload = (evt) => {
                                       if (evt.target?.result) {
                                         handleUpdateBlock(block.id, evt.target.result as string);
-                                        onShowToast('Foto real carregada com sucesso no artigo!');
+                                        onShowToast('Foto carregada e inserida no bloco com sucesso!');
                                       }
                                     };
                                     reader.readAsDataURL(file);
@@ -416,30 +524,52 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                               />
                             </label>
                           </div>
+
                           <input
                             type="text"
                             value={block.caption || ''}
                             onChange={e => handleUpdateBlockCaption(block.id, e.target.value)}
-                            placeholder="Legenda da foto (ex: 📷 1. O Resgate na Praça...)"
-                            className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs italic"
+                            placeholder="Legenda da imagem (ex: 📷 Foto do resgate realizado em 2026...)"
+                            className="w-full p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs italic"
                           />
+
+                          {/* Rendered Image Preview in Article Format */}
                           {block.content && (
-                            <div className="relative aspect-video max-h-36 rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
-                              <img src={block.content} alt="Preview" className="w-full h-full object-cover" />
+                            <div className="bg-slate-900 p-2 rounded-2xl border border-slate-700 space-y-1.5">
+                              <div className="flex items-center justify-between text-[10px] text-emerald-400 font-bold px-1">
+                                <span>Visualização Formatada da Imagem no Artigo</span>
+                                <span className="text-slate-400">Renderização em Tempo Real</span>
+                              </div>
+                              <div className="relative aspect-video max-h-52 w-full rounded-xl overflow-hidden bg-black border border-slate-800">
+                                <img
+                                  src={block.content}
+                                  alt="Preview"
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => {
+                                    e.currentTarget.src = "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800";
+                                  }}
+                                />
+                              </div>
+                              {block.caption && (
+                                <p className="text-[11px] text-slate-300 italic text-center px-2">
+                                  {block.caption}
+                                </p>
+                              )}
                             </div>
                           )}
                         </div>
                       ) : block.type === 'video' ? (
-                        <div className="space-y-2">
-                          <div className="flex gap-2 items-center">
+                        <div className="space-y-3">
+                          <div className="flex flex-col sm:flex-row gap-2 items-center">
                             <input
                               type="text"
                               value={block.content}
                               onChange={e => handleUpdateBlock(block.id, e.target.value)}
-                              placeholder="URL do vídeo (MP4, YouTube embed, data URL...)"
-                              className="flex-1 p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs font-mono"
+                              placeholder="URL do Vídeo (YouTube embed, Vimeo, MP4 ou /videos/nome.mp4)"
+                              className="w-full sm:flex-1 p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-mono"
                             />
-                            <label className="bg-[#10233F] hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer shrink-0 flex items-center gap-1">
+
+                            <label className="w-full sm:w-auto bg-purple-900 hover:bg-purple-950 text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs">
                               <Film className="w-3.5 h-3.5 text-amber-400" />
                               <span>Upload Vídeo</span>
                               <input
@@ -453,7 +583,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                                     reader.onload = (evt) => {
                                       if (evt.target?.result) {
                                         handleUpdateBlock(block.id, evt.target.result as string);
-                                        onShowToast('Vídeo real carregado com sucesso no artigo!');
+                                        onShowToast('Vídeo real carregado no bloco do artigo!');
                                       }
                                     };
                                     reader.readAsDataURL(file);
@@ -462,29 +592,53 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                               />
                             </label>
                           </div>
+
                           <input
                             type="text"
                             value={block.caption || ''}
                             onChange={e => handleUpdateBlockCaption(block.id, e.target.value)}
-                            placeholder="Legenda do vídeo (ex: 🎥 Registro em vídeo da Vida tomando água...)"
-                            className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs italic"
+                            placeholder="Legenda do vídeo (ex: 🎥 Registro em vídeo do procedimento...)"
+                            className="w-full p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs italic"
                           />
+
+                          {/* Rendered Video Preview in Article Format */}
                           {block.content && (
-                            <div className="relative aspect-video max-h-36 rounded-lg overflow-hidden border border-gray-800 bg-black">
-                              {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') ? (
-                                <iframe src={block.content.replace('watch?v=', 'embed/')} title="Preview" className="w-full h-full" />
-                              ) : (
-                                <video src={block.content} controls className="w-full h-full object-contain" />
+                            <div className="bg-slate-950 p-2.5 rounded-2xl border border-slate-800 space-y-1.5 text-white">
+                              <div className="flex items-center justify-between text-[10px] text-amber-400 font-bold px-1">
+                                <span>Visualização Formatada do Vídeo no Artigo</span>
+                                <span className="text-slate-400">Player em Tempo Real</span>
+                              </div>
+                              <div className="relative aspect-video max-h-56 w-full rounded-xl overflow-hidden bg-black border border-slate-800">
+                                {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') ? (
+                                  <iframe
+                                    src={block.content.replace('watch?v=', 'embed/')}
+                                    title="Preview Vídeo"
+                                    className="w-full h-full border-0"
+                                    allowFullScreen
+                                  />
+                                ) : (
+                                  <video src={block.content} controls className="w-full h-full object-contain" />
+                                )}
+                              </div>
+                              {block.caption && (
+                                <p className="text-[11px] text-slate-300 italic text-center px-2">
+                                  {block.caption}
+                                </p>
                               )}
                             </div>
                           )}
                         </div>
                       ) : (
                         <textarea
-                          rows={block.type === 'paragraph' ? 3 : 1}
+                          rows={block.type === 'paragraph' ? 3 : block.type === 'heading2' ? 1 : 2}
                           value={block.content}
                           onChange={e => handleUpdateBlock(block.id, e.target.value)}
-                          className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs"
+                          placeholder={block.type === 'heading2' ? 'Título H2 da Seção...' : 'Digite o conteúdo do texto...'}
+                          className={`w-full p-2.5 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs ${
+                            block.type === 'heading2' ? 'font-black text-slate-900 text-sm' :
+                            block.type === 'callout' ? 'bg-sky-50/60 border-sky-200 text-sky-900 font-medium' :
+                            block.type === 'quote' ? 'italic font-serif border-amber-200 bg-amber-50/50' : 'text-slate-800'
+                          }`}
                         />
                       )}
                     </div>
@@ -493,17 +647,17 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
               </div>
             </div>
 
-            {/* Sidebar Controls & SEO Checklist */}
+            {/* Sidebar Controls & Cover Manager */}
             <div className="space-y-4">
-              <div className="p-4 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl space-y-3">
-                <h4 className="text-xs font-bold uppercase text-[#0B2343]">Configurações da Publicação</h4>
+              <div className="p-4 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl space-y-3.5">
+                <h4 className="text-xs font-bold uppercase text-[#0B2343] border-b border-[#E2E8F0] pb-2">Configurações & Capa</h4>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Categoria</label>
+                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Categoria *</label>
                   <select
                     value={categoryId}
                     onChange={e => setCategoryId(e.target.value)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs"
+                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold"
                   >
                     {categories.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
@@ -512,11 +666,11 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Autor</label>
+                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Autor *</label>
                   <select
                     value={authorId}
                     onChange={e => setAuthorId(e.target.value)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs"
+                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold"
                   >
                     {authors.map(a => (
                       <option key={a.id} value={a.id}>{a.name}</option>
@@ -525,11 +679,11 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Status</label>
+                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Status da Matéria</label>
                   <select
                     value={status}
                     onChange={e => setStatus(e.target.value as ArticleStatus)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs"
+                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold"
                   >
                     <option value="DRAFT">Rascunho</option>
                     <option value="IN_REVIEW">Em Revisão</option>
@@ -538,14 +692,54 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">URL da Imagem Capa</label>
+                {/* Cover Image Manager with Upload & Preview */}
+                <div className="space-y-2 pt-2 border-t border-[#E2E8F0]">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-bold text-[#0B2343]">Imagem de Capa do Artigo *</label>
+                    <label className="text-[10px] text-[#145EDB] hover:underline font-bold cursor-pointer flex items-center gap-1">
+                      <Upload className="w-3 h-3" />
+                      <span>Upload Capa</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (evt) => {
+                              if (evt.target?.result) {
+                                setFeaturedImage(evt.target.result as string);
+                                onShowToast('Nova foto de capa definida!');
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+
                   <input
                     type="text"
                     value={featuredImage}
                     onChange={e => setFeaturedImage(e.target.value)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs"
+                    placeholder="URL da Capa (/images/... ou https://...)"
+                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-mono"
                   />
+
+                  {featuredImage && (
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs">
+                      <img
+                        src={featuredImage}
+                        alt="Capa Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=800";
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -554,12 +748,12 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                     type="text"
                     value={tagsInput}
                     onChange={e => setTagsInput(e.target.value)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs"
+                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs"
                   />
                 </div>
 
                 <div className="pt-2 border-t border-[#E2E8F0] space-y-2">
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer font-medium">
                     <input
                       type="checkbox"
                       checked={isSponsored}
@@ -568,7 +762,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                     />
                     <span>Conteúdo Patrocinado</span>
                   </label>
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer font-medium">
                     <input
                       type="checkbox"
                       checked={isEvergreen}

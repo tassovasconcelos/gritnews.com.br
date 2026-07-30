@@ -128,17 +128,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Amazon</span>
           </a>
 
-          {onNavigateSacProh && (
-            <button
-              onClick={onNavigateSacProh}
-              className="flex items-center gap-1.5 bg-sky-700 hover:bg-sky-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-xs hover:scale-102 transition-all cursor-pointer"
-              title="SAC ProCirúrgica Hospitalar"
-            >
-              <Stethoscope className="w-3.5 h-3.5 text-sky-200" />
-              <span>SACPROH</span>
-            </button>
-          )}
-
           <button
             onClick={onNavigateOffers}
             className="flex items-center gap-1.5 bg-[#FF8A00] hover:bg-[#e07900] text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-md hover:scale-102 transition-all cursor-pointer"
@@ -283,19 +272,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
               <span>Loja Amazon (Tasso Vasconcelos)</span>
             </a>
-
-            {onNavigateSacProh && (
-              <button
-                onClick={() => {
-                  onNavigateSacProh();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-sky-700 text-white font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2"
-              >
-                <Stethoscope className="w-4 h-4 text-sky-200" />
-                <span>SAC ProCirúrgica (SACPROH)</span>
-              </button>
-            )}
 
             <button
               onClick={() => {
