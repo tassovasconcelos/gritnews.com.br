@@ -91,7 +91,7 @@ const resolveRouteFromUrl = (
   if (params.get('view') === 'offers' || pathLower.includes('/offers')) return { view: 'offers' as ViewMode };
   if (params.get('view') === 'bookmarks' || pathLower.includes('/bookmarks')) return { view: 'bookmarks' as ViewMode };
 
-  // 3. Article Lookup by slug, artigo, article, noticia, art, id
+  // 3. Article Lookup by slug, artigo, article, noticia, art, id, or direct path
   const articleParam =
     params.get('artigo') ||
     params.get('article') ||
@@ -109,12 +109,22 @@ const resolveRouteFromUrl = (
     } else if (hash.includes('noticia/') || hash.includes('artigo/')) {
       const parts = hash.split('/').filter(Boolean);
       targetSlugOrId = parts[parts.length - 1];
+    } else if (path !== '/' && path !== '' && !pathLower.includes('/sacproh') && !pathLower.includes('/tenpets')) {
+      const cleanPath = path.replace(/^\/+|\/+$/g, '').toLowerCase();
+      if (cleanPath) {
+        targetSlugOrId = cleanPath;
+      }
     }
   }
 
   if (targetSlugOrId) {
+    const lowerTarget = targetSlugOrId.toLowerCase();
     const foundArt = allArticles.find(
-      a => a.slug === targetSlugOrId || a.id === targetSlugOrId || a.slug?.toLowerCase() === targetSlugOrId?.toLowerCase()
+      a =>
+        a.slug === targetSlugOrId ||
+        a.id === targetSlugOrId ||
+        a.slug?.toLowerCase() === lowerTarget ||
+        (lowerTarget.includes('vida') && (a.id === 'art-vida-da-vida' || a.slug.includes('vida')))
     );
     if (foundArt) {
       return { view: 'article' as ViewMode, article: foundArt };

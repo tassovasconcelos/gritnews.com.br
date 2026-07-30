@@ -405,6 +405,204 @@ export const INITIAL_AD_CAMPAIGNS: AdCampaign[] = [
 
 export const INITIAL_ARTICLES: Article[] = [
   {
+    id: 'art-vida-da-vida',
+    title: 'A Vida da Vida: Quando o Silêncio da Dor Encontra o Eco do Cuidado',
+    slug: 'a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado',
+    subtitle: 'A extraordinária jornada de amor, resistência e medicina veterinária que transformou uma husky esquecida nas ruas em um símbolo vivo de esperança.',
+    summary: 'A emocionante história de resgate da husky Vida, deixada paralisada em uma praça pública e socorrida por protetores e moradores em situação de rua, cuja reabilitação com fisioterapia e acupuntura inspirou Letícia Karla na medicina veterinária.',
+    categoryId: 'cat-pet',
+    tags: [
+      'Reportagem Especial',
+      'Resgate Animal',
+      'Medicina Veterinária',
+      'Husky Siberiano',
+      'Letícia Karla',
+      'TenPets',
+      'Reabilitação Pet',
+      'Doença Autoimune',
+      'Fisioterapia Canina',
+      'Acupuntura Veterinária'
+    ],
+    authorId: 'author-leticia',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'O repouso merecido: banhada pelo sol, a husky Vida desfruta da segurança e do afeto em seu lar acolhedor.',
+    publishedAt: '2026-07-29T08:00:00Z',
+    updatedAt: '2026-07-29T10:00:00Z',
+    readingTimeMinutes: 8,
+    viewsCount: 24890,
+    likesCount: 3840,
+    sharesCount: 1950,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: true,
+    blocks: [
+      {
+        id: 'vida-quote-top',
+        type: 'callout',
+        content: '“O abandono não faz barulho; ele simplesmente subtrai a existência de quem o sofre. Mas o resgate, esse sim, ressoa profundamente na alma de quem é salvo e de quem salva.” — Letícia Karla, estudante de Medicina Veterinária e protetora animal'
+      },
+      {
+        id: 'vida-p1',
+        type: 'paragraph',
+        content: 'Há algo de profundamente sagrado no silêncio impenetrável da madrugada. É quando as luzes da cidade se apagam, o trânsito cessa e as cortinas se fecham nas janelas aquecidas, que a dor daqueles que foram esquecidos pelo mundo permanece tragicamente desperta. Para nós, que dedicamos a vida a proteger quem não tem voz, a noite é muitas vezes a mensageira das urgências. Na noite gelada de 26 de julho de 2023, exatamente por volta das 22h, a claridade fria do celular rasgou a escuridão do meu quarto com mais um alerta nos grupos de resgate animal.'
+      },
+      {
+        id: 'vida-p2',
+        type: 'paragraph',
+        content: 'Entre tantas mensagens, fotos desfocadas e pedidos de socorro que inundam minha rotina há quinze anos, um registro específico fez o ar fugir dos meus pulmões. A imagem exibia uma husky siberiana, de pelagem branca como a neve que ela jamais conheceu, prostrada sobre o concreto sujo de uma praça pública. Ela estava completamente paralisada.'
+      },
+      {
+        id: 'vida-p3',
+        type: 'paragraph',
+        content: 'A mensagem que acompanhava a foto revelava um cenário ainda mais desolador: ela estava ali, imóvel, há quatro longos e agonizantes dias. Abandonada à própria sorte, o frio do inverno e a fome seriam seus únicos companheiros, não fosse por um ato de pura compaixão que veio de onde a sociedade menos espera. Foram moradores em situação de rua, indivíduos que também conhecem a aspereza do abandono, que estenderam um colchão rasgado sob o corpo frágil da cadela. Eles dividiram o pouco que tinham e garantiram que ela não ficasse sozinha sob o sereno cortante. A minha alma de protetora ardia; eu queria pular do pijama para a roupa de rua e correr até lá naquela mesma hora. Mas, alertada pela prudência de amigos sobre os perigos reais da madrugada em um local ermo, fui forçada a esperar. Aquela foi, sem dúvida, a madrugada mais longa da minha vida. Eu não dormi; apenas vigiava o relógio enquanto pedia silenciosamente para que ela aguentasse até o amanhecer.'
+      },
+      {
+        id: 'vida-h2-1',
+        type: 'heading2',
+        content: 'O ENCONTRO: MEDO, NEVE E CONCRETO'
+      },
+      {
+        id: 'vida-img-1',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1200',
+        caption: 'O repouso merecido: banhada pelo sol, a husky que antes conhecia o relento hoje desfruta da segurança de um lar acolhedor.'
+      },
+      {
+        id: 'vida-p4',
+        type: 'paragraph',
+        content: 'Assim que o céu começou a clarear, por volta das 7h da manhã, cruzei as avenidas da cidade com o coração batendo na garganta. Ao chegar à praça, a cena me atingiu com a força de um golpe. Ela continuava lá, deitada sobre o tecido úmido e encardido daquele colchão improvisado. Seus olhos azuis, turvos pela exaustão, eram poços de confusão e pavor. Ela era um ser majestoso reduzido a um punhado de medo e dor.'
+      },
+      {
+        id: 'vida-p5',
+        type: 'paragraph',
+        content: 'Ajoelhei-me ao seu lado, falando baixo, tentando mostrar com as mãos e a energia que a tormenta havia chegado ao fim. Mas, quando a ergui com cuidado e a acomodei no banco de trás do meu carro, o silêncio da manhã foi partido ao meio. Ela emitiu um uivo longo, gutural e cortante. Não era o som de um ferimento tocado, não era uma dor física aguda. Era o choro da alma. Depois de tantos resgates, eu sei diferenciar o som da dor do som do terror. Aquele uivo era o medo puro e destilado do desconhecido; era a memória recente de ter sido deixada para trás por aqueles que deveriam amá-la, e o pavor incontrolável do que as minhas mãos humanas fariam a ela a seguir.'
+      },
+      {
+        id: 'vida-p6',
+        type: 'paragraph',
+        content: 'Sentada no banco do motorista, olhei pelo retrovisor para aquela loba das neves tão frágil. Naquele exato instante, chorando com ela, tomei a decisão que batizaria o nosso futuro. "Vai ficar tudo bem, Vida", eu murmurei. E foi assim que ela se chamou: **Vida**. Não por aquilo que ela estava sentindo naquele momento, mas por tudo aquilo que eu jurava, diante dela, que lutaria para devolver-lhe: a dignidade de existir plena e feliz.'
+      },
+      {
+        id: 'vida-quote-middle',
+        type: 'quote',
+        content: '“Ela uivava não por dor física, mas pelo pavor de ser ferida novamente. Aquele som partiu meu coração e cimentou minha promessa: eu devolveria a ela o direito de viver.”'
+      },
+      {
+        id: 'vida-h2-2',
+        type: 'heading2',
+        content: 'O VEREDITO DO CORPO: O QUEBRA-CABEÇA DA MEDICINA VETERINÁRIA'
+      },
+      {
+        id: 'vida-p7',
+        type: 'paragraph',
+        content: 'Fomos direto, sem desvios, para a clínica veterinária. O cheiro de álcool, o bipe dos monitores e a movimentação dos médicos tornaram-se o nosso novo cenário. No entanto, a ciência não entregou o milagre da clareza logo no primeiro dia. Os exames clínicos e laboratoriais iniciais confirmaram o óbvio: ela estava em estado crítico, mas a raiz da sua paralisia permanecia oculta.'
+      },
+      {
+        id: 'vida-p8',
+        type: 'paragraph',
+        content: 'Levei-a para minha casa, preparando um "quarto de hospital" seguro e isolado dos meus outros cães resgatados. Ali começou a nossa verdadeira maratona. Foram necessários painéis de sangue extensos, exames de PCR buscando doenças infecciosas e parasitárias e, por fim, a precisão tecnológica de uma tomografia computadorizada.'
+      },
+      {
+        id: 'vida-p9',
+        type: 'paragraph',
+        content: 'Estar cursando o 5º período de Medicina Veterinária me deu uma perspectiva dupla e intensa dessa fase. A teoria dos livros tomava forma dramática na minha sala de estar. A medicina veterinária ensina cedo que o diagnóstico não é uma iluminação mágica; é a construção exaustiva de um raciocínio clínico. É a arte do descarte, da formulação de hipóteses, da teimosia acadêmica misturada à intuição prática. Após semanas de exames, o veredito mais provável se apresentou, cruel e enigmático: **uma grave doença neurológica de origem autoimune**. O próprio sistema de defesa da Vida havia entrado em colapso e atacado sua mobilidade.'
+      },
+      {
+        id: 'vida-h2-3',
+        type: 'heading2',
+        content: 'A LONGA ESTRADA DE VOLTA: REABILITAÇÃO E RESILIÊNCIA'
+      },
+      {
+        id: 'vida-img-2',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200',
+        caption: 'O poder da persistência: cada agulha de acupuntura e cada movimento estimulado na fisioterapia pavimentaram o longo caminho de volta para a autonomia.'
+      },
+      {
+        id: 'vida-p10',
+        type: 'paragraph',
+        content: 'Com o diagnóstico em mãos, iniciamos o tratamento. O plano terapêutico não prometia soluções fáceis; exigia tempo, recursos e, principalmente, uma resiliência inquebrável. O que se seguiu foi a parte mais extenuante, porém a mais arrebatadora, dessa jornada.'
+      },
+      {
+        id: 'vida-p11',
+        type: 'paragraph',
+        content: 'A Vida precisava aprender a comandar seu corpo novamente. Iniciamos um protocolo rigoroso que combinava medicina alopática, fisioterapia canina diária, sessões focadas de acupuntura para estimular as vias neurais e hidroterapia. Durante cinco a seis meses consecutivos, não houve um único final de semana de descanso, não houve feriado ou trégua. O cuidado tornou-se nosso idioma diário.'
+      },
+      {
+        id: 'vida-p12',
+        type: 'paragraph',
+        content: 'Como em todo processo de cura profunda, o caminho não foi uma linha reta em ascensão. Tivemos dias sombrios em que a apatia dela me fazia duvidar, dias em que as pernas traseiras pareciam ceder ainda mais, me levando às lágrimas escondidas. Mas a natureza é fascinante. O corpo responde à esperança. E então começaram a surgir as vitórias invisíveis para o mundo, mas imensas para nós: o dia em que ela firmou a pata esquerda sem deslizar; a tarde em que ela conseguiu se sustentar em pé por dez segundos sozinha; a manhã épica em que, desajeitada, ela deu o primeiro trote pelo gramado do quintal.'
+      },
+      {
+        id: 'vida-callout-filosofia',
+        type: 'callout',
+        content: '🐾 **A FILOSOFIA DO CUIDADO**\nA reabilitação nos ensina que a cura não significa, necessariamente, o retorno ao estado original perfeito. Trata-se de devolver autonomia e qualidade de vida. Tratar vai muito além do diagnóstico técnico; exige a oferta de rotina, afeto e presença contínua, celebrando a resiliência de um corpo que se recusa a desistir.'
+      },
+      {
+        id: 'vida-h2-4',
+        type: 'heading2',
+        content: 'O FLORESCER DA ESPERANÇA: O AMANHÃ QUE A VIDA CONQUISTOU'
+      },
+      {
+        id: 'vida-p13',
+        type: 'paragraph',
+        content: 'Hoje, o tempo de sofrimento na praça fria parece pertencer a outra vida, a outro mundo. Embora a Vida continue sob o acompanhamento zeloso de neurologistas e ortopedistas veterinários, ela é a prova viva de que o amor transforma a biologia. A tempestade imunológica lhe deixou algumas marcas — ela não consegue erguer o rabo totalmente como fazem os huskies imponentes, e carrega uma leve, mas perceptível, atrofia nas patas traseiras.'
+      },
+      {
+        id: 'vida-p14',
+        type: 'paragraph',
+        content: 'Mas pergunto a você: e o que são cicatrizes senão a prova definitiva de que sobrevivemos? Essas sequelas não definem a Vida. O que a define agora é a intensidade com que ela abraça cada novo dia.'
+      },
+      {
+        id: 'vida-img-3',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&q=80&w=1200',
+        caption: 'O elo inquebrável: o resgate salvou a cadela do abandono, mas foi a presença afetuosa de Vida que moldou a futura médica veterinária.'
+      },
+      {
+        id: 'vida-p15',
+        type: 'paragraph',
+        content: 'Ela vive radiante, sem dores e sem medos. Ela corre com os ouvidos ao vento, brinca incansavelmente com os irmãos caninos que a acolheram, passeia pelos parques, viaja no carro sentindo a brisa e exige a vida de "princesa mimada" que sempre deveria ter tido desde o dia em que nasceu.'
+      },
+      {
+        id: 'vida-h2-5',
+        type: 'heading2',
+        content: 'A LIÇÃO QUE FICA E O NASCIMENTO DESTE ESPAÇO'
+      },
+      {
+        id: 'vida-p16',
+        type: 'paragraph',
+        content: 'A Vida me ensinou o que as apostilas da faculdade não conseguem imprimir em suas páginas. Ela me mostrou que a prática médica é indissociável da compaixão. Mostrou-me que reabilitar não é consertar um quebra-cabeça para deixá-lo perfeitamente plano de novo, mas sim preencher as peças que faltam com ouro, como na arte japonesa do Kintsugi — valorizando as marcas da reconstrução.'
+      },
+      {
+        id: 'vida-p17',
+        type: 'paragraph',
+        content: 'É dessa essência bruta, feita de madrugadas em claro, angústias clínicas, choros de alívio e abraços em meio à fisioterapia, que nasce este espaço na **GritNews**. O meu propósito aqui é abrir as portas dos bastidores da medicina veterinária e do resgate animal. Quero contar as histórias que acontecem quando a técnica encontra a empatia.'
+      },
+      {
+        id: 'vida-p18',
+        type: 'paragraph',
+        content: 'A Vida mudou a minha vida. E espero, do fundo do coração, que a história dela seja apenas a primeira de muitas que, contadas aqui, consigam aquecer e inspirar a sua também. Se você chegou até esta linha, sinta-se abraçado. O extraordinário trabalho de amar os animais apenas começou.'
+      }
+    ],
+    seo: {
+      metaTitle: 'A Vida da Vida: Quando o Silêncio da Dor Encontra o Eco do Cuidado | Reportagem Especial GRIT NEWS',
+      metaDescription: 'Conheça a emocionante história de resgate da husky siberiana Vida, contada por Letícia Karla. Uma jornada de amor, medicina veterinária, fisioterapia e esperança.',
+      keywords: [
+        'A Vida da Vida',
+        'Husky Vida',
+        'Letícia Karla',
+        'Resgate Animal',
+        'Grit News',
+        'TenPets',
+        'Medicina Veterinária',
+        'Fisioterapia Canina',
+        'Acupuntura Veterinária'
+      ]
+    }
+  },
+  {
     id: 'art-fortaleza-vitoria',
     title: 'Fortaleza Vence Botafogo-SP com Gol de Ronald e Confirma Retorno Triunfal ao G-4 com Forte Impacto Comercial',
     slug: 'fortaleza-vence-botafogo-sp-gol-de-ronald-volta-g4',
@@ -1112,6 +1310,37 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
 
 export const INITIAL_TENPETS_ARTICLES: TenPetsArticle[] = [
   {
+    id: 'tp-art-vida',
+    title: 'A Vida da Vida: Quando o Silêncio da Dor Encontra o Eco do Cuidado',
+    slug: 'a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado',
+    summary: 'Reportagem Especial por Letícia Karla. A extraordinária jornada de amor, resistência e medicina veterinária que transformou uma husky esquecida nas ruas em um símbolo vivo de esperança.',
+    content: `### Reportagem Especial: A Vida da Vida
+
+> "O abandono não faz barulho; ele simplesmente subtrai a existência de quem o sofre. Mas o resgate, esse sim, ressoa profundamente na alma de quem é salvo e de quem salva." — **Letícia Karla**
+
+Há algo de profundamente sagrado no silêncio impenetrável da madrugada. É quando as luzes da cidade se apagam, o trânsito cessa e as cortinas se fecham nas janelas aquecidas, que a dor daqueles que foram esquecidos pelo mundo permanece tragicamente desperta. 
+
+Na noite gelada de 26 de julho de 2023, exatamente por volta das 22h, fui alertada sobre uma husky siberiana totalmente paralisada em uma praça pública. Moradores em situação de rua estenderam um colchão rasgado para aquecê-la. 
+
+### O Encontro e a Promessa de Reabilitação
+Ao resgatá-la na manhã seguinte, seu uivo cortante não era de dor física, mas do pavor de ser abandonada novamente. Batizei-a de **Vida**, prometendo devolver-lhe a dignidade de existir plena e feliz.
+
+Após exames complexos, tomografia e investigação diagnóstica no 5º período de Medicina Veterinária, veio o veredito: **doença neurológica de origem autoimune**.
+
+### A Reabilitação com Fisioterapia e Acupuntura
+Iniciamos 6 meses ininterruptos de fisioterapia diária, acupuntura neural e hidroterapia. Hoje, Vida corre radiante, sem dores e sem medos!
+
+Reabilitar não é consertar um quebra-cabeça para deixá-lo perfeitamente plano de novo, mas sim preencher as peças que faltam com ouro, como na arte japonesa do Kintsugi — valorizando as marcas da reconstrução.`,
+    authorName: 'Letícia Karla (Estudante de Medicina Veterinária e Protetora)',
+    category: 'Casos Clínicos',
+    publishedAt: '2026-07-29T08:00:00Z',
+    imageUrl: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1200',
+    pdfUrl: 'https://www.gritnews.com.br/?artigo=a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado',
+    viewsCount: 3890,
+    featured: true,
+    tags: ['A Vida da Vida', 'Reportagem Especial', 'Resgate Animal', 'Medicina Veterinária', 'Acupuntura', 'Fisioterapia']
+  },
+  {
     id: 'tp-art-1',
     title: 'Avanços Terapêuticos no Tratamento de Dermatite Atópica Canina com Imunoterapia Monoclonal',
     slug: 'avancos-terapeuticos-dermatite-atopica-canina',
@@ -1187,6 +1416,30 @@ O diagnóstico precoce somado à nutrição clínica direcionada é indispensáv
 ];
 
 export const INITIAL_TENPETS_RESCUES: TenPetsRescue[] = [
+  {
+    id: 'tp-res-vida',
+    animalName: 'Vida',
+    species: 'Cão',
+    breed: 'Husky Siberiano',
+    title: 'A Vida da Vida: De Cadela Paralisada em Praça Pública a Símbolo de Reabilitação e Amor',
+    summary: 'Resgatada por Letícia Karla após 4 dias paralisada no concreto de uma praça, com ajuda de moradores de rua, Vida superou uma grave doença neurológica autoimune com fisioterapia e acupuntura.',
+    romanticStory: `Na noite gelada de 26 de julho de 2023, a imagem de uma husky siberiana branca, imóvel sobre o concreto de uma praça pública, mudou para sempre a vida da estudante de medicina veterinária e protetora Letícia Karla.
+
+Socorrida inicialmente por moradores em situação de rua que estenderam um colchão rasgado sob seu corpo frágil, Vida foi resgatada ao amanhecer. Seu uivo longo e cortante no banco de trás do carro não era dor física, mas o pavor do abandono.
+
+Após semanas de investigação diagnóstica com tomografia computadorizada e painéis de exames, o veredito foi revelado: uma severa doença neurológica de origem autoimune.
+
+Foram 6 meses consecutivos de protocolo rigoroso integrando fisioterapia canina diária, acupuntura para vias neurais e hidroterapia. Hoje, totalmente reabilitada e livre de dores, Vida corre radiante, abana a cauda e desfruta da vida de "princesa mimada" que sempre mereceu!`,
+    rescueDate: '2023-07-26',
+    status: 'VITORIA_MEDICA',
+    beforeImageUrl: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800',
+    afterImageUrl: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.gritnews.com.br/?artigo=a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado',
+    vetCareNotes: 'Fisioterapia canina diária, acupuntura neuromoduladora, hidroterapia e acompanhamento de neurologista e ortopedista veterinário.',
+    sponsorGoal: 8500,
+    currentSponsorTotal: 8500,
+    featured: true
+  },
   {
     id: 'tp-res-1',
     animalName: 'Valente Thor',

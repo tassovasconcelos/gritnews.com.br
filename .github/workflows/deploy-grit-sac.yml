@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   build-and-deploy:
@@ -45,9 +43,7 @@ jobs:
           path: dist/
           retention-days: 14
 
-      # Opcional: Publicação Direta via FTP no Servidor Hostinger (gritnews.com.br/sacproh)
       - name: 🚀 Publicar via FTP no Servidor Hostinger (gritnews.com.br/sacproh)
-        if: secrets.FTP_SERVER != ''
         uses: SamKirsch/ftp-deploy-action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -57,18 +53,3 @@ jobs:
           local-dir: dist/
           dangerous-clean-slate: false
 
-      # Opcional: Deploy Automático no GitHub Pages
-      - name: 🌐 Configurar GitHub Pages
-        if: secrets.FTP_SERVER == ''
-        uses: actions/configure-pages@v5
-
-      - name: 📤 Upload Artefato para GitHub Pages
-        if: secrets.FTP_SERVER == ''
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'dist'
-
-      - name: 🚀 Deploy para GitHub Pages
-        if: secrets.FTP_SERVER == ''
-        id: deployment
-        uses: actions/deploy-pages@v4
