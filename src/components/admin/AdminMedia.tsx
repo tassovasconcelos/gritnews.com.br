@@ -246,15 +246,40 @@ export const AdminMedia: React.FC<AdminMediaProps> = ({ onShowToast }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#10233F] mb-1">URL da Imagem (Unsplash, CDN ou Hostinger)</label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://images.unsplash.com/photo-..."
-                  value={newUrl}
-                  onChange={e => setNewUrl(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#145EDB]"
-                />
+                <label className="block text-xs font-bold text-[#10233F] mb-1">URL da Imagem / Vídeo ou Upload de Arquivo</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="https://... ou escolha um arquivo"
+                    value={newUrl}
+                    onChange={e => setNewUrl(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#145EDB]"
+                  />
+                  <label className="bg-[#145EDB] hover:bg-[#0f4bb3] text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center gap-1 shadow-sm">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload</span>
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (!newTitle) setNewTitle(file.name.replace(/\.[^/.]+$/, ''));
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) {
+                              setNewUrl(evt.target.result as string);
+                              onShowToast('Arquivo carregado com sucesso!');
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
 
               <div>

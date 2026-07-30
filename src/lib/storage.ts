@@ -87,6 +87,76 @@ export function initStorage(): void {
 
 const INITIAL_MEDIA: MediaAsset[] = [
   {
+    id: 'm-vida-1',
+    title: '1. Resgate da Husky Vida na Praça Pública',
+    url: '/images/vida_foto_1_resgate.svg',
+    altText: 'Husky Vida paralisada sobre colchão na praça com mochilas ao fundo',
+    category: 'pet',
+    source: 'upload',
+    createdAt: new Date().toISOString(),
+    tags: ['vida', 'resgate', 'praça', 'husky', 'tenpets']
+  },
+  {
+    id: 'm-vida-2',
+    title: '2. Primeiro Atendimento em Quarto de Hospital',
+    url: '/images/vida_foto_2_quarto_hospital.svg',
+    altText: 'Vida de fraldinha e almofada de rosquinha no tatame de EVA azul do hospital veterinário',
+    category: 'pet',
+    source: 'upload',
+    createdAt: new Date().toISOString(),
+    tags: ['vida', 'hospital', 'tatame', 'fralda', 'exames']
+  },
+  {
+    id: 'm-vida-3',
+    title: '3. Acupuntura Neuromoduladora & Lacinhos',
+    url: '/images/vida_foto_3_acupuntura_lacinhos.svg',
+    altText: 'Vida em sessão de acupuntura com agulhas na testa e lacinhos coloridos',
+    category: 'pet',
+    source: 'upload',
+    createdAt: new Date().toISOString(),
+    tags: ['vida', 'acupuntura', 'lacinhos', 'neurologia']
+  },
+  {
+    id: 'm-vida-4',
+    title: '4. Fisioterapia Canina com Dra. Renata Pessoa',
+    url: '/images/vida_foto_4_fisioterapia_dra_renata.svg',
+    altText: 'Atendimento de fisioterapia e estímulo elétrico TENS/FES com a Dra. Renata Pessoa',
+    category: 'pet',
+    source: 'upload',
+    createdAt: new Date().toISOString(),
+    tags: ['vida', 'fisioterapia', 'dra renata pessoa', 'eletroterapia']
+  },
+  {
+    id: 'm-vida-5',
+    title: '5. Doce Vida de Bandana Floral',
+    url: '/images/vida_foto_5_bandana_floral.svg',
+    altText: 'Vida relaxada no chão de cerâmica com bandana floral verde e rosa',
+    category: 'pet',
+    source: 'upload',
+    createdAt: new Date().toISOString(),
+    tags: ['vida', 'bandana', 'floral', 'recuperacao']
+  },
+  {
+    id: 'm-vida-6',
+    title: '6. O Sorriso do Renascimento na Varanda',
+    url: '/images/vida_foto_6_sorriso_varanda.svg',
+    altText: 'Vida sorrindo radiante na varanda com portão azul ao fundo',
+    category: 'pet',
+    source: 'upload',
+    createdAt: new Date().toISOString(),
+    tags: ['vida', 'sorriso', 'varanda', 'alegria']
+  },
+  {
+    id: 'm-vida-7',
+    title: '7. Princesa Vida com Coroa Rosa e Brilhos',
+    url: '/images/vida_foto_7_princesa_coroa.svg',
+    altText: 'A Princesa Vida com coroazinha rosa e brilhos na testa celebrando a vitória',
+    category: 'pet',
+    source: 'upload',
+    createdAt: new Date().toISOString(),
+    tags: ['vida', 'princesa', 'coroa', 'vitoria', 'amor']
+  },
+  {
     id: 'm1',
     title: 'Hospital Inteligente com Tecnologia',
     url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=1200',

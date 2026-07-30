@@ -999,10 +999,34 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
                 <img src={selectedRescue.beforeImageUrl} alt="Antes" className="w-full h-44 object-cover rounded-xl border border-slate-200 dark:border-slate-700" />
               </div>
               <div className="space-y-1 text-center">
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Depois (Recuperado)</span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Depois (Recuperada)</span>
                 <img src={selectedRescue.afterImageUrl} alt="Depois" className="w-full h-44 object-cover rounded-xl border border-slate-200 dark:border-slate-700" />
               </div>
             </div>
+
+            {/* Video Documentary Section if available */}
+            {selectedRescue.id === 'tp-res-vida' && (
+              <div className="bg-slate-900 rounded-2xl p-4 border border-slate-700 space-y-2 text-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    🎥 Documentário & Registro em Vídeo Real
+                  </span>
+                  <span className="text-[10px] text-slate-400">TenPets Exclusivo</span>
+                </div>
+                <div className="aspect-video w-full rounded-xl overflow-hidden bg-black border border-slate-800">
+                  <iframe
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                    title="Vídeo Vida"
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                  />
+                </div>
+                <p className="text-[11px] text-slate-300 italic text-center">
+                  📹 Vídeo real da husky Vida recebendo água limpa e cuidados na sua reabilitação.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-3">
               <h4 className="font-bold text-slate-900 dark:text-white text-sm">A História Romanceada:</h4>

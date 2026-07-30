@@ -322,6 +322,46 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
                 </figure>
               );
             }
+            if (block.type === 'video') {
+              return (
+                <figure key={block.id} className="my-8 space-y-2.5">
+                  <div className="overflow-hidden rounded-3xl border border-[#E2E8F0] shadow-xl bg-slate-950 relative group p-2">
+                    <div className="flex items-center justify-between px-3 py-2 bg-slate-900 text-white rounded-t-2xl text-xs font-bold border-b border-slate-800">
+                      <span className="flex items-center gap-2 text-amber-400">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                        🎥 Registro e Documentário em Vídeo Real
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-normal">TenPets & GRIT NEWS Documentaries</span>
+                    </div>
+                    {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') ? (
+                      <div className="aspect-video w-full rounded-b-2xl overflow-hidden">
+                        <iframe
+                          src={block.content.replace('watch?v=', 'embed/')}
+                          title={block.caption || 'Vídeo do artigo'}
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <video
+                        src={block.content}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-auto max-h-[500px] mx-auto rounded-b-2xl object-contain bg-black"
+                      />
+                    )}
+                  </div>
+                  {block.caption && (
+                    <figcaption className="text-xs md:text-sm text-[#5C6B7A] italic text-center px-4 font-medium flex items-center justify-center gap-1.5">
+                      <span>📹</span>
+                      <span>{block.caption}</span>
+                    </figcaption>
+                  )}
+                </figure>
+              );
+            }
             if (block.type === 'product_card') {
               const offerObj = allOffers.find(o => o.slug === block.content || o.id === block.content) || allOffers[0];
               if (offerObj) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Eye, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, Save, History } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, Save, History, Image as ImageIcon, Video as VideoIcon, Film, Upload, FileImage } from 'lucide-react';
 import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBlock } from '../../types';
 import { saveArticle, deleteArticle } from '../../lib/storage';
 import { Modal } from '../ui/Modal';
@@ -77,17 +77,28 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     }
   };
 
-  const handleAddBlock = (type: BlockType) => {
+  const handleAddBlock = (type: BlockType, contentOverride?: string, captionOverride?: string) => {
     const newBlock: ArticleBlock = {
-      id: `b-${Date.now()}`,
+      id: `b-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       type,
-      content: type === 'callout' ? '💡 Destaque especial de mercado...' : type === 'quote' ? '“Citação importante...”' : 'Novo parágrafo...'
+      content: contentOverride || (
+        type === 'callout' ? '💡 Destaque especial de mercado...' :
+        type === 'quote' ? '“Citação importante...”' :
+        type === 'image' ? '/images/vida_foto_1_resgate.svg' :
+        type === 'video' ? 'https://www.youtube.com/embed/dQw4w9WgXcQ' :
+        'Novo parágrafo...'
+      ),
+      caption: captionOverride || (type === 'image' ? '📷 Legenda da foto...' : type === 'video' ? '🎥 Legenda do vídeo...' : undefined)
     };
-    setBlocks([...blocks, newBlock]);
+    setBlocks(prev => [...prev, newBlock]);
   };
 
   const handleUpdateBlock = (id: string, newContent: string) => {
     setBlocks(blocks.map(b => (b.id === id ? { ...b, content: newContent } : b)));
+  };
+
+  const handleUpdateBlockCaption = (id: string, newCaption: string) => {
+    setBlocks(blocks.map(b => (b.id === id ? { ...b, caption: newCaption } : b)));
   };
 
   const handleRemoveBlock = (id: string) => {
@@ -274,9 +285,12 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
 
               {/* Block Editor */}
               <div className="pt-4 border-t border-[#E2E8F0]">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold text-[#0B2343]">Conteúdo da Matéria em Blocos</h4>
-                  <div className="flex items-center gap-1.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                  <h4 className="text-sm font-bold text-[#0B2343] flex items-center gap-2">
+                    <FileImage className="w-4 h-4 text-[#145EDB]" />
+                    Conteúdo da Matéria em Blocos ({blocks.length})
+                  </h4>
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() => handleAddBlock('paragraph')}
@@ -290,6 +304,22 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                       className="px-2 py-1 bg-gray-100 text-xs rounded-md font-bold hover:bg-gray-200"
                     >
                       + Título H2
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddBlock('image')}
+                      className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-md font-bold flex items-center gap-1 hover:bg-emerald-200"
+                    >
+                      <ImageIcon className="w-3 h-3" />
+                      <span>+ Foto</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddBlock('video')}
+                      className="px-2 py-1 bg-purple-100 text-purple-900 text-xs rounded-md font-bold flex items-center gap-1 hover:bg-purple-200"
+                    >
+                      <VideoIcon className="w-3 h-3 text-purple-700" />
+                      <span>+ Vídeo</span>
                     </button>
                     <button
                       type="button"
@@ -308,25 +338,155 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                   </div>
                 </div>
 
+                {/* Article Photos Quick Picker */}
+                <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-3 mb-4 space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="font-extrabold text-[#10233F] flex items-center gap-1.5">
+                      📸 Fotos Reais do Acervo para Inserir no Artigo:
+                    </span>
+                    <span className="text-[10px] text-amber-800">Clique para adicionar ao artigo</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { title: '1. Resgate na Praça', url: '/images/vida_foto_1_resgate.svg' },
+                      { title: '2. Quarto de Hospital', url: '/images/vida_foto_2_quarto_hospital.svg' },
+                      { title: '3. Acupuntura & Lacinhos', url: '/images/vida_foto_3_acupuntura_lacinhos.svg' },
+                      { title: '4. Fisioterapia Dra. Renata', url: '/images/vida_foto_4_fisioterapia_dra_renata.svg' },
+                      { title: '5. Bandana Floral', url: '/images/vida_foto_5_bandana_floral.svg' },
+                      { title: '6. Sorriso Varanda', url: '/images/vida_foto_6_sorriso_varanda.svg' },
+                      { title: '7. Princesa Coroa', url: '/images/vida_foto_7_princesa_coroa.svg' },
+                    ].map((p, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleAddBlock('image', p.url, `📷 ${p.title}`)}
+                        className="bg-white hover:bg-amber-100 text-slate-800 border border-amber-300 rounded-lg px-2.5 py-1 text-[11px] font-bold shadow-xs transition-colors flex items-center gap-1.5"
+                      >
+                        <img src={p.url} alt={p.title} className="w-4 h-4 rounded object-cover" />
+                        <span>+ {p.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-3">
-                  {blocks.map((block, i) => (
-                    <div key={block.id} className="p-3 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl relative group">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 mb-1">
-                        <span className="uppercase">{block.type}</span>
+                  {blocks.map((block) => (
+                    <div key={block.id} className="p-3 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl relative group space-y-2">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-gray-500">
+                        <span className="uppercase px-2 py-0.5 rounded bg-gray-200 text-gray-700">{block.type}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveBlock(block.id)}
-                          className="text-red-400 hover:text-red-600"
+                          className="text-red-500 hover:text-red-700 font-bold"
                         >
-                          Remover
+                          Remover Bloco
                         </button>
                       </div>
-                      <textarea
-                        rows={block.type === 'paragraph' ? 3 : 1}
-                        value={block.content}
-                        onChange={e => handleUpdateBlock(block.id, e.target.value)}
-                        className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs"
-                      />
+
+                      {block.type === 'image' ? (
+                        <div className="space-y-2">
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              value={block.content}
+                              onChange={e => handleUpdateBlock(block.id, e.target.value)}
+                              placeholder="URL da imagem (/images/... ou https://...)"
+                              className="flex-1 p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs font-mono"
+                            />
+                            <label className="bg-[#145EDB] hover:bg-[#0f4bb3] text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer shrink-0 flex items-center gap-1">
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>Upload Foto</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (evt) => {
+                                      if (evt.target?.result) {
+                                        handleUpdateBlock(block.id, evt.target.result as string);
+                                        onShowToast('Foto real carregada com sucesso no artigo!');
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                          <input
+                            type="text"
+                            value={block.caption || ''}
+                            onChange={e => handleUpdateBlockCaption(block.id, e.target.value)}
+                            placeholder="Legenda da foto (ex: 📷 1. O Resgate na Praça...)"
+                            className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs italic"
+                          />
+                          {block.content && (
+                            <div className="relative aspect-video max-h-36 rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
+                              <img src={block.content} alt="Preview" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                        </div>
+                      ) : block.type === 'video' ? (
+                        <div className="space-y-2">
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              value={block.content}
+                              onChange={e => handleUpdateBlock(block.id, e.target.value)}
+                              placeholder="URL do vídeo (MP4, YouTube embed, data URL...)"
+                              className="flex-1 p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs font-mono"
+                            />
+                            <label className="bg-[#10233F] hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer shrink-0 flex items-center gap-1">
+                              <Film className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Upload Vídeo</span>
+                              <input
+                                type="file"
+                                accept="video/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (evt) => {
+                                      if (evt.target?.result) {
+                                        handleUpdateBlock(block.id, evt.target.result as string);
+                                        onShowToast('Vídeo real carregado com sucesso no artigo!');
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                          <input
+                            type="text"
+                            value={block.caption || ''}
+                            onChange={e => handleUpdateBlockCaption(block.id, e.target.value)}
+                            placeholder="Legenda do vídeo (ex: 🎥 Registro em vídeo da Vida tomando água...)"
+                            className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs italic"
+                          />
+                          {block.content && (
+                            <div className="relative aspect-video max-h-36 rounded-lg overflow-hidden border border-gray-800 bg-black">
+                              {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') ? (
+                                <iframe src={block.content.replace('watch?v=', 'embed/')} title="Preview" className="w-full h-full" />
+                              ) : (
+                                <video src={block.content} controls className="w-full h-full object-contain" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <textarea
+                          rows={block.type === 'paragraph' ? 3 : 1}
+                          value={block.content}
+                          onChange={e => handleUpdateBlock(block.id, e.target.value)}
+                          className="w-full p-2 bg-white border border-[#E2E8F0] rounded-lg text-xs"
+                        />
+                      )}
                     </div>
                   ))}
                 </div>

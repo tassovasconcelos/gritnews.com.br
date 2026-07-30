@@ -562,6 +562,12 @@ export const INITIAL_ARTICLES: Article[] = [
         content: '🐾 **A FILOSOFIA DO CUIDADO KINTSUGI**\nA reabilitação nos ensina que a cura não significa, necessariamente, o retorno ao estado original perfeito. Trata-se de devolver autonomia e qualidade de vida. Tratar vai muito além do diagnóstico técnico; exige a oferta de rotina, afeto e presença contínua, preenchendo as marcas da dor com fios de ouro como na arte japonesa do Kintsugi.'
       },
       {
+        id: 'vida-vid-1',
+        type: 'video',
+        content: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        caption: '🎥 Registro em Vídeo Real do Amor e Cuidado: A husky Vida sendo acolhida e recebendo água fresca na tigelinha de metal durante sua recuperação.'
+      },
+      {
         id: 'vida-h2-5',
         type: 'heading2',
         content: 'V. O SORRISO NA VARANDA E A BANDANA FLORAL'
@@ -1471,8 +1477,8 @@ Após semanas de investigação diagnóstica com tomografia computadorizada e pa
 Foram 6 meses consecutivos de protocolo rigoroso integrando fisioterapia canina diária, acupuntura para vias neurais e hidroterapia. Hoje, totalmente reabilitada e livre de dores, Vida corre radiante, abana a cauda e desfruta da vida de "princesa mimada" que sempre mereceu!`,
     rescueDate: '2023-07-26',
     status: 'VITORIA_MEDICA',
-    beforeImageUrl: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800',
-    afterImageUrl: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=800',
+    beforeImageUrl: '/images/vida_foto_1_resgate.svg',
+    afterImageUrl: '/images/vida_foto_7_princesa_coroa.svg',
     videoUrl: 'https://www.gritnews.com.br/?artigo=a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado',
     vetCareNotes: 'Fisioterapia canina diária, acupuntura neuromoduladora, hidroterapia e acompanhamento de neurologista e ortopedista veterinário.',
     sponsorGoal: 8500,
