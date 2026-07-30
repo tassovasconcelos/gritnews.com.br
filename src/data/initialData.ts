@@ -455,18 +455,18 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-p3',
         type: 'paragraph',
-        content: 'A mensagem que acompanhava a foto revelava um cenário ainda mais desolador: ela estava ali, imóvel, há quatro longos e agonizantes dias. Abandonada à própria sorte, o frio do inverno e a fome seriam seus únicos companheiros, não fosse por um ato de pura compaixão que veio de onde a sociedade menos espera. Foram moradores em situação de rua, indivíduos que também conhecem a aspereza do abandono, que estenderam um colchão rasgado sob o corpo frágil da cadela. Eles dividiram o pouco que tinham e garantiram que ela não ficasse sozinha sob o sereno cortante. A minha alma de protetora ardia; eu queria pular do pijama para a roupa de rua e correr até lá naquela mesma hora. Mas, alertada pela prudência de amigos sobre os perigos reais da madrugada em um local ermo, fui forçada a esperar. Aquela foi, sem dúvida, a madrugada mais longa da minha vida. Eu não dormi; apenas vigiava o relógio enquanto pedia silenciosamente para que ela aguentasse até o amanhecer.'
+        content: 'A mensagem que acompanhava a foto revelava um cenário ainda mais desolador: ela estava ali, imóvel, há quatro longos e agonizantes dias. Abandonada à própria sorte, o frio do inverno e a fome seriam seus únicos companheiros, não fosse por um ato de pura compaixão que veio de onde a sociedade menos espera. Foram moradores em situação de rua, indivíduos que também conhecem a aspereza do abandono, que estenderam um colchão de espuma rasgado sob o corpo frágil da cadela. Eles dividiram o pouco que tinham e garantiram que ela não ficasse sozinha sob o sereno cortante. A minha alma de protetora ardia; eu queria pular do pijama para a roupa de rua e correr até lá naquela mesma hora. Mas, alertada pela prudência de amigos sobre os perigos reais da madrugada em um local ermo, fui forçada a esperar. Aquela foi, sem dúvida, a madrugada mais longa da minha vida. Eu não dormi; apenas vigiava o relógio enquanto pedia silenciosamente para que ela aguentasse até o amanhecer.'
       },
       {
         id: 'vida-h2-1',
         type: 'heading2',
-        content: 'O ENCONTRO: MEDO, NEVE E CONCRETO'
+        content: 'I. O ENCONTRO NA PRAÇA E O UIVO DA ALMA'
       },
       {
         id: 'vida-img-1',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1200',
-        caption: 'O repouso merecido: banhada pelo sol, a husky que antes conhecia o relento hoje desfruta da segurança de um lar acolhedor.'
+        content: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1200',
+        caption: '1. O Resgate na Praça: Imóvel sobre o colchão de espuma rasgado, doado com carinho por moradores em situação de rua, Vida esperava o amanhecer sem mover as patas.'
       },
       {
         id: 'vida-p4',
@@ -491,7 +491,13 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-h2-2',
         type: 'heading2',
-        content: 'O VEREDITO DO CORPO: O QUEBRA-CABEÇA DA MEDICINA VETERINÁRIA'
+        content: 'II. O QUARTO DE HOSPITAL E OS PRIMEIRAS CUIDADOS'
+      },
+      {
+        id: 'vida-img-2',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1200',
+        caption: '2. Aconchego e Dignidade: De fraldinha hospitalar no tatame azul, com sua almofadinha de rosquinha rosa e potinho d’água, Vida iniciou a jornada no seu quarto de hospital.'
       },
       {
         id: 'vida-p7',
@@ -511,79 +517,112 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-h2-3',
         type: 'heading2',
-        content: 'A LONGA ESTRADA DE VOLTA: REABILITAÇÃO E RESILIÊNCIA'
+        content: 'III. ACUPUNTURA NEUROMODULADORA E LACINHOS NAS ORELHAS'
       },
       {
-        id: 'vida-img-2',
+        id: 'vida-img-3',
         type: 'image',
-        content: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200',
-        caption: 'O poder da persistência: cada agulha de acupuntura e cada movimento estimulado na fisioterapia pavimentaram o longo caminho de volta para a autonomia.'
+        content: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&q=80&w=1200',
+        caption: '3. Medicina com Afeto: Agulhas de acupuntura na testa estimulando os caminhos neurais e dois mimosos lacinhos coloridos nas orelhas para resgatar a alegria.'
       },
       {
         id: 'vida-p10',
         type: 'paragraph',
-        content: 'Com o diagnóstico em mãos, iniciamos o tratamento. O plano terapêutico não prometia soluções fáceis; exigia tempo, recursos e, principalmente, uma resiliência inquebrável. O que se seguiu foi a parte mais extenuante, porém a mais arrebatadora, dessa jornada.'
+        content: 'Com o diagnóstico em mãos, iniciamos o tratamento. O plano terapêutico não prometia soluções fáceis; exigia tempo, recursos e, principalmente, uma resiliência inquebrável. Para mim, a saúde de um animal resgatado precisa vir acompanhada do resgate da sua vaidade e da sua autoimagem.'
       },
       {
         id: 'vida-p11',
         type: 'paragraph',
-        content: 'A Vida precisava aprender a comandar seu corpo novamente. Iniciamos um protocolo rigoroso que combinava medicina alopática, fisioterapia canina diária, sessões focadas de acupuntura para estimular as vias neurais e hidroterapia. Durante cinco a seis meses consecutivos, não houve um único final de semana de descanso, não houve feriado ou trégua. O cuidado tornou-se nosso idioma diário.'
+        content: 'Colocar lacinhos estampados em suas orelhas fofas durante as aplicações de acupuntura na testa tornou-se o nosso ritual sagrado. Enquanto as agulhas milimétricas enviavam pulsos neuromoduladores para o cérebro tentar reativar as vias motoras, o carinho continuo no focinho trazia a paz que os olhos azuis de Vida tanto buscavam.'
+      },
+      {
+        id: 'vida-h2-4',
+        type: 'heading2',
+        content: 'IV. "TÔ FAZENDO MINHA FISIOTERAPIA, TITIOS!": A CIÊNCIA DA REABILITAÇÃO'
+      },
+      {
+        id: 'vida-img-4',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200',
+        caption: '4. Fisioterapia Diária e Eletroestimulação: A Dra. Renata Pessoa (@renatapessoa.vet) e a equipe dedicadas a estimular os músculos traseiros da Vida. "Tô fazendo fisioterapia, titios!"'
       },
       {
         id: 'vida-p12',
+        type: 'paragraph',
+        content: 'A Vida precisava aprender a comandar seu corpo novamente. Iniciamos um protocolo rigoroso que combinava medicina alopática, fisioterapia canina diária, eletroterapia com TENS/FES sob a supervisão dedicada da especialista Dra. Renata Pessoa (@renatapessoa.vet e @dramarciasm), além de sessões de hidroterapia. Durante seis meses consecutivos, não houve final de semana de descanso, não houve feriado ou trégua. O cuidado tornou-se nosso idioma diário.'
+      },
+      {
+        id: 'vida-p13',
         type: 'paragraph',
         content: 'Como em todo processo de cura profunda, o caminho não foi uma linha reta em ascensão. Tivemos dias sombrios em que a apatia dela me fazia duvidar, dias em que as pernas traseiras pareciam ceder ainda mais, me levando às lágrimas escondidas. Mas a natureza é fascinante. O corpo responde à esperança. E então começaram a surgir as vitórias invisíveis para o mundo, mas imensas para nós: o dia em que ela firmou a pata esquerda sem deslizar; a tarde em que ela conseguiu se sustentar em pé por dez segundos sozinha; a manhã épica em que, desajeitada, ela deu o primeiro trote pelo gramado do quintal.'
       },
       {
         id: 'vida-callout-filosofia',
         type: 'callout',
-        content: '🐾 **A FILOSOFIA DO CUIDADO**\nA reabilitação nos ensina que a cura não significa, necessariamente, o retorno ao estado original perfeito. Trata-se de devolver autonomia e qualidade de vida. Tratar vai muito além do diagnóstico técnico; exige a oferta de rotina, afeto e presença contínua, celebrando a resiliência de um corpo que se recusa a desistir.'
-      },
-      {
-        id: 'vida-h2-4',
-        type: 'heading2',
-        content: 'O FLORESCER DA ESPERANÇA: O AMANHÃ QUE A VIDA CONQUISTOU'
-      },
-      {
-        id: 'vida-p13',
-        type: 'paragraph',
-        content: 'Hoje, o tempo de sofrimento na praça fria parece pertencer a outra vida, a outro mundo. Embora a Vida continue sob o acompanhamento zeloso de neurologistas e ortopedistas veterinários, ela é a prova viva de que o amor transforma a biologia. A tempestade imunológica lhe deixou algumas marcas — ela não consegue erguer o rabo totalmente como fazem os huskies imponentes, e carrega uma leve, mas perceptível, atrofia nas patas traseiras.'
-      },
-      {
-        id: 'vida-p14',
-        type: 'paragraph',
-        content: 'Mas pergunto a você: e o que são cicatrizes senão a prova definitiva de que sobrevivemos? Essas sequelas não definem a Vida. O que a define agora é a intensidade com que ela abraça cada novo dia.'
-      },
-      {
-        id: 'vida-img-3',
-        type: 'image',
-        content: 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&q=80&w=1200',
-        caption: 'O elo inquebrável: o resgate salvou a cadela do abandono, mas foi a presença afetuosa de Vida que moldou a futura médica veterinária.'
-      },
-      {
-        id: 'vida-p15',
-        type: 'paragraph',
-        content: 'Ela vive radiante, sem dores e sem medos. Ela corre com os ouvidos ao vento, brinca incansavelmente com os irmãos caninos que a acolheram, passeia pelos parques, viaja no carro sentindo a brisa e exige a vida de "princesa mimada" que sempre deveria ter tido desde o dia em que nasceu.'
+        content: '🐾 **A FILOSOFIA DO CUIDADO KINTSUGI**\nA reabilitação nos ensina que a cura não significa, necessariamente, o retorno ao estado original perfeito. Trata-se de devolver autonomia e qualidade de vida. Tratar vai muito além do diagnóstico técnico; exige a oferta de rotina, afeto e presença contínua, preenchendo as marcas da dor com fios de ouro como na arte japonesa do Kintsugi.'
       },
       {
         id: 'vida-h2-5',
         type: 'heading2',
-        content: 'A LIÇÃO QUE FICA E O NASCIMENTO DESTE ESPAÇO'
+        content: 'V. O SORRISO NA VARANDA E A BANDANA FLORAL'
+      },
+      {
+        id: 'vida-img-5',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1200',
+        caption: '5. O Sorriso do Renascimento: De peito aberto na varanda, olhos fechados e língua de fora, Vida celebra a vida sem dores nem medos.'
+      },
+      {
+        id: 'vida-img-6',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&q=80&w=1200',
+        caption: '6. A Doce Vida de Bandana: Relaxada no piso de azulejo com sua bandana floral verde, esbanjando doçura e uma pelagem fofíssima.'
+      },
+      {
+        id: 'vida-p14',
+        type: 'paragraph',
+        content: 'Hoje, o tempo de sofrimento na praça fria parece pertencer a outra vida. Embora a Vida continue sob o acompanhamento zeloso de neurologistas e ortopedistas veterinários, ela é a prova viva de que o amor transforma a biologia. A tempestade imunológica lhe deixou algumas marcas — ela não consegue erguer o rabo totalmente como fazem os huskies imponentes, e carrega uma leve atrofia nas patas traseiras.'
+      },
+      {
+        id: 'vida-p15',
+        type: 'paragraph',
+        content: 'Mas pergunto a você: o que são cicatrizes senão a prova definitiva de que sobrevivemos? Essas sequelas não definem a Vida. O que a define agora é a intensidade com que ela abraça cada novo dia.'
+      },
+      {
+        id: 'vida-h2-6',
+        type: 'heading2',
+        content: 'VI. A PRINCESA VIDA: A RAINHA DE NOSSOS CORAÇÕES'
+      },
+      {
+        id: 'vida-img-7',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1583511655826-05700d52f4d9?auto=format&fit=crop&q=80&w=1200',
+        caption: '7. A Coroazinha da Vitória: A Princesa Vida com sua coroa rosa colada na testa — o símbolo eterno do amor, da dignidade restaurada e de um lar onde ela é amada incondicionalmente.'
       },
       {
         id: 'vida-p16',
         type: 'paragraph',
-        content: 'A Vida me ensinou o que as apostilas da faculdade não conseguem imprimir em suas páginas. Ela me mostrou que a prática médica é indissociável da compaixão. Mostrou-me que reabilitar não é consertar um quebra-cabeça para deixá-lo perfeitamente plano de novo, mas sim preencher as peças que faltam com ouro, como na arte japonesa do Kintsugi — valorizando as marcas da reconstrução.'
+        content: 'Ela vive radiante, sem dores e sem medos. Ela corre com os ouvidos ao vento, brinca incansavelmente com os irmãos caninos que a acolheram, passeia pelos parques, viaja no carro sentindo a brisa e exige a vida de **"princesa mimada"** que sempre deveria ter tido desde o dia em que nasceu.'
+      },
+      {
+        id: 'vida-h2-7',
+        type: 'heading2',
+        content: 'VII. O MOVIMENTO TENPETS + GRITNEWS: PARTICIPE DESSA CORRENTE DE AMOR'
       },
       {
         id: 'vida-p17',
         type: 'paragraph',
-        content: 'É dessa essência bruta, feita de madrugadas em claro, angústias clínicas, choros de alívio e abraços em meio à fisioterapia, que nasce este espaço na **GritNews**. O meu propósito aqui é abrir as portas dos bastidores da medicina veterinária e do resgate animal. Quero contar as histórias que acontecem quando a técnica encontra a empatia.'
+        content: 'A Vida me ensinou o que as apostilas da faculdade não conseguem imprimir em suas páginas. Ela me mostrou que a prática médica é indissociável da compaixão. É dessa essência bruta, feita de madrugadas em claro, angústias clínicas, choros de alívio e abraços em meio à fisioterapia, que nasce este espaço na **GritNews** e no projeto **TenPets**.'
       },
       {
         id: 'vida-p18',
         type: 'paragraph',
-        content: 'A Vida mudou a minha vida. E espero, do fundo do coração, que a história dela seja apenas a primeira de muitas que, contadas aqui, consigam aquecer e inspirar a sua também. Se você chegou até esta linha, sinta-se abraçado. O extraordinário trabalho de amar os animais apenas começou.'
+        content: 'O nosso propósito aqui é construir um **ecossistema integrativo e participativo**. Queremos que você faça parte dessa corrente: comente sua mensagem para a Vida, curta a reportagem, compartilhe com seus amigos e ajude a fortalecer o movimento de proteção e saúde animal!'
+      },
+      {
+        id: 'vida-callout-bottom',
+        type: 'callout',
+        content: '❤️ **VOCÊ FAZ PARTE DESTA HISTÓRIA!**\nDeixe seu comentário abaixo mandando amor para a Princesa Vida e para a equipe médica. Compartilhe este artigo no WhatsApp com quem ama animais e junte-se ao Movimento TenPets + GritNews!'
       }
     ],
     seo: {

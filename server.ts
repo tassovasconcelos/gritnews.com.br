@@ -18,15 +18,20 @@ async function startServer() {
     });
   });
 
-  // Determine if running in production mode or if built dist assets exist
+  // Determine if running in production mode AND built dist assets exist
   const distPath = path.resolve(process.cwd(), "dist");
   const hasDist = fs.existsSync(path.join(distPath, "index.html"));
 
-  if (process.env.NODE_ENV === "production" || hasDist) {
+  if (process.env.NODE_ENV === "production" && hasDist) {
     console.log(`[GRIT NEWS] Serving static production build from ${distPath}`);
     app.use(express.static(distPath, { index: 'index.html' }));
     app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+      const indexPath = path.join(distPath, "index.html");
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send("Index file not found");
+      }
     });
   } else {
     console.log(`[GRIT NEWS] Starting Vite dev middleware...`);

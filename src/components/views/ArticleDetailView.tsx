@@ -290,6 +290,26 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
                 </blockquote>
               );
             }
+            if (block.type === 'image') {
+              return (
+                <figure key={block.id} className="my-8 space-y-2.5">
+                  <div className="overflow-hidden rounded-3xl border border-[#E2E8F0] shadow-md bg-gray-50 group">
+                    <img
+                      src={block.content}
+                      alt={block.caption || 'Imagem do artigo'}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-auto max-h-[550px] object-cover group-hover:scale-102 transition-transform duration-300"
+                    />
+                  </div>
+                  {block.caption && (
+                    <figcaption className="text-xs md:text-sm text-[#5C6B7A] italic text-center px-4 font-medium flex items-center justify-center gap-1.5">
+                      <span>📸</span>
+                      <span>{block.caption}</span>
+                    </figcaption>
+                  )}
+                </figure>
+              );
+            }
             if (block.type === 'product_card') {
               const offerObj = allOffers.find(o => o.slug === block.content || o.id === block.content) || allOffers[0];
               if (offerObj) {
