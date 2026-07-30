@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Vida da Vida: Quando o Silêncio da Dor Encontra o Eco do Cuidado - GritNews</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-navy: #0B2343;
+      --accent-blue: #145EDB;
+      --teal-accent: #0D7A5F;
+      --soft-bg: #FAF9F6;
+      --text-main: #1C2833;
+      --text-muted: #5C6B7A;
+      --border-color: #E2E8F0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--soft-bg);
+      color: var(--text-main);
+      line-height: 1.8;
+      font-size: 17px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .top-bar {
+      background-color: var(--primary-navy);
+      color: #ffffff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .top-bar .brand {
+      font-family: 'Playfair Display', serif;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: 1.5px;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .top-bar .actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-pdf {
+      background-color: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-pdf:hover {
+      background-color: #0d4ab5;
+      transform: translateY(-1px);
+    }
+
+    .btn-back {
+      background-color: rgba(255, 255, 255, 0.15);
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .btn-back:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .article-container {
+      max-width: 840px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      padding: 56px 48px;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-color);
+    }
+
+    .badge-reportagem {
+      display: inline-block;
+      background-color: #E6F0FA;
+      color: var(--accent-blue);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    h1.article-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--primary-navy);
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+
+    p.article-subtitle {
+      font-size: 20px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .author-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 36px;
+    }
+
+    .author-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent-blue);
+    }
+
+    .author-info .name {
+      font-weight: 700;
+      color: var(--primary-navy);
+      font-size: 15px;
+    }
+
+    .author-info .role {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    blockquote.featured-quote {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.6;
+      color: var(--primary-navy);
+      background: #F4F8FC;
+      border-left: 5px solid var(--accent-blue);
+      padding: 24px 32px;
+      border-radius: 0 16px 16px 0;
+      margin: 36px 0;
+    }
+
+    h2.section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin: 40px 0 18px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #EBF3FC;
+    }
+
+    p.paragraph {
+      margin-bottom: 22px;
+      text-align: justify;
+    }
+
+    figure.photo-card {
+      margin: 36px 0;
+      text-align: center;
+    }
+
+    figure.photo-card img {
+      width: 100%;
+      max-height: 520px;
+      object-fit: cover;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border: 1px solid var(--border-color);
+    }
+
+    figcaption.caption {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 10px;
+      padding: 0 12px;
+    }
+
+    .callout-box {
+      background: #F0FDF4;
+      border-left: 5px solid var(--teal-accent);
+      padding: 24px;
+      border-radius: 12px;
+      margin: 32px 0;
+    }
+
+    .callout-box h4 {
+      color: var(--teal-accent);
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .callout-box p {
+      font-size: 15px;
+      color: #164E63;
+      margin: 0;
+    }
+
+    .footer-note {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    @media print {
+      .top-bar, .no-print {
+        display: none !important;
+      }
+      body {
+        background-color: #ffffff;
+      }
+      .article-container {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        max-width: 100%;
+      }
+      figure.photo-card {
+        page-break-inside: avoid;
+      }
+      h2.section-title {
+        page-break-before: auto;
+        page-break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .article-container {
+        padding: 28px 20px;
+        margin: 16px auto;
+        border-radius: 12px;
+      }
+      h1.article-title {
+        font-size: 28px;
+      }
+      p.article-subtitle {
+        font-size: 17px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar no-print">
+    <a href="/" class="brand">GRITNEWS</a>
+    <div class="actions">
+      <a href="/" class="btn-back">← Voltar para o Portal</a>
+      <button onclick="window.print()" class="btn-pdf">
+        🖨️ Baixar / Imprimir PDF
+      </button>
+    </div>
+  </div>
+
+  <article class="article-container">
+    <span class="badge-reportagem">GritNews • Reportagem Especial</span>
+
+    <h1 class="article-title">A Vida da Vida: Quando o Silêncio da Dor Encontra o Eco do Cuidado</h1>
+    
+    <p class="article-subtitle">A extraordinária jornada de amor, resistência e medicina veterinária que transformou uma husky esquecida nas ruas em um símbolo vivo de esperança.</p>
+
+    <div class="author-meta">
+      <img src="/public/images/leticia_karla_profile_1785288976216.jpg" alt="Letícia Karla" class="author-avatar" onerror="this.src='https://images.unsplash.com/photo-1594824813566-788b146197b0?q=80&w=200'">
+      <div class="author-info">
+        <div class="name">Por Letícia Karla</div>
+        <div class="role">Estudante de Medicina Veterinária e Protetora Animal • GritNews Especial</div>
+      </div>
+    </div>
+
+    <blockquote class="featured-quote">
+      "O abandono não faz barulho; ele simplesmente subtrai a existência de quem o sofre. Mas o resgate, esse sim, ressoa profundamente na alma de quem é salvo e de quem salva."
+    </blockquote>
+
+    <p class="paragraph">Há algo de profundamente sagrado no silêncio impenetrável da madrugada. É quando as luzes da cidade se apagam, o trânsito cessa e as cortinas se fecham nas janelas aquecidas, que a dor daqueles que foram esquecidos pelo mundo permanece tragicamente desperta. Para nós, que dedicamos a vida a proteger quem não tem voz, a noite é muitas vezes a mensageira das urgências. Na noite gelada de 26 de julho de 2023, exatamente por volta das 22h, a claridade fria do celular rasgou a escuridão do meu quarto com mais um alerta nos grupos de resgate animal.</p>
+
+    <p class="paragraph">Entre tantas mensagens, fotos desfocadas e pedidos de socorro que inundam minha rotina há quinze anos, um registro específico fez o ar fugir dos meus pulmões. A imagem exibia uma husky siberiana, de pelagem branca como a neve que ela jamais conheceu, prostrada sobre o concreto sujo de uma praça pública. Ela estava completamente paralisada.</p>
+
+    <p class="paragraph">A mensagem que acompanhava a foto revelava um cenário ainda mais desolador: ela estava ali, imóvel, há quatro longos e agonizantes dias. Abandonada à própria sorte, o frio do inverno e a fome seriam seus únicos companheiros, não fosse por um ato de pura compaixão que veio de onde a sociedade menos espera. Foram moradores em situação de rua, indivíduos que também conhecem a aspereza do abandono, que estenderam um colchão de espuma rasgado sob o corpo frágil da cadela. Eles dividiram o pouco que tinham e garantiram que ela não ficasse sozinha sob o sereno cortante. A minha alma de protetora ardia; eu queria pular do pijama para a roupa de rua e correr até lá naquela mesma hora. Mas, alertada pela prudência de amigos sobre os perigos reais da madrugada em um local ermo, fui forçada a esperar. Aquela foi, sem dúvida, a madrugada mais longa da minha vida. Eu não dormi; apenas vigiava o relógio enquanto pedia silenciosamente para que ela aguentasse até o amanhecer.</p>
+
+    <h2 class="section-title">I. O ENCONTRO NA PRAÇA E O UIVO DA ALMA</h2>
+
+    <figure class="photo-card">
+      <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1200" alt="Resgate da Vida na praça">
+      <figcaption class="caption">📷 1. O Resgate na Praça: Imóvel sobre o colchão de espuma rasgado, doado com carinho por moradores em situação de rua, Vida esperava o amanhecer sem mover as patas.</figcaption>
+    </figure>
+
+    <p class="paragraph">Assim que o céu começou a clarear, por volta das 7h da manhã, cruzei as avenidas da cidade com o coração batendo na garganta. Ao chegar à praça, a cena me atingiu com a força de um golpe. Ela continuava lá, deitada sobre o tecido úmido e encardido daquele colchão improvisado. Seus olhos azuis, turvos pela exaustão, eram poços de confusão e pavor. Ela era um ser majestoso reduzido a um punhado de medo e dor.</p>
+
+    <p class="paragraph">Ajoelhei-me ao seu lado, falando baixo, tentando mostrar com as mãos e a energia que a tormenta havia chegado ao fim. Mas, quando a ergui com cuidado e a acomodei no banco de trás do meu carro, o silêncio da manhã foi partido ao meio. Ela emitiu um uivo longo, gutural e cortante. Não era o som de um ferimento tocado, não era uma dor física aguda. Era o choro da alma. Depois de tantos resgates, eu sei diferenciar o som da dor do som do terror. Aquele uivo era o medo puro e destilado do desconhecido; era a memória recente de ter sido deixada para trás por aqueles que deveriam amá-la, e o pavor incontrolável do que as minhas mãos humanas fariam a ela a seguir.</p>
+
+    <p class="paragraph">Sentada no banco do motorista, olhei pelo retrovisor para aquela loba das neves tão frágil. Naquele exato instante, chorando com ela, tomei a decisão que batizaria o nosso futuro. "Vai ficar tudo bem, Vida", eu murmurei. E foi assim que ela se chamou: Vida. Não por aquilo que ela estava sentindo naquele momento, mas por tudo aquilo que eu jurava, diante dela, que lutaria para devolver-lhe: a dignidade de existir plena e feliz.</p>
+
+    <h2 class="section-title">II. O QUARTO DE HOSPITAL E OS PRIMEIRAS CUIDADOS</h2>
+
+    <figure class="photo-card">
+      <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1200" alt="Vida no quarto de hospital">
+      <figcaption class="caption">📷 2. Aconchego e Dignidade: De fraldinha hospitalar no tatame azul, com sua almofadinha de rosquinha rosa e potinho d’água, Vida iniciou a jornada no seu quarto de hospital.</figcaption>
+    </figure>
+
+    <p class="paragraph">Fomos direto, sem desvios, para a clínica veterinária. O cheiro de álcool, o bipe dos monitores e a movimentação dos médicos tornaram-se o nosso novo cenário. No entanto, a ciência não entregou o milagre da clareza logo no primeiro dia. Os exames clínicos e laboratoriais iniciais confirmaram o óbvio: ela estava em estado crítico, mas a raiz da sua paralisia permanecia oculta.</p>
+
+    <p class="paragraph">Levei-a para minha casa, preparando um "quarto de hospital" seguro e isolado dos meus outros cães resgatados. Ali começou a nossa verdadeira maratona. Foram necessários painéis de sangue extensos, exames de PCR buscando doenças infecciosas e parasitárias e, por fim, a precisão tecnológica de uma tomografia computadorizada.</p>
+
+    <p class="paragraph">Estar cursando o 5º período de Medicina Veterinária me deu uma perspectiva dupla e intensa dessa fase. A teoria dos livros tomava forma dramática na minha sala de estar. A medicina veterinária ensina cedo que o diagnóstico não é uma iluminação mágica; é a construção exaustiva de um raciocínio clínico. É a arte do descarte, da formulação de hipóteses, da teimosia acadêmica misturada à intuição prática. Após semanas de exames, o veredito mais provável se apresentou, cruel e enigmático: uma grave doença neurológica de origem autoimune. O próprio sistema de defesa da Vida havia entrado em colapso e atacado sua mobilidade.</p>
+
+    <h2 class="section-title">III. ACUPUNTURA NEUROMODULADORA E LACINHOS NAS ORELHAS</h2>
+
+    <figure class="photo-card">
+      <img src="https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&q=80&w=1200" alt="Sessão de acupuntura na Vida">
+      <figcaption class="caption">📷 3. Medicina com Afeto: Agulhas de acupuntura na testa estimulando os caminhos neurais e dois mimosos lacinhos coloridos nas orelhas para resgatar a alegria.</figcaption>
+    </figure>
+
+    <p class="paragraph">Com o diagnóstico em mãos, iniciamos o tratamento. O plano terapêutico não prometia soluções fáceis; exigia tempo, recursos e, principalmente, uma resiliência inquebrável. Para mim, a saúde de um animal resgatado precisa vir acompanhada do resgate da sua vaidade e da sua autoimagem.</p>
+
+    <p class="paragraph">Colocar lacinhos estampados em suas orelhas fofas durante as aplicações de acupuntura na testa tornou-se o nosso ritual sagrado. Enquanto as agulhas milimétricas enviavam pulsos neuromoduladores para o cérebro tentar reativar as vias motoras, o carinho contínuo no focinho trazia a paz que os olhos azuis de Vida tanto buscavam.</p>
+
+    <h2 class="section-title">IV. "TÔ FAZENDO MINHA FISIOTERAPIA, TITIOS!": A CIÊNCIA DA REABILITAÇÃO</h2>
+
+    <figure class="photo-card">
+      <img src="https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200" alt="Fisioterapia canina">
+      <figcaption class="caption">📷 4. Fisioterapia Diária e Eletroestimulação: A Dra. Renata Pessoa (@renatapessoa.vet) e a equipe dedicadas a estimular os músculos traseiros da Vida. "Tô fazendo fisioterapia, titios!"</figcaption>
+    </figure>
+
+    <p class="paragraph">A Vida precisava aprender a comandar seu corpo novamente. Iniciamos um protocolo rigoroso que combinava medicina alopática, fisioterapia canina diária, eletroterapia com TENS/FES sob a supervisão dedicada da especialista Dra. Renata Pessoa (@renatapessoa.vet e @dramarciasm), além de sessões de hidroterapia. Durante seis meses consecutivos, não houve final de semana de descanso, não houve feriado ou trégua. O cuidado tornou-se nosso idioma diário.</p>
+
+    <p class="paragraph">Como em todo processo de cura profunda, o caminho não foi uma linha reta em ascensão. Tivemos dias sombrios em que a apatia dela me fazia duvidar, dias em que as pernas traseiras pareciam ceder ainda mais, me levando às lágrimas escondidas. Mas a natureza é fascinante. O corpo responde à esperança. E então começaram a surgir as vitórias invisíveis para o mundo, mas imensas para nós: o dia em que ela firmou a pata esquerda sem deslizar; a tarde em que ela conseguiu se sustentar em pé por dez segundos sozinha; a manhã épica em que, desajeitada, ela deu o primeiro trote pelo gramado do quintal.</p>
+
+    <div class="callout-box">
+      <h4>🐾 A FILOSOFIA DO CUIDADO KINTSUGI</h4>
+      <p>A reabilitação nos ensina que a cura não significa, necessariamente, o retorno ao estado original perfeito. Trata-se de devolver autonomia e qualidade de vida. Tratar vai muito além do diagnóstico técnico; exige a oferta de rotina, afeto e presença contínua, preenchendo as marcas da dor com fios de ouro como na arte japonesa do Kintsugi.</p>
+    </div>
+
+    <h2 class="section-title">V. O SORRISO NA VARANDA E A BANDANA FLORAL</h2>
+
+    <figure class="photo-card">
+      <img src="https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1200" alt="Vida sorrindo na varanda">
+      <figcaption class="caption">📷 5. O Sorriso do Renascimento: De peito aberto na varanda, olhos fechados e língua de fora, Vida celebra a vida sem dores nem medos.</figcaption>
+    </figure>
+
+    <figure class="photo-card">
+      <img src="https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&q=80&w=1200" alt="Vida de bandana floral">
+      <figcaption class="caption">📷 6. A Doce Vida de Bandana: Relaxada no piso de azulejo com sua bandana floral verde, esbanjando doçura e uma pelagem fofíssima.</figcaption>
+    </figure>
+
+    <p class="paragraph">Hoje, o tempo de sofrimento na praça fria parece pertencer a outra vida. Embora a Vida continue sob o acompanhamento zeloso de neurologistas e ortopedistas veterinários, ela é a prova viva de que o amor transforma a biologia. A tempestade imunológica lhe deixou algumas marcas — ela não consegue erguer o rabo totalmente como fazem os huskies imponentes, e carrega uma leve atrofia nas patas traseiras.</p>
+
+    <p class="paragraph">Mas pergunto a você: o que são cicatrizes senão a prova definitiva de que sobrevivemos? Essas sequelas não definem a Vida. O que a define agora é a intensidade com que ela abraça cada novo dia.</p>
+
+    <h2 class="section-title">VI. A PRINCESA VIDA: A RAINHA DE NOSSOS CORAÇÕES</h2>
+
+    <figure class="photo-card">
+      <img src="https://images.unsplash.com/photo-1583511655826-05700d52f4d9?auto=format&fit=crop&q=80&w=1200" alt="Princesa Vida de Coroa">
+      <figcaption class="caption">📷 7. A Coroazinha da Vitória: A Princesa Vida com sua coroa rosa colada na testa — o símbolo eterno do amor, da dignidade restaurada e de um lar onde ela é amada incondicionalmente.</figcaption>
+    </figure>
+
+    <p class="paragraph">Ela vive radiante, sem dores e sem medos. Ela corre com os ouvidos ao vento, brinca incansavelmente com os irmãos caninos que a acolheram, passeia pelos parques, viaja no carro sentindo a brisa e exige a vida de <strong>"princesa mimada"</strong> que sempre deveria ter tido desde o dia em que nasceu.</p>
+
+    <h2 class="section-title">VII. O MOVIMENTO TENPETS + GRITNEWS: PARTICIPE DESSA CORRENTE DE AMOR</h2>
+
+    <p class="paragraph">A Vida me ensinou o que as apostilas da faculdade não conseguem imprimir em suas páginas. Ela me mostrou que a prática médica é indissociável da compaixão. É dessa essência bruta, feita de madrugadas em claro, angústias clínicas, choros de alívio e abraços em meio à fisioterapia, que nasce este espaço na <strong>GritNews</strong> e no projeto <strong>TenPets</strong>.</p>
+
+    <p class="paragraph">O nosso propósito aqui é construir um <strong>ecossistema integrativo e participativo</strong>. Queremos que você faça parte dessa corrente: comente sua mensagem para a Vida, curta a reportagem, compartilhe com seus amigos e ajude a fortalecer o movimento de proteção e saúde animal!</p>
+
+    <div class="callout-box" style="background:#EFF6FF; border-left-color:#145EDB;">
+      <h4 style="color:#145EDB;">❤️ VOCÊ FAZ PARTE DESTA HISTÓRIA!</h4>
+      <p style="color:#1E3A8A;">Acesse o portal GritNews, deixe seu comentário mandando carinho para a Princesa Vida e para a equipe médica. Compartilhe este artigo no WhatsApp com quem ama animais e junte-se ao Movimento TenPets + GritNews!</p>
+    </div>
+
+    <div class="footer-note">
+      © 2026 GritNews • Reportagem Especial de Saúde e Proteção Animal. Todos os direitos reservados.
+    </div>
+  </article>
+
+</body>
+</html>
