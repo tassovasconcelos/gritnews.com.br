@@ -3,7 +3,7 @@ import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS
 import { INITIAL_SACPROH_PRODUCTS, INITIAL_SACPROH_TICKETS, INITIAL_SACPROH_FAQS } from '../data/sacprohData';
 
 const KEYS = {
-  ARTICLES: 'grit_news_articles_v1',
+  ARTICLES: 'grit_news_articles_v2',
   CATEGORIES: 'grit_news_categories_v1',
   AUTHORS: 'grit_news_authors_v1',
   PARTNERS: 'grit_news_partners_v1',
@@ -17,7 +17,7 @@ const KEYS = {
   MEDIA: 'grit_news_media_v1',
   TRENDS: 'grit_news_trends_v1',
   CURRENT_ROLE: 'grit_news_current_role_v1',
-  TENPETS_ARTICLES: 'grit_news_tenpets_articles_v1',
+  TENPETS_ARTICLES: 'grit_news_tenpets_articles_v2',
   TENPETS_RESCUES: 'grit_news_tenpets_rescues_v1',
   TENPETS_PARTNERS: 'grit_news_tenpets_partners_v1',
   SACPROH_TICKETS: 'grit_news_sacproh_tickets_v1',

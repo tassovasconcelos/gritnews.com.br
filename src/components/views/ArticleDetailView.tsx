@@ -12,6 +12,27 @@ import { incrementArticleViews, getComments, addComment, getOffers } from '../..
 import { trackEvent } from '../../lib/analytics';
 import { updatePageSEO, injectArticleSchema } from '../../lib/seo';
 
+function formatEmbedUrl(url: string): string {
+  if (!url) return '';
+  if (url.includes('youtube.com/watch?v=')) {
+    const videoId = url.split('watch?v=')[1]?.split('&')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (url.includes('youtube.com/shorts/')) {
+    const videoId = url.split('youtube.com/shorts/')[1]?.split('?')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (url.includes('vimeo.com/') && !url.includes('player.vimeo.com')) {
+    const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+    return `https://player.vimeo.com/video/${videoId}`;
+  }
+  return url;
+}
+
 interface ArticleDetailViewProps {
   article: Article;
   author?: AuthorProfile;
@@ -333,10 +354,10 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
                       </span>
                       <span className="text-[10px] text-slate-400 font-normal">TenPets & GRIT NEWS Documentaries</span>
                     </div>
-                    {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') ? (
+                    {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') || block.content.includes('youtu.be') ? (
                       <div className="aspect-video w-full rounded-b-2xl overflow-hidden">
                         <iframe
-                          src={block.content.replace('watch?v=', 'embed/')}
+                          src={formatEmbedUrl(block.content)}
                           title={block.caption || 'Vídeo do artigo'}
                           className="w-full h-full border-0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

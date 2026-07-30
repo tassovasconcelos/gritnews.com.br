@@ -4,6 +4,27 @@ import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBloc
 import { saveArticle, deleteArticle, getMediaAssets } from '../../lib/storage';
 import { Modal } from '../ui/Modal';
 
+function formatEmbedUrl(url: string): string {
+  if (!url) return '';
+  if (url.includes('youtube.com/watch?v=')) {
+    const videoId = url.split('watch?v=')[1]?.split('&')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (url.includes('youtube.com/shorts/')) {
+    const videoId = url.split('youtube.com/shorts/')[1]?.split('?')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (url.includes('vimeo.com/') && !url.includes('player.vimeo.com')) {
+    const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+    return `https://player.vimeo.com/video/${videoId}`;
+  }
+  return url;
+}
+
 interface AdminArticlesProps {
   articles: Article[];
   categories: Category[];
@@ -33,6 +54,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
   const [tagsInput, setTagsInput] = useState('');
   const [isSponsored, setIsSponsored] = useState(false);
   const [isEvergreen, setIsEvergreen] = useState(false);
+  const [isUrgent, setIsUrgent] = useState(false);
   const [showGuide, setShowGuide] = useState(true);
   const [blocks, setBlocks] = useState<ArticleBlock[]>([
     { id: 'b-1', type: 'paragraph', content: 'Escreva a introdução da matéria...' }
@@ -61,6 +83,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setTagsInput('Inovação, Mercado');
     setIsSponsored(false);
     setIsEvergreen(false);
+    setIsUrgent(false);
     setBlocks([{ id: 'b-1', type: 'paragraph', content: 'Introdução do artigo...' }]);
     setIsModalOpen(true);
   };
@@ -77,6 +100,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setTagsInput(art.tags.join(', '));
     setIsSponsored(art.isSponsored || false);
     setIsEvergreen(art.isEvergreen || false);
+    setIsUrgent(art.isUrgent || false);
     setBlocks(art.blocks && art.blocks.length > 0 ? art.blocks : [{ id: 'b-1', type: 'paragraph', content: art.summary }]);
     setIsModalOpen(true);
   };
@@ -151,6 +175,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
       sharesCount: editingArticle ? editingArticle.sharesCount : 0,
       isSponsored,
       isEvergreen,
+      isUrgent,
       blocks,
       seo: {
         metaTitle: `${title} | GRIT NEWS`,
@@ -609,9 +634,9 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                                 <span className="text-slate-400">Player em Tempo Real</span>
                               </div>
                               <div className="relative aspect-video max-h-56 w-full rounded-xl overflow-hidden bg-black border border-slate-800">
-                                {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') ? (
+                                {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') || block.content.includes('youtu.be') ? (
                                   <iframe
-                                    src={block.content.replace('watch?v=', 'embed/')}
+                                    src={formatEmbedUrl(block.content)}
                                     title="Preview Vídeo"
                                     className="w-full h-full border-0"
                                     allowFullScreen
@@ -752,25 +777,58 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                   />
                 </div>
 
-                <div className="pt-2 border-t border-[#E2E8F0] space-y-2">
-                  <label className="flex items-center gap-2 text-xs cursor-pointer font-medium">
-                    <input
-                      type="checkbox"
-                      checked={isSponsored}
-                      onChange={e => setIsSponsored(e.target.checked)}
-                      className="rounded text-[#FF8500]"
-                    />
-                    <span>Conteúdo Patrocinado</span>
+                {/* Spotlight & Placement Controls */}
+                <div className="pt-3 border-t border-[#E2E8F0] space-y-2.5">
+                  <label className="block text-[11px] font-extrabold text-[#0B2343] uppercase tracking-wide">
+                    🎯 Posição de Publicação & Destaque
                   </label>
-                  <label className="flex items-center gap-2 text-xs cursor-pointer font-medium">
-                    <input
-                      type="checkbox"
-                      checked={isEvergreen}
-                      onChange={e => setIsEvergreen(e.target.checked)}
-                      className="rounded text-[#145EDB]"
-                    />
-                    <span>Atributo Evergreen</span>
-                  </label>
+
+                  <div className="space-y-1.5 text-xs">
+                    <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                      isUrgent ? 'bg-red-50 border-red-300 text-red-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        checked={isUrgent}
+                        onChange={e => setIsUrgent(e.target.checked)}
+                        className="mt-0.5 rounded text-red-600 focus:ring-red-500"
+                      />
+                      <div>
+                        <span className="block font-bold">📌 Manchete Principal da Capa (Top Hero)</span>
+                        <span className="text-[10px] text-slate-500 font-normal">Exibição no topo da Home com badge de destaque e card expandido.</span>
+                      </div>
+                    </label>
+
+                    <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                      isEvergreen ? 'bg-blue-50 border-blue-300 text-blue-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        checked={isEvergreen}
+                        onChange={e => setIsEvergreen(e.target.checked)}
+                        className="mt-0.5 rounded text-[#145EDB] focus:ring-[#145EDB]"
+                      />
+                      <div>
+                        <span className="block font-bold">⭐ Destaque Secundário / Carrossel</span>
+                        <span className="text-[10px] text-slate-500 font-normal">Matéria de destaque em carrosséis e barras laterais nobres.</span>
+                      </div>
+                    </label>
+
+                    <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                      isSponsored ? 'bg-amber-50 border-amber-300 text-amber-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        checked={isSponsored}
+                        onChange={e => setIsSponsored(e.target.checked)}
+                        className="mt-0.5 rounded text-[#FF8500] focus:ring-[#FF8500]"
+                      />
+                      <div>
+                        <span className="block font-bold">🤝 Conteúdo Patrocinado</span>
+                        <span className="text-[10px] text-slate-500 font-normal">Sinaliza selo de parceiro/patrocinado.</span>
+                      </div>
+                    </label>
+                  </div>
                 </div>
               </div>
 
