@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Share2, Heart, Bookmark, Copy, Check, MessageCircle, Linkedin, Twitter } from 'lucide-react';
+import { Share2, Heart, Bookmark, Copy, Check, MessageCircle, Linkedin, Twitter, Printer, FileText } from 'lucide-react';
 import { Article } from '../../types';
 import { toggleBookmark, isBookmarked, incrementArticleLikes } from '../../lib/storage';
 
@@ -25,7 +25,7 @@ export const ArticleShareActions: React.FC<ArticleShareActionsProps> = ({
     ? `${window.location.origin}${window.location.pathname}?artigo=${article.slug || article.id}`
     : `https://www.gritnews.com.br/?artigo=${article.slug || article.id}`;
 
-  const shareText = `*${article.title}*\n\nRead full report on GRIT NEWS: ${articleUrl}`;
+  const shareText = `*${article.title}*\n\nLeia a reportagem completa no GRIT NEWS: ${articleUrl}`;
 
   useEffect(() => {
     setSaved(isBookmarked(article.id));
@@ -35,6 +35,14 @@ export const ArticleShareActions: React.FC<ArticleShareActionsProps> = ({
       setHasLiked(true);
     }
   }, [article.id]);
+
+  const handleDownloadPDF = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onShowToast('Aguarde... preparando a reportagem em versão PDF / Impressão.', 'info');
+    setTimeout(() => {
+      window.print();
+    }, 400);
+  };
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -199,6 +207,15 @@ export const ArticleShareActions: React.FC<ArticleShareActionsProps> = ({
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Copiado!' : 'Copiar'}</span>
+          </button>
+
+          <button
+            onClick={handleDownloadPDF}
+            title="Baixar ou Imprimir Reportagem em PDF"
+            className="flex items-center gap-1.5 bg-[#0B2343] hover:bg-[#145EDB] text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition-all"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Baixar PDF</span>
           </button>
         </div>
       </div>

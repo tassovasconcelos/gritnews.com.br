@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Eye, Calendar, User, ArrowLeft, Volume2, VolumeX, Sparkles, MessageSquare, ShieldCheck, Tag, ExternalLink, Send } from 'lucide-react';
+import { Clock, Eye, Calendar, User, ArrowLeft, Volume2, VolumeX, Sparkles, MessageSquare, ShieldCheck, Tag, ExternalLink, Send, Printer } from 'lucide-react';
 import { Article, AuthorProfile, Category, Comment, Offer } from '../../types';
 import { Badge } from '../ui/Badge';
 import { ReadingProgressBar } from '../ui/ReadingProgressBar';
@@ -187,7 +187,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
             </div>
 
             {/* Interactive Reader Options */}
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
               <button
                 onClick={toggleSpeech}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs ${
@@ -198,6 +198,18 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
               >
                 {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-[#145EDB]" />}
                 <span>{isSpeaking ? 'Parar Áudio' : 'Ouvir Artigo'}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onShowToast('Aguarde... preparando a reportagem em PDF / Impressão.', 'info');
+                  setTimeout(() => window.print(), 300);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0B2343] hover:bg-[#145EDB] text-white transition-all shadow-xs"
+                title="Gerar e Baixar PDF do Artigo"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Gerar PDF</span>
               </button>
 
               <div className="flex items-center bg-white border border-[#E2E8F0] rounded-xl p-1 text-xs font-bold text-[#0B2343]">

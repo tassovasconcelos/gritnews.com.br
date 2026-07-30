@@ -5,3 +5,46 @@
     font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 }
+
+/* Print and PDF Export Styles */
+@media print {
+  /* Hide non-article layout elements */
+  nav, footer, .no-print, header nav, button, form, .ad-banner, aside, .sticky {
+    display: none !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #10233F !important;
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+  }
+
+  .print-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3, blockquote, figure {
+    page-break-inside: avoid;
+  }
+
+  h1 {
+    font-size: 24pt !important;
+  }
+
+  h2 {
+    font-size: 18pt !important;
+    margin-top: 18pt !important;
+  }
+}
