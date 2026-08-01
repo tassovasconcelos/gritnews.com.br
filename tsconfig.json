@@ -16,9 +16,10 @@
     "allowJs": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@gritnews/types": ["./packages/types/src/index.ts"],
+      "@gritnews/config": ["./packages/config/src/index.ts"],
+      "@gritnews/ui": ["./packages/ui/src/index.ts"],
+      "@/*": ["./*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true

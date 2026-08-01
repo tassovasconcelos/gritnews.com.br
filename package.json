@@ -3,9 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "tsx server.ts",
+    "dev:gritnews": "npm run dev --workspace=@gritnews/gritnews",
+    "dev:sacproh": "npm run dev --workspace=@gritnews/sacproh",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build:gritnews": "npm run build --workspace=@gritnews/gritnews",
+    "build:sacproh": "npm run build --workspace=@gritnews/sacproh",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"

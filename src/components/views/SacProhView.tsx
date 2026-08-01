@@ -1,5 +1,5 @@
 import React from 'react';
-import { SacProhApp } from '../../sacproh';
+import { SacProhApp } from '../../../apps/sacproh/src/SacProhApp';
 
 interface SacProhViewProps {
   onShowToast: (message: string, type?: 'success' | 'info') => void;
