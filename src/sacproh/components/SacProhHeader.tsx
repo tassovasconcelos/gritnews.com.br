@@ -10,12 +10,15 @@ import {
   Wrench,
   Building2,
   HelpCircle,
-  Activity
+  Activity,
+  BarChart3
 } from 'lucide-react';
 
+export type SacProhTab = 'tickets' | 'dashboard' | 'new-ticket' | 'catalog' | 'maintenance' | 'contracts' | 'faqs';
+
 interface SacProhHeaderProps {
-  activeTab: 'tickets' | 'new-ticket' | 'catalog' | 'maintenance' | 'contracts' | 'faqs';
-  setActiveTab: (tab: 'tickets' | 'new-ticket' | 'catalog' | 'maintenance' | 'contracts' | 'faqs') => void;
+  activeTab: SacProhTab;
+  setActiveTab: (tab: SacProhTab) => void;
   ticketsCount: number;
   onNavigateHome?: () => void;
 }
@@ -93,6 +96,18 @@ export const SacProhHeader: React.FC<SacProhHeaderProps> = ({
           >
             <FileText className="w-4 h-4" />
             <span>Chamados ({ticketsCount})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'dashboard'
+                ? 'bg-sky-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4 text-sky-400" />
+            <span>Dashboard & Métricas BI</span>
           </button>
 
           <button

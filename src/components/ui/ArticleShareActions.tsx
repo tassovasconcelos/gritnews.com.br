@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Share2, Heart, Bookmark, Copy, Check, MessageCircle, Linkedin, Twitter, Printer, FileText } from 'lucide-react';
 import { Article } from '../../types';
-import { toggleBookmark, isBookmarked, incrementArticleLikes } from '../../lib/storage';
+import { toggleBookmark, isBookmarked, incrementArticleLikes, incrementArticleShares } from '../../lib/storage';
 
 interface ArticleShareActionsProps {
   article: Article;
@@ -78,24 +78,28 @@ export const ArticleShareActions: React.FC<ArticleShareActionsProps> = ({
     e.stopPropagation();
     navigator.clipboard.writeText(articleUrl);
     setCopied(true);
+    incrementArticleShares(article.id);
     onShowToast('Link da notícia copiado para a área de transferência!', 'success');
     setTimeout(() => setCopied(false), 2500);
   };
 
   const shareWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
+    incrementArticleShares(article.id);
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const shareLinkedIn = (e: React.MouseEvent) => {
     e.stopPropagation();
+    incrementArticleShares(article.id);
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(articleUrl)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const shareTwitter = (e: React.MouseEvent) => {
     e.stopPropagation();
+    incrementArticleShares(article.id);
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(articleUrl)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };

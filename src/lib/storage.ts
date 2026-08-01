@@ -57,7 +57,7 @@ function syncSeedList<T extends { id: string }>(key: string, seedList: T[]): voi
       updated.unshift(seedItem);
       changed = true;
     } else {
-      updated[foundIndex] = { ...updated[foundIndex], ...seedItem };
+      updated[foundIndex] = { ...seedItem, ...updated[foundIndex] };
       changed = true;
     }
   }
@@ -361,6 +361,15 @@ export function incrementArticleLikes(id: string): void {
   const art = articles.find(a => a.id === id);
   if (art) {
     art.likesCount = (art.likesCount || 0) + 1;
+    saveItem(KEYS.ARTICLES, articles);
+  }
+}
+
+export function incrementArticleShares(id: string): void {
+  const articles = getArticles();
+  const art = articles.find(a => a.id === id);
+  if (art) {
+    art.sharesCount = (art.sharesCount || 0) + 1;
     saveItem(KEYS.ARTICLES, articles);
   }
 }

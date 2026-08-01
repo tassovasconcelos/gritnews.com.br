@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { SacProhHeader } from './components/SacProhHeader';
+import { SacProhHeader, SacProhTab } from './components/SacProhHeader';
 import { TicketsModule } from './components/TicketsModule';
+import { DashboardModule } from './components/DashboardModule';
 import { NewTicketModal } from './components/NewTicketModal';
 import { CatalogModule } from './components/CatalogModule';
 import { EngineeringModule } from './components/EngineeringModule';
@@ -23,7 +24,7 @@ export const SacProhApp: React.FC<SacProhAppProps> = ({
   onShowToast,
   onNavigateHome
 }) => {
-  const [activeTab, setActiveTab] = useState<'tickets' | 'new-ticket' | 'catalog' | 'maintenance' | 'contracts' | 'faqs'>('tickets');
+  const [activeTab, setActiveTab] = useState<SacProhTab>('tickets');
   const [tickets, setTickets] = useState<SacProhTicket[]>(() => {
     const saved = localStorage.getItem('sacproh_tickets');
     return saved ? JSON.parse(saved) : INITIAL_SACPROH_TICKETS;
@@ -70,6 +71,14 @@ export const SacProhApp: React.FC<SacProhAppProps> = ({
             setProtocolSearch={setProtocolSearch}
             onOpenNewTicket={() => setActiveTab('new-ticket')}
             onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'dashboard' && (
+          <DashboardModule
+            tickets={tickets}
+            onShowToast={onShowToast}
+            onOpenNewTicket={() => setActiveTab('new-ticket')}
           />
         )}
 
