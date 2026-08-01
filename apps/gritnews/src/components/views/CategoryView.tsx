@@ -33,7 +33,7 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
   const categoryOffers = offers.filter(o => o.categoryId === category.id);
 
   // Collect all unique tags for filter
-  const allTags = Array.from(new Set(categoryArticles.flatMap(a => a.tags)));
+  const allTags = Array.from(new Set(categoryArticles.flatMap(a => a.tags || []))) as string[];
 
   const filteredArticles = categoryArticles.filter(art => {
     const matchesQuery = filterQuery === '' ||

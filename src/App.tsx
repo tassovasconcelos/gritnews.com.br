@@ -263,7 +263,15 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSelectCategory = (cat: Category) => {
+  const handleSelectCategory = (catOrSlug?: Category | string) => {
+    if (!catOrSlug) {
+      setCurrentView('home');
+      return;
+    }
+    const cat = typeof catOrSlug === 'string'
+      ? categories.find(c => c.slug === catOrSlug || c.id === catOrSlug)
+      : catOrSlug;
+    if (!cat) return;
     setSelectedCategory(cat);
     setCurrentView('category');
     const newUrl = `?categoria=${cat.slug}`;
@@ -425,6 +433,7 @@ export default function App() {
             onSelectCategory={handleSelectCategory}
             onSelectAuthor={handleSelectAuthor}
             onSelectPartner={handleSelectPartner}
+            onNavigateOffers={handleNavigateOffers}
             onOpenLeadModal={setLeadModalOffer}
             onShowToast={showToast}
           />

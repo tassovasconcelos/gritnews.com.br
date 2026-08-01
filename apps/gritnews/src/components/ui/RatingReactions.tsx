@@ -5,11 +5,11 @@ import { trackEvent } from '../../lib/analytics';
 
 interface RatingReactionsProps {
   articleId: string;
-  initialLikes: number;
+  initialLikes?: number;
   onShowToast: (msg: string, type?: 'success' | 'info') => void;
 }
 
-export const RatingReactions: React.FC<RatingReactionsProps> = ({ articleId, initialLikes, onShowToast }) => {
+export const RatingReactions: React.FC<RatingReactionsProps> = ({ articleId, initialLikes = 0, onShowToast }) => {
   const [likes, setLikes] = useState(initialLikes);
   const [hasLiked, setHasLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(() => getBookmarks().includes(articleId));

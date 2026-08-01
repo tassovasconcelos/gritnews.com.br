@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TrendingUp, Sparkles, Clock, Eye, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, Tag, ArrowRight, ShieldCheck, Flame } from 'lucide-react';
-import { Article, Category, Partner, Offer } from '../../types';
+import { Article, Category, Partner, Offer, AuthorProfile } from '../../types';
 import { Badge } from '../ui/Badge';
 import { AdBanner } from '../ui/AdBanner';
 import { NewsletterBlock } from '../ui/NewsletterBlock';
@@ -14,10 +14,12 @@ interface HomeViewProps {
   categories: Category[];
   partners: Partner[];
   offers: Offer[];
+  authors?: AuthorProfile[];
   onSelectArticle: (article: Article) => void;
   onSelectCategory: (slug: string) => void;
   onSelectPartner: (partner: Partner) => void;
-  onNavigateOffers: () => void;
+  onSelectAuthor?: (author: AuthorProfile) => void;
+  onNavigateOffers?: () => void;
   onOpenLeadModal: (offer: Offer) => void;
   onShowToast: (msg: string, type?: 'success' | 'info') => void;
 }
@@ -40,9 +42,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
   categories,
   partners,
   offers,
+  authors,
   onSelectArticle,
   onSelectCategory,
   onSelectPartner,
+  onSelectAuthor,
   onNavigateOffers,
   onOpenLeadModal,
   onShowToast

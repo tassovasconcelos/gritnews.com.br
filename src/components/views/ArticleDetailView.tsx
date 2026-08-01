@@ -437,7 +437,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
             <h4 className="text-sm font-bold text-[#0B2343] mb-2">Gostou da reportagem? Compartilhe e avalie:</h4>
             <ArticleShareActions article={article} onShowToast={onShowToast} variant="bar" />
           </div>
-          <RatingReactions articleId={article.id} onShowToast={onShowToast} />
+          <RatingReactions articleId={article.id} initialLikes={article.likesCount || 0} onShowToast={onShowToast} />
         </div>
 
         {/* Author Bio Card */}
