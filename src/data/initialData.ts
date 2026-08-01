@@ -406,234 +406,322 @@ export const INITIAL_AD_CAMPAIGNS: AdCampaign[] = [
 export const INITIAL_ARTICLES: Article[] = [
   {
     id: 'art-vida-da-vida',
-    title: 'A Vida da Vida: Quando o Silêncio da Dor Encontra o Eco do Cuidado',
+    title: 'A Vida da Vida: Ela foi deixada para morrer entre sacos de lixo. Hoje é a princesa da casa.',
     slug: 'a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado',
-    subtitle: 'A extraordinária jornada de amor, resistência e medicina veterinária que transformou uma husky esquecida nas ruas em um símbolo vivo de esperança.',
-    summary: 'A emocionante história de resgate da husky Vida, deixada paralisada em uma praça pública e socorrida por protetores e moradores em situação de rua, cuja reabilitação com fisioterapia e acupuntura inspirou Letícia Karla na medicina veterinária.',
+    subtitle: 'Quando o silêncio da dor encontra o eco do cuidado. Tudo porque uma mulher decidiu não seguir em frente sem agir.',
+    summary: 'Reportagem Especial GRIT NEWS · TENPETS. A extraordinária jornada de amor, resgate e reabilitação da husky Vida por Letícia Karla, contada capítulo por capítulo, da calçada com lixo até a vitória da fisioterapia e a coroa de princesa.',
     categoryId: 'cat-pet',
     tags: [
       'Reportagem Especial',
       'Resgate Animal',
-      'Medicina Veterinária',
-      'Husky Siberiano',
+      'A História de Vida',
       'Letícia Karla',
       'TenPets',
-      'Reabilitação Pet',
-      'Doença Autoimune',
+      'Grit News',
+      'Medicina Veterinária',
       'Fisioterapia Canina',
       'Acupuntura Veterinária'
     ],
     authorId: 'author-leticia',
     status: 'PUBLISHED',
-    featuredImage: 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1200',
-    imageCaption: 'O repouso merecido: banhada pelo sol, a husky Vida desfruta da segurança e do afeto em seu lar acolhedor.',
+    featuredImage: '/images/vida_foto_6_sorriso_varanda.svg',
+    imageCaption: 'O dia de hoje: de peito aberto na varanda, com olhos suavemente fechados e sorriso no rosto, a Princesa Vida celebra a vida sem dores nem medos.',
     publishedAt: '2026-08-01T10:00:00Z',
     updatedAt: '2026-08-01T10:00:00Z',
     readingTimeMinutes: 8,
-    viewsCount: 18450,
-    likesCount: 1240,
-    sharesCount: 480,
+    viewsCount: 24500,
+    likesCount: 1890,
+    sharesCount: 620,
     isSponsored: false,
     isEvergreen: true,
     isUrgent: true,
     blocks: [
       {
-        id: 'vida-quote-top',
+        id: 'vida-header-badge',
         type: 'callout',
-        content: '“O abandono não faz barulho; ele simplesmente subtrai a existência de quem o sofre. Mas o resgate, esse sim, ressoa profundamente na alma de quem é salvo e de quem salva.” — Letícia Karla, estudante de Medicina Veterinária e protetora animal'
+        content: '📰 **REPORTAGEM ESPECIAL GRIT NEWS · TENPETS**\n*RESGATE ANIMAL — A HISTÓRIA DE VIDA*\n\n“Ela foi deixada para morrer entre sacos de lixo. Hoje é a princesa da casa.”'
+      },
+      {
+        id: 'vida-opening-quote',
+        type: 'quote',
+        content: '“Ninguém ouviu nada. Era exatamente esse o problema.”'
+      },
+      {
+        id: 'vida-h2-cap1',
+        type: 'heading2',
+        content: 'CAPÍTULO I — O SILÊNCIO: O grito que ninguém escutou'
+      },
+      {
+        id: 'vida-cap1-sub',
+        type: 'callout',
+        content: '*A dor tem um hábito cruel: quando é grande demais, ela emudece. E o mundo atravessa a calçada sem virar o rosto.*'
       },
       {
         id: 'vida-p1',
         type: 'paragraph',
-        content: 'Há algo de profundamente sagrado no silêncio impenetrável da madrugada. É quando as luzes da cidade se apagam, o trânsito cessa e as cortinas se fecham nas janelas aquecidas, que a dor daqueles que foram esquecidos pelo mundo permanece tragicamente desperta. Para nós, que dedicamos a vida a proteger quem não tem voz, a noite é muitas vezes a mensageira das urgências. Na noite gelada de 26 de julho de 2023, exatamente por volta das 22h, a claridade fria do celular rasgou a escuridão do meu quarto com mais um alerta nos grupos de resgate animal.'
+        content: 'Não houve latido de socorro, não houve um único ruído capaz de furar o barulho comum de uma rua qualquer. Havia apenas um corpo branco encostado num colchão que alguém tinha jogado fora, entre sacos pretos e restos de mudança, respirando devagar para gastar menos do pouco que sobrava.'
       },
       {
         id: 'vida-p2',
         type: 'paragraph',
-        content: 'Entre tantas mensagens, fotos desfocadas e pedidos de socorro que inundam minha rotina há quinze anos, um registro específico fez o ar fugir dos meus pulmões. A imagem exibia uma husky siberiana, de pelagem branca como a neve que ela jamais conheceu, prostrada sobre o concreto sujo de uma praça pública. Ela estava completamente paralisada.'
+        content: 'O animal que sente demais para de reclamar. Encolhe. Escolhe um canto de sombra, apoia o queixo no chão e espera — não a ajuda, porque já não acredita nela, mas o fim do dia.'
       },
       {
         id: 'vida-p3',
         type: 'paragraph',
-        content: 'A mensagem que acompanhava a foto revelava um cenário ainda mais desolador: ela estava ali, imóvel, há quatro longos e agonizantes dias. Abandonada à própria sorte, o frio do inverno e a fome seriam seus únicos companheiros, não fosse por um ato de pura compaixão que veio de onde a sociedade menos espera. Foram moradores em situação de rua, indivíduos que também conhecem a aspereza do abandono, que estenderam um colchão de espuma rasgado sob o corpo frágil da cadela. Eles dividiram o pouco que tinham e garantiram que ela não ficasse sozinha sob o sereno cortante. A minha alma de protetora ardia; eu queria pular do pijama para a roupa de rua e correr até lá naquela mesma hora. Mas, alertada pela prudência de amigos sobre os perigos reais da madrugada em um local ermo, fui forçada a esperar. Aquela foi, sem dúvida, a madrugada mais longa da minha vida. Eu não dormi; apenas vigiava o relógio enquanto pedia silenciosamente para que ela aguentasse até o amanhecer.'
+        content: 'Ela estava ali havia tempo suficiente para o pelo perder o brilho e as patas perderem a firmeza. Suficiente para o lixo virar paisagem e o colchão virar casa. Um fio azul de varal, esquecido no chão, corria ao lado dela como uma linha desenhada por engano — a única coisa reta numa história torta.'
       },
       {
-        id: 'vida-h2-1',
-        type: 'heading2',
-        content: 'I. O ENCONTRO NA PRAÇA E O UIVO DA ALMA'
+        id: 'vida-quote-1',
+        type: 'quote',
+        content: '“Havia ali uma vida inteira à espera de alguém que reparasse.”'
       },
       {
         id: 'vida-img-1',
         type: 'image',
         content: '/images/vida_foto_1_resgate.svg',
-        caption: '1. O Resgate na Praça: Imóvel sobre o colchão de espuma rasgado, acolhida por moradores em situação de rua com sacos de lixo e mochila ao lado, Vida aguardava o resgate na praça pública.'
+        caption: '📸 DIA ZERO — ONDE TUDO COMEÇOU: Descartada junto com o lixo. Deitada sobre um colchão jogado fora, entre sacos pretos e restos de mudança. O fio azul de varal caído no chão viraria, sem que ninguém combinasse, o símbolo desta reportagem.'
+      },
+      {
+        id: 'vida-h2-cap2',
+        type: 'heading2',
+        content: 'CAPÍTULO II — A PROTETORA: A mulher que ouviu o que ninguém ouviu'
+      },
+      {
+        id: 'vida-cap2-sub',
+        type: 'callout',
+        content: '*Existe a coragem de quem escolhe parar, olhar e fazer a diferença. Foi ela que atravessou aquela calçada.*'
       },
       {
         id: 'vida-p4',
         type: 'paragraph',
-        content: 'Assim que o céu começou a clarear, por volta das 7h da manhã, cruzei as avenidas da cidade com o coração batendo na garganta. Ao chegar à praça, a cena me atingiu com a força de um golpe. Ela continuava lá, deitada sobre o tecido úmido e encardido daquele colchão improvisado. Seus olhos azuis, turvos pela exaustão, eram poços de confusão e pavor. Ela era um ser majestoso reduzido a um punhado de medo e dor.'
+        content: 'Letícia Karla não escutou com os ouvidos — não havia o que ouvir. Escutou com aquilo que só quem resgata desenvolve: a leitura de um corpo que se dobra. Anos atendendo mensagens de madrugada, dirigindo até endereços improváveis e negociando com o próprio bolso ensinam um tipo de escuta que reconhece sofrimento antes de qualquer exame.'
       },
       {
         id: 'vida-p5',
         type: 'paragraph',
-        content: 'Ajoelhei-me ao seu lado, falando baixo, tentando mostrar com as mãos e a energia que a tormenta havia chegado ao fim. Mas, quando a ergui com cuidado e a acomodei no banco de trás do meu carro, o silêncio da manhã foi partido ao meio. Ela emitiu um uivo longo, gutural e cortante. Não era o som de um ferimento tocado, não era uma dor física aguda. Era o choro da alma. Depois de tantos resgates, eu sei diferenciar o som da dor do som do terror. Aquele uivo era o medo puro e destilado do desconhecido; era a memória recente de ter sido deixada para trás por aqueles que deveriam amá-la, e o pavor incontrolável do que as minhas mãos humanas fariam a ela a seguir.'
+        content: 'Protetor independente é uma categoria que não existe em nenhum organograma. Não tem salário, não tem plantão pago, não tem folga. Tem uma caixa de mensagens que nunca esvazia, uma fila de resgates que nunca encurta e uma conta de clínica que sempre chega antes da doação. E, ainda assim, atende.'
       },
       {
         id: 'vida-p6',
         type: 'paragraph',
-        content: 'Sentada no banco do motorista, olhei pelo retrovisor para aquela loba das neves tão frágil. Naquele exato instante, chorando com ela, tomei a decisão que batizaria o nosso futuro. "Vai ficar tudo bem, Vida", eu murmurei. E foi assim que ela se chamou: **Vida**. Não por aquilo que ela estava sentindo naquele momento, mas por tudo aquilo que eu jurava, diante dela, que lutaria para devolver-lhe: a dignidade de existir plena e feliz.'
+        content: 'Ela agachou. Falou baixo. Estendeu a mão devagar, do jeito que se estende a mão para quem já apanhou da vida e aprendeu a desconfiar de mãos. E então fez a única pergunta que importa nesse instante — a que separa quem observa de quem age.'
       },
       {
-        id: 'vida-quote-middle',
+        id: 'vida-p7',
+        type: 'paragraph',
+        content: 'Não levou uma cachorra. Levou uma decisão. Porque resgate não termina no colo nem na foto: começa ali.'
+      },
+      {
+        id: 'vida-quote-2',
         type: 'quote',
-        content: '“Ela uivava não por dor física, mas pelo pavor de ser ferida novamente. Aquele som partiu meu coração e cimentou minha promessa: eu devolveria a ela o direito de viver.”'
+        content: '“Ninguém salva ninguém de passagem. Salva-se quem para.”'
       },
       {
-        id: 'vida-h2-2',
+        id: 'vida-callout-quote',
+        type: 'callout',
+        content: '💬 “Se eu não levar essa cachorra agora, quem leva?” — O instante em que uma testemunha vira responsável.'
+      },
+      {
+        id: 'vida-h2-cap3',
         type: 'heading2',
-        content: 'II. O QUARTO DE HOSPITAL E OS PRIMEIRAS CUIDADOS'
+        content: 'CAPÍTULO III — A CLÍNICA & UM NOME: O dia em que ela passou a existir'
+      },
+      {
+        id: 'vida-cap3-sub',
+        type: 'callout',
+        content: '*Mesa de inox, azulejo branco, o cheiro que todo mundo que já esperou por um diagnóstico reconhece. Ela não sabia o que era aquilo. Só sabia que alguém tinha ficado.*'
       },
       {
         id: 'vida-img-2',
         type: 'image',
         content: '/images/vida_foto_2_quarto_hospital.svg',
-        caption: '2. Aconchego e Dignidade no Quarto de Hospital: De fraldinha hospitalar no tatame de EVA azul, com sua almofadinha de rosquinha rosa e potinho de água, Vida recebia os primeiros cuidados.'
-      },
-      {
-        id: 'vida-p7',
-        type: 'paragraph',
-        content: 'Fomos direto, sem desvios, para a clínica veterinária. O cheiro de álcool, o bipe dos monitores e a movimentação dos médicos tornaram-se o nosso novo cenário. No entanto, a ciência não entregou o milagre da clareza logo no primeiro dia. Os exames clínicos e laboratoriais iniciais confirmaram o óbvio: ela estava em estado crítico, mas a raiz da sua paralisia permanecia oculta.'
+        caption: '🏥 A CLÍNICA: “Estamos aqui com ela” — Cinco palavras, um plural e uma prece. O plural é o que muda tudo: nenhum resgate se sustenta sozinho.'
       },
       {
         id: 'vida-p8',
         type: 'paragraph',
-        content: 'Levei-a para minha casa, preparando um "quarto de hospital" seguro e isolado dos meus outros cães resgatados. Ali começou a nossa verdadeira maratona. Foram necessários painéis de sangue extensos, exames de PCR buscando doenças infecciosas e parasitárias e, por fim, a precisão tecnológica de uma tomografia computadorizada.'
+        content: 'E ficar, aqui, é a palavra inteira. Enquanto os profissionais trabalhavam, do lado de fora corria a outra metade do resgate: as mensagens, as fotos enviadas para quem acompanhava, o pedido de ajuda, o grupo mobilizado. Um resgate é sempre duas coisas ao mesmo tempo — um procedimento clínico e uma corrente de gente.'
       },
       {
         id: 'vida-p9',
         type: 'paragraph',
-        content: 'Estar cursando o 5º período de Medicina Veterinária me deu uma perspectiva dupla e intensa dessa fase. A teoria dos livros tomava forma dramática na minha sala de estar. A medicina veterinária ensina cedo que o diagnóstico não é uma iluminação mágica; é a construção exaustiva de um raciocínio clínico. É a arte do descarte, da formulação de hipóteses, da teimosia acadêmica misturada à intuição prática. Após semanas de exames, o veredito mais provável se apresentou, cruel e enigmático: **uma grave doença neurológica de origem autoimune**. O próprio sistema de defesa da Vida havia entrado em colapso e atacado sua mobilidade.'
+        content: 'Ali ela ganhou o que nunca tinha tido: um nome, uma ficha, um horário de medicação. Passou a existir para o sistema.'
       },
       {
-        id: 'vida-h2-3',
+        id: 'vida-p10',
+        type: 'paragraph',
+        content: 'E, quando alguém precisou preencher o cabeçalho do prontuário, escolheram a palavra mais óbvia e mais improvável para quem tinha sido encontrada no lixo: **Vida**.'
+      },
+      {
+        id: 'vida-h2-cap4',
         type: 'heading2',
-        content: 'III. ACUPUNTURA NEUROMODULADORA E LACINHOS NAS ORELHAS'
+        content: 'CAPÍTULO IV — A ROTINA: A parte da história que ninguém fotografa'
+      },
+      {
+        id: 'vida-cap4-sub',
+        type: 'callout',
+        content: '*O heroísmo é fotogênico. A rotina não é. E é na rotina que a maioria das histórias bonitas se perde.*'
+      },
+      {
+        id: 'vida-p11',
+        type: 'paragraph',
+        content: 'A recuperação não é um momento: é uma sequência longa de dias iguais. Quem cuida sabe que o corpo melhora antes da confiança. Muito antes de voltar a andar, ela precisou voltar a acreditar que a porta que se abre não é ameaça.'
+      },
+      {
+        id: 'vida-p12',
+        type: 'paragraph',
+        content: 'Isso não se trata com medicamento. Trata-se com repetição — a mesma voz, o mesmo cheiro, a mesma mão, todos os dias, até que o susto desaprenda.'
+      },
+      {
+        id: 'vida-p13',
+        type: 'paragraph',
+        content: 'Depois vieram as agulhas. Finas, quase invisíveis, espetadas na cabeça e no dorso: acupuntura veterinária, aliada silenciosa do controle da dor. Alguém prendeu dois lacinhos coloridos no pelo — detalhe irrelevante do ponto de vista clínico, enorme do ponto de vista humano.'
+      },
+      {
+        id: 'vida-p14',
+        type: 'paragraph',
+        content: 'Foi ali, em algum dia sem importância, que ela deixou de ser um caso e virou alguém.'
+      },
+      {
+        id: 'vida-quote-3',
+        type: 'quote',
+        content: '“Alguém que ganha laço. Alguém que dorme durante a sessão. (O que não cabe no prontuário)”'
+      },
+      {
+        id: 'vida-h2-cap5',
+        type: 'heading2',
+        content: 'CAPÍTULO V — AGULHAS QUE NÃO DOEM: Dormir sem vigiar a rua'
       },
       {
         id: 'vida-img-3',
         type: 'image',
         content: '/images/vida_foto_3_acupuntura_lacinhos.svg',
-        caption: '3. Medicina com Afeto: Agulhas de acupuntura na testa estimulando os caminhos neurais e dois mimosos lacinhos coloridos nas orelhas para resgatar a alegria e a vaidade.'
+        caption: '🪡 AGULHAS QUE NÃO DOEM: Dormir sem vigiar a rua — Para um animal resgatado, isso é uma conquista clínica tão real quanto qualquer exame. Aqui, o sono não é de exaustão: é de descanso.'
       },
       {
-        id: 'vida-p10',
-        type: 'paragraph',
-        content: 'Com o diagnóstico em mãos, iniciamos o tratamento. O plano terapêutico não prometia soluções fáceis; exigia tempo, recursos e, principalmente, uma resiliência inquebrável. Para mim, a saúde de um animal resgatado precisa vir acompanhada do resgate da sua vaidade e da sua autoimagem.'
-      },
-      {
-        id: 'vida-p11',
-        type: 'paragraph',
-        content: 'Colocar lacinhos estampados em suas orelhas fofas durante as aplicações de acupuntura na testa tornou-se o nosso ritual sagrado. Enquanto as agulhas milimétricas enviavam pulsos neuromoduladores para o cérebro tentar reativar as vias motoras, o carinho continuo no focinho trazia a paz que os olhos azuis de Vida tanto buscavam.'
-      },
-      {
-        id: 'vida-h2-4',
+        id: 'vida-h2-cap6',
         type: 'heading2',
-        content: 'IV. "TÔ FAZENDO MINHA FISIOTERAPIA, TITIOS!": A CIÊNCIA DA REABILITAÇÃO'
+        content: 'CAPÍTULO VI — REABILITAÇÃO & A EQUIPE: Aqui, a vitória se mede em milímetros'
+      },
+      {
+        id: 'vida-cap6-sub',
+        type: 'callout',
+        content: '*Aparelho, eletrodos, faixas no tronco, bola laranja encostada na parede. De um lado, tecnologia. Do outro, uma veterinária sentada no chão.*'
+      },
+      {
+        id: 'vida-p15',
+        type: 'paragraph',
+        content: 'Reabilitação é engenharia aplicada à esperança. Mede-se em amplitude de movimento, em tempo de sustentação, em número de repetições. E se comemora em detalhes mínimos: hoje ela apoiou a pata. Hoje ficou de pé três segundos a mais. Hoje andou até a porta sozinha.'
+      },
+      {
+        id: 'vida-p16',
+        type: 'paragraph',
+        content: 'Nada disso vira manchete. Tudo isso é o que devolve uma vida.'
+      },
+      {
+        id: 'vida-p17',
+        type: 'paragraph',
+        content: 'Aquilo que começou como socorro virou protocolo. E protocolo, quando há quem o cumpra todos os dias, é outro nome para amor.'
+      },
+      {
+        id: 'vida-flow-callout',
+        type: 'callout',
+        content: '📍 **Rua**: Onde ela foi encontrada no lixo\n🏥 **Clínica**: Estabilização e diagnóstico\n🏠 **Casa**: Curativos, medicação e rotina\n⚡ **Reabilitação**: Acupuntura e fisioterapia'
       },
       {
         id: 'vida-img-4',
         type: 'image',
         content: '/images/vida_foto_4_fisioterapia_dra_renata.svg',
-        caption: '4. Fisioterapia Diária e Eletroestimulação TENS/FES: A Dra. Renata Pessoa (@renatapessoa.vet e @dramarciasm) dedicada a aplicar eletroterapia no quadril da Vida. "Tô fazendo minha fisioterapia, titios!"'
+        caption: '⚡ “Tô fazendo minha fisioterapia, titios!” — Acompanhamento clínico e sessões de reabilitação conduzidas pela equipe veterinária responsável pelo caso (@dramarciasm @renatapessoa.vet). Cada sessão, um milímetro a mais de autonomia.'
       },
       {
-        id: 'vida-p12',
-        type: 'paragraph',
-        content: 'A Vida precisava aprender a comandar seu corpo novamente. Iniciamos um protocolo rigoroso que combinava medicina alopática, fisioterapia canina diária, eletroterapia com TENS/FES sob a supervisão dedicada da especialista Dra. Renata Pessoa (@renatapessoa.vet e @dramarciasm), além de sessões de hidroterapia. Durante seis meses consecutivos, não houve final de semana de descanso, não houve feriado ou trégua. O cuidado tornou-se nosso idioma diário.'
-      },
-      {
-        id: 'vida-p13',
-        type: 'paragraph',
-        content: 'Como em todo processo de cura profunda, o caminho não foi uma linha reta em ascension. Tivemos dias sombrios em que a apatia dela me fazia duvidar, dias em que as pernas traseiras pareciam ceder ainda mais, me levando às lágrimas escondidas. Mas a natureza é fascinante. O corpo responde à esperança. E então começaram a surgir as vitórias invisíveis para o mundo, mas imensas para nós: o dia em que ela firmou a pata esquerda sem deslizar; a tarde em que ela conseguiu se sustentar em pé por dez segundos sozinha; a manhã épica em que, desajeitada, ela deu o primeiro trote pelo gramado do quintal.'
-      },
-      {
-        id: 'vida-callout-filosofia',
-        type: 'callout',
-        content: '🐾 **A FILOSOFIA DO CUIDADO KINTSUGI**\nA reabilitação nos ensina que a cura não significa, necessariamente, o retorno ao estado original perfeito. Trata-se de devolver autonomia e qualidade de vida. Tratar vai muito além do diagnóstico técnico; exige a oferta de rotina, afeto e presença contínua, preenchendo as marcas da dor com fios de ouro como na arte japonesa do Kintsugi.'
-      },
-      {
-        id: 'vida-vid-1',
-        type: 'video',
-        content: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-        caption: '🎥 Registro em Vídeo Real do Amor e Cuidado: A husky Vida sendo acolhida e recebendo água fresca na tigelinha de metal durante sua recuperação.'
-      },
-      {
-        id: 'vida-h2-5',
+        id: 'vida-h2-cap7',
         type: 'heading2',
-        content: 'V. O SORRISO NA VARANDA E A BANDANA FLORAL'
+        content: 'CAPÍTULO VII — A COROA: Ninguém coroa quem se desistiu de salvar'
       },
       {
         id: 'vida-img-5',
         type: 'image',
-        content: '/images/vida_foto_5_bandana_floral.svg',
-        caption: '5. A Doce Vida de Bandana: Relaxada no piso de cerâmica com sua bandana floral verde com flores rosa e amarelas, esbanjando doçura e tranquilidade.'
-      },
-      {
-        id: 'vida-img-6',
-        type: 'image',
-        content: '/images/vida_foto_6_sorriso_varanda.svg',
-        caption: '6. O Sorriso do Renascimento: De peito aberto na varanda ao lado do portão de rede azul, olhos suavemente fechados e língua de fora, Vida celebra a vida sem dores nem medos.'
-      },
-      {
-        id: 'vida-p14',
-        type: 'paragraph',
-        content: 'Hoje, o tempo de sofrimento na praça fria parece pertencer a outra vida. Embora a Vida continue sob o acompanhamento zeloso de neurologistas e ortopedistas veterinários, ela é a prova viva de que o amor transforma a biologia. A tempestade imunológica lhe deixou algumas marcas — ela não consegue erguer o rabo totalmente como fazem os huskies imponentes, e carrega uma leve atrofia nas patas traseiras.'
-      },
-      {
-        id: 'vida-p15',
-        type: 'paragraph',
-        content: 'Mas pergunto a você: o que são cicatrizes senão a prova definitiva de que sobrevivemos? Essas sequelas não definem a Vida. O que a define agora é a intensidade com que ela abraça cada novo dia.'
-      },
-      {
-        id: 'vida-h2-6',
-        type: 'heading2',
-        content: 'VI. A PRINCESA VIDA: A RAINHA DE NOSSOS CORAÇÕES'
-      },
-      {
-        id: 'vida-img-7',
-        type: 'image',
         content: '/images/vida_foto_7_princesa_coroa.svg',
-        caption: '7. A Coroazinha da Vitória: A Princesa Vida com sua coroazinha rosa colada na testa e brilhos — o símbolo eterno do amor, da dignidade restaurada e de um lar onde ela é amada incondicionalmente.'
+        caption: '👑 A COROA: Ninguém coroa quem se desistiu de salvar — Um adesivo de coroa cor-de-rosa na testa, torto e brilhante. É a fotografia mais boba deste especial e, por isso mesmo, a mais importante: coroa se coloca em quem está de volta.'
       },
       {
-        id: 'vida-p16',
-        type: 'paragraph',
-        content: 'Ela vive radiante, sem dores e sem medos. Ela corre com os ouvidos ao vento, brinca incansavelmente com os irmãos caninos que a acolheram, passeia pelos parques, viaja no carro sentindo a brisa e exige a vida de **"princesa mimada"** que sempre deveria ter tido desde o dia em que nasceu.'
-      },
-      {
-        id: 'vida-h2-7',
+        id: 'vida-h2-cap8',
         type: 'heading2',
-        content: 'VII. O MOVIMENTO TENPETS + GRITNEWS: PARTICIPE DESSA CORRENTE DE AMOR'
+        content: 'CAPÍTULO VIII — VIDA: O pelo voltou. O nome ficou.'
       },
       {
-        id: 'vida-p17',
-        type: 'paragraph',
-        content: 'A Vida me ensinou o que as apostilas da faculdade não conseguem imprimir em suas páginas. Ela me mostrou que a prática médica é indissociável da compaixão. É dessa essência bruta, feita de madrugadas em claro, angústias clínicas, choros de alívio e abraços em meio à fisioterapia, que nasce este espaço na **GritNews** e no projeto **TenPets**.'
+        id: 'vida-cap8-sub',
+        type: 'callout',
+        content: '*Cachorro ri — quem convive sabe. É a boca aberta, a língua pendurada e o corpo relaxado de quem já não precisa vigiar nada.*'
       },
       {
         id: 'vida-p18',
         type: 'paragraph',
-        content: 'O nosso propósito aqui é construir um **ecossistema integrativo e participativo**. Queremos que você faça parte dessa corrente: comente sua mensagem para a Vida, curta a reportagem, compartilhe com seus amigos e ajude a fortalecer o movimento de proteção e saúde animal!'
+        content: 'Hoje ela senta no corredor, entre a parede de tijolinho e o muro azul, fecha os olhos de tanto sol e ri. Usa uma coleira colorida que alguém escolheu com carinho num dia comum de semana.'
       },
       {
-        id: 'vida-callout-bottom',
+        id: 'vida-p19',
+        type: 'paragraph',
+        content: 'Hoje ela deita na varanda com uma bandana florida e ocupa o espaço inteiro sem pedir licença, do jeito que faz quem tem certeza de que aquele chão é dela.'
+      },
+      {
+        id: 'vida-p20',
+        type: 'paragraph',
+        content: 'Nada nessa cena lembra o colchão da calçada. Tudo nessa cena depende dele.'
+      },
+      {
+        id: 'vida-quote-final',
+        type: 'quote',
+        content: '“O silêncio da dor não pede ajuda. Ele só espera que alguém repare.”'
+      },
+      {
+        id: 'vida-img-6',
+        type: 'image',
+        content: '/images/vida_foto_5_bandana_floral.svg',
+        caption: '🌸 O Dia de Hoje: Com sua bandana florida e olhar sereno na varanda, Vida recuperou a dignidade e o direito de ocupar o espaço sem pedir licença.'
+      },
+      {
+        id: 'vida-img-7',
+        type: 'image',
+        content: '/images/vida_foto_6_sorriso_varanda.svg',
+        caption: '✨ ANTES E DEPOIS — A MESMA CADELA: Antes e depois não é um par de fotos. É uma fila de dias em que alguém não desistiu.'
+      },
+      {
+        id: 'vida-h2-final',
+        type: 'heading2',
+        content: 'ELA NÃO PRECISOU DE UM MILAGRE'
+      },
+      {
+        id: 'vida-final-sub',
         type: 'callout',
-        content: '❤️ **VOCÊ FAZ PARTE DESTA HISTÓRIA!**\nDeixe seu comentário abaixo mandando amor para a Princesa Vida e para a equipe médica. Compartilhe este artigo no WhatsApp com quem ama animais e junte-se ao Movimento TenPets + GritNews!'
+        content: '*Precisou de alguém que parasse, olhasse e agisse. Tudo o que você viu nestas páginas existe porque uma mulher decidiu não seguir em frente sem fazer nada.*'
+      },
+      {
+        id: 'vida-p21',
+        type: 'paragraph',
+        content: 'No Brasil, o resgate animal é sustentado em grande parte por pessoas físicas que fazem sozinhas o trabalho de uma estrutura inteira: capturam, transportam, custeiam, medicam, reabilitam e ainda encontram lar. Letícia Karla é uma delas.'
+      },
+      {
+        id: 'vida-p22',
+        type: 'paragraph',
+        content: 'Cada história como a de Vida se apoia em uma cadeia real de custos — consulta, exames, internação, medicação contínua, sessões de fisioterapia e acupuntura, alimentação e transporte. Não é sentimento: é orçamento. E é por isso que apoiar quem resgata vale mais do que compartilhar quem resgata.'
+      },
+      {
+        id: 'vida-callout-como-ajudar',
+        type: 'callout',
+        content: '❤️ **COMO AJUDAR PROTETORES INDEPENDENTES**\nAcompanhe e divulgue o trabalho de protetores independentes da sua cidade. Contribua com o custeio dos tratamentos em curso. Ofereça lar temporário. E, quando for a hora, adote.\n\nA versão online desta reportagem especial está em **gritnews.com.br**.'
+      },
+      {
+        id: 'vida-callout-creditos',
+        type: 'callout',
+        content: '📜 **FICHA TÉCNICA E CRÉDITOS DA REPORTAGEM**\n• **Especial**: GRIT NEWS · TENPETS\n• **Texto e Edição**: Tasso Vasconcelos\n• **Resgate e Acompanhamento**: Letícia Karla\n• **Imagens**: Acervo da Protetora'
       }
     ],
     seo: {
-      metaTitle: 'A Vida da Vida: Quando o Silêncio da Dor Encontra o Eco do Cuidado | Reportagem Especial GRIT NEWS',
-      metaDescription: 'Conheça a emocionante história de resgate da husky siberiana Vida, contada por Letícia Karla. Uma jornada de amor, medicina veterinária, fisioterapia e esperança.',
+      metaTitle: 'A Vida da Vida: Ela foi deixada para morrer entre sacos de lixo. Hoje é a princesa da casa. | GRIT NEWS',
+      metaDescription: 'Reportagem Especial GRIT NEWS · TENPETS. A história de resgate da husky Vida por Letícia Karla, contada capítulo por capítulo com fotos reais de resgate e reabilitação.',
       keywords: [
         'A Vida da Vida',
         'Husky Vida',
