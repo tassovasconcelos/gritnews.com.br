@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Stethoscope,
   ShieldCheck,
@@ -11,7 +11,9 @@ import {
   Building2,
   HelpCircle,
   Activity,
-  BarChart3
+  BarChart3,
+  Copy,
+  Check
 } from 'lucide-react';
 
 export type SacProhTab = 'tickets' | 'dashboard' | 'new-ticket' | 'catalog' | 'maintenance' | 'contracts' | 'faqs';
@@ -29,6 +31,13 @@ export const SacProhHeader: React.FC<SacProhHeaderProps> = ({
   ticketsCount,
   onNavigateHome
 }) => {
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText('https://sacproh.gritnews.com.br');
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
   return (
     <header className="bg-slate-950 border-b border-sky-900/50 sticky top-0 z-30 shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
@@ -70,6 +79,15 @@ export const SacProhHeader: React.FC<SacProhHeaderProps> = ({
             </span>
             <span className="text-emerald-400 font-bold">Plantão Centro Cirúrgico 24/7 Ativo</span>
           </div>
+
+          <button
+            onClick={handleCopyLink}
+            className="bg-sky-600/30 hover:bg-sky-600/50 text-sky-200 border border-sky-500/40 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+            title="Copiar Link de Divulgação (sacproh.gritnews.com.br)"
+          >
+            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copiedLink ? 'Link Copiado!' : 'Copiar Link'}</span>
+          </button>
 
           <a
             href="https://wa.me/5585991234455?text=Olá,%20preciso%20de%20atendimento%20urgente%20ProCirúrgica%20SACPROH"

@@ -434,6 +434,7 @@ export default function App() {
             onSelectAuthor={handleSelectAuthor}
             onSelectPartner={handleSelectPartner}
             onNavigateOffers={handleNavigateOffers}
+            onNavigateSacProh={handleNavigateSacProh}
             onOpenLeadModal={setLeadModalOffer}
             onShowToast={showToast}
           />

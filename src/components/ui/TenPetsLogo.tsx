@@ -1,5 +1,5 @@
 import React from 'react';
-import tenpetsLogoImg from '../../assets/images/tenpets_official_logo_1785288965710.jpg';
+const tenpetsLogoImg = '/images/tenpets_official_logo_1785288965710.jpg';
 
 interface TenPetsLogoProps {
   variant?: 'full' | 'horizontal' | 'icon-only' | 'badge' | 'dark';

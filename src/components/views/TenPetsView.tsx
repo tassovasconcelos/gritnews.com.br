@@ -27,8 +27,8 @@ import {
 import { TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../../types';
 import { getTenPetsArticles, getTenPetsRescues, getTenPetsPartners } from '../../lib/storage';
 
-import tenpetsHeroImg from '../../assets/images/tenpets_hero_banner_1785288987038.jpg';
-import leticiaProfileImg from '../../assets/images/leticia_karla_profile_1785288976216.jpg';
+const tenpetsHeroImg = '/images/tenpets_hero_banner_1785288987038.jpg';
+const leticiaProfileImg = '/images/leticia_karla_profile_1785288976216.jpg';
 import { TenPetsLogo } from '../ui/TenPetsLogo';
 
 interface TenPetsViewProps {

@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 export const DOMAINS = {
   GRITNEWS: 'https://gritnews.com.br',
   SACPROH: 'https://sacproh.gritnews.com.br'
