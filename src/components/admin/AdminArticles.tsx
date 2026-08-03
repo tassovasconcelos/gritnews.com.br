@@ -6,7 +6,7 @@ import {
   Filter, ExternalLink, Check, RefreshCw, MessageCircle, Linkedin, Twitter
 } from 'lucide-react';
 import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBlock, MediaAsset } from '../../types';
-import { saveArticle, deleteArticle, getMediaAssets, saveAuthor } from '../../lib/storage';
+import { saveArticle, deleteArticle, getMediaAssets, addMediaAsset, saveAuthor } from '../../lib/storage';
 import { Modal } from '../ui/Modal';
 
 function formatEmbedUrl(url: string): string {
@@ -551,9 +551,9 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                     <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3 space-y-2 text-xs">
                       <div className="flex justify-between items-center">
                         <span className="font-extrabold text-[#10233F] flex items-center gap-1.5">
-                          📸 Fotos do Acervo TenPets & Matérias para Inserir num Clique:
+                          📸 Fotos Reais do Acervo (Vida & Notícias) para Inserir num Clique:
                         </span>
-                        <span className="text-[10px] text-amber-800">Clique para adicionar bloco pré-configurado</span>
+                        <span className="text-[10px] text-amber-800 font-medium">Clique para adicionar ao artigo ou definir como capa</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {[
@@ -565,15 +565,31 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                           { title: '6. Sorriso Varanda', url: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1200' },
                           { title: '7. Princesa Coroa', url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=1200' },
                         ].map((p, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => handleAddBlock('image', p.url, `📷 ${p.title}`)}
-                            className="bg-white hover:bg-amber-100 text-slate-800 border border-amber-300 rounded-lg px-2.5 py-1 text-[11px] font-bold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <img src={p.url} alt={p.title} className="w-4 h-4 rounded object-cover" />
-                            <span>+ {p.title}</span>
-                          </button>
+                          <div key={idx} className="bg-white text-slate-800 border border-amber-300 rounded-lg p-1 text-[11px] font-bold shadow-2xs flex items-center gap-1.5">
+                            <img src={p.url} alt={p.title} className="w-5 h-5 rounded object-cover" />
+                            <span className="truncate max-w-[110px]">{p.title}</span>
+                            <div className="flex items-center gap-1 pl-1 border-l border-amber-200">
+                              <button
+                                type="button"
+                                onClick={() => handleAddBlock('image', p.url, `📷 ${p.title}`)}
+                                className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded text-[10px] font-bold cursor-pointer"
+                                title="Inserir como bloco de imagem"
+                              >
+                                + Bloco
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFeaturedImage(p.url);
+                                  onShowToast(`Capa definida para "${p.title}"`);
+                                }}
+                                className="px-1.5 py-0.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded text-[10px] font-bold cursor-pointer"
+                                title="Definir como imagem de capa"
+                              >
+                                📌 Capa
+                              </button>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -654,7 +670,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
 
                                 <label className="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs">
                                   <Upload className="w-3.5 h-3.5" />
-                                  <span>Upload</span>
+                                  <span>Upload Foto</span>
                                   <input
                                     type="file"
                                     accept="image/*"
@@ -665,8 +681,21 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                                         const reader = new FileReader();
                                         reader.onload = (evt) => {
                                           if (evt.target?.result) {
-                                            handleUpdateBlock(block.id, evt.target.result as string);
-                                            onShowToast('Foto carregada no bloco!');
+                                            const dataUrl = evt.target.result as string;
+                                            handleUpdateBlock(block.id, dataUrl);
+                                            const fileTitle = file.name.replace(/\.[^/.]+$/, '');
+                                            if (!block.caption || block.caption === '📷 Legenda da foto...') {
+                                              handleUpdateBlockCaption(block.id, `📷 Foto: ${fileTitle}`);
+                                            }
+                                            addMediaAsset({
+                                              title: fileTitle,
+                                              url: dataUrl,
+                                              altText: fileTitle,
+                                              category: 'artigo',
+                                              source: 'upload',
+                                              tags: ['artigo', 'upload', 'foto']
+                                            });
+                                            onShowToast('Foto enviada, inserida no bloco e salva no acervo!');
                                           }
                                         };
                                         reader.readAsDataURL(file);
@@ -840,25 +869,59 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                     <div>
                       <div className="flex justify-between items-center mb-1">
                         <label className="text-[11px] font-bold text-[#0B2343]">Imagem de Capa (Featured Image) *</label>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenMediaPicker('featured')}
-                          className="text-[10px] text-[#145EDB] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                        >
-                          <ImageIcon className="w-3 h-3" />
-                          <span>Acervo</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenMediaPicker('featured')}
+                            className="text-[10px] text-[#145EDB] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <ImageIcon className="w-3 h-3" />
+                            <span>Acervo</span>
+                          </button>
+                          <label className="text-[10px] text-[#22A06B] bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300 font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs">
+                            <Upload className="w-3 h-3" />
+                            <span>Upload Capa</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = (evt) => {
+                                    if (evt.target?.result) {
+                                      const dataUrl = evt.target.result as string;
+                                      setFeaturedImage(dataUrl);
+                                      const fileTitle = file.name.replace(/\.[^/.]+$/, '');
+                                      addMediaAsset({
+                                        title: `Capa: ${fileTitle}`,
+                                        url: dataUrl,
+                                        altText: fileTitle,
+                                        category: 'capa',
+                                        source: 'upload',
+                                        tags: ['capa', 'upload']
+                                      });
+                                      onShowToast('Foto de capa enviada e salva no acervo!');
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
                       </div>
                       <input
                         type="text"
                         value={featuredImage}
                         onChange={e => setFeaturedImage(e.target.value)}
-                        placeholder="URL da Capa (https://...)"
+                        placeholder="URL ou Base64 da Capa (https://...)"
                         className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-mono"
                       />
 
                       {featuredImage && (
-                        <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs mt-2">
+                        <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs mt-2 group">
                           <img
                             src={featuredImage}
                             alt="Capa Preview"
@@ -867,6 +930,13 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                               e.currentTarget.src = "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=800";
                             }}
                           />
+                          <button
+                            type="button"
+                            onClick={() => setFeaturedImage('')}
+                            className="absolute top-2 right-2 bg-red-600/80 hover:bg-red-700 text-white text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                          >
+                            Remover Capa
+                          </button>
                         </div>
                       )}
                     </div>
@@ -1108,10 +1178,75 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
       <Modal
         isOpen={isMediaPickerOpen}
         onClose={() => setIsMediaPickerOpen(false)}
-        title="Seletor de Fotos do Acervo GRIT NEWS & TenPets"
+        title="Seletor & Upload de Fotos do Acervo GRIT NEWS"
         maxWidth="3xl"
       >
         <div className="space-y-4">
+          {/* Quick Upload or Paste Bar inside Picker */}
+          <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-2">
+            <span className="text-xs font-extrabold text-[#0B2343] flex items-center gap-1.5">
+              <Upload className="w-4 h-4 text-[#145EDB]" />
+              Enviar Nova Imagem do Seu Dispositivo para o Acervo:
+            </span>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <label className="bg-[#145EDB] hover:bg-[#0f4bb3] text-white px-4 py-2 rounded-xl text-xs font-bold cursor-pointer flex items-center justify-center gap-1.5 shadow-md shrink-0">
+                <Upload className="w-4 h-4" />
+                <span>Escolher Arquivo do Dispositivo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        if (evt.target?.result) {
+                          const dataUrl = evt.target.result as string;
+                          const fileTitle = file.name.replace(/\.[^/.]+$/, '');
+                          const created = addMediaAsset({
+                            title: fileTitle,
+                            url: dataUrl,
+                            altText: fileTitle,
+                            category: 'upload',
+                            source: 'upload',
+                            tags: ['upload', 'acervo']
+                          });
+                          handleSelectMediaAsset(created);
+                          onShowToast(`Imagem "${fileTitle}" enviada e selecionada!`);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+
+              <div className="flex-1 flex gap-1">
+                <input
+                  type="text"
+                  placeholder="Ou cole uma URL direta da foto (https://...)"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value) {
+                      const url = e.currentTarget.value;
+                      const created = addMediaAsset({
+                        title: 'Foto via URL',
+                        url,
+                        altText: 'Foto via URL',
+                        category: 'externa',
+                        source: 'unsplash',
+                        tags: ['url']
+                      });
+                      handleSelectMediaAsset(created);
+                      onShowToast('Foto via URL inserida!');
+                    }
+                  }}
+                  className="flex-1 px-3 py-1.5 bg-white border border-blue-200 rounded-xl text-xs font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div className="relative w-full sm:w-64">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
@@ -1125,7 +1260,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
             </div>
 
             <div className="flex items-center gap-1 overflow-x-auto max-w-full pb-1 sm:pb-0">
-              {['ALL', 'pet', 'saude', 'esportes', 'tecnologia', 'automacao', 'importacao', 'negocios'].map(cat => (
+              {['ALL', 'pet', 'saude', 'esportes', 'tecnologia', 'automacao', 'importacao', 'negocios', 'upload'].map(cat => (
                 <button
                   key={cat}
                   onClick={() => setMediaPickerCategory(cat)}
