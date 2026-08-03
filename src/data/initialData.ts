@@ -714,6 +714,11 @@ export const INITIAL_ARTICLES: Article[] = [
         content: '❤️ **COMO AJUDAR PROTETORES INDEPENDENTES**\nAcompanhe e divulgue o trabalho de protetores independentes da sua cidade. Contribua com o custeio dos tratamentos em curso. Ofereça lar temporário. E, quando for a hora, adote.\n\nA versão online desta reportagem especial está em **gritnews.com.br**.'
       },
       {
+        id: 'vida-cross-link-politics',
+        type: 'callout',
+        content: '🔥 **LEIA TAMBÉM NO GRIT NEWS — CIBERSEGURANÇA ELEITORAL 2026:**\n🚨 **[Deep Web e Deepfakes na Política em 2026: A Nova Guerra Invisível de Desinformação nas Eleições no Brasil](/?artigo=deepweb-e-deepfakes-na-politica-em-2026-desinformacao-eleicoes-brasil)**\n*Entenda como a clonagem de voz por IA e redes clandestinas ameaçam o debate político nas eleições de 2026.*'
+      },
+      {
         id: 'vida-callout-creditos',
         type: 'callout',
         content: '📜 **FICHA TÉCNICA E CRÉDITOS DA REPORTAGEM**\n• **Especial**: GRIT NEWS · TENPETS\n• **Texto e Edição**: Tasso Vasconcelos\n• **Resgate e Acompanhamento**: Letícia Karla\n• **Imagens**: Acervo da Protetora'
@@ -732,6 +737,167 @@ export const INITIAL_ARTICLES: Article[] = [
         'Medicina Veterinária',
         'Fisioterapia Canina',
         'Acupuntura Veterinária'
+      ]
+    }
+  },
+  {
+    id: 'art-deepfake-deepweb-politica-2026',
+    title: 'Deep Web e Deepfakes na Política em 2026: A Nova Guerra Invisível de Desinformação e Manipulação Eleitoral no Brasil',
+    slug: 'deepweb-e-deepfakes-na-politica-em-2026-desinformacao-eleicoes-brasil',
+    subtitle: 'Áudios clonados em 3 segundos, vídeos sintéticos com sincronia labial perfeita e redes ocultas no Telegram e na Dark Web: a democracia brasileira enfrenta seu maior desafio técnico e reputacional.',
+    summary: 'Investigação especial do GRIT NEWS revela como ferramentas acessíveis de inteligência artificial generativa e fóruns clandestinos da Deep Web estão sendo orquestrados para desestabilizar campanhas políticas nas Eleições de 2026. Entenda a regulação do TSE, as técnicas de checagem e o impacto direto nos eleitores.',
+    categoryId: 'cat-tech',
+    tags: [
+      'Deepfakes Política',
+      'Deep Web',
+      'Eleições 2026',
+      'Inteligência Artificial',
+      'Desinformação Eleitoral',
+      'Clonagem de Voz',
+      'TSE Regulação',
+      'Cibersegurança',
+      'Tasso Vasconcelos',
+      'Grit News'
+    ],
+    authorId: 'author-tasso',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Cibersegurança e inteligência artificial nas Eleições de 2026: visualização simbólica de redes neurais e tráfego de dados clandestinos.',
+    publishedAt: '2026-08-03T09:00:00Z',
+    updatedAt: '2026-08-03T09:00:00Z',
+    readingTimeMinutes: 9,
+    viewsCount: 31200,
+    likesCount: 2450,
+    sharesCount: 980,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: true,
+    blocks: [
+      {
+        id: 'df-b1',
+        type: 'callout',
+        content: '🚨 **INVESTIGAÇÃO ESPECIAL GRIT NEWS — CIBERSEGURANÇA & ELEIÇÕES 2026**\n*DEEP WEB, CLONAGEM DE VOZ E MANIPULAÇÃO SINTÉTICA NA POLÍTICA*\n\n“Não se trata mais de fotos editadas no Photoshop ou correntes de texto com velhas fake news. Em 2026, o eleitor ouve o candidato confessando um crime com a própria voz — só que o candidato jamais pronunciou uma única daquelas palavras.”'
+      },
+      {
+        id: 'df-b2',
+        type: 'quote',
+        content: '“A fronteira entre a verdade e a ilusão sintética ruiu. Nas Eleições de 2026, quem dominar o algoritmo da mentira oculta dominará o debate público se não houver resposta técnica e checagem rígida.” — Tasso Vasconcelos, CEO do Grupo GRIT.'
+      },
+      {
+        id: 'df-b3',
+        type: 'heading2',
+        content: '1. O VAZAMENTO DA MADRUGADA: COMO A CLONAGEM DE VOZ DESTRÓI REPUTAÇÕES EM SEGUNDOS'
+      },
+      {
+        id: 'df-b4',
+        type: 'paragraph',
+        content: 'Considere o seguinte cenário real que assusta estrategistas de bastidores: noite de domingo, faltam menos de 48 horas para a abertura das urnas eletrônicas. Um arquivo de áudio no formato nativo do WhatsApp e Telegram passa a circular de forma avassaladora em grupos regionais. Nele, a voz inconfundível do líder das pesquisas aparece supostamente negociando propina em um tom sussurrado, com respiração natural, ruídos de fundo de um restaurante e hesitações de fala humanas.'
+      },
+      {
+        id: 'df-b5',
+        type: 'paragraph',
+        content: 'A equipe de campanha tenta desmentir imediatamente, mas a nota oficial é vista como defesa padrão. Na manhã de segunda-feira, a votação indecisa já migrou para os adversários. O estrago reputacional foi concluído em questão de horas, sem que houvesse tempo hábil para perícia judicial ou direito de resposta nos veículos tradicionais.'
+      },
+      {
+        id: 'df-b6',
+        type: 'paragraph',
+        content: 'Esse pesadelo não é hipotético. A popularização de modelos de código aberto de sintetização de fala (*text-to-speech* generativo) permite que com pouquíssimos segundos de áudio limpo de qualquer figura pública — extraídos de podcasts, rádio ou discursos no Plenário — um agente mal-intencionado recrie a voz com qualquer conteúdo textual desejado.'
+      },
+      {
+        id: 'df-b7',
+        type: 'heading2',
+        content: '2. O MERCADO NEGRO DA DEEP WEB E TELEGRAM: "DISINFORMATION AS A SERVICE"'
+      },
+      {
+        id: 'df-b8',
+        type: 'paragraph',
+        content: 'Onde essas armas de desinformação são encomendadas e operadas? Nossa apuração investigativa no ecossistema de cibersegurança acompanhou fóruns clandestinos acessados via rede Onion/Tor (a famosa Deep Web) e canais privados com criptografia ponta a ponta no Telegram.'
+      },
+      {
+        id: 'df-b9',
+        type: 'paragraph',
+        content: 'O mercado de ataques cibernéticos na política evoluiu para um modelo de serviço profissionalizado: o "Disinformation as a Service" (DaaS). Por valores variando entre R$ 3.000 e R$ 25.000, grupos obscuros vendem pacotes sob medida contendo:'
+      },
+      {
+        id: 'df-b10',
+        type: 'paragraph',
+        content: '• **Clonagem de Voz Multilíngue e Dialetal**: Adaptação da prosódia regional do candidato para aumentar o realismo em microrregiões eleitorais.\n• **Remoção Avançada de Marcas d’Água Digitais (Watermarking removal)**: Eliminação de rastros de metadados deixados por plataformas de IA comerciais como ElevenLabs, Midjourney e Runway.\n• **Disparos em Massa Descentralizados**: Uso de frotas de chips virtuais (eSIMs) e fazendas de bots automatizados que operam fora da jurisdição de servidores brasileiros.'
+      },
+      {
+        id: 'df-b11',
+        type: 'callout',
+        content: '⚖️ **MARCO REGULATÓRIO DO TSE PARA 2026:**\nO Tribunal Superior Eleitoral (TSE) aprovou a **Resolução nº 23.732**, que proíbe expressamente o uso de *deepfakes* (conteúdo sintético em áudio ou vídeo que simule pessoa real com intenção de enganar) na propaganda eleitoral. A norma determina a cassação imediata do registro ou do mandato do candidato beneficiado, além de responsabilização criminal de partidos e agências envolvidas. Acesse os atos normativos do [Tribunal Superior Eleitoral - TSE Oficial](https://www.tse.jus.br).'
+      },
+      {
+        id: 'df-b12',
+        type: 'heading2',
+        content: '3. DEEPFAKES DE VÍDEO: SINCRONIA LABIAL PERFEITA E "LIVES FAKE"'
+      },
+      {
+        id: 'df-b13',
+        type: 'paragraph',
+        content: 'Se a clonagem de áudio é a arma silenciosa e rápida, as deepfakes de vídeo representam a artilharia pesada de destruição de imagem. Através de redes adversariais generativas (GANs) e modelos de difusão latente em tempo real, militâncias virtuais conseguem aplicar rostos de políticos sobre o corpo de terceiros, simular declarações absurdas em estúdios de jornalismo clonados e transmitir "lives fakes" simulando coberturas ao vivo no YouTube.'
+      },
+      {
+        id: 'df-b14',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200',
+        caption: '📸 Algoritmos de aprendizado profundo reconstroem mapas tridimensionais da face humana, permitindo alterar expressões faciais e fala em tempo real com alta resolução.'
+      },
+      {
+        id: 'df-b15',
+        type: 'heading2',
+        content: '4. A PERÍCIA FORENSE COMPUTACIONAL E O DESAFIO DA VELOCIDADE'
+      },
+      {
+        id: 'df-b16',
+        type: 'paragraph',
+        content: 'Para combater essa enxurrada de falsificações, os comitês jurídicos e as equipes de perícia digital das polícias e tribunais eleitorais contam com ferramentas de biometria comportamental. Analisam-se parâmetros como a fotopletismografia remota (que mede a variação da cor da pele causada pelo pulso sanguíneo, imperceptível em vídeos gerados por IA), além de análise de artefatos de compressão de áudio e espectrograma de alta frequência.'
+      },
+      {
+        id: 'df-b17',
+        type: 'paragraph',
+        content: 'Contudo, peritos de cibersegurança do ecossistema [GRIT NEWS Tecnologia e IA](/?categoria=tecnologia-e-ia) ressaltam: a resposta jurídica precisa andar na mesma velocidade da propagação viral, sob o risco de a verdade ser provada apenas meses após a eleição homologada.'
+      },
+      {
+        id: 'df-b18',
+        type: 'callout',
+        content: '🐾 **ENQUANTO O MUNDO VIRTUAL COMBATE A AMEAÇA DIGITAL, CONHEÇA UMA HISTÓRIA REAL DE COMPAIXÃO E ESPERANÇA:**\n❤️ **[LEIA TAMBÉM: A Vida da Vida — Ela foi deixada para morrer entre sacos de lixo. Hoje é a princesa da casa.](/?artigo=a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado)**\n*Acompanhe o resgate, a vitória da medicina veterinária e o renascimento emocionante da husky Vida contados por Letícia Karla no portal TenPets + GRIT NEWS.*'
+      },
+      {
+        id: 'df-b19',
+        type: 'heading2',
+        content: '5. GUIA PRÁTICO DO ELEITOR: COMO IDENTIFICAR DEEPFAKES E PROTEGER SEU VOTO'
+      },
+      {
+        id: 'df-b20',
+        type: 'paragraph',
+        content: 'Confira as 4 regras de ouro recomendadas por especialistas em inteligência artificial e jornalismo investigativo do GRIT NEWS para não ser manipulado nas Eleições de 2026:'
+      },
+      {
+        id: 'df-b21',
+        type: 'paragraph',
+        content: '• **Cheque o Contexto e a Fonte Original**: Recebeu um áudio estarrecedor no WhatsApp? Procure o trecho nos portais de notícias de credibilidade como o GRIT NEWS, em canais oficiais dos partidos ou em agências de checagem parceiras.\n• **Observe Artefatos Visuais e Sonoros**: Em vídeos, atente para o piscar de olhos não natural, sombras estranhas no contorno do pescoço, dentes borrados e ausência de ruído ambiente coerente no áudio.\n• **Verifique os Rótulos Obrigatórios**: Conteúdos produzidos por IA autorizados por campanhas devem conter avisos claros como "Mídia Gerada por Inteligência Artificial".\n• **Não Repasse sem Certeza**: O engajamento da mentira depende do compartilhamento impulsivo. Interrompa a cadeia de desinformação.'
+      },
+      {
+        id: 'df-b22',
+        type: 'callout',
+        content: '💬 **PARTICIPE DA AUDIÊNCIA DO GRIT NEWS!**\nVocê já se deparou com algum áudio ou vídeo suspeito gerado por IA nestas eleições? Como enxerga a regulação das redes sociais no Brasil? Deixe seu comentário abaixo, envie sua mensagem para a nossa redação e compartilhe este alerta com seus grupos!'
+      }
+    ],
+    seo: {
+      metaTitle: 'Deep Web e Deepfakes na Política 2026: Desinformação e Clonagem de Voz nas Eleições | GRIT NEWS',
+      metaDescription: 'Investigação GRIT NEWS revela como a clonagem de voz por IA, vídeos sintéticos e fóruns da Deep Web estão sendo usados nas Eleições de 2026 no Brasil.',
+      keywords: [
+        'Deepfakes eleitorais 2026',
+        'Deep Web política Brasil',
+        'IA nas eleições 2026',
+        'Clonagem de voz candidatos',
+        'Regulação TSE Inteligência Artificial',
+        'Desinformação eleitoral',
+        'Cibersegurança política',
+        'Tasso Vasconcelos',
+        'Grit News'
       ]
     }
   },

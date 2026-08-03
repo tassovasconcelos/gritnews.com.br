@@ -8,7 +8,7 @@ import { RatingReactions } from '../ui/RatingReactions';
 import { ArticleShareActions } from '../ui/ArticleShareActions';
 import { AdBanner } from '../ui/AdBanner';
 import { OfferCard } from '../ui/OfferCard';
-import { incrementArticleViews, getComments, addComment, getOffers } from '../../lib/storage';
+import { incrementArticleViews, getComments, addComment, getOffers, getArticles } from '../../lib/storage';
 import { trackEvent } from '../../lib/analytics';
 import { updatePageSEO, injectArticleSchema } from '../../lib/seo';
 
@@ -31,6 +31,99 @@ function formatEmbedUrl(url: string): string {
     return `https://player.vimeo.com/video/${videoId}`;
   }
   return url;
+}
+
+function renderFormattedText(
+  text: string,
+  onSelectArticleBySlug?: (slug: string) => void
+) {
+  if (!text) return null;
+
+  const lines = text.split('\n');
+  return (
+    <>
+      {lines.map((line, lineIdx) => {
+        if (!line.trim()) return <br key={lineIdx} />;
+
+        const isBullet = line.trim().startsWith('•') || line.trim().startsWith('-');
+        const cleanLine = isBullet ? line.trim().substring(1).trim() : line;
+
+        const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+        const elements: (string | JSX.Element)[] = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(cleanLine)) !== null) {
+          const [fullMatch, label, url] = match;
+          const matchIndex = match.index;
+
+          if (matchIndex > lastIndex) {
+            elements.push(cleanLine.substring(lastIndex, matchIndex));
+          }
+
+          const isInternal = url.startsWith('/?') || url.startsWith('/') || url.includes('gritnews.com.br/?artigo=');
+
+          elements.push(
+            <a
+              key={matchIndex}
+              href={url}
+              target={isInternal ? '_self' : '_blank'}
+              rel={isInternal ? undefined : 'noopener noreferrer'}
+              className="text-[#145EDB] hover:text-[#0B2343] underline font-bold transition-colors cursor-pointer"
+              onClick={(e) => {
+                if (isInternal && onSelectArticleBySlug) {
+                  e.preventDefault();
+                  const targetSlug = url.includes('artigo=')
+                    ? url.split('artigo=')[1]?.split('&')[0]
+                    : url.split('/').pop();
+                  if (targetSlug) onSelectArticleBySlug(targetSlug);
+                }
+              }}
+            >
+              {label}
+            </a>
+          );
+
+          lastIndex = matchIndex + fullMatch.length;
+        }
+
+        if (lastIndex < cleanLine.length) {
+          elements.push(cleanLine.substring(lastIndex));
+        }
+
+        const formattedLine = elements.map((elem, elemIdx) => {
+          if (typeof elem !== 'string') return elem;
+
+          const parts = elem.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+          return parts.map((part, pIdx) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={pIdx} className="font-extrabold text-[#0B2343]">{part.slice(2, -2)}</strong>;
+            }
+            if (part.startsWith('*') && part.endsWith('*')) {
+              return <em key={pIdx} className="italic text-[#0B2343]">{part.slice(1, -1)}</em>;
+            }
+            return part;
+          });
+        });
+
+        if (isBullet) {
+          return (
+            <div key={lineIdx} className="flex items-start gap-2 my-1 pl-2">
+              <span className="text-[#145EDB] font-bold">•</span>
+              <span>{formattedLine}</span>
+            </div>
+          );
+        }
+
+        return (
+          <React.Fragment key={lineIdx}>
+            {formattedLine}
+            {lineIdx < lines.length - 1 && <br />}
+          </React.Fragment>
+        );
+      })}
+    </>
+  );
 }
 
 interface ArticleDetailViewProps {
@@ -281,7 +374,10 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
             if (block.type === 'paragraph') {
               return (
                 <p key={block.id} className="leading-relaxed">
-                  {block.content}
+                  {renderFormattedText(block.content, (slug) => {
+                    const found = relatedArticles.find(a => a.slug === slug || a.id === slug) || getArticles().find(a => a.slug === slug || a.id === slug);
+                    if (found) onSelectArticle(found);
+                  })}
                 </p>
               );
             }
@@ -311,15 +407,21 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
             }
             if (block.type === 'callout') {
               return (
-                <div key={block.id} className="bg-[#EAF3FF] border-l-4 border-l-[#145EDB] p-5 rounded-r-2xl my-6 text-sm md:text-base font-medium text-[#0B2343]">
-                  {block.content.replace(/\*\*/g, '')}
+                <div key={block.id} className="bg-[#EAF3FF] border-l-4 border-l-[#145EDB] p-5 rounded-r-2xl my-6 text-sm md:text-base font-medium text-[#0B2343] shadow-xs">
+                  {renderFormattedText(block.content, (slug) => {
+                    const found = relatedArticles.find(a => a.slug === slug || a.id === slug) || getArticles().find(a => a.slug === slug || a.id === slug);
+                    if (found) onSelectArticle(found);
+                  })}
                 </div>
               );
             }
             if (block.type === 'quote') {
               return (
-                <blockquote key={block.id} className="border-l-4 border-l-[#FF8500] pl-6 my-8 italic text-lg text-[#0B2343] font-semibold">
-                  {block.content}
+                <blockquote key={block.id} className="border-l-4 border-l-[#FF8500] pl-6 my-8 italic text-lg text-[#0B2343] font-semibold bg-amber-50/50 p-4 rounded-r-2xl">
+                  {renderFormattedText(block.content, (slug) => {
+                    const found = relatedArticles.find(a => a.slug === slug || a.id === slug) || getArticles().find(a => a.slug === slug || a.id === slug);
+                    if (found) onSelectArticle(found);
+                  })}
                 </blockquote>
               );
             }
