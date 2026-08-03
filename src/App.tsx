@@ -12,7 +12,6 @@ import { BookmarksView } from './components/views/BookmarksView';
 import { TagView } from './components/views/TagView';
 import { DocumentationModal } from './components/views/DocumentationModal';
 import { TenPetsView } from './components/views/TenPetsView';
-import { SacProhView } from './components/views/SacProhView';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
@@ -44,7 +43,6 @@ type ViewMode =
   | 'bookmarks'
   | 'tag'
   | 'tenpets'
-  | 'sacproh'
   | 'admin';
 
 const resolveRouteFromUrl = (
@@ -62,19 +60,7 @@ const resolveRouteFromUrl = (
   const params = new URLSearchParams(search);
   const hash = window.location.hash;
 
-  // 1. SACPROH / ProCirúrgica Subdomain / View / Route
-  if (
-    host.startsWith('sacproh') ||
-    host.includes('sacproh.') ||
-    pathLower.includes('/sacproh') ||
-    params.get('view') === 'sacproh' ||
-    params.get('subdomain') === 'sacproh' ||
-    hash.includes('sacproh')
-  ) {
-    return { view: 'sacproh' as ViewMode };
-  }
-
-  // 2. TenPets Subdomain / View
+  // 1. TenPets Subdomain / View
   if (
     host.startsWith('tenpets') ||
     host.includes('tenpets.') ||
@@ -109,7 +95,7 @@ const resolveRouteFromUrl = (
     } else if (hash.includes('noticia/') || hash.includes('artigo/')) {
       const parts = hash.split('/').filter(Boolean);
       targetSlugOrId = parts[parts.length - 1];
-    } else if (path !== '/' && path !== '' && !pathLower.includes('/sacproh') && !pathLower.includes('/tenpets')) {
+    } else if (path !== '/' && path !== '' && !pathLower.includes('/tenpets')) {
       const cleanPath = path.replace(/^\/+|\/+$/g, '').toLowerCase();
       if (cleanPath) {
         targetSlugOrId = cleanPath;
@@ -345,12 +331,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleNavigateSacProh = () => {
-    setCurrentView('sacproh');
-    window.history.pushState({ view: 'sacproh' }, '', '?view=sacproh');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleLeadQuoteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadName || !leadEmail || !leadModalOffer) return;
@@ -414,7 +394,6 @@ export default function App() {
         onNavigateBookmarks={handleNavigateBookmarks}
         onNavigateAdmin={handleNavigateAdmin}
         onNavigateTenPets={handleNavigateTenPets}
-        onNavigateSacProh={handleNavigateSacProh}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onOpenContactModal={() => setIsContactModalOpen(true)}
         bookmarksCount={getBookmarks().length}
@@ -434,7 +413,6 @@ export default function App() {
             onSelectAuthor={handleSelectAuthor}
             onSelectPartner={handleSelectPartner}
             onNavigateOffers={handleNavigateOffers}
-            onNavigateSacProh={handleNavigateSacProh}
             onOpenLeadModal={setLeadModalOffer}
             onShowToast={showToast}
           />
@@ -443,13 +421,6 @@ export default function App() {
         {currentView === 'tenpets' && (
           <TenPetsView
             onShowToast={showToast}
-          />
-        )}
-
-        {currentView === 'sacproh' && (
-          <SacProhView
-            onShowToast={showToast}
-            onNavigateHome={handleNavigateHome}
           />
         )}
 
@@ -549,7 +520,6 @@ export default function App() {
         onNavigateOffers={() => setCurrentView('offers')}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onNavigateAdmin={() => setCurrentView('admin')}
-        onNavigateSacProh={handleNavigateSacProh}
         onOpenContactModal={() => setIsContactModalOpen(true)}
       />
 

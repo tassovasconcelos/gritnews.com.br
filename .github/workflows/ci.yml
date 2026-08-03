@@ -1,4 +1,4 @@
-name: CI Validação GRIT SAC 4.0
+name: CI Validação GRIT NEWS
 
 on:
   pull_request:
@@ -18,5 +18,3 @@ jobs:
       - run: npm ci || npm install
       - run: npm run lint
       - run: npm run build
-        env:
-          VITE_BASE_PATH: '/sacproh/'

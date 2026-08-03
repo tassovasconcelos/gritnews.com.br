@@ -12,7 +12,6 @@ interface NavbarProps {
   onNavigateBookmarks: () => void;
   onNavigateAdmin: () => void;
   onNavigateTenPets: () => void;
-  onNavigateSacProh?: () => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
   onOpenDocs: () => void;
@@ -41,7 +40,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateBookmarks,
   onNavigateAdmin,
   onNavigateTenPets,
-  onNavigateSacProh,
   onSearch,
   onNavigateHome,
   onOpenDocs,
@@ -79,15 +77,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="hover:text-amber-300 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <span>Anuncie / Parcerias & Pautas</span>
-              </button>
-            )}
-            {onNavigateSacProh && (
-              <button
-                onClick={onNavigateSacProh}
-                className="text-sky-300 hover:text-white font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <Stethoscope className="w-3 h-3 text-sky-400" />
-                <span>SACPROH Ouvidoria</span>
               </button>
             )}
             <span className="text-[11px] font-mono text-gray-400">gritnews.com.br</span>
@@ -204,21 +193,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
-          {/* SACPROH Subdomain Portal Button */}
-          {onNavigateSacProh && (
-            <button
-              onClick={onNavigateSacProh}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-extrabold bg-gradient-to-r from-[#0284C7] to-[#0369A1] hover:from-[#0369A1] hover:to-[#075985] text-white shadow-xs hover:scale-105 transition-all border border-sky-400"
-              title="Acessar o Novo Portal SACPROH - Ouvidoria e Atendimento (sacproh.gritnews.com.br)"
-            >
-              <Stethoscope className="w-3.5 h-3.5 text-sky-200" />
-              <span>SACPROH (Ouvidoria & SAC)</span>
-              <span className="bg-black/25 text-sky-200 text-[9px] px-1.5 py-0.2 rounded font-mono font-bold">
-                sacproh.gritnews
-              </span>
-            </button>
-          )}
-
           {categories.map(cat => {
             const isActive = activeCategorySlug === cat.slug;
             const IconComp = ICON_MAP[cat.iconName] || Tag;
@@ -296,19 +270,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
               <span>Loja Amazon (Tasso Vasconcelos)</span>
             </a>
-
-            {onNavigateSacProh && (
-              <button
-                onClick={() => {
-                  onNavigateSacProh();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-[#0284C7] hover:bg-[#0369A1] text-white font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-sky-400 shadow-xs"
-              >
-                <Stethoscope className="w-4 h-4 text-sky-200" />
-                <span>Portal SACPROH (Ouvidoria ProCirúrgica)</span>
-              </button>
-            )}
 
             <button
               onClick={() => {

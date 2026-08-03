@@ -9,7 +9,6 @@ interface FooterProps {
   onNavigateOffers: () => void;
   onOpenDocs: () => void;
   onNavigateAdmin?: () => void;
-  onNavigateSacProh?: () => void;
   onOpenContactModal?: () => void;
 }
 
@@ -19,7 +18,6 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigateOffers,
   onOpenDocs,
   onNavigateAdmin,
-  onNavigateSacProh,
   onOpenContactModal
 }) => {
   return (
@@ -86,13 +84,6 @@ export const Footer: React.FC<FooterProps> = ({
                   Central de Ofertas B2B
                 </button>
               </li>
-              {onNavigateSacProh && (
-                <li>
-                  <button onClick={onNavigateSacProh} className="text-sky-400 hover:text-sky-300 font-bold transition-colors">
-                    SAC ProCirúrgica (SACPROH)
-                  </button>
-                </li>
-              )}
               <li>
                 <button onClick={onOpenDocs} className="hover:text-[#FF8A00] transition-colors">
                   Manual de Publicação & Hostinger

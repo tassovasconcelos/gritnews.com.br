@@ -1,11 +1,9 @@
 /// <reference types="vite/client" />
 
 export const DOMAINS = {
-  GRITNEWS: 'https://gritnews.com.br',
-  SACPROH: 'https://sacproh.gritnews.com.br'
+  GRITNEWS: 'https://gritnews.com.br'
 };
 
-export const SACPROH_DOMAIN = 'sacproh.gritnews.com.br';
 export const GRITNEWS_DOMAIN = 'gritnews.com.br';
 
 export const APPS = {
@@ -13,11 +11,6 @@ export const APPS = {
     name: 'GRIT NEWS',
     description: 'Portal de Notícias B2B, Inteligência de Mercado e Conteúdo Especializado',
     domain: DOMAINS.GRITNEWS,
-  },
-  SACPROH: {
-    name: 'SACPROH',
-    description: 'Sistema Atendimento ao Cliente PROH - Suporte Hospitalar e Cirúrgico',
-    domain: DOMAINS.SACPROH,
   }
 };
 

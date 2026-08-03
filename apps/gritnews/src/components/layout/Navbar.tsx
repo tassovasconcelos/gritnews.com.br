@@ -12,7 +12,6 @@ interface NavbarProps {
   onNavigateBookmarks: () => void;
   onNavigateAdmin: () => void;
   onNavigateTenPets: () => void;
-  onNavigateSacProh?: () => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
   onOpenDocs: () => void;
@@ -41,7 +40,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateBookmarks,
   onNavigateAdmin,
   onNavigateTenPets,
-  onNavigateSacProh,
   onSearch,
   onNavigateHome,
   onOpenDocs,
@@ -194,21 +192,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               .gritnews
             </span>
           </button>
-
-          {/* SACPROH Subdomain Portal Button */}
-          {onNavigateSacProh && (
-            <button
-              onClick={onNavigateSacProh}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-extrabold bg-gradient-to-r from-[#0284C7] to-[#0369A1] hover:from-[#0369A1] hover:to-[#075985] text-white shadow-xs hover:scale-105 transition-all border border-sky-400"
-              title="Acessar o Novo Portal SACPROH - Ouvidoria e Atendimento (sacproh.gritnews.com.br)"
-            >
-              <Stethoscope className="w-3.5 h-3.5 text-sky-200" />
-              <span>SACPROH (Ouvidoria & SAC)</span>
-              <span className="bg-black/25 text-sky-200 text-[9px] px-1.5 py-0.2 rounded font-mono font-bold">
-                sacproh.gritnews
-              </span>
-            </button>
-          )}
 
           {categories.map(cat => {
             const isActive = activeCategorySlug === cat.slug;

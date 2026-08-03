@@ -8,7 +8,6 @@ import { OfferCard } from '../ui/OfferCard';
 import { PartnerCard } from '../ui/PartnerCard';
 import { AmazonShopSection } from '../ui/AmazonShopSection';
 import { ArticleShareActions } from '../ui/ArticleShareActions';
-import { SacProhBanner } from '../ui/SacProhBanner';
 
 interface HomeViewProps {
   articles: Article[];
@@ -21,7 +20,6 @@ interface HomeViewProps {
   onSelectPartner: (partner: Partner) => void;
   onSelectAuthor?: (author: AuthorProfile) => void;
   onNavigateOffers?: () => void;
-  onNavigateSacProh?: () => void;
   onOpenLeadModal: (offer: Offer) => void;
   onShowToast: (msg: string, type?: 'success' | 'info') => void;
 }
@@ -50,7 +48,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onSelectPartner,
   onSelectAuthor,
   onNavigateOffers,
-  onNavigateSacProh,
   onOpenLeadModal,
   onShowToast
 }) => {
@@ -381,11 +378,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* Amazon Products Showcase Section - Tasso Vasconcelos */}
       <div className="max-w-7xl mx-auto px-4">
         <AmazonShopSection onShowToast={onShowToast} />
-      </div>
-
-      {/* SACPROH Official Ecosystem & Disclosure Banner */}
-      <div className="max-w-7xl mx-auto px-4">
-        <SacProhBanner onNavigateSacProh={onNavigateSacProh} onShowToast={onShowToast} />
       </div>
 
       {/* Featured B2B Offers Section */}
