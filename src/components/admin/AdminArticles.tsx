@@ -6,7 +6,7 @@ import {
   Filter, ExternalLink, Check, RefreshCw, MessageCircle, Linkedin, Twitter
 } from 'lucide-react';
 import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBlock, MediaAsset } from '../../types';
-import { saveArticle, deleteArticle, getMediaAssets, addMediaAsset, saveAuthor } from '../../lib/storage';
+import { saveArticle, deleteArticle, getMediaAssets, addMediaAsset, saveAuthor, compressImageFile } from '../../lib/storage';
 import { Modal } from '../ui/Modal';
 
 function formatEmbedUrl(url: string): string {
@@ -665,7 +665,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                                   className="w-full sm:w-auto bg-[#145EDB] hover:bg-[#0f4bb3] text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs"
                                 >
                                   <ImageIcon className="w-3.5 h-3.5" />
-                                  <span>Escolher do Acervo</span>
+                                  <span>Acervo</span>
                                 </button>
 
                                 <label className="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs">
@@ -675,30 +675,27 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                                     type="file"
                                     accept="image/*"
                                     className="hidden"
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                       const file = e.target.files?.[0];
                                       if (file) {
-                                        const reader = new FileReader();
-                                        reader.onload = (evt) => {
-                                          if (evt.target?.result) {
-                                            const dataUrl = evt.target.result as string;
-                                            handleUpdateBlock(block.id, dataUrl);
-                                            const fileTitle = file.name.replace(/\.[^/.]+$/, '');
-                                            if (!block.caption || block.caption === '📷 Legenda da foto...') {
-                                              handleUpdateBlockCaption(block.id, `📷 Foto: ${fileTitle}`);
-                                            }
-                                            addMediaAsset({
-                                              title: fileTitle,
-                                              url: dataUrl,
-                                              altText: fileTitle,
-                                              category: 'artigo',
-                                              source: 'upload',
-                                              tags: ['artigo', 'upload', 'foto']
-                                            });
-                                            onShowToast('Foto enviada, inserida no bloco e salva no acervo!');
+                                        onShowToast('Otimizando e enviando imagem...', 'info');
+                                        const dataUrl = await compressImageFile(file);
+                                        if (dataUrl) {
+                                          handleUpdateBlock(block.id, dataUrl);
+                                          const fileTitle = file.name.replace(/\.[^/.]+$/, '');
+                                          if (!block.caption || block.caption === '📷 Legenda da foto...') {
+                                            handleUpdateBlockCaption(block.id, `📷 Foto: ${fileTitle}`);
                                           }
-                                        };
-                                        reader.readAsDataURL(file);
+                                          addMediaAsset({
+                                            title: fileTitle,
+                                            url: dataUrl,
+                                            altText: fileTitle,
+                                            category: 'artigo',
+                                            source: 'upload',
+                                            tags: ['artigo', 'upload', 'foto']
+                                          });
+                                          onShowToast('Foto enviada, otimizada e salva no acervo!');
+                                        }
                                       }
                                     }}
                                   />
@@ -885,27 +882,24 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                               type="file"
                               accept="image/*"
                               className="hidden"
-                              onChange={(e) => {
+                              onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = (evt) => {
-                                    if (evt.target?.result) {
-                                      const dataUrl = evt.target.result as string;
-                                      setFeaturedImage(dataUrl);
-                                      const fileTitle = file.name.replace(/\.[^/.]+$/, '');
-                                      addMediaAsset({
-                                        title: `Capa: ${fileTitle}`,
-                                        url: dataUrl,
-                                        altText: fileTitle,
-                                        category: 'capa',
-                                        source: 'upload',
-                                        tags: ['capa', 'upload']
-                                      });
-                                      onShowToast('Foto de capa enviada e salva no acervo!');
-                                    }
-                                  };
-                                  reader.readAsDataURL(file);
+                                  onShowToast('Otimizando foto de capa...', 'info');
+                                  const dataUrl = await compressImageFile(file);
+                                  if (dataUrl) {
+                                    setFeaturedImage(dataUrl);
+                                    const fileTitle = file.name.replace(/\.[^/.]+$/, '');
+                                    addMediaAsset({
+                                      title: `Capa: ${fileTitle}`,
+                                      url: dataUrl,
+                                      altText: fileTitle,
+                                      category: 'capa',
+                                      source: 'upload',
+                                      tags: ['capa', 'upload']
+                                    });
+                                    onShowToast('Foto de capa enviada, otimizada e salva no acervo!');
+                                  }
                                 }
                               }}
                             />
@@ -1196,27 +1190,24 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (evt) => {
-                        if (evt.target?.result) {
-                          const dataUrl = evt.target.result as string;
-                          const fileTitle = file.name.replace(/\.[^/.]+$/, '');
-                          const created = addMediaAsset({
-                            title: fileTitle,
-                            url: dataUrl,
-                            altText: fileTitle,
-                            category: 'upload',
-                            source: 'upload',
-                            tags: ['upload', 'acervo']
-                          });
-                          handleSelectMediaAsset(created);
-                          onShowToast(`Imagem "${fileTitle}" enviada e selecionada!`);
-                        }
-                      };
-                      reader.readAsDataURL(file);
+                      onShowToast('Otimizando e enviando imagem...', 'info');
+                      const dataUrl = await compressImageFile(file);
+                      if (dataUrl) {
+                        const fileTitle = file.name.replace(/\.[^/.]+$/, '');
+                        const created = addMediaAsset({
+                          title: fileTitle,
+                          url: dataUrl,
+                          altText: fileTitle,
+                          category: 'upload',
+                          source: 'upload',
+                          tags: ['upload', 'acervo']
+                        });
+                        handleSelectMediaAsset(created);
+                        onShowToast(`Imagem "${fileTitle}" enviada, otimizada e selecionada!`);
+                      }
                     }
                   }}
                 />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Image, Upload, Search, Trash2, Copy, Check, Filter, Plus, ExternalLink, Tag, Sparkles } from 'lucide-react';
 import { MediaAsset } from '../../types';
-import { getMediaAssets, addMediaAsset, deleteMediaAsset } from '../../lib/storage';
+import { getMediaAssets, addMediaAsset, deleteMediaAsset, compressImageFile } from '../../lib/storage';
 
 interface AdminMediaProps {
   onShowToast: (msg: string) => void;
@@ -263,18 +263,27 @@ export const AdminMedia: React.FC<AdminMediaProps> = ({ onShowToast }) => {
                       type="file"
                       accept="image/*,video/*"
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
                           if (!newTitle) setNewTitle(file.name.replace(/\.[^/.]+$/, ''));
-                          const reader = new FileReader();
-                          reader.onload = (evt) => {
-                            if (evt.target?.result) {
-                              setNewUrl(evt.target.result as string);
-                              onShowToast('Arquivo carregado com sucesso!');
+                          if (file.type.startsWith('image/')) {
+                            onShowToast('Otimizando imagem...', 'info');
+                            const dataUrl = await compressImageFile(file);
+                            if (dataUrl) {
+                              setNewUrl(dataUrl);
+                              onShowToast('Imagem otimizada e pronta!');
                             }
-                          };
-                          reader.readAsDataURL(file);
+                          } else {
+                            const reader = new FileReader();
+                            reader.onload = (evt) => {
+                              if (evt.target?.result) {
+                                setNewUrl(evt.target.result as string);
+                                onShowToast('Arquivo de vídeo carregado!');
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
                         }
                       }}
                     />

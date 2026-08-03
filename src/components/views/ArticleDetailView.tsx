@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Eye, Calendar, User, ArrowLeft, Volume2, VolumeX, Sparkles, MessageSquare, ShieldCheck, Tag, ExternalLink, Send, Printer } from 'lucide-react';
+import { Clock, Eye, Calendar, User, ArrowLeft, Volume2, VolumeX, Sparkles, MessageSquare, ShieldCheck, Tag, ExternalLink, Send, Printer, Download, FileText, BookOpen } from 'lucide-react';
 import { Article, AuthorProfile, Category, Comment, Offer } from '../../types';
 import { Badge } from '../ui/Badge';
 import { ReadingProgressBar } from '../ui/ReadingProgressBar';
@@ -8,6 +8,7 @@ import { RatingReactions } from '../ui/RatingReactions';
 import { ArticleShareActions } from '../ui/ArticleShareActions';
 import { AdBanner } from '../ui/AdBanner';
 import { OfferCard } from '../ui/OfferCard';
+import { PdfReportageModal } from '../ui/PdfReportageModal';
 import { incrementArticleViews, getComments, addComment, getOffers, getArticles } from '../../lib/storage';
 import { trackEvent } from '../../lib/analytics';
 import { updatePageSEO, injectArticleSchema } from '../../lib/seo';
@@ -153,6 +154,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
 }) => {
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentName, setCommentName] = useState('');
   const [commentEmail, setCommentEmail] = useState('');
@@ -315,15 +317,12 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
               </button>
 
               <button
-                onClick={() => {
-                  onShowToast('Aguarde... preparando a reportagem em PDF / Impressão.', 'info');
-                  setTimeout(() => window.print(), 300);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0B2343] hover:bg-[#145EDB] text-white transition-all shadow-xs"
-                title="Gerar e Baixar PDF do Artigo"
+                onClick={() => setIsPdfModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 transition-all shadow-sm cursor-pointer"
+                title="Abrir Revista & Baixar PDF (16 Páginas)"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Gerar PDF</span>
+                <FileText className="w-3.5 h-3.5 text-slate-950" />
+                <span>Edição PDF (16 pág)</span>
               </button>
 
               <div className="flex items-center bg-white border border-[#E2E8F0] rounded-xl p-1 text-xs font-bold text-[#0B2343]">
@@ -345,6 +344,42 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
 
           {/* Share & Interactions Bar Top */}
           <ArticleShareActions article={article} onShowToast={onShowToast} variant="bar" className="mt-4" />
+
+          {/* Special PDF Edition Download Callout Box */}
+          <div className="mt-4 p-4 bg-gradient-to-r from-[#0B2343] to-[#102D54] rounded-2xl border border-amber-500/30 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-sm text-amber-300 flex items-center gap-1.5">
+                  <span>Edição Especial em PDF — Revista Digital (16 Páginas)</span>
+                </h4>
+                <p className="text-xs text-slate-300">
+                  Baixe a diagramação fiel da reportagem “A Vida da Vida” com todas as fotos, capítulos e ficha técnica.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <button
+                onClick={() => setIsPdfModalOpen(true)}
+                className="flex-1 sm:flex-none bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Leitor Digital</span>
+              </button>
+              <a
+                href="/artigo-vida-especial.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-600 transition-all"
+              >
+                <Download className="w-4 h-4 text-amber-400" />
+                <span>Baixar PDF</span>
+              </a>
+            </div>
+          </div>
         </header>
 
         {/* Hero Featured Image */}
@@ -665,6 +700,12 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
             </div>
           </section>
         )}
+        {/* PDF Reader Modal */}
+        <PdfReportageModal
+          isOpen={isPdfModalOpen}
+          onClose={() => setIsPdfModalOpen(false)}
+          onShowToast={onShowToast}
+        />
       </article>
     </div>
   );
