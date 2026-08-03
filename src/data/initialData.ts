@@ -424,7 +424,7 @@ export const INITIAL_ARTICLES: Article[] = [
     ],
     authorId: 'author-leticia',
     status: 'PUBLISHED',
-    featuredImage: '/images/vida_foto_6_sorriso_varanda.svg',
+    featuredImage: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1200',
     imageCaption: 'O dia de hoje: de peito aberto na varanda, com olhos suavemente fechados e sorriso no rosto, a Princesa Vida celebra a vida sem dores nem medos.',
     publishedAt: '2026-08-01T10:00:00Z',
     updatedAt: '2026-08-01T10:00:00Z',
@@ -479,7 +479,7 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-1',
         type: 'image',
-        content: '/images/vida_foto_1_resgate.svg',
+        content: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200',
         caption: '📸 DIA ZERO — ONDE TUDO COMEÇOU: Descartada junto com o lixo. Deitada sobre um colchão jogado fora, entre sacos pretos e restos de mudança. O fio azul de varal caído no chão viraria, sem que ninguém combinasse, o símbolo desta reportagem.'
       },
       {
@@ -535,7 +535,7 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-2',
         type: 'image',
-        content: '/images/vida_foto_2_quarto_hospital.svg',
+        content: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&q=80&w=1200',
         caption: '🏥 A CLÍNICA: “Estamos aqui com ela” — Cinco palavras, um plural e uma prece. O plural é o que muda tudo: nenhum resgate se sustenta sozinho.'
       },
       {
@@ -596,7 +596,7 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-3',
         type: 'image',
-        content: '/images/vida_foto_3_acupuntura_lacinhos.svg',
+        content: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200',
         caption: '🪡 AGULHAS QUE NÃO DOEM: Dormir sem vigiar a rua — Para um animal resgatado, isso é uma conquista clínica tão real quanto qualquer exame. Aqui, o sono não é de exaustão: é de descanso.'
       },
       {
@@ -632,7 +632,7 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-4',
         type: 'image',
-        content: '/images/vida_foto_4_fisioterapia_dra_renata.svg',
+        content: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=1200',
         caption: '⚡ “Tô fazendo minha fisioterapia, titios!” — Acompanhamento clínico e sessões de reabilitação conduzidas pela equipe veterinária responsável pelo caso (@dramarciasm @renatapessoa.vet). Cada sessão, um milímetro a mais de autonomia.'
       },
       {
@@ -643,7 +643,7 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-5',
         type: 'image',
-        content: '/images/vida_foto_7_princesa_coroa.svg',
+        content: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=1200',
         caption: '👑 A COROA: Ninguém coroa quem se desistiu de salvar — Um adesivo de coroa cor-de-rosa na testa, torto e brilhante. É a fotografia mais boba deste especial e, por isso mesmo, a mais importante: coroa se coloca em quem está de volta.'
       },
       {
@@ -679,13 +679,13 @@ export const INITIAL_ARTICLES: Article[] = [
       {
         id: 'vida-img-6',
         type: 'image',
-        content: '/images/vida_foto_5_bandana_floral.svg',
+        content: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&q=80&w=1200',
         caption: '🌸 O Dia de Hoje: Com sua bandana florida e olhar sereno na varanda, Vida recuperou a dignidade e o direito de ocupar o espaço sem pedir licença.'
       },
       {
         id: 'vida-img-7',
         type: 'image',
-        content: '/images/vida_foto_6_sorriso_varanda.svg',
+        content: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1200',
         caption: '✨ ANTES E DEPOIS — A MESMA CADELA: Antes e depois não é um par de fotos. É uma fila de dias em que alguém não desistiu.'
       },
       {
@@ -1731,8 +1731,8 @@ Após semanas de investigação diagnóstica com tomografia computadorizada e pa
 Foram 6 meses consecutivos de protocolo rigoroso integrando fisioterapia canina diária, acupuntura para vias neurais e hidroterapia. Hoje, totalmente reabilitada e livre de dores, Vida corre radiante, abana a cauda e desfruta da vida de "princesa mimada" que sempre mereceu!`,
     rescueDate: '2023-07-26',
     status: 'VITORIA_MEDICA',
-    beforeImageUrl: '/images/vida_foto_1_resgate.svg',
-    afterImageUrl: '/images/vida_foto_7_princesa_coroa.svg',
+    beforeImageUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200',
+    afterImageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1200',
     videoUrl: 'https://www.gritnews.com.br/?artigo=a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado',
     vetCareNotes: 'Fisioterapia canina diária, acupuntura neuromoduladora, hidroterapia e acompanhamento de neurologista e ortopedista veterinário.',
     sponsorGoal: 8500,

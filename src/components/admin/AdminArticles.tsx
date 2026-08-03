@@ -120,7 +120,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
       content: contentOverride || (
         type === 'callout' ? '💡 Destaque especial de mercado...' :
         type === 'quote' ? '“Citação importante...”' :
-        type === 'image' ? '/images/vida_foto_1_resgate.svg' :
+        type === 'image' ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200' :
         type === 'video' ? 'https://www.youtube.com/embed/dQw4w9WgXcQ' :
         'Novo parágrafo...'
       ),
@@ -439,13 +439,13 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { title: '1. Resgate na Praça', url: '/images/vida_foto_1_resgate.svg' },
-                      { title: '2. Quarto de Hospital', url: '/images/vida_foto_2_quarto_hospital.svg' },
-                      { title: '3. Acupuntura & Lacinhos', url: '/images/vida_foto_3_acupuntura_lacinhos.svg' },
-                      { title: '4. Fisioterapia Dra. Renata', url: '/images/vida_foto_4_fisioterapia_dra_renata.svg' },
-                      { title: '5. Bandana Floral', url: '/images/vida_foto_5_bandana_floral.svg' },
-                      { title: '6. Sorriso Varanda', url: '/images/vida_foto_6_sorriso_varanda.svg' },
-                      { title: '7. Princesa Coroa', url: '/images/vida_foto_7_princesa_coroa.svg' },
+                      { title: '1. Resgate na Praça', url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200' },
+                      { title: '2. Quarto de Hospital', url: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&q=80&w=1200' },
+                      { title: '3. Acupuntura & Lacinhos', url: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200' },
+                      { title: '4. Fisioterapia Dra. Renata', url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=1200' },
+                      { title: '5. Bandana Floral', url: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&q=80&w=1200' },
+                      { title: '6. Sorriso Varanda', url: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1200' },
+                      { title: '7. Princesa Coroa', url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=1200' },
                     ].map((p, idx) => (
                       <button
                         key={idx}

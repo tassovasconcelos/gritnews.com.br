@@ -1,4 +1,4 @@
-import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner } from '@gritnews/types';
+import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../types';
 import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS, INITIAL_TENPETS_ARTICLES, INITIAL_TENPETS_RESCUES, INITIAL_TENPETS_PARTNERS } from '../data/initialData';
 
 const KEYS = {
@@ -82,7 +82,7 @@ const INITIAL_MEDIA: MediaAsset[] = [
   {
     id: 'm-vida-1',
     title: '1. Resgate da Husky Vida na Praça Pública',
-    url: '/images/vida_foto_1_resgate.svg',
+    url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200',
     altText: 'Husky Vida paralisada sobre colchão na praça com mochilas ao fundo',
     category: 'pet',
     source: 'upload',
@@ -92,7 +92,7 @@ const INITIAL_MEDIA: MediaAsset[] = [
   {
     id: 'm-vida-2',
     title: '2. Primeiro Atendimento em Quarto de Hospital',
-    url: '/images/vida_foto_2_quarto_hospital.svg',
+    url: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&q=80&w=1200',
     altText: 'Vida de fraldinha e almofada de rosquinha no tatame de EVA azul do hospital veterinário',
     category: 'pet',
     source: 'upload',
@@ -102,7 +102,7 @@ const INITIAL_MEDIA: MediaAsset[] = [
   {
     id: 'm-vida-3',
     title: '3. Acupuntura Neuromoduladora & Lacinhos',
-    url: '/images/vida_foto_3_acupuntura_lacinhos.svg',
+    url: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200',
     altText: 'Vida em sessão de acupuntura com agulhas na testa e lacinhos coloridos',
     category: 'pet',
     source: 'upload',
@@ -112,7 +112,7 @@ const INITIAL_MEDIA: MediaAsset[] = [
   {
     id: 'm-vida-4',
     title: '4. Fisioterapia Canina com Dra. Renata Pessoa',
-    url: '/images/vida_foto_4_fisioterapia_dra_renata.svg',
+    url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=1200',
     altText: 'Atendimento de fisioterapia e estímulo elétrico TENS/FES com a Dra. Renata Pessoa',
     category: 'pet',
     source: 'upload',
@@ -122,7 +122,7 @@ const INITIAL_MEDIA: MediaAsset[] = [
   {
     id: 'm-vida-5',
     title: '5. Doce Vida de Bandana Floral',
-    url: '/images/vida_foto_5_bandana_floral.svg',
+    url: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&q=80&w=1200',
     altText: 'Vida relaxada no chão de cerâmica com bandana floral verde e rosa',
     category: 'pet',
     source: 'upload',
@@ -132,7 +132,7 @@ const INITIAL_MEDIA: MediaAsset[] = [
   {
     id: 'm-vida-6',
     title: '6. O Sorriso do Renascimento na Varanda',
-    url: '/images/vida_foto_6_sorriso_varanda.svg',
+    url: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1200',
     altText: 'Vida sorrindo radiante na varanda com portão azul ao fundo',
     category: 'pet',
     source: 'upload',
@@ -142,7 +142,7 @@ const INITIAL_MEDIA: MediaAsset[] = [
   {
     id: 'm-vida-7',
     title: '7. Princesa Vida com Coroa Rosa e Brilhos',
-    url: '/images/vida_foto_7_princesa_coroa.svg',
+    url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=1200',
     altText: 'A Princesa Vida com coroazinha rosa e brilhos na testa celebrando a vitória',
     category: 'pet',
     source: 'upload',
