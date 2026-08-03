@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBlock, MediaAsset } from '../../types';
 import { saveArticle, deleteArticle, getMediaAssets, addMediaAsset, saveAuthor, compressImageFile } from '../../lib/storage';
+import { extractPdfContent } from '../../lib/pdfExtractor';
 import { Modal } from '../ui/Modal';
 
 function formatEmbedUrl(url: string): string {
@@ -139,89 +140,46 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
   const handleUploadPdfAndGenerateArticle = async (file: File) => {
     if (!file) return;
     setIsProcessingPdf(true);
-    onShowToast(`Anexando e processando o PDF "${file.name}"...`, 'info');
+    onShowToast(`Anexando, extraindo imagens e processando o PDF "${file.name}"...`, 'info');
 
     try {
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        const dataUrl = evt.target?.result as string;
-        if (dataUrl) {
-          setPdfUrl(dataUrl);
-          setPdfFileName(file.name);
+      const extracted = await extractPdfContent(file);
 
-          const cleanName = file.name.replace(/\.[^/.]+$/, '');
+      // Store PDF url reference and file name
+      setPdfUrl(extracted.pdfDataUrl);
+      setPdfFileName(file.name);
+
+      // Add extracted page images to Acervo / Media Assets
+      if (extracted.pageImages && extracted.pageImages.length > 0) {
+        extracted.pageImages.forEach((imgUrl, idx) => {
           addMediaAsset({
-            title: `PDF: ${cleanName}`,
-            url: dataUrl,
-            altText: cleanName,
+            title: `PDF ${file.name} - Imagem/Página ${idx + 1}`,
+            url: imgUrl,
+            altText: `Página ${idx + 1} extraída do documento PDF ${file.name}`,
             category: 'pdf',
             source: 'upload',
-            tags: ['pdf', 'documento', 'reportagem']
+            tags: ['pdf', 'extraido', 'documento', file.name]
           });
+        });
 
-          const generatedTitle = cleanName
-            .replace(/[-_]/g, ' ')
-            .replace(/\b\w/g, c => c.toUpperCase());
-
-          if (!title || title.trim() === '') {
-            setTitle(generatedTitle);
-          }
-          if (!subtitle) {
-            setSubtitle(`Reportagem Especial baseada no documento PDF anexo "${file.name}"`);
-          }
-          if (!summary) {
-            setSummary(`Artigo e matéria especial gerados a partir do arquivo PDF "${file.name}". O arquivo PDF original encontra-se anexado para leitura e download.`);
-          }
-
-          const pdfBlocks: ArticleBlock[] = [
-            {
-              id: `b-pdf-head-${Date.now()}`,
-              type: 'heading2',
-              content: `Reportagem Especial: ${generatedTitle}`
-            },
-            {
-              id: `b-pdf-callout-${Date.now()}`,
-              type: 'callout',
-              content: `📄 Este artigo inclui o documento PDF original "${file.name}" em anexo. Você pode realizar o download e consultar o material completo no leitor integrado.`
-            },
-            {
-              id: `b-pdf-p1-${Date.now()}`,
-              type: 'paragraph',
-              content: `Esta matéria reúne os principais trechos e análises presentes no documento "${file.name}". Para garantir transparência e livre acesso à informação, o PDF original na íntegra foi anexado diretamente a esta publicação.`
-            },
-            {
-              id: `b-pdf-h3-${Date.now()}`,
-              type: 'heading3',
-              content: 'Análise e Conteúdo do Documento'
-            },
-            {
-              id: `b-pdf-p2-${Date.now()}`,
-              type: 'paragraph',
-              content: `Ao examinar a estrutura deste material em PDF, sobressai a relevância dos dados consolidados, servindo como referência jornalística para leitores, pesquisadores e profissionais da área.`
-            },
-            {
-              id: `b-pdf-quote-${Date.now()}`,
-              type: 'quote',
-              content: `“O acesso direto ao documento em PDF fortalece a credibilidade da informação e permite ao leitor verificar as fontes originais na íntegra.”`
-            },
-            {
-              id: `b-pdf-img-${Date.now()}`,
-              type: 'image',
-              content: featuredImage || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200',
-              caption: `📷 Registro e documentação referente ao arquivo PDF "${file.name}"`
-            }
-          ];
-
-          setBlocks(pdfBlocks);
-          setIsProcessingPdf(false);
-          onShowToast(`PDF "${file.name}" anexado e matéria estruturada com sucesso!`);
+        // Set featured image to the 1st extracted PDF image if available!
+        if (extracted.pageImages[0]) {
+          setFeaturedImage(extracted.pageImages[0]);
         }
-      };
-      reader.readAsDataURL(file);
+      }
+
+      // Populate article fields
+      setTitle(extracted.title);
+      setSubtitle(extracted.subtitle);
+      setSummary(extracted.summary);
+      setBlocks(extracted.blocks);
+
+      setIsProcessingPdf(false);
+      onShowToast(`PDF "${file.name}" processado com sucesso! ${extracted.pageImages.length} imagem(ns) extraída(s).`, 'success');
     } catch (err) {
       console.error('Erro ao ler arquivo PDF:', err);
       setIsProcessingPdf(false);
-      onShowToast('Ocorreu um erro ao processar o arquivo PDF.');
+      onShowToast('Ocorreu um erro ao processar o arquivo PDF. Tente um arquivo menor ou em formato PDF padrão.', 'error');
     }
   };
 

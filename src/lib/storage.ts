@@ -35,7 +35,37 @@ function saveItem<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (err) {
-    console.error(`Error saving key ${key}:`, err);
+    console.warn(`LocalStorage quota reached while saving ${key}. Executing auto-compression cleanup...`, err);
+    try {
+      // If saving ARTICLES, remove huge heavy raw PDF base64 strings if necessary to preserve all text/images
+      if (Array.isArray(value) && key === KEYS.ARTICLES) {
+        const cleanedArticles = (value as Article[]).map(art => {
+          if (art.pdfUrl && art.pdfUrl.length > 500000) {
+            // Keep text, blocks, images, but truncate heavy raw PDF
+            return {
+              ...art,
+              pdfUrl: undefined // Truncate heavy raw PDF base64 string
+            };
+          }
+          return art;
+        });
+        localStorage.setItem(key, JSON.stringify(cleanedArticles));
+        console.log(`Successfully saved ${key} after auto-compressing heavy attachments.`);
+        return;
+      }
+
+      // If saving MEDIA, keep top 30 media items
+      if (Array.isArray(value) && key === KEYS.MEDIA) {
+        const trimmedMedia = (value as MediaAsset[]).slice(0, 30);
+        localStorage.setItem(key, JSON.stringify(trimmedMedia));
+        console.log(`Successfully saved ${key} after trimming older media cache.`);
+        return;
+      }
+
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (secondErr) {
+      console.error(`Fatal: Unable to save ${key} even after compression:`, secondErr);
+    }
   }
 }
 
