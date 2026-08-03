@@ -2,7 +2,7 @@ import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, Newslette
 import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS, INITIAL_TENPETS_ARTICLES, INITIAL_TENPETS_RESCUES, INITIAL_TENPETS_PARTNERS } from '../data/initialData';
 
 const KEYS = {
-  ARTICLES: 'grit_news_articles_v2',
+  ARTICLES: 'grit_news_articles_v3',
   CATEGORIES: 'grit_news_categories_v1',
   AUTHORS: 'grit_news_authors_v1',
   PARTNERS: 'grit_news_partners_v1',

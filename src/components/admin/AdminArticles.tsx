@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Eye, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, Save, History, Image as ImageIcon, Video as VideoIcon, Film, Upload, FileImage, ArrowUp, ArrowDown, HelpCircle, Info, Layers } from 'lucide-react';
-import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBlock } from '../../types';
-import { saveArticle, deleteArticle, getMediaAssets } from '../../lib/storage';
+import { 
+  Plus, Edit2, Trash2, Eye, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, 
+  Save, History, Image as ImageIcon, Video as VideoIcon, Film, Upload, FileImage, 
+  ArrowUp, ArrowDown, HelpCircle, Info, Layers, UserPlus, Share2, Copy, Search, 
+  Filter, ExternalLink, Check, RefreshCw, MessageCircle, Linkedin, Twitter
+} from 'lucide-react';
+import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBlock, MediaAsset } from '../../types';
+import { saveArticle, deleteArticle, getMediaAssets, saveAuthor } from '../../lib/storage';
 import { Modal } from '../ui/Modal';
 
 function formatEmbedUrl(url: string): string {
@@ -42,6 +47,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
 }) => {
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'social'>('editor');
 
   // Form State
   const [title, setTitle] = useState('');
@@ -55,10 +61,26 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
   const [isSponsored, setIsSponsored] = useState(false);
   const [isEvergreen, setIsEvergreen] = useState(false);
   const [isUrgent, setIsUrgent] = useState(false);
-  const [showGuide, setShowGuide] = useState(true);
   const [blocks, setBlocks] = useState<ArticleBlock[]>([
     { id: 'b-1', type: 'paragraph', content: 'Escreva a introdução da matéria...' }
   ]);
+
+  // Media Picker Modal State
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+  const [mediaPickerTarget, setMediaPickerTarget] = useState<'featured' | string | null>(null);
+  const [mediaPickerCategory, setMediaPickerCategory] = useState<string>('ALL');
+  const [mediaPickerSearch, setMediaPickerSearch] = useState<string>('');
+
+  // New Author Modal State
+  const [isNewAuthorOpen, setIsNewAuthorOpen] = useState(false);
+  const [newAuthorName, setNewAuthorName] = useState('');
+  const [newAuthorRole, setNewAuthorRole] = useState('Redator Sênior');
+  const [newAuthorAvatar, setNewAuthorAvatar] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400');
+  const [newAuthorBio, setNewAuthorBio] = useState('Jornalista especializado na cobertura de mercado, tecnologia e grandes reportagens.');
+  const [newAuthorEmail, setNewAuthorEmail] = useState('');
+
+  // Social Share copied state
+  const [copiedShareChannel, setCopiedShareChannel] = useState<string | null>(null);
 
   const handleMoveBlock = (index: number, direction: 'up' | 'down') => {
     if (direction === 'up' && index === 0) return;
@@ -80,11 +102,12 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setAuthorId(authors[0]?.id || '');
     setFeaturedImage('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1200');
     setStatus('PUBLISHED');
-    setTagsInput('Inovação, Mercado');
+    setTagsInput('Inovação, Mercado, GritNews');
     setIsSponsored(false);
     setIsEvergreen(false);
     setIsUrgent(false);
-    setBlocks([{ id: 'b-1', type: 'paragraph', content: 'Introdução do artigo...' }]);
+    setBlocks([{ id: 'b-1', type: 'paragraph', content: 'Introdução da matéria...' }]);
+    setActiveTab('editor');
     setIsModalOpen(true);
   };
 
@@ -102,6 +125,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setIsEvergreen(art.isEvergreen || false);
     setIsUrgent(art.isUrgent || false);
     setBlocks(art.blocks && art.blocks.length > 0 ? art.blocks : [{ id: 'b-1', type: 'paragraph', content: art.summary }]);
+    setActiveTab('editor');
     setIsModalOpen(true);
   };
 
@@ -143,6 +167,54 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     }
   };
 
+  // Open Media Picker for a block or cover image
+  const handleOpenMediaPicker = (target: 'featured' | string) => {
+    setMediaPickerTarget(target);
+    setIsMediaPickerOpen(true);
+  };
+
+  const handleSelectMediaAsset = (asset: MediaAsset) => {
+    if (mediaPickerTarget === 'featured') {
+      setFeaturedImage(asset.url);
+      onShowToast(`Capa atualizada com "${asset.title}"`);
+    } else if (mediaPickerTarget) {
+      handleUpdateBlock(mediaPickerTarget, asset.url);
+      handleUpdateBlockCaption(mediaPickerTarget, `📷 ${asset.title}`);
+      onShowToast(`Imagem inserida no bloco com sucesso!`);
+    }
+    setIsMediaPickerOpen(false);
+  };
+
+  // Create new author profile
+  const handleSaveNewAuthor = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAuthorName) return;
+
+    const newAuthor: AuthorProfile = {
+      id: `author-${Date.now()}`,
+      name: newAuthorName,
+      roleTitle: newAuthorRole,
+      avatar: newAuthorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
+      bio: newAuthorBio,
+      specialties: ['Jornalismo', 'Negócios'],
+      email: newAuthorEmail || `${newAuthorName.toLowerCase().replace(/\s+/g, '.')}@gritnews.com.br`,
+      followersCount: 120,
+      articlesCount: 1
+    };
+
+    saveAuthor(newAuthor);
+    onRefresh();
+    setAuthorId(newAuthor.id);
+    setIsNewAuthorOpen(false);
+    onShowToast(`Novo editor "${newAuthorName}" cadastrado com sucesso!`);
+    
+    // Reset author form
+    setNewAuthorName('');
+    setNewAuthorRole('Redator Sênior');
+    setNewAuthorBio('');
+    setNewAuthorEmail('');
+  };
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
@@ -180,14 +252,33 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
       seo: {
         metaTitle: `${title} | GRIT NEWS`,
         metaDescription: summary || subtitle,
-        keywords: tagsArr
+        keywords: tagsArr,
+        canonicalUrl: `https://www.gritnews.com.br/?artigo=${slug}`
       }
     };
 
     saveArticle(articleToSave);
     setIsModalOpen(false);
     onRefresh();
-    onShowToast(`Matéria "${title}" salva com sucesso!`);
+    onShowToast(`Matéria "${title}" salva com sucesso no ecossistema GRIT NEWS!`);
+  };
+
+  // Calculate article canonical URL
+  const currentSlug = title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '') || 'nova-materia';
+
+  const canonicalUrl = `https://www.gritnews.com.br/?artigo=${currentSlug}`;
+
+  // Copy share snippet to clipboard
+  const handleCopyShareText = (text: string, channel: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedShareChannel(channel);
+    onShowToast(`Post formatado para ${channel} copiado!`);
+    setTimeout(() => setCopiedShareChannel(null), 2500);
   };
 
   // SEO Score calculation
@@ -197,12 +288,20 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
   const blocksCountOk = blocks.length >= 3;
   const seoScore = [titleLengthOk, summaryOk, hasImage, blocksCountOk].filter(Boolean).length * 25;
 
+  const allMediaAssets = getMediaAssets();
+  const filteredMediaAssets = allMediaAssets.filter(m => {
+    const matchesCat = mediaPickerCategory === 'ALL' || m.category === mediaPickerCategory;
+    const matchesSearch = m.title.toLowerCase().includes(mediaPickerSearch.toLowerCase()) ||
+                          m.tags.some(t => t.toLowerCase().includes(mediaPickerSearch.toLowerCase()));
+    return matchesCat && matchesSearch;
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-[#0B2343]">CMS Editorial - Gerenciador de Artigos</h1>
-          <p className="text-sm text-[#5C6B7A]">Crie, edite, revise e agende publicações no portal</p>
+          <p className="text-sm text-[#5C6B7A]">Crie, diagrame por blocos, ilustre e publique matérias em gritnews.com.br</p>
         </div>
 
         <button
@@ -220,24 +319,46 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-[#F7F9FC] border-b border-[#E2E8F0] text-[#0B2343] font-extrabold uppercase">
               <tr>
-                <th className="p-4">Título</th>
+                <th className="p-4">Título & Capa</th>
                 <th className="p-4">Categoria</th>
+                <th className="p-4">Autor / Editor</th>
                 <th className="p-4">Status</th>
-                <th className="p-4">Visualizações</th>
-                <th className="p-4">Publicado em</th>
+                <th className="p-4">Curtidas Real</th>
+                <th className="p-4">Acessos</th>
                 <th className="p-4 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0] text-[#10233F]">
               {articles.map(art => {
                 const catName = categories.find(c => c.id === art.categoryId)?.name || 'Geral';
+                const author = authors.find(a => a.id === art.authorId);
+                const artUrl = `https://www.gritnews.com.br/?artigo=${art.slug || art.id}`;
+
                 return (
                   <tr key={art.id} className="hover:bg-[#F7F9FC] transition-colors">
                     <td className="p-4 max-w-xs">
-                      <p className="font-bold text-[#0B2343] truncate">{art.title}</p>
-                      <p className="text-[11px] text-[#5C6B7A] truncate">{art.subtitle}</p>
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={art.featuredImage} 
+                          alt={art.title} 
+                          className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                          onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=200'; }}
+                        />
+                        <div className="min-w-0">
+                          <p className="font-bold text-[#0B2343] truncate" title={art.title}>{art.title}</p>
+                          <p className="text-[11px] text-[#5C6B7A] truncate">{art.subtitle}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="p-4 font-semibold text-[#145EDB]">{catName}</td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-1.5">
+                        {author?.avatar && (
+                          <img src={author.avatar} alt={author.name} className="w-5 h-5 rounded-full object-cover" />
+                        )}
+                        <span className="font-medium text-slate-700">{author?.name || 'Redação GRIT'}</span>
+                      </div>
+                    </td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                         art.status === 'PUBLISHED' ? 'bg-[#22A06B]/10 text-[#22A06B]' : 'bg-amber-100 text-amber-800'
@@ -245,16 +366,26 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                         {art.status}
                       </span>
                     </td>
-                    <td className="p-4 font-bold">{art.viewsCount}</td>
-                    <td className="p-4 text-gray-400">
-                      {new Date(art.publishedAt).toLocaleDateString('pt-BR')}
+                    <td className="p-4 font-bold text-emerald-600">
+                      {art.likesCount} <span className="text-[10px] text-gray-400 font-normal">curtidas</span>
                     </td>
+                    <td className="p-4 font-bold text-slate-700">{art.viewsCount}</td>
                     <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(artUrl);
+                            onShowToast('Link da matéria copiado para compartilhamento!');
+                          }}
+                          className="p-1.5 text-gray-500 hover:text-[#145EDB] hover:bg-[#EAF3FF] rounded-lg"
+                          title="Copiar Link gritnews.com.br"
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleOpenEdit(art)}
                           className="p-1.5 text-[#145EDB] hover:bg-[#EAF3FF] rounded-lg"
-                          title="Editar"
+                          title="Editar Diagramação"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -279,600 +410,839 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingArticle ? 'Editar Matéria CMS' : 'Criar Nova Matéria'}
-        maxWidth="4xl"
+        title={editingArticle ? 'Editar Diagramação e Conteúdo da Matéria' : 'Criar Nova Matéria no CMS'}
+        maxWidth="5xl"
       >
-        <form onSubmit={handleSave} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#0B2343] mb-1">Título da Matéria *</label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  placeholder="Título com palavra-chave principal..."
-                  className="w-full px-4 py-2.5 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-sm font-bold text-[#0B2343]"
-                />
-              </div>
+        <div className="space-y-4">
+          {/* Modal Header Tabs */}
+          <div className="flex border-b border-[#E2E8F0] gap-4 text-xs font-bold">
+            <button
+              onClick={() => setActiveTab('editor')}
+              className={`pb-2.5 px-1 border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'editor' ? 'border-[#145EDB] text-[#145EDB]' : 'border-transparent text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span>📝 Diagramação por Blocos & Texto</span>
+            </button>
 
-              <div>
-                <label className="block text-xs font-bold text-[#0B2343] mb-1">Subtítulo / Linha fina *</label>
-                <input
-                  type="text"
-                  required
-                  value={subtitle}
-                  onChange={e => setSubtitle(e.target.value)}
-                  placeholder="Resumo explicativo para a linha fina..."
-                  className="w-full px-4 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs"
-                />
-              </div>
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`pb-2.5 px-1 border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'preview' ? 'border-[#145EDB] text-[#145EDB]' : 'border-transparent text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              <Eye className="w-4 h-4" />
+              <span>👁️ Visualizar Diagramação no Portal</span>
+            </button>
 
-              <div>
-                <label className="block text-xs font-bold text-[#0B2343] mb-1">Resumo Executivo (Meta Description)</label>
-                <textarea
-                  rows={2}
-                  value={summary}
-                  onChange={e => setSummary(e.target.value)}
-                  placeholder="Resumo de até 150 caracteres..."
-                  className="w-full px-4 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs"
-                />
-              </div>
+            <button
+              onClick={() => setActiveTab('social')}
+              className={`pb-2.5 px-1 border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'social' ? 'border-[#145EDB] text-[#145EDB]' : 'border-transparent text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              <Share2 className="w-4 h-4 text-emerald-600" />
+              <span>🚀 Engajamento & Redes Sociais</span>
+            </button>
+          </div>
 
-              {/* Block Editor & Media Manager */}
-              <div className="pt-4 border-t border-[#E2E8F0] space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <h4 className="text-sm font-bold text-[#0B2343] flex items-center gap-2">
-                    <FileImage className="w-4 h-4 text-[#145EDB]" />
-                    <span>Conteúdo do Artigo por Blocos ({blocks.length})</span>
-                  </h4>
+          {activeTab === 'editor' && (
+            <form onSubmit={handleSave} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#0B2343] mb-1">Título Principal da Matéria *</label>
+                    <input
+                      type="text"
+                      required
+                      value={title}
+                      onChange={e => setTitle(e.target.value)}
+                      placeholder="Título de alto impacto jornalístico..."
+                      className="w-full px-4 py-2.5 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-sm font-bold text-[#0B2343]"
+                    />
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowGuide(!showGuide)}
-                    className="text-[11px] text-[#145EDB] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <HelpCircle className="w-3.5 h-3.5" />
-                    <span>{showGuide ? 'Ocultar Guia de Publicação' : 'Como publicar Fotos & Vídeos?'}</span>
-                  </button>
+                  <div>
+                    <label className="block text-xs font-bold text-[#0B2343] mb-1">Subtítulo / Linha Fina</label>
+                    <input
+                      type="text"
+                      value={subtitle}
+                      onChange={e => setSubtitle(e.target.value)}
+                      placeholder="Linha fina complementando o título..."
+                      className="w-full px-4 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs text-[#0B2343]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#0B2343] mb-1">Resumo do Lead (Para Capa e SEO)</label>
+                    <textarea
+                      rows={2}
+                      value={summary}
+                      onChange={e => setSummary(e.target.value)}
+                      placeholder="Resumo claro da notícia exibido nos cards da home e no meta description..."
+                      className="w-full px-4 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs text-[#0B2343]"
+                    />
+                  </div>
+
+                  {/* Visual Diagramming Builder Section */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E8F0] pb-2">
+                      <div>
+                        <h3 className="text-xs font-black text-[#0B2343] uppercase tracking-wide flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-[#145EDB]" />
+                          <span>Diagramação por Blocos do Artigo ({blocks.length} blocos)</span>
+                        </h3>
+                        <p className="text-[11px] text-gray-500">
+                          Identifique e altere o conteúdo, fotos e mídias de cada bloco da matéria.
+                        </p>
+                      </div>
+
+                      {/* Add Block Toolbar */}
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock('paragraph')}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs rounded-lg font-bold cursor-pointer"
+                        >
+                          + Parágrafo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock('heading2')}
+                          className="px-2.5 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-900 text-xs rounded-lg font-bold cursor-pointer"
+                        >
+                          + Título H2
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock('image')}
+                          className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-bold flex items-center gap-1 cursor-pointer shadow-2xs"
+                        >
+                          <ImageIcon className="w-3.5 h-3.5" />
+                          <span>+ Bloco Foto</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock('video')}
+                          className="px-2.5 py-1.5 bg-purple-700 hover:bg-purple-800 text-white text-xs rounded-lg font-bold flex items-center gap-1 cursor-pointer shadow-2xs"
+                        >
+                          <VideoIcon className="w-3.5 h-3.5" />
+                          <span>+ Bloco Vídeo</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock('callout')}
+                          className="px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-900 text-xs rounded-lg font-bold cursor-pointer"
+                        >
+                          + Destaque
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock('quote')}
+                          className="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs rounded-lg font-bold cursor-pointer"
+                        >
+                          + Citação
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Quick Photo Acervo Bar */}
+                    <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3 space-y-2 text-xs">
+                      <div className="flex justify-between items-center">
+                        <span className="font-extrabold text-[#10233F] flex items-center gap-1.5">
+                          📸 Fotos do Acervo TenPets & Matérias para Inserir num Clique:
+                        </span>
+                        <span className="text-[10px] text-amber-800">Clique para adicionar bloco pré-configurado</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { title: '1. Resgate na Praça', url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200' },
+                          { title: '2. Quarto de Hospital', url: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&q=80&w=1200' },
+                          { title: '3. Acupuntura & Lacinhos', url: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200' },
+                          { title: '4. Fisioterapia Dra. Renata', url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=1200' },
+                          { title: '5. Bandana Floral', url: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&q=80&w=1200' },
+                          { title: '6. Sorriso Varanda', url: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1200' },
+                          { title: '7. Princesa Coroa', url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=1200' },
+                        ].map((p, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleAddBlock('image', p.url, `📷 ${p.title}`)}
+                            className="bg-white hover:bg-amber-100 text-slate-800 border border-amber-300 rounded-lg px-2.5 py-1 text-[11px] font-bold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <img src={p.url} alt={p.title} className="w-4 h-4 rounded object-cover" />
+                            <span>+ {p.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Rendered Blocks List */}
+                    <div className="space-y-3">
+                      {blocks.map((block, idx) => (
+                        <div key={block.id} className="p-3.5 bg-white border border-[#E2E8F0] rounded-2xl space-y-3 shadow-2xs hover:border-[#145EDB]/40 transition-colors">
+                          {/* Block Controls Header */}
+                          <div className="flex items-center justify-between text-xs font-bold border-b border-[#E2E8F0] pb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-gray-400 font-mono">#{idx + 1}</span>
+                              <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
+                                block.type === 'image' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                                block.type === 'video' ? 'bg-purple-100 text-purple-900 border border-purple-300' :
+                                block.type === 'heading2' ? 'bg-blue-100 text-blue-800' :
+                                block.type === 'callout' ? 'bg-sky-100 text-sky-800' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {block.type === 'image' ? '📷 Bloco de Imagem Diagramada' :
+                                 block.type === 'video' ? '🎥 Bloco de Vídeo Embed' :
+                                 block.type === 'heading2' ? '📌 Título H2 de Seção' :
+                                 block.type === 'callout' ? '💡 Chamada de Destaque' :
+                                 block.type === 'quote' ? '💬 Citação em Aspas' : '📝 Parágrafo de Texto'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleMoveBlock(idx, 'up')}
+                                disabled={idx === 0}
+                                className="p-1 text-gray-500 hover:text-[#145EDB] disabled:opacity-30 cursor-pointer"
+                                title="Mover Bloco para Cima"
+                              >
+                                <ArrowUp className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveBlock(idx, 'down')}
+                                disabled={idx === blocks.length - 1}
+                                className="p-1 text-gray-500 hover:text-[#145EDB] disabled:opacity-30 cursor-pointer"
+                                title="Mover Bloco para Baixo"
+                              >
+                                <ArrowDown className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveBlock(block.id)}
+                                className="p-1 text-red-500 hover:bg-red-50 rounded font-bold cursor-pointer ml-1"
+                                title="Excluir Bloco"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Image Block Controls */}
+                          {block.type === 'image' ? (
+                            <div className="space-y-3">
+                              <div className="flex flex-col sm:flex-row gap-2 items-center">
+                                <input
+                                  type="text"
+                                  value={block.content}
+                                  onChange={e => handleUpdateBlock(block.id, e.target.value)}
+                                  placeholder="URL ou Caminho da Imagem (https://...)"
+                                  className="w-full sm:flex-1 p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-mono"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenMediaPicker(block.id)}
+                                  className="w-full sm:w-auto bg-[#145EDB] hover:bg-[#0f4bb3] text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs"
+                                >
+                                  <ImageIcon className="w-3.5 h-3.5" />
+                                  <span>Escolher do Acervo</span>
+                                </button>
+
+                                <label className="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs">
+                                  <Upload className="w-3.5 h-3.5" />
+                                  <span>Upload</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = (evt) => {
+                                          if (evt.target?.result) {
+                                            handleUpdateBlock(block.id, evt.target.result as string);
+                                            onShowToast('Foto carregada no bloco!');
+                                          }
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              </div>
+
+                              <input
+                                type="text"
+                                value={block.caption || ''}
+                                onChange={e => handleUpdateBlockCaption(block.id, e.target.value)}
+                                placeholder="Legenda da imagem (ex: 📷 Foto do resgate da Husky Vida...)"
+                                className="w-full p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs italic"
+                              />
+
+                              {/* Rendered Image Live Preview */}
+                              {block.content && (
+                                <div className="bg-slate-900 p-2.5 rounded-2xl border border-slate-700 space-y-1.5">
+                                  <div className="flex items-center justify-between text-[10px] text-emerald-400 font-bold px-1">
+                                    <span>Visualização Formatada do Bloco de Imagem</span>
+                                    <span className="text-slate-400">Renderização no Artigo</span>
+                                  </div>
+                                  <div className="relative aspect-video max-h-52 w-full rounded-xl overflow-hidden bg-black border border-slate-800">
+                                    <img
+                                      src={block.content}
+                                      alt="Preview"
+                                      className="w-full h-full object-contain"
+                                      onError={(e) => {
+                                        e.currentTarget.src = "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800";
+                                      }}
+                                    />
+                                  </div>
+                                  {block.caption && (
+                                    <p className="text-[11px] text-slate-300 italic text-center px-2">
+                                      {block.caption}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ) : block.type === 'video' ? (
+                            <div className="space-y-3">
+                              <div className="flex flex-col sm:flex-row gap-2 items-center">
+                                <input
+                                  type="text"
+                                  value={block.content}
+                                  onChange={e => handleUpdateBlock(block.id, e.target.value)}
+                                  placeholder="URL do Vídeo (YouTube embed, Vimeo, MP4)"
+                                  className="w-full sm:flex-1 p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-mono"
+                                />
+
+                                <label className="w-full sm:w-auto bg-purple-900 hover:bg-purple-950 text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs">
+                                  <Film className="w-3.5 h-3.5 text-amber-400" />
+                                  <span>Upload Vídeo</span>
+                                  <input
+                                    type="file"
+                                    accept="video/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = (evt) => {
+                                          if (evt.target?.result) {
+                                            handleUpdateBlock(block.id, evt.target.result as string);
+                                            onShowToast('Vídeo carregado no bloco do artigo!');
+                                          }
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              </div>
+
+                              <input
+                                type="text"
+                                value={block.caption || ''}
+                                onChange={e => handleUpdateBlockCaption(block.id, e.target.value)}
+                                placeholder="Legenda do vídeo..."
+                                className="w-full p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs italic"
+                              />
+
+                              {block.content && (
+                                <div className="bg-slate-950 p-2.5 rounded-2xl border border-slate-800 space-y-1.5 text-white">
+                                  <div className="flex items-center justify-between text-[10px] text-amber-400 font-bold px-1">
+                                    <span>Visualização Formatada do Vídeo</span>
+                                  </div>
+                                  <div className="relative aspect-video max-h-56 w-full rounded-xl overflow-hidden bg-black border border-slate-800">
+                                    {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') || block.content.includes('youtu.be') ? (
+                                      <iframe
+                                        src={formatEmbedUrl(block.content)}
+                                        title="Preview Vídeo"
+                                        className="w-full h-full border-0"
+                                        allowFullScreen
+                                      />
+                                    ) : (
+                                      <video src={block.content} controls className="w-full h-full object-contain" />
+                                    )}
+                                  </div>
+                                  {block.caption && (
+                                    <p className="text-[11px] text-slate-300 italic text-center px-2">
+                                      {block.caption}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <textarea
+                              rows={block.type === 'paragraph' ? 3 : block.type === 'heading2' ? 1 : 2}
+                              value={block.content}
+                              onChange={e => handleUpdateBlock(block.id, e.target.value)}
+                              placeholder={block.type === 'heading2' ? 'Título H2 da Seção...' : 'Digite o conteúdo do texto...'}
+                              className={`w-full p-2.5 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs ${
+                                block.type === 'heading2' ? 'font-black text-slate-900 text-sm' :
+                                block.type === 'callout' ? 'bg-sky-50/60 border-sky-200 text-sky-900 font-medium' :
+                                block.type === 'quote' ? 'italic font-serif border-amber-200 bg-amber-50/50' : 'text-slate-800'
+                              }`}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Step-by-step Publishing Instructions Banner */}
-                {showGuide && (
-                  <div className="bg-sky-50/90 border border-sky-200 rounded-2xl p-3.5 text-xs text-sky-950 space-y-2.5 animate-fadeIn">
-                    <div className="flex items-center gap-2 font-bold text-sky-900 border-b border-sky-200/80 pb-2">
-                      <Info className="w-4 h-4 text-sky-600 shrink-0" />
-                      <span>Guia Prático: Como Inserir e Renderizar Fotos & Vídeos em cada Bloco</span>
+                {/* Sidebar Controls & Cover Manager */}
+                <div className="space-y-4">
+                  <div className="p-4 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl space-y-3.5">
+                    <h4 className="text-xs font-bold uppercase text-[#0B2343] border-b border-[#E2E8F0] pb-2">Configurações & Capa</h4>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Categoria *</label>
+                      <select
+                        value={categoryId}
+                        onChange={e => setCategoryId(e.target.value)}
+                        className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold"
+                      >
+                        {categories.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-[11px]">
-                      <div className="bg-white/80 p-2.5 rounded-xl border border-sky-100 space-y-1">
-                        <p className="font-bold text-sky-900 flex items-center gap-1">
-                          <Upload className="w-3 h-3 text-sky-600" />
-                          <span>1. Upload Direto</span>
-                        </p>
-                        <p className="text-slate-600 leading-snug">
-                          Clique em <strong>"Upload Foto"</strong> ou <strong>"Upload Vídeo"</strong> em qualquer bloco para enviar arquivos do seu celular ou computador. Ele é renderizado instantaneamente!
-                        </p>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[11px] font-bold text-[#0B2343]">Autor / Editor Responsável *</label>
+                        <button
+                          type="button"
+                          onClick={() => setIsNewAuthorOpen(true)}
+                          className="text-[10px] text-[#145EDB] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          <span>+ Novo Editor</span>
+                        </button>
                       </div>
+                      <select
+                        value={authorId}
+                        onChange={e => setAuthorId(e.target.value)}
+                        className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold"
+                      >
+                        {authors.map(a => (
+                          <option key={a.id} value={a.id}>{a.name} — {a.roleTitle}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                      <div className="bg-white/80 p-2.5 rounded-xl border border-sky-100 space-y-1">
-                        <p className="font-bold text-sky-900 flex items-center gap-1">
-                          <ImageIcon className="w-3 h-3 text-emerald-600" />
-                          <span>2. Fotos Locais do Projeto</span>
-                        </p>
-                        <p className="text-slate-600 leading-snug">
-                          Adicione suas fotos na pasta <code className="bg-slate-100 px-1 rounded text-[10px]">/public/images/</code> ou vídeos em <code className="bg-slate-100 px-1 rounded text-[10px]">/public/videos/</code> e digite <code className="bg-slate-100 px-1 rounded text-[10px]">/images/nome.jpg</code>.
-                        </p>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[11px] font-bold text-[#0B2343]">Imagem de Capa (Featured Image) *</label>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenMediaPicker('featured')}
+                          className="text-[10px] text-[#145EDB] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <ImageIcon className="w-3 h-3" />
+                          <span>Acervo</span>
+                        </button>
                       </div>
+                      <input
+                        type="text"
+                        value={featuredImage}
+                        onChange={e => setFeaturedImage(e.target.value)}
+                        placeholder="URL da Capa (https://...)"
+                        className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-mono"
+                      />
 
-                      <div className="bg-white/80 p-2.5 rounded-xl border border-sky-100 space-y-1">
-                        <p className="font-bold text-sky-900 flex items-center gap-1">
-                          <VideoIcon className="w-3 h-3 text-purple-600" />
-                          <span>3. YouTube, Vimeo ou CDN</span>
-                        </p>
-                        <p className="text-slate-600 leading-snug">
-                          Cole links de vídeos do YouTube (<code className="bg-slate-100 px-1 rounded text-[10px]">youtube.com/watch?v=...</code>) ou imagens da sua hospedagem Hostinger/Unsplash.
-                        </p>
+                      {featuredImage && (
+                        <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs mt-2">
+                          <img
+                            src={featuredImage}
+                            alt="Capa Preview"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=800";
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Tags (separadas por vírgula)</label>
+                      <input
+                        type="text"
+                        value={tagsInput}
+                        onChange={e => setTagsInput(e.target.value)}
+                        className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs"
+                      />
+                    </div>
+
+                    {/* Spotlight Controls */}
+                    <div className="pt-3 border-t border-[#E2E8F0] space-y-2.5">
+                      <label className="block text-[11px] font-extrabold text-[#0B2343] uppercase tracking-wide">
+                        🎯 Posição de Destaque
+                      </label>
+
+                      <div className="space-y-1.5 text-xs">
+                        <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                          isUrgent ? 'bg-red-50 border-red-300 text-red-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={isUrgent}
+                            onChange={e => setIsUrgent(e.target.checked)}
+                            className="mt-0.5 rounded text-red-600 focus:ring-red-500"
+                          />
+                          <div>
+                            <span className="block font-bold">📌 Manchete Principal Top Hero</span>
+                            <span className="text-[10px] text-slate-500 font-normal">Destaque máximo na Home.</span>
+                          </div>
+                        </label>
+
+                        <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                          isEvergreen ? 'bg-blue-50 border-blue-300 text-blue-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={isEvergreen}
+                            onChange={e => setIsEvergreen(e.target.checked)}
+                            className="mt-0.5 rounded text-[#145EDB] focus:ring-[#145EDB]"
+                          />
+                          <div>
+                            <span className="block font-bold">⭐ Destaque Secundário</span>
+                            <span className="text-[10px] text-slate-500 font-normal">Carrosséis nobres do portal.</span>
+                          </div>
+                        </label>
+
+                        <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
+                          isSponsored ? 'bg-amber-50 border-amber-300 text-amber-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={isSponsored}
+                            onChange={e => setIsSponsored(e.target.checked)}
+                            className="mt-0.5 rounded text-[#FF8500] focus:ring-[#FF8500]"
+                          />
+                          <div>
+                            <span className="block font-bold">🤝 Conteúdo Patrocinado</span>
+                            <span className="text-[10px] text-slate-500 font-normal">Sinaliza selo de marca.</span>
+                          </div>
+                        </label>
                       </div>
                     </div>
+                  </div>
+
+                  {/* SEO Score */}
+                  <div className="p-4 bg-[#EAF3FF] border border-[#145EDB]/30 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#0B2343]">Score SEO & Qualidade:</span>
+                      <span className="text-sm font-black text-[#145EDB]">{seoScore}/100</span>
+                    </div>
+                    <div className="w-full bg-white h-2 rounded-full overflow-hidden">
+                      <div className="bg-[#145EDB] h-full" style={{ width: `${seoScore}%` }} />
+                    </div>
+                    <ul className="text-[11px] space-y-1 text-[#5C6B7A] pt-1">
+                      <li className={titleLengthOk ? 'text-[#22A06B] font-bold' : ''}>• Título ideal (30-70 chars)</li>
+                      <li className={summaryOk ? 'text-[#22A06B] font-bold' : ''}>• Lead/Resumo preenchido</li>
+                      <li className={hasImage ? 'text-[#22A06B] font-bold' : ''}>• Foto de capa configurada</li>
+                      <li className={blocksCountOk ? 'text-[#22A06B] font-bold' : ''}>• Mínimo 3 blocos diagramados</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#E2E8F0]">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#5C6B7A]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-[#145EDB] hover:bg-[#0f4eb8] text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Salvar e Publicar em gritnews.com.br</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Tab 2: Live Article Diagram Preview */}
+          {activeTab === 'preview' && (
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto p-4 bg-slate-900 text-slate-100 rounded-2xl border border-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                  <Eye className="w-4 h-4" />
+                  Simulação de Diagramação Real em gritnews.com.br
+                </span>
+                <span className="text-[11px] text-slate-400 font-mono">{canonicalUrl}</span>
+              </div>
+
+              {/* Simulated Article Layout */}
+              <div className="max-w-3xl mx-auto bg-white text-slate-900 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                <div>
+                  <span className="text-xs font-extrabold text-[#145EDB] uppercase tracking-wide">
+                    {categories.find(c => c.id === categoryId)?.name || 'Categoria'}
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-black text-[#10233F] mt-1 leading-tight">
+                    {title || 'Título da Matéria'}
+                  </h1>
+                  {subtitle && (
+                    <p className="text-sm text-slate-600 font-medium mt-2 leading-relaxed">{subtitle}</p>
+                  )}
+                </div>
+
+                {featuredImage && (
+                  <div className="rounded-xl overflow-hidden border border-slate-200">
+                    <img src={featuredImage} alt={title} className="w-full h-auto object-cover max-h-96" />
                   </div>
                 )}
 
-                {/* Add Block Toolbar */}
-                <div className="flex flex-wrap items-center gap-1.5 bg-[#F7F9FC] p-2 rounded-xl border border-[#E2E8F0]">
-                  <span className="text-[11px] font-bold text-gray-500 mr-1">Inserir:</span>
-                  <button
-                    type="button"
-                    onClick={() => handleAddBlock('paragraph')}
-                    className="px-2.5 py-1.5 bg-white text-slate-800 text-xs rounded-lg font-bold border border-slate-200 hover:bg-slate-100 cursor-pointer shadow-2xs"
-                  >
-                    + Parágrafo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddBlock('heading2')}
-                    className="px-2.5 py-1.5 bg-white text-slate-800 text-xs rounded-lg font-bold border border-slate-200 hover:bg-slate-100 cursor-pointer shadow-2xs"
-                  >
-                    + Título H2
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddBlock('image')}
-                    className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                  >
-                    <ImageIcon className="w-3.5 h-3.5" />
-                    <span>+ Bloco Foto</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddBlock('video')}
-                    className="px-2.5 py-1.5 bg-purple-700 hover:bg-purple-800 text-white text-xs rounded-lg font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                  >
-                    <VideoIcon className="w-3.5 h-3.5" />
-                    <span>+ Bloco Vídeo</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddBlock('callout')}
-                    className="px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-900 text-xs rounded-lg font-bold cursor-pointer"
-                  >
-                    + Destaque
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddBlock('quote')}
-                    className="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs rounded-lg font-bold cursor-pointer"
-                  >
-                    + Citação
-                  </button>
-                </div>
-
-                {/* Article Photos Quick Picker */}
-                <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-3 space-y-2 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="font-extrabold text-[#10233F] flex items-center gap-1.5">
-                      📸 Fotos do Acervo TenPets & Matérias para Inserir num Clique:
-                    </span>
-                    <span className="text-[10px] text-amber-800">Clique no botão para criar o bloco da foto</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { title: '1. Resgate na Praça', url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200' },
-                      { title: '2. Quarto de Hospital', url: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&q=80&w=1200' },
-                      { title: '3. Acupuntura & Lacinhos', url: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=1200' },
-                      { title: '4. Fisioterapia Dra. Renata', url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=1200' },
-                      { title: '5. Bandana Floral', url: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&q=80&w=1200' },
-                      { title: '6. Sorriso Varanda', url: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1200' },
-                      { title: '7. Princesa Coroa', url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=1200' },
-                    ].map((p, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleAddBlock('image', p.url, `📷 ${p.title}`)}
-                        className="bg-white hover:bg-amber-100 text-slate-800 border border-amber-300 rounded-lg px-2.5 py-1 text-[11px] font-bold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <img src={p.url} alt={p.title} className="w-4 h-4 rounded object-cover" />
-                        <span>+ {p.title}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Render Blocks with Live Media & Controls */}
-                <div className="space-y-3">
+                {/* Blocks Output Simulation */}
+                <div className="space-y-4 text-sm leading-relaxed text-slate-800">
                   {blocks.map((block, idx) => (
-                    <div key={block.id} className="p-3.5 bg-white border border-[#E2E8F0] rounded-2xl space-y-3 shadow-2xs hover:border-[#145EDB]/40 transition-colors">
-                      {/* Block Controls Header */}
-                      <div className="flex items-center justify-between text-xs font-bold border-b border-[#E2E8F0] pb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-gray-400 font-mono">#{idx + 1}</span>
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
-                            block.type === 'image' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
-                            block.type === 'video' ? 'bg-purple-100 text-purple-900 border border-purple-300' :
-                            block.type === 'heading2' ? 'bg-blue-100 text-blue-800' :
-                            block.type === 'callout' ? 'bg-sky-100 text-sky-800' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {block.type === 'image' ? '📷 Bloco de Imagem' :
-                             block.type === 'video' ? '🎥 Bloco de Vídeo' :
-                             block.type === 'heading2' ? '📌 Título H2' :
-                             block.type === 'callout' ? '💡 Destaque' :
-                             block.type === 'quote' ? '💬 Citação' : '📝 Parágrafo'}
-                          </span>
-                        </div>
-
-                        {/* Action Buttons: Move Up, Move Down, Delete */}
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleMoveBlock(idx, 'up')}
-                            disabled={idx === 0}
-                            className="p-1 text-gray-500 hover:text-[#145EDB] disabled:opacity-30 cursor-pointer"
-                            title="Mover para Cima"
-                          >
-                            <ArrowUp className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleMoveBlock(idx, 'down')}
-                            disabled={idx === blocks.length - 1}
-                            className="p-1 text-gray-500 hover:text-[#145EDB] disabled:opacity-30 cursor-pointer"
-                            title="Mover para Baixo"
-                          >
-                            <ArrowDown className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveBlock(block.id)}
-                            className="p-1 text-red-500 hover:bg-red-50 rounded font-bold cursor-pointer ml-1"
-                            title="Remover Bloco"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Block Specific Input & Live Visual Render */}
-                      {block.type === 'image' ? (
-                        <div className="space-y-3">
-                          <div className="flex flex-col sm:flex-row gap-2 items-center">
-                            <input
-                              type="text"
-                              value={block.content}
-                              onChange={e => handleUpdateBlock(block.id, e.target.value)}
-                              placeholder="Caminho da Imagem (/images/exemplo.jpg ou https://...)"
-                              className="w-full sm:flex-1 p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-mono"
-                            />
-
-                            <label className="w-full sm:w-auto bg-[#145EDB] hover:bg-[#0f4bb3] text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs">
-                              <Upload className="w-3.5 h-3.5" />
-                              <span>Upload Foto</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (evt) => {
-                                      if (evt.target?.result) {
-                                        handleUpdateBlock(block.id, evt.target.result as string);
-                                        onShowToast('Foto carregada e inserida no bloco com sucesso!');
-                                      }
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
-                                }}
-                              />
-                            </label>
-                          </div>
-
-                          <input
-                            type="text"
-                            value={block.caption || ''}
-                            onChange={e => handleUpdateBlockCaption(block.id, e.target.value)}
-                            placeholder="Legenda da imagem (ex: 📷 Foto do resgate realizado em 2026...)"
-                            className="w-full p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs italic"
-                          />
-
-                          {/* Rendered Image Preview in Article Format */}
-                          {block.content && (
-                            <div className="bg-slate-900 p-2 rounded-2xl border border-slate-700 space-y-1.5">
-                              <div className="flex items-center justify-between text-[10px] text-emerald-400 font-bold px-1">
-                                <span>Visualização Formatada da Imagem no Artigo</span>
-                                <span className="text-slate-400">Renderização em Tempo Real</span>
-                              </div>
-                              <div className="relative aspect-video max-h-52 w-full rounded-xl overflow-hidden bg-black border border-slate-800">
-                                <img
-                                  src={block.content}
-                                  alt="Preview"
-                                  className="w-full h-full object-contain"
-                                  onError={(e) => {
-                                    e.currentTarget.src = "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800";
-                                  }}
-                                />
-                              </div>
-                              {block.caption && (
-                                <p className="text-[11px] text-slate-300 italic text-center px-2">
-                                  {block.caption}
-                                </p>
-                              )}
-                            </div>
+                    <div key={block.id || idx}>
+                      {block.type === 'heading2' && (
+                        <h2 className="text-lg font-black text-[#10233F] mt-6 mb-2">{block.content}</h2>
+                      )}
+                      {block.type === 'paragraph' && (
+                        <p className="whitespace-pre-line text-slate-700">{block.content}</p>
+                      )}
+                      {block.type === 'image' && block.content && (
+                        <figure className="my-4 space-y-2">
+                          <img src={block.content} alt={block.caption || 'Foto'} className="w-full rounded-xl border border-slate-200 max-h-96 object-cover" />
+                          {block.caption && (
+                            <figcaption className="text-xs text-slate-500 italic text-center">{block.caption}</figcaption>
                           )}
+                        </figure>
+                      )}
+                      {block.type === 'callout' && (
+                        <div className="p-4 bg-sky-50 border-l-4 border-[#145EDB] rounded-r-xl text-sky-950 font-medium my-4">
+                          {block.content}
                         </div>
-                      ) : block.type === 'video' ? (
-                        <div className="space-y-3">
-                          <div className="flex flex-col sm:flex-row gap-2 items-center">
-                            <input
-                              type="text"
-                              value={block.content}
-                              onChange={e => handleUpdateBlock(block.id, e.target.value)}
-                              placeholder="URL do Vídeo (YouTube embed, Vimeo, MP4 ou /videos/nome.mp4)"
-                              className="w-full sm:flex-1 p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-mono"
-                            />
-
-                            <label className="w-full sm:w-auto bg-purple-900 hover:bg-purple-950 text-white px-3 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-2xs">
-                              <Film className="w-3.5 h-3.5 text-amber-400" />
-                              <span>Upload Vídeo</span>
-                              <input
-                                type="file"
-                                accept="video/*"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (evt) => {
-                                      if (evt.target?.result) {
-                                        handleUpdateBlock(block.id, evt.target.result as string);
-                                        onShowToast('Vídeo real carregado no bloco do artigo!');
-                                      }
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
-                                }}
-                              />
-                            </label>
-                          </div>
-
-                          <input
-                            type="text"
-                            value={block.caption || ''}
-                            onChange={e => handleUpdateBlockCaption(block.id, e.target.value)}
-                            placeholder="Legenda do vídeo (ex: 🎥 Registro em vídeo do procedimento...)"
-                            className="w-full p-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs italic"
-                          />
-
-                          {/* Rendered Video Preview in Article Format */}
-                          {block.content && (
-                            <div className="bg-slate-950 p-2.5 rounded-2xl border border-slate-800 space-y-1.5 text-white">
-                              <div className="flex items-center justify-between text-[10px] text-amber-400 font-bold px-1">
-                                <span>Visualização Formatada do Vídeo no Artigo</span>
-                                <span className="text-slate-400">Player em Tempo Real</span>
-                              </div>
-                              <div className="relative aspect-video max-h-56 w-full rounded-xl overflow-hidden bg-black border border-slate-800">
-                                {block.content.includes('youtube') || block.content.includes('vimeo') || block.content.includes('embed') || block.content.includes('youtu.be') ? (
-                                  <iframe
-                                    src={formatEmbedUrl(block.content)}
-                                    title="Preview Vídeo"
-                                    className="w-full h-full border-0"
-                                    allowFullScreen
-                                  />
-                                ) : (
-                                  <video src={block.content} controls className="w-full h-full object-contain" />
-                                )}
-                              </div>
-                              {block.caption && (
-                                <p className="text-[11px] text-slate-300 italic text-center px-2">
-                                  {block.caption}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <textarea
-                          rows={block.type === 'paragraph' ? 3 : block.type === 'heading2' ? 1 : 2}
-                          value={block.content}
-                          onChange={e => handleUpdateBlock(block.id, e.target.value)}
-                          placeholder={block.type === 'heading2' ? 'Título H2 da Seção...' : 'Digite o conteúdo do texto...'}
-                          className={`w-full p-2.5 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs ${
-                            block.type === 'heading2' ? 'font-black text-slate-900 text-sm' :
-                            block.type === 'callout' ? 'bg-sky-50/60 border-sky-200 text-sky-900 font-medium' :
-                            block.type === 'quote' ? 'italic font-serif border-amber-200 bg-amber-50/50' : 'text-slate-800'
-                          }`}
-                        />
+                      )}
+                      {block.type === 'quote' && (
+                        <blockquote className="p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl italic font-serif text-amber-950 my-4">
+                          {block.content}
+                        </blockquote>
                       )}
                     </div>
                   ))}
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Sidebar Controls & Cover Manager */}
-            <div className="space-y-4">
-              <div className="p-4 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl space-y-3.5">
-                <h4 className="text-xs font-bold uppercase text-[#0B2343] border-b border-[#E2E8F0] pb-2">Configurações & Capa</h4>
-
+          {/* Tab 3: Social Media & Engagement Generator */}
+          {activeTab === 'social' && (
+            <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Categoria *</label>
-                  <select
-                    value={categoryId}
-                    onChange={e => setCategoryId(e.target.value)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold"
-                  >
-                    {categories.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                  <h3 className="text-sm font-black text-[#10233F] flex items-center gap-2">
+                    <Share2 className="w-4 h-4 text-[#145EDB]" />
+                    Central de Engajamento & Divulgação Multicanal
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Textos pré-formatados com a URL oficial gritnews.com.br para amplificar leituras e repercussão.
+                  </p>
                 </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Autor *</label>
-                  <select
-                    value={authorId}
-                    onChange={e => setAuthorId(e.target.value)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold"
-                  >
-                    {authors.map(a => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Status da Matéria</label>
-                  <select
-                    value={status}
-                    onChange={e => setStatus(e.target.value as ArticleStatus)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold"
-                  >
-                    <option value="DRAFT">Rascunho</option>
-                    <option value="IN_REVIEW">Em Revisão</option>
-                    <option value="SCHEDULED">Agendado</option>
-                    <option value="PUBLISHED">Publicado</option>
-                  </select>
-                </div>
-
-                {/* Cover Image Manager with Upload & Preview */}
-                <div className="space-y-2 pt-2 border-t border-[#E2E8F0]">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-[11px] font-bold text-[#0B2343]">Imagem de Capa do Artigo *</label>
-                    <label className="text-[10px] text-[#145EDB] hover:underline font-bold cursor-pointer flex items-center gap-1">
-                      <Upload className="w-3 h-3" />
-                      <span>Upload Capa</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (evt) => {
-                              if (evt.target?.result) {
-                                setFeaturedImage(evt.target.result as string);
-                                onShowToast('Nova foto de capa definida!');
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-
-                  <input
-                    type="text"
-                    value={featuredImage}
-                    onChange={e => setFeaturedImage(e.target.value)}
-                    placeholder="URL da Capa (/images/... ou https://...)"
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-mono"
-                  />
-
-                  {featuredImage && (
-                    <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs">
-                      <img
-                        src={featuredImage}
-                        alt="Capa Preview"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=800";
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-[#0B2343] mb-1">Tags (separadas por vírgula)</label>
-                  <input
-                    type="text"
-                    value={tagsInput}
-                    onChange={e => setTagsInput(e.target.value)}
-                    className="w-full p-2 bg-white border border-[#E2E8F0] rounded-xl text-xs"
-                  />
-                </div>
-
-                {/* Spotlight & Placement Controls */}
-                <div className="pt-3 border-t border-[#E2E8F0] space-y-2.5">
-                  <label className="block text-[11px] font-extrabold text-[#0B2343] uppercase tracking-wide">
-                    🎯 Posição de Publicação & Destaque
-                  </label>
-
-                  <div className="space-y-1.5 text-xs">
-                    <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
-                      isUrgent ? 'bg-red-50 border-red-300 text-red-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
-                    }`}>
-                      <input
-                        type="checkbox"
-                        checked={isUrgent}
-                        onChange={e => setIsUrgent(e.target.checked)}
-                        className="mt-0.5 rounded text-red-600 focus:ring-red-500"
-                      />
-                      <div>
-                        <span className="block font-bold">📌 Manchete Principal da Capa (Top Hero)</span>
-                        <span className="text-[10px] text-slate-500 font-normal">Exibição no topo da Home com badge de destaque e card expandido.</span>
-                      </div>
-                    </label>
-
-                    <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
-                      isEvergreen ? 'bg-blue-50 border-blue-300 text-blue-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
-                    }`}>
-                      <input
-                        type="checkbox"
-                        checked={isEvergreen}
-                        onChange={e => setIsEvergreen(e.target.checked)}
-                        className="mt-0.5 rounded text-[#145EDB] focus:ring-[#145EDB]"
-                      />
-                      <div>
-                        <span className="block font-bold">⭐ Destaque Secundário / Carrossel</span>
-                        <span className="text-[10px] text-slate-500 font-normal">Matéria de destaque em carrosséis e barras laterais nobres.</span>
-                      </div>
-                    </label>
-
-                    <label className={`flex items-start gap-2.5 p-2 rounded-xl border cursor-pointer transition-all ${
-                      isSponsored ? 'bg-amber-50 border-amber-300 text-amber-950 font-bold' : 'bg-white border-[#E2E8F0] text-slate-700 hover:bg-slate-50'
-                    }`}>
-                      <input
-                        type="checkbox"
-                        checked={isSponsored}
-                        onChange={e => setIsSponsored(e.target.checked)}
-                        className="mt-0.5 rounded text-[#FF8500] focus:ring-[#FF8500]"
-                      />
-                      <div>
-                        <span className="block font-bold">🤝 Conteúdo Patrocinado</span>
-                        <span className="text-[10px] text-slate-500 font-normal">Sinaliza selo de parceiro/patrocinado.</span>
-                      </div>
-                    </label>
-                  </div>
-                </div>
+                <span className="text-xs font-mono text-[#145EDB] font-bold bg-blue-100 px-3 py-1 rounded-full">
+                  gritnews.com.br
+                </span>
               </div>
 
-              {/* SEO Checklist Card */}
-              <div className="p-4 bg-[#EAF3FF] border border-[#145EDB]/30 rounded-2xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#0B2343]">Score SEO & E-E-A-T:</span>
-                  <span className="text-sm font-black text-[#145EDB]">{seoScore}/100</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* WhatsApp Channel */}
+                <div className="p-4 bg-white border border-emerald-200 rounded-2xl space-y-2 shadow-2xs">
+                  <div className="flex items-center justify-between text-xs font-bold text-emerald-800">
+                    <span className="flex items-center gap-1.5">
+                      <MessageCircle className="w-4 h-4 text-emerald-600" /> WhatsApp & Grupos B2B
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyShareText(`📰 *${title}*\n\n${summary}\n\nLeia completa no GRIT NEWS:\n${canonicalUrl}`, 'WhatsApp')}
+                      className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      {copiedShareChannel === 'WhatsApp' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedShareChannel === 'WhatsApp' ? 'Copiado!' : 'Copiar Text'}</span>
+                    </button>
+                  </div>
+                  <pre className="p-2.5 bg-slate-900 text-emerald-300 rounded-xl text-[11px] whitespace-pre-wrap font-mono">
+                    {`📰 *${title || 'Título'}*\n\n${summary || 'Resumo da notícia...'}\n\nLeia completa no GRIT NEWS:\n${canonicalUrl}`}
+                  </pre>
                 </div>
-                <div className="w-full bg-white h-2 rounded-full overflow-hidden">
-                  <div className="bg-[#145EDB] h-full" style={{ width: `${seoScore}%` }} />
+
+                {/* LinkedIn Channel */}
+                <div className="p-4 bg-white border border-blue-200 rounded-2xl space-y-2 shadow-2xs">
+                  <div className="flex items-center justify-between text-xs font-bold text-blue-900">
+                    <span className="flex items-center gap-1.5">
+                      <Linkedin className="w-4 h-4 text-[#0077B5]" /> LinkedIn & Artigo Corporativo
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyShareText(`🚀 ${title}\n\n${subtitle || summary}\n\nConfira a análise em profundidade no GRIT NEWS:\n${canonicalUrl}\n\n#GritNews #Mercado #Inovacao`, 'LinkedIn')}
+                      className="px-2.5 py-1 bg-[#0077B5] text-white rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      {copiedShareChannel === 'LinkedIn' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedShareChannel === 'LinkedIn' ? 'Copiado!' : 'Copiar Text'}</span>
+                    </button>
+                  </div>
+                  <pre className="p-2.5 bg-slate-900 text-sky-300 rounded-xl text-[11px] whitespace-pre-wrap font-mono">
+                    {`🚀 ${title || 'Título'}\n\n${subtitle || summary || 'Lead da matéria...'}\n\nConfira no GRIT NEWS:\n${canonicalUrl}\n\n#GritNews #Mercado`}
+                  </pre>
                 </div>
-                <ul className="text-[11px] space-y-1 text-[#5C6B7A] pt-1">
-                  <li className={titleLengthOk ? 'text-[#22A06B] font-bold' : ''}>
-                    • Título entre 30 e 70 caracteres
-                  </li>
-                  <li className={summaryOk ? 'text-[#22A06B] font-bold' : ''}>
-                    • Resumo/Meta description preenchido
-                  </li>
-                  <li className={hasImage ? 'text-[#22A06B] font-bold' : ''}>
-                    • Imagem em alta resolução definida
-                  </li>
-                  <li className={blocksCountOk ? 'text-[#22A06B] font-bold' : ''}>
-                    • Mínimo de 3 blocos de conteúdo
-                  </li>
-                </ul>
               </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Media Picker Selector Modal */}
+      <Modal
+        isOpen={isMediaPickerOpen}
+        onClose={() => setIsMediaPickerOpen(false)}
+        title="Seletor de Fotos do Acervo GRIT NEWS & TenPets"
+        maxWidth="3xl"
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={mediaPickerSearch}
+                onChange={e => setMediaPickerSearch(e.target.value)}
+                placeholder="Buscar foto por nome ou tag..."
+                className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs"
+              />
+            </div>
+
+            <div className="flex items-center gap-1 overflow-x-auto max-w-full pb-1 sm:pb-0">
+              {['ALL', 'pet', 'saude', 'esportes', 'tecnologia', 'automacao', 'importacao', 'negocios'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setMediaPickerCategory(cat)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold capitalize transition-colors cursor-pointer ${
+                    mediaPickerCategory === cat ? 'bg-[#145EDB] text-white' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
+                  }`}
+                >
+                  {cat === 'ALL' ? 'Todas' : cat}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#E2E8F0]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-96 overflow-y-auto p-1">
+            {filteredMediaAssets.map(asset => (
+              <div
+                key={asset.id}
+                onClick={() => handleSelectMediaAsset(asset)}
+                className="group relative bg-white border border-slate-200 hover:border-[#145EDB] rounded-xl overflow-hidden shadow-2xs cursor-pointer transition-all hover:scale-[1.02]"
+              >
+                <div className="aspect-video w-full bg-slate-900 overflow-hidden">
+                  <img src={asset.url} alt={asset.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                </div>
+                <div className="p-2 space-y-0.5">
+                  <p className="text-[11px] font-bold text-slate-900 truncate" title={asset.title}>{asset.title}</p>
+                  <span className="inline-block px-1.5 py-0.5 bg-blue-50 text-[#145EDB] text-[9px] font-extrabold uppercase rounded">
+                    {asset.category}
+                  </span>
+                </div>
+                <div className="absolute inset-0 bg-[#145EDB]/80 text-white font-bold text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>+ Inserir Foto</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Modal>
+
+      {/* New Author Creator Modal */}
+      <Modal
+        isOpen={isNewAuthorOpen}
+        onClose={() => setIsNewAuthorOpen(false)}
+        title="Cadastrar Novo Redator / Editor"
+        maxWidth="md"
+      >
+        <form onSubmit={handleSaveNewAuthor} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-[#0B2343] mb-1">Nome Completo do Autor *</label>
+            <input
+              type="text"
+              required
+              value={newAuthorName}
+              onChange={e => setNewAuthorName(e.target.value)}
+              placeholder="Ex: Tasso Vasconcelos"
+              className="w-full px-3 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#0B2343] mb-1">Cargo / Especialidade *</label>
+            <input
+              type="text"
+              required
+              value={newAuthorRole}
+              onChange={e => setNewAuthorRole(e.target.value)}
+              placeholder="Ex: Editor Executivo, Repórter Especial"
+              className="w-full px-3 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#0B2343] mb-1">URL do Avatar</label>
+            <input
+              type="text"
+              value={newAuthorAvatar}
+              onChange={e => setNewAuthorAvatar(e.target.value)}
+              placeholder="https://images.unsplash.com/..."
+              className="w-full px-3 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#0B2343] mb-1">E-mail Profissional</label>
+            <input
+              type="email"
+              value={newAuthorEmail}
+              onChange={e => setNewAuthorEmail(e.target.value)}
+              placeholder="redacao@gritnews.com.br"
+              className="w-full px-3 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#0B2343] mb-1">Biografia Curta</label>
+            <textarea
+              rows={2}
+              value={newAuthorBio}
+              onChange={e => setNewAuthorBio(e.target.value)}
+              placeholder="Jornalista cobrindo inovação e mercado..."
+              className="w-full px-3 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#5C6B7A]"
+              onClick={() => setIsNewAuthorOpen(false)}
+              className="px-3 py-1.5 border border-[#E2E8F0] rounded-xl text-xs font-bold text-gray-600"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-[#145EDB] hover:bg-[#0f4eb8] text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md cursor-pointer"
+              className="px-4 py-1.5 bg-[#145EDB] hover:bg-[#0f4eb8] text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
             >
-              <Save className="w-4 h-4" />
-              <span>Salvar e Publicar Matéria</span>
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Cadastrar Editor</span>
             </button>
           </div>
         </form>
