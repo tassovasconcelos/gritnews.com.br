@@ -370,10 +370,11 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
                 <span>Leitor Digital</span>
               </button>
               <a
-                href="/artigo-vida-especial.html"
+                href={article.pdfUrl || "/artigo-vida-especial.html"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-600 transition-all"
+                download={article.pdfUrl ? `${article.slug}.pdf` : undefined}
+                className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-600 transition-all cursor-pointer"
               >
                 <Download className="w-4 h-4 text-amber-400" />
                 <span>Baixar PDF</span>
@@ -381,6 +382,43 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
             </div>
           </div>
         </header>
+
+        {/* Attached PDF Download Card if present */}
+        {article.pdfUrl && (
+          <div className="mb-8 p-5 bg-gradient-to-r from-slate-900 via-[#0B2343] to-slate-900 rounded-3xl border border-amber-400/40 text-white shadow-xl space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-sm shrink-0 shadow-md">
+                  PDF
+                </div>
+                <div>
+                  <span className="text-[10px] font-extrabold tracking-widest text-amber-400 uppercase bg-amber-400/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                    Documento Anexo Disponível
+                  </span>
+                  <h4 className="font-extrabold text-base text-white mt-1">
+                    Arquivo PDF Original Anexado
+                  </h4>
+                  <p className="text-xs text-slate-300">
+                    Esta matéria possui o arquivo PDF completo anexado para download e consulta das fontes originais.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                <a
+                  href={article.pdfUrl}
+                  download={`${article.slug}-documento.pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 sm:flex-none bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Baixar PDF Anexo</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Hero Featured Image */}
         <div className="mb-8">

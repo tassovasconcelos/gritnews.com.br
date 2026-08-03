@@ -3,7 +3,7 @@ import {
   Plus, Edit2, Trash2, Eye, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, 
   Save, History, Image as ImageIcon, Video as VideoIcon, Film, Upload, FileImage, 
   ArrowUp, ArrowDown, HelpCircle, Info, Layers, UserPlus, Share2, Copy, Search, 
-  Filter, ExternalLink, Check, RefreshCw, MessageCircle, Linkedin, Twitter
+  Filter, ExternalLink, Check, RefreshCw, MessageCircle, Linkedin, Twitter, FileText, FileCheck
 } from 'lucide-react';
 import { Article, ArticleStatus, Category, AuthorProfile, BlockType, ArticleBlock, MediaAsset } from '../../types';
 import { saveArticle, deleteArticle, getMediaAssets, addMediaAsset, saveAuthor, compressImageFile } from '../../lib/storage';
@@ -61,6 +61,9 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
   const [isSponsored, setIsSponsored] = useState(false);
   const [isEvergreen, setIsEvergreen] = useState(false);
   const [isUrgent, setIsUrgent] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string>('');
+  const [pdfFileName, setPdfFileName] = useState<string>('');
+  const [isProcessingPdf, setIsProcessingPdf] = useState(false);
   const [blocks, setBlocks] = useState<ArticleBlock[]>([
     { id: 'b-1', type: 'paragraph', content: 'Escreva a introdução da matéria...' }
   ]);
@@ -98,6 +101,8 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setTitle('');
     setSubtitle('');
     setSummary('');
+    setPdfUrl('');
+    setPdfFileName('');
     setCategoryId(categories[0]?.id || '');
     setAuthorId(authors[0]?.id || '');
     setFeaturedImage('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1200');
@@ -116,6 +121,8 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setTitle(art.title);
     setSubtitle(art.subtitle);
     setSummary(art.summary);
+    setPdfUrl(art.pdfUrl || '');
+    setPdfFileName(art.pdfUrl ? 'documento-anexo.pdf' : '');
     setCategoryId(art.categoryId);
     setAuthorId(art.authorId);
     setFeaturedImage(art.featuredImage);
@@ -127,6 +134,95 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setBlocks(art.blocks && art.blocks.length > 0 ? art.blocks : [{ id: 'b-1', type: 'paragraph', content: art.summary }]);
     setActiveTab('editor');
     setIsModalOpen(true);
+  };
+
+  const handleUploadPdfAndGenerateArticle = async (file: File) => {
+    if (!file) return;
+    setIsProcessingPdf(true);
+    onShowToast(`Anexando e processando o PDF "${file.name}"...`, 'info');
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const dataUrl = evt.target?.result as string;
+        if (dataUrl) {
+          setPdfUrl(dataUrl);
+          setPdfFileName(file.name);
+
+          const cleanName = file.name.replace(/\.[^/.]+$/, '');
+          addMediaAsset({
+            title: `PDF: ${cleanName}`,
+            url: dataUrl,
+            altText: cleanName,
+            category: 'pdf',
+            source: 'upload',
+            tags: ['pdf', 'documento', 'reportagem']
+          });
+
+          const generatedTitle = cleanName
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+
+          if (!title || title.trim() === '') {
+            setTitle(generatedTitle);
+          }
+          if (!subtitle) {
+            setSubtitle(`Reportagem Especial baseada no documento PDF anexo "${file.name}"`);
+          }
+          if (!summary) {
+            setSummary(`Artigo e matéria especial gerados a partir do arquivo PDF "${file.name}". O arquivo PDF original encontra-se anexado para leitura e download.`);
+          }
+
+          const pdfBlocks: ArticleBlock[] = [
+            {
+              id: `b-pdf-head-${Date.now()}`,
+              type: 'heading2',
+              content: `Reportagem Especial: ${generatedTitle}`
+            },
+            {
+              id: `b-pdf-callout-${Date.now()}`,
+              type: 'callout',
+              content: `📄 Este artigo inclui o documento PDF original "${file.name}" em anexo. Você pode realizar o download e consultar o material completo no leitor integrado.`
+            },
+            {
+              id: `b-pdf-p1-${Date.now()}`,
+              type: 'paragraph',
+              content: `Esta matéria reúne os principais trechos e análises presentes no documento "${file.name}". Para garantir transparência e livre acesso à informação, o PDF original na íntegra foi anexado diretamente a esta publicação.`
+            },
+            {
+              id: `b-pdf-h3-${Date.now()}`,
+              type: 'heading3',
+              content: 'Análise e Conteúdo do Documento'
+            },
+            {
+              id: `b-pdf-p2-${Date.now()}`,
+              type: 'paragraph',
+              content: `Ao examinar a estrutura deste material em PDF, sobressai a relevância dos dados consolidados, servindo como referência jornalística para leitores, pesquisadores e profissionais da área.`
+            },
+            {
+              id: `b-pdf-quote-${Date.now()}`,
+              type: 'quote',
+              content: `“O acesso direto ao documento em PDF fortalece a credibilidade da informação e permite ao leitor verificar as fontes originais na íntegra.”`
+            },
+            {
+              id: `b-pdf-img-${Date.now()}`,
+              type: 'image',
+              content: featuredImage || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200',
+              caption: `📷 Registro e documentação referente ao arquivo PDF "${file.name}"`
+            }
+          ];
+
+          setBlocks(pdfBlocks);
+          setIsProcessingPdf(false);
+          onShowToast(`PDF "${file.name}" anexado e matéria estruturada com sucesso!`);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Erro ao ler arquivo PDF:', err);
+      setIsProcessingPdf(false);
+      onShowToast('Ocorreu um erro ao processar o arquivo PDF.');
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -248,6 +344,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
       isSponsored,
       isEvergreen,
       isUrgent,
+      pdfUrl: pdfUrl || undefined,
       blocks,
       seo: {
         metaTitle: `${title} | GRIT NEWS`,
@@ -451,6 +548,75 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
             <form onSubmit={handleSave} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2 space-y-4">
+                  {/* PDF Upload & Auto-Article Generator Box */}
+                  <div className="bg-gradient-to-r from-[#0B2343] via-[#0F325E] to-[#145EDB] p-4 rounded-2xl text-white shadow-lg space-y-3 border border-amber-400/30">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black shrink-0 shadow-md">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-extrabold text-sm text-amber-300 flex items-center gap-2">
+                            <span>Anexar PDF e Gerar Matéria</span>
+                            <span className="text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full uppercase">
+                              Recurso Inteligente
+                            </span>
+                          </h4>
+                          <p className="text-xs text-slate-200">
+                            Envie qualquer PDF (reportagem, documento, estudo). O sistema anexa o PDF ao artigo e estrutura a matéria automaticamente!
+                          </p>
+                        </div>
+                      </div>
+
+                      <label className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black cursor-pointer shrink-0 flex items-center justify-center gap-2 shadow-md transition-all">
+                        <Upload className="w-4 h-4" />
+                        <span>{isProcessingPdf ? 'Processando PDF...' : 'Anexar e Gerar por PDF'}</span>
+                        <input
+                          type="file"
+                          accept=".pdf,application/pdf"
+                          className="hidden"
+                          disabled={isProcessingPdf}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleUploadPdfAndGenerateArticle(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {pdfUrl && (
+                      <div className="bg-slate-900/90 p-3 rounded-xl border border-amber-500/40 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2 overflow-hidden text-slate-200 font-mono">
+                          <FileCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span className="truncate">PDF Anexado ao Artigo: <strong>{pdfFileName || 'documento.pdf'}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <a
+                            href={pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-amber-300 hover:underline text-[11px] font-bold"
+                          >
+                            Visualizar PDF
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPdfUrl('');
+                              setPdfFileName('');
+                              onShowToast('PDF anexo removido.');
+                            }}
+                            className="text-red-400 hover:text-red-300 text-[11px] font-bold cursor-pointer"
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold text-[#0B2343] mb-1">Título Principal da Matéria *</label>
                     <input

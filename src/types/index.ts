@@ -69,6 +69,7 @@ export interface Article {
   isAffiliate?: boolean;
   isEvergreen?: boolean;
   isUrgent?: boolean;
+  pdfUrl?: string;
   blocks: ArticleBlock[];
   versions?: ArticleVersion[];
   seo: {
