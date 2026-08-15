@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope, Building2 } from 'lucide-react';
+import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope, Building2, Flame } from 'lucide-react';
 import { Category } from '../../types';
 import { GritNewsLogo } from '../ui/GritNewsLogo';
 import { TenPetsLogo } from '../ui/TenPetsLogo';
@@ -13,6 +13,7 @@ interface NavbarProps {
   onNavigateAdmin: () => void;
   onNavigateTenPets: () => void;
   onNavigateImoveis?: () => void;
+  onNavigatePlaybook?: () => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
   onOpenDocs: () => void;
@@ -42,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateAdmin,
   onNavigateTenPets,
   onNavigateImoveis,
+  onNavigatePlaybook,
   onSearch,
   onNavigateHome,
   onOpenDocs,
@@ -197,6 +199,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* Playbook Emagrecimento Button */}
+          {onNavigatePlaybook && (
+            <button
+              onClick={onNavigatePlaybook}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-gradient-to-r from-rose-900 to-[#1C1427] hover:from-rose-800 hover:to-[#2B1B3D] text-white shadow-xs hover:scale-105 transition-all border border-rose-500/40"
+            >
+              <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <span>Playbook Saúde</span>
+              <span className="bg-amber-400 text-slate-950 text-[9px] px-1.5 py-0.2 rounded font-black">
+                R$ 29,90
+              </span>
+            </button>
+          )}
+
           {/* TenPets Subdomain Portal Button */}
           <button
             onClick={onNavigateTenPets}
@@ -277,6 +293,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Building2 className="w-4 h-4 text-[#FF8A00]" />
                 <span>Hub de Imóveis no Eusébio (Novo)</span>
+              </button>
+            )}
+
+            {onNavigatePlaybook && (
+              <button
+                onClick={() => {
+                  onNavigatePlaybook();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-gradient-to-r from-rose-950 to-[#1C1427] text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-rose-500/50"
+              >
+                <Flame className="w-4 h-4 text-amber-400" />
+                <span>Playbook Emagrecimento Saudável (R$ 29,90)</span>
               </button>
             )}
 

@@ -13,6 +13,7 @@ import { TagView } from './components/views/TagView';
 import { DocumentationModal } from './components/views/DocumentationModal';
 import { TenPetsView } from './components/views/TenPetsView';
 import { EusebioImoveisView } from './components/views/EusebioImoveisView';
+import { PlaybookEmagrecimentoView } from './components/views/PlaybookEmagrecimentoView';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
@@ -45,6 +46,7 @@ type ViewMode =
   | 'tag'
   | 'tenpets'
   | 'imoveis'
+  | 'playbook'
   | 'admin';
 
 const resolveRouteFromUrl = (
@@ -86,7 +88,20 @@ const resolveRouteFromUrl = (
     return { view: 'imoveis' as ViewMode };
   }
 
-  // 3. Admin / Offers / Bookmarks
+  // 3. Playbook Emagrecimento Saudável (Fase 2)
+  if (
+    params.get('view') === 'playbook' ||
+    params.get('view') === 'emagrecimento' ||
+    params.get('view') === 'dieta' ||
+    pathLower.includes('/playbook') ||
+    pathLower.includes('/emagrecimento') ||
+    hash.includes('playbook') ||
+    hash.includes('emagrecimento')
+  ) {
+    return { view: 'playbook' as ViewMode };
+  }
+
+  // 4. Admin / Offers / Bookmarks
   if (params.get('view') === 'admin' || pathLower.includes('/admin')) return { view: 'admin' as ViewMode };
   if (params.get('view') === 'offers' || pathLower.includes('/offers')) return { view: 'offers' as ViewMode };
   if (params.get('view') === 'bookmarks' || pathLower.includes('/bookmarks')) return { view: 'bookmarks' as ViewMode };
@@ -412,6 +427,10 @@ export default function App() {
           setCurrentView('imoveis');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onNavigatePlaybook={() => {
+          setCurrentView('playbook');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onOpenContactModal={() => setIsContactModalOpen(true)}
         bookmarksCount={getBookmarks().length}
@@ -431,7 +450,21 @@ export default function App() {
             onSelectAuthor={handleSelectAuthor}
             onSelectPartner={handleSelectPartner}
             onNavigateOffers={handleNavigateOffers}
+            onNavigateImoveis={() => {
+              setCurrentView('imoveis');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onNavigatePlaybook={() => {
+              setCurrentView('playbook');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             onOpenLeadModal={setLeadModalOffer}
+            onShowToast={showToast}
+          />
+        )}
+
+        {currentView === 'playbook' && (
+          <PlaybookEmagrecimentoView
             onShowToast={showToast}
           />
         )}
@@ -544,6 +577,10 @@ export default function App() {
         onNavigateOffers={() => setCurrentView('offers')}
         onNavigateImoveis={() => {
           setCurrentView('imoveis');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onNavigatePlaybook={() => {
+          setCurrentView('playbook');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onOpenDocs={() => setIsDocModalOpen(true)}

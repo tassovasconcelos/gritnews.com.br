@@ -8,6 +8,8 @@ import { OfferCard } from '../ui/OfferCard';
 import { PartnerCard } from '../ui/PartnerCard';
 import { AmazonShopSection } from '../ui/AmazonShopSection';
 import { ArticleShareActions } from '../ui/ArticleShareActions';
+import { EusebioImoveisWidget } from '../home/EusebioImoveisWidget';
+import { PlaybookPromoBanner } from '../home/PlaybookPromoBanner';
 
 interface HomeViewProps {
   articles: Article[];
@@ -20,9 +22,12 @@ interface HomeViewProps {
   onSelectPartner: (partner: Partner) => void;
   onSelectAuthor?: (author: AuthorProfile) => void;
   onNavigateOffers?: () => void;
+  onNavigateImoveis?: () => void;
+  onNavigatePlaybook?: () => void;
   onOpenLeadModal: (offer: Offer) => void;
   onShowToast: (msg: string, type?: 'success' | 'info') => void;
 }
+
 
 const ICON_MAP: Record<string, React.ElementType> = {
   HeartPulse,
@@ -48,9 +53,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onSelectPartner,
   onSelectAuthor,
   onNavigateOffers,
+  onNavigateImoveis,
+  onNavigatePlaybook,
   onOpenLeadModal,
   onShowToast
 }) => {
+
   const [trendingPeriod, setTrendingPeriod] = useState<'24h' | '7d' | '30d'>('7d');
 
   const featuredHero = articles[0] || articles[0];
@@ -374,6 +382,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
           ))}
         </div>
       </section>
+
+      {/* Playbook Emagrecimento Saudável - Featured Infoproduct */}
+      {onNavigatePlaybook && (
+        <div className="max-w-7xl mx-auto px-4">
+          <PlaybookPromoBanner onNavigatePlaybook={onNavigatePlaybook} />
+        </div>
+      )}
+
+      {/* Radar Imobiliário Eusébio & Alphaville - High-Value Real Estate */}
+      {onNavigateImoveis && (
+        <div className="max-w-7xl mx-auto px-4">
+          <EusebioImoveisWidget 
+            onNavigateImoveis={onNavigateImoveis} 
+            onShowToast={onShowToast} 
+          />
+        </div>
+      )}
 
       {/* Amazon Products Showcase Section - Tasso Vasconcelos */}
       <div className="max-w-7xl mx-auto px-4">

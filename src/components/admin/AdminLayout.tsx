@@ -16,7 +16,7 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare,
   Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe,
-  Database, PawPrint, LogOut, Lock, HelpCircle, Flame
+  Database, PawPrint, LogOut, Lock, HelpCircle, Flame, Building2, ShoppingBag
 } from 'lucide-react';
 import { ViralPautasWidget } from '../ui/ViralPautasWidget';
 import { UserRole, Article, Category, Lead, NewsletterSubscriber, Offer, AdCampaign, AuthorProfile } from '../../types';
@@ -34,6 +34,8 @@ import { AdminSEO } from './AdminSEO';
 import { AdminSupabase } from './AdminSupabase';
 import { AdminTenPets } from './AdminTenPets';
 import { AdminGuide } from './AdminGuide';
+import { AdminImoveis } from './AdminImoveis';
+import { AdminPlaybookOrders } from './AdminPlaybookOrders';
 import { AdminLoginScreen } from './AdminLoginScreen';
 import { DocumentationModal } from '../views/DocumentationModal';
 import { GritNewsLogo } from '../ui/GritNewsLogo';
@@ -55,6 +57,8 @@ type AdminTab =
   | 'dashboard'
   | 'guide'
   | 'articles'
+  | 'imoveis'
+  | 'playbook'
   | 'tenpets'
   | 'viral'
   | 'categories'
@@ -67,6 +71,7 @@ type AdminTab =
   | 'leads'
   | 'comments'
   | 'settings';
+
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   articles,
@@ -151,6 +156,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'viral', label: 'Estratégia 1M Views (Virais)', icon: Flame, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'guide', label: 'Guia Mídias & Banners', icon: HelpCircle, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR', 'COMMERCIAL_MANAGER'] },
     { id: 'articles', label: 'CMS Artigos & Notícias', icon: FileText, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
+    { id: 'imoveis', label: 'Imóveis no Eusébio', icon: Building2, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'COMMERCIAL_MANAGER'] },
+    { id: 'playbook', label: 'Vendas Playbook (R$ 29,90)', icon: ShoppingBag, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER', 'EDITOR_IN_CHIEF'] },
     { id: 'tenpets', label: 'TenPets (Resgates & Ciência)', icon: PawPrint, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'trends', label: 'Automação Trends & IA', icon: Sparkles, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'media', label: 'Gerenciador de Mídia', icon: Image, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
@@ -163,6 +170,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'comments', label: 'Moderação Comentários', icon: MessageSquare, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
     { id: 'settings', label: 'Configurações & SEO', icon: Settings, roles: ['SUPERADMIN'] }
   ];
+
 
   const allowedTabs = menuItems.filter(item => item.roles.includes(currentRole));
 
@@ -293,11 +301,24 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           />
         )}
 
+        {activeTab === 'imoveis' && (
+          <AdminImoveis
+            onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'playbook' && (
+          <AdminPlaybookOrders
+            onShowToast={onShowToast}
+          />
+        )}
+
         {activeTab === 'tenpets' && (
           <AdminTenPets
             onShowToast={onShowToast}
           />
         )}
+
 
         {activeTab === 'trends' && (
           <AdminTrendsAI

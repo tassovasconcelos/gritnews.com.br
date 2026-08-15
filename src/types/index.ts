@@ -340,4 +340,24 @@ export interface EusebioProperty {
   viewsCount: number;
 }
 
+export type PlaybookPaymentMethod = 'pix' | 'card' | 'boleto';
+export type PlaybookOrderStatus = 'PAID' | 'PENDING_PIX' | 'REFUNDED' | 'CANCELLED';
+
+export interface PlaybookOrder {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  paymentMethod: PlaybookPaymentMethod;
+  amount: number;
+  status: PlaybookOrderStatus;
+  pixCode?: string;
+  couponCode?: string;
+  accessSent: boolean;
+  createdAt: string;
+  paidAt?: string;
+  notes?: string;
+}
+
+
 

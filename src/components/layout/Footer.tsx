@@ -8,6 +8,7 @@ interface FooterProps {
   onSelectCategory: (slug?: string) => void;
   onNavigateOffers: () => void;
   onNavigateImoveis?: () => void;
+  onNavigatePlaybook?: () => void;
   onOpenDocs: () => void;
   onNavigateAdmin?: () => void;
   onOpenContactModal?: () => void;
@@ -18,6 +19,7 @@ export const Footer: React.FC<FooterProps> = ({
   onSelectCategory,
   onNavigateOffers,
   onNavigateImoveis,
+  onNavigatePlaybook,
   onOpenDocs,
   onNavigateAdmin,
   onOpenContactModal
@@ -90,6 +92,13 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button onClick={onNavigateImoveis} className="text-[#FF8A00] hover:text-amber-300 font-bold transition-colors">
                     Imóveis no Eusébio (Casas & Lotes)
+                  </button>
+                </li>
+              )}
+              {onNavigatePlaybook && (
+                <li>
+                  <button onClick={onNavigatePlaybook} className="text-amber-400 hover:text-amber-300 font-bold transition-colors">
+                    Playbook Emagrecimento Saudável (R$ 29,90)
                   </button>
                 </li>
               )}

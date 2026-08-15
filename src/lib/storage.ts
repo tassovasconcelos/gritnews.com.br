@@ -1,4 +1,4 @@
-import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner, EusebioProperty } from '../types';
+import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner, EusebioProperty, PlaybookOrder } from '../types';
 import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS, INITIAL_TENPETS_ARTICLES, INITIAL_TENPETS_RESCUES, INITIAL_TENPETS_PARTNERS, INITIAL_EUSEBIO_PROPERTIES } from '../data/initialData';
 
 const KEYS = {
@@ -19,7 +19,8 @@ const KEYS = {
   TENPETS_ARTICLES: 'grit_news_tenpets_articles_v2',
   TENPETS_RESCUES: 'grit_news_tenpets_rescues_v1',
   TENPETS_PARTNERS: 'grit_news_tenpets_partners_v1',
-  EUSEBIO_PROPERTIES: 'grit_news_eusebio_properties_v1'
+  EUSEBIO_PROPERTIES: 'grit_news_eusebio_properties_v1',
+  PLAYBOOK_ORDERS: 'grit_news_playbook_orders_v1'
 };
 
 function loadItem<T>(key: string, defaultValue: T): T {
@@ -152,7 +153,62 @@ export function initStorage(): void {
   syncSeedList(KEYS.TENPETS_RESCUES, INITIAL_TENPETS_RESCUES);
   syncSeedList(KEYS.TENPETS_PARTNERS, INITIAL_TENPETS_PARTNERS);
   syncSeedList(KEYS.EUSEBIO_PROPERTIES, INITIAL_EUSEBIO_PROPERTIES);
+  syncSeedList(KEYS.PLAYBOOK_ORDERS, INITIAL_PLAYBOOK_ORDERS);
 }
+
+export const INITIAL_PLAYBOOK_ORDERS: PlaybookOrder[] = [
+  {
+    id: 'ord-pb-101',
+    customerName: 'Renata Albuquerque Meireles',
+    customerEmail: 'renata.meireles@gmail.com',
+    customerPhone: '+5585998124433',
+    paymentMethod: 'pix',
+    amount: 29.90,
+    status: 'PAID',
+    accessSent: true,
+    createdAt: '2026-08-14T14:32:00Z',
+    paidAt: '2026-08-14T14:33:15Z',
+    notes: 'Liberado download instantâneo do PDF + 4 bônus.'
+  },
+  {
+    id: 'ord-pb-102',
+    customerName: 'Carlos Eduardo Fontenele',
+    customerEmail: 'carlos.fontenele@adv.br',
+    customerPhone: '+5585987654321',
+    paymentMethod: 'pix',
+    amount: 29.90,
+    status: 'PAID',
+    accessSent: true,
+    createdAt: '2026-08-15T08:15:00Z',
+    paidAt: '2026-08-15T08:16:40Z',
+    notes: 'Acesso enviado por e-mail e cópia WhatsApp.'
+  },
+  {
+    id: 'ord-pb-103',
+    customerName: 'Mariana Vasconcelos Lima',
+    customerEmail: 'mariana.vlima@uol.com.br',
+    customerPhone: '+5585991238877',
+    paymentMethod: 'card',
+    amount: 29.90,
+    status: 'PAID',
+    accessSent: true,
+    createdAt: '2026-08-15T09:40:00Z',
+    paidAt: '2026-08-15T09:40:10Z',
+    notes: 'Aprovado na operadora Visa.'
+  },
+  {
+    id: 'ord-pb-104',
+    customerName: 'Rodrigo Sampaio Gomes',
+    customerEmail: 'rodrigo.sgomes@outlook.com',
+    customerPhone: '+5585994441122',
+    paymentMethod: 'pix',
+    amount: 29.90,
+    status: 'PENDING_PIX',
+    accessSent: false,
+    createdAt: '2026-08-15T11:20:00Z',
+    notes: 'PIX gerado, aguardando compensação bancária.'
+  }
+];
 
 const INITIAL_MEDIA: MediaAsset[] = [
   {
@@ -834,5 +890,32 @@ export function deleteEusebioProperty(id: string): void {
   const current = getEusebioProperties().filter(item => item.id !== id);
   saveEusebioProperties(current);
 }
+
+// Playbook Orders & Sales
+export function getPlaybookOrders(): PlaybookOrder[] {
+  initStorage();
+  return loadItem<PlaybookOrder[]>(KEYS.PLAYBOOK_ORDERS, INITIAL_PLAYBOOK_ORDERS);
+}
+
+export function savePlaybookOrders(orders: PlaybookOrder[]): void {
+  saveItem(KEYS.PLAYBOOK_ORDERS, orders);
+}
+
+export function addPlaybookOrder(order: PlaybookOrder): void {
+  const current = getPlaybookOrders();
+  savePlaybookOrders([order, ...current]);
+}
+
+export function updatePlaybookOrder(order: PlaybookOrder): void {
+  const current = getPlaybookOrders();
+  const updated = current.map(item => item.id === order.id ? order : item);
+  savePlaybookOrders(updated);
+}
+
+export function deletePlaybookOrder(id: string): void {
+  const current = getPlaybookOrders().filter(item => item.id !== id);
+  savePlaybookOrders(current);
+}
+
 
 
