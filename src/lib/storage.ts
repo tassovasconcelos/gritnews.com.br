@@ -157,59 +157,7 @@ export function initStorage(): void {
   syncSeedList(KEYS.PLAYBOOK_ORDERS, INITIAL_PLAYBOOK_ORDERS);
 }
 
-export const INITIAL_PLAYBOOK_ORDERS: PlaybookOrder[] = [
-  {
-    id: 'ord-pb-101',
-    customerName: 'Renata Albuquerque Meireles',
-    customerEmail: 'renata.meireles@gmail.com',
-    customerPhone: '+5585998124433',
-    paymentMethod: 'pix',
-    amount: 29.90,
-    status: 'PAID',
-    accessSent: true,
-    createdAt: '2026-08-14T14:32:00Z',
-    paidAt: '2026-08-14T14:33:15Z',
-    notes: 'Liberado download instantâneo do PDF + 4 bônus.'
-  },
-  {
-    id: 'ord-pb-102',
-    customerName: 'Carlos Eduardo Fontenele',
-    customerEmail: 'carlos.fontenele@adv.br',
-    customerPhone: '+5585987654321',
-    paymentMethod: 'pix',
-    amount: 29.90,
-    status: 'PAID',
-    accessSent: true,
-    createdAt: '2026-08-15T08:15:00Z',
-    paidAt: '2026-08-15T08:16:40Z',
-    notes: 'Acesso enviado por e-mail e cópia WhatsApp.'
-  },
-  {
-    id: 'ord-pb-103',
-    customerName: 'Mariana Vasconcelos Lima',
-    customerEmail: 'mariana.vlima@uol.com.br',
-    customerPhone: '+5585991238877',
-    paymentMethod: 'card',
-    amount: 29.90,
-    status: 'PAID',
-    accessSent: true,
-    createdAt: '2026-08-15T09:40:00Z',
-    paidAt: '2026-08-15T09:40:10Z',
-    notes: 'Aprovado na operadora Visa.'
-  },
-  {
-    id: 'ord-pb-104',
-    customerName: 'Rodrigo Sampaio Gomes',
-    customerEmail: 'rodrigo.sgomes@outlook.com',
-    customerPhone: '+5585994441122',
-    paymentMethod: 'pix',
-    amount: 29.90,
-    status: 'PENDING_PIX',
-    accessSent: false,
-    createdAt: '2026-08-15T11:20:00Z',
-    notes: 'PIX gerado, aguardando compensação bancária.'
-  }
-];
+export const INITIAL_PLAYBOOK_ORDERS: PlaybookOrder[] = [];
 
 const INITIAL_MEDIA: MediaAsset[] = [
   {
@@ -899,7 +847,14 @@ export function deleteEusebioProperty(id: string): void {
 // Playbook Orders & Sales
 export function getPlaybookOrders(): PlaybookOrder[] {
   initStorage();
-  return loadItem<PlaybookOrder[]>(KEYS.PLAYBOOK_ORDERS, INITIAL_PLAYBOOK_ORDERS);
+  const rawOrders = loadItem<PlaybookOrder[]>(KEYS.PLAYBOOK_ORDERS, []);
+  // Filter out any legacy simulated mockup orders
+  const mockIds = new Set(['ord-pb-101', 'ord-pb-102', 'ord-pb-103', 'ord-pb-104']);
+  const cleanOrders = rawOrders.filter(o => !mockIds.has(o.id));
+  if (cleanOrders.length !== rawOrders.length) {
+    saveItem(KEYS.PLAYBOOK_ORDERS, cleanOrders);
+  }
+  return cleanOrders;
 }
 
 export function savePlaybookOrders(orders: PlaybookOrder[]): void {

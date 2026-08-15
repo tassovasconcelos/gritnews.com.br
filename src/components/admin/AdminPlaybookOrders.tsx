@@ -16,10 +16,13 @@ import {
   X,
   ExternalLink,
   Users,
-  Check
+  Check,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react';
 import { PlaybookOrder, PlaybookOrderStatus, PlaybookPaymentMethod } from '../../types';
-import { getPlaybookOrders, addPlaybookOrder, updatePlaybookOrder, deletePlaybookOrder, getSiteConfig } from '../../lib/storage';
+import { getPlaybookOrders, savePlaybookOrders, addPlaybookOrder, updatePlaybookOrder, deletePlaybookOrder, getSiteConfig } from '../../lib/storage';
 
 interface AdminPlaybookOrdersProps {
   onShowToast: (msg: string) => void;
@@ -43,6 +46,25 @@ export const AdminPlaybookOrders: React.FC<AdminPlaybookOrdersProps> = ({ onShow
 
   const refreshOrders = () => {
     setOrders(getPlaybookOrders());
+  };
+
+  const handlePurgeMockData = () => {
+    if (window.confirm('Deseja limpar todos os pedidos demonstrativos/falsos e manter apenas pedidos reais?')) {
+      const mockIds = new Set(['ord-pb-101', 'ord-pb-102', 'ord-pb-103', 'ord-pb-104']);
+      const current = getPlaybookOrders();
+      const realOnly = current.filter(o => !mockIds.has(o.id));
+      savePlaybookOrders(realOnly);
+      setOrders(realOnly);
+      onShowToast('Base limpa com sucesso. Apenas registros autênticos preservados!');
+    }
+  };
+
+  const handleClearAllOrders = () => {
+    if (window.confirm('Tem certeza que deseja zerar a lista de pedidos? Esta ação é irreversível.')) {
+      savePlaybookOrders([]);
+      setOrders([]);
+      onShowToast('Lista de pedidos zerada.');
+    }
   };
 
   const handleMarkAsPaid = (order: PlaybookOrder) => {
@@ -180,10 +202,33 @@ export const AdminPlaybookOrders: React.FC<AdminPlaybookOrdersProps> = ({ onShow
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {orders.some(o => ['ord-pb-101', 'ord-pb-102', 'ord-pb-103', 'ord-pb-104'].includes(o.id)) && (
+            <button
+              onClick={handlePurgeMockData}
+              className="px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer border border-rose-200"
+              title="Remover pedidos demonstrativos gerados como exemplo"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Remover Pedidos Mock</span>
+            </button>
+          )}
+
+          {orders.length > 0 && (
+            <button
+              onClick={handleClearAllOrders}
+              className="px-3 py-2.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 text-slate-600 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Zerar todos os registros"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Zerar Lista</span>
+            </button>
+          )}
+
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
+            disabled={orders.length === 0}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>Exportar CSV</span>
@@ -194,7 +239,7 @@ export const AdminPlaybookOrders: React.FC<AdminPlaybookOrdersProps> = ({ onShow
             className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl flex items-center gap-2 transition-all shadow-md cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Novo Pedido</span>
+            <span>Novo Pedido Real</span>
           </button>
         </div>
       </div>
@@ -414,8 +459,24 @@ export const AdminPlaybookOrders: React.FC<AdminPlaybookOrdersProps> = ({ onShow
 
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-400">
-                    Nenhum pedido encontrado.
+                  <td colSpan={7} className="p-12 text-center">
+                    <div className="max-w-sm mx-auto space-y-3">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                        <BookOpen className="w-6 h-6" />
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-800">Nenhum Pedido Registrado</h4>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        A base de pedidos está limpa. Todos os dados demonstrativos foram eliminados. Assim que um cliente finalizar o checkout (via PIX ou Mercado Pago) ou você cadastrar um pedido manual, ele aparecerá aqui com dados autênticos.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setIsModalOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Lançar Primeiro Pedido Real</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )}
