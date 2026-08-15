@@ -326,6 +326,8 @@ export interface TenPetsPartner {
 
 export type PropertyType = 'casa_condominio' | 'apartamento' | 'lote_terreno' | 'comercial' | 'cobertura';
 export type PropertyPurpose = 'venda' | 'locacao';
+export type PropertyPortalSource = 'zap_imoveis' | 'viva_real' | 'olx' | 'grit_direto';
+export type PropertyVerificationBadge = 'MATRICULA_VERIFICADA' | 'CRECI_AUDITADO' | 'DIRETO_COM_CONSTRUTORA' | 'VALOR_CONFIRMADO';
 
 export interface EusebioProperty {
   id: string;
@@ -337,6 +339,7 @@ export interface EusebioProperty {
   condoFee?: number;
   iptu?: number;
   neighborhood: string;
+  condominiumName?: string;
   address?: string;
   bedrooms: number;
   suites: number;
@@ -344,11 +347,15 @@ export interface EusebioProperty {
   garageSpots: number;
   areaTotal: number;
   areaPrivate?: number;
+  pricePerM2?: number;
   description: string;
   highlights: string[];
   images: string[];
   featured: boolean;
   verified: boolean;
+  verificationBadge?: PropertyVerificationBadge;
+  portalSource?: PropertyPortalSource;
+  sourceUrl?: string;
   realtor: {
     name: string;
     creci?: string;
