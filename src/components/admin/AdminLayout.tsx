@@ -17,7 +17,7 @@ import {
   LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare,
   Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe,
   Database, PawPrint, LogOut, Lock, HelpCircle, Flame, Building2, ShoppingBag,
-  CreditCard
+  CreditCard, ShieldCheck, Columns, Briefcase, Activity
 } from 'lucide-react';
 import { ViralPautasWidget } from '../ui/ViralPautasWidget';
 import { UserRole, Article, Category, Lead, NewsletterSubscriber, Offer, AdCampaign, AuthorProfile } from '../../types';
@@ -39,6 +39,11 @@ import { AdminImoveis } from './AdminImoveis';
 import { AdminPlaybookOrders } from './AdminPlaybookOrders';
 import { AdminPayments } from './AdminPayments';
 import { AdminLoginScreen } from './AdminLoginScreen';
+import { AdminGritVerify } from './AdminGritVerify';
+import { AdminNewsCandidates } from './AdminNewsCandidates';
+import { AdminSources } from './AdminSources';
+import { AdminAuditLogs } from './AdminAuditLogs';
+import { AdminOpportunities } from './AdminOpportunities';
 import { DocumentationModal } from '../views/DocumentationModal';
 import { GritNewsLogo } from '../ui/GritNewsLogo';
 
@@ -57,6 +62,11 @@ interface AdminLayoutProps {
 
 type AdminTab =
   | 'dashboard'
+  | 'verify'
+  | 'candidates'
+  | 'sources'
+  | 'audit'
+  | 'opportunities'
   | 'guide'
   | 'articles'
   | 'imoveis'
@@ -153,26 +163,31 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     );
   }
 
-  // Itens de Menu do Painel Gerencial
+  // Itens de Menu do Painel Gerencial (Hierarquia Editorial GRIT 2.0)
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'COMMERCIAL_MANAGER'] },
-    { id: 'viral', label: 'Estratégia 1M Views (Virais)', icon: Flame, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
-    { id: 'guide', label: 'Guia Mídias & Banners', icon: HelpCircle, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR', 'COMMERCIAL_MANAGER'] },
-    { id: 'articles', label: 'CMS Artigos & Notícias', icon: FileText, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
-    { id: 'imoveis', label: 'Imóveis no Eusébio', icon: Building2, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'COMMERCIAL_MANAGER'] },
-    { id: 'playbook', label: 'Vendas Playbook (R$ 29,90)', icon: ShoppingBag, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER', 'EDITOR_IN_CHIEF'] },
-    { id: 'payments', label: '💳 PIX & Mercado Pago', icon: CreditCard, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER'] },
-    { id: 'tenpets', label: 'TenPets (Resgates & Ciência)', icon: PawPrint, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
-    { id: 'trends', label: 'Automação Trends & IA', icon: Sparkles, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
-    { id: 'media', label: 'Gerenciador de Mídia', icon: Image, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
-    { id: 'seo', label: 'SEO & Indexação Google', icon: Globe, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
-    { id: 'supabase', label: 'Banco Supabase', icon: Database, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
-    { id: 'categories', label: 'Categorias', icon: FolderPlus, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
-    { id: 'ads', label: 'Anúncios & Mídia', icon: Megaphone, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER'] },
-    { id: 'offers', label: 'Ofertas & Afiliados', icon: Tag, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER'] },
-    { id: 'leads', label: 'Leads & Newsletter', icon: Users, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER', 'EDITOR_IN_CHIEF'] },
-    { id: 'comments', label: 'Moderação Comentários', icon: MessageSquare, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF'] },
-    { id: 'settings', label: 'Configurações & SEO', icon: Settings, roles: ['SUPERADMIN'] }
+    { id: 'dashboard', label: 'Dashboard Executivo', icon: LayoutDashboard, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'EDITOR', 'COMMERCIAL_MANAGER', 'ANALYST'] },
+    { id: 'verify', label: '🛡️ GRIT Verify (Checagem)', icon: ShieldCheck, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'EDITOR', 'ANALYST'] },
+    { id: 'candidates', label: '📋 Banco de Pautas (Kanban)', icon: Columns, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'EDITOR', 'AUTHOR', 'ANALYST'] },
+    { id: 'sources', label: '🏛️ Fontes Homologadas', icon: Building2, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'EDITOR', 'ANALYST'] },
+    { id: 'opportunities', label: '💼 Oportunidades B2B', icon: Briefcase, roles: ['SUPERADMIN', 'ADMIN', 'COMMERCIAL_MANAGER', 'EDITOR_IN_CHIEF', 'PARTNER'] },
+    { id: 'audit', label: '🔒 Trilha de Auditoria (Logs)', icon: Activity, roles: ['SUPERADMIN', 'ADMIN'] },
+    { id: 'viral', label: 'Estratégia 1M Views (Virais)', icon: Flame, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
+    { id: 'guide', label: 'Guia Mídias & Banners', icon: HelpCircle, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR', 'COMMERCIAL_MANAGER'] },
+    { id: 'articles', label: 'CMS Artigos & Notícias', icon: FileText, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'EDITOR', 'AUTHOR'] },
+    { id: 'imoveis', label: 'Imóveis no Eusébio', icon: Building2, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'COMMERCIAL_MANAGER', 'PARTNER'] },
+    { id: 'playbook', label: 'Vendas Playbook (R$ 29,90)', icon: ShoppingBag, roles: ['SUPERADMIN', 'ADMIN', 'COMMERCIAL_MANAGER', 'EDITOR_IN_CHIEF'] },
+    { id: 'payments', label: '💳 PIX & Mercado Pago', icon: CreditCard, roles: ['SUPERADMIN', 'ADMIN', 'COMMERCIAL_MANAGER'] },
+    { id: 'tenpets', label: 'TenPets (Resgates & Ciência)', icon: PawPrint, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
+    { id: 'trends', label: 'Automação Trends & IA', icon: Sparkles, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
+    { id: 'media', label: 'Gerenciador de Mídia', icon: Image, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
+    { id: 'seo', label: 'SEO & Indexação Google', icon: Globe, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF'] },
+    { id: 'supabase', label: 'Banco Supabase', icon: Database, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF'] },
+    { id: 'categories', label: 'Categorias', icon: FolderPlus, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF'] },
+    { id: 'ads', label: 'Anúncios & Mídia', icon: Megaphone, roles: ['SUPERADMIN', 'ADMIN', 'COMMERCIAL_MANAGER'] },
+    { id: 'offers', label: 'Ofertas & Afiliados', icon: Tag, roles: ['SUPERADMIN', 'ADMIN', 'COMMERCIAL_MANAGER', 'PARTNER'] },
+    { id: 'leads', label: 'Leads & Newsletter', icon: Users, roles: ['SUPERADMIN', 'ADMIN', 'COMMERCIAL_MANAGER', 'EDITOR_IN_CHIEF'] },
+    { id: 'comments', label: 'Moderação Comentários', icon: MessageSquare, roles: ['SUPERADMIN', 'ADMIN', 'EDITOR_IN_CHIEF', 'EDITOR'] },
+    { id: 'settings', label: 'Configurações & SEO', icon: Settings, roles: ['SUPERADMIN', 'ADMIN'] }
   ];
 
 
@@ -192,7 +207,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
             <button
               onClick={onExitAdmin}
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-colors"
+              className="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-colors cursor-pointer"
               title="Voltar ao Portal Público"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -220,17 +235,22 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 setActiveTab('dashboard');
                 onShowToast(`Perfil de permissão ajustado para ${newRole}`);
               }}
-              className="w-full bg-[#145EDB] text-white text-xs font-bold p-1.5 rounded-lg border border-white/20 focus:outline-none"
+              className="w-full bg-[#145EDB] text-white text-xs font-bold p-1.5 rounded-lg border border-white/20 focus:outline-none cursor-pointer"
             >
               <option value="SUPERADMIN">Superadmin (Acesso Total)</option>
-              <option value="EDITOR_IN_CHIEF">Editor-Chefe & TenPets</option>
-              <option value="AUTHOR">Autor / Colaborador</option>
+              <option value="ADMIN">Administrador</option>
+              <option value="EDITOR_IN_CHIEF">Editor-Chefe</option>
+              <option value="EDITOR">Editor</option>
               <option value="COMMERCIAL_MANAGER">Gestor Comercial</option>
+              <option value="ANALYST">Analista de Inteligência</option>
+              <option value="PARTNER">Parceiro B2B</option>
+              <option value="AUTHOR">Autor / Colaborador</option>
+              <option value="READER">Leitor / Assinante</option>
             </select>
           </div>
 
           {/* Navigation Menu */}
-          <nav className="space-y-1">
+          <nav className="space-y-1 max-h-[480px] overflow-y-auto pr-1">
             {allowedTabs.map(item => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -238,14 +258,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id as AdminTab)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isActive
                       ? 'bg-[#145EDB] text-white shadow-md'
                       : 'text-gray-300 hover:bg-white/5 hover:text-white'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
                 </button>
               );
             })}
@@ -281,6 +301,51 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             subscribers={subscribers}
             offers={offers}
             ads={ads}
+          />
+        )}
+
+        {activeTab === 'verify' && (
+          <AdminGritVerify
+            currentRole={currentRole}
+            currentUserName={authUser.name}
+            onRefreshData={onRefreshData}
+            onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'candidates' && (
+          <AdminNewsCandidates
+            currentRole={currentRole}
+            currentUserName={authUser.name}
+            onRefreshData={onRefreshData}
+            onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'sources' && (
+          <AdminSources
+            currentRole={currentRole}
+            currentUserName={authUser.name}
+            onRefreshData={onRefreshData}
+            onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'audit' && (
+          <AdminAuditLogs
+            currentRole={currentRole}
+            currentUserName={authUser.name}
+            onRefreshData={onRefreshData}
+            onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'opportunities' && (
+          <AdminOpportunities
+            currentRole={currentRole}
+            currentUserName={authUser.name}
+            onRefreshData={onRefreshData}
+            onShowToast={onShowToast}
           />
         )}
 

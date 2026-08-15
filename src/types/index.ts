@@ -1,4 +1,13 @@
-export type Role = 'SUPERADMIN' | 'EDITOR_IN_CHIEF' | 'EDITOR' | 'AUTHOR' | 'COMMERCIAL_MANAGER';
+export type Role = 
+  | 'SUPERADMIN' 
+  | 'ADMIN' 
+  | 'EDITOR_IN_CHIEF' 
+  | 'EDITOR' 
+  | 'COMMERCIAL_MANAGER' 
+  | 'ANALYST' 
+  | 'PARTNER' 
+  | 'AUTHOR' 
+  | 'READER';
 export type UserRole = Role;
 
 export interface User {
@@ -355,7 +364,7 @@ export interface EusebioProperty {
 export type PlaybookPaymentMethod = 'pix' | 'card' | 'boleto';
 export type PlaybookOrderStatus = 'PAID' | 'PENDING_PIX' | 'REFUNDED' | 'CANCELLED';
 
-export interface PlaybookOrder {
+export type PlaybookOrder = {
   id: string;
   customerName: string;
   customerEmail: string;
@@ -369,6 +378,197 @@ export interface PlaybookOrder {
   createdAt: string;
   paidAt?: string;
   notes?: string;
+};
+
+// ==========================================
+// GRIT 2.0 - AUDITORIA & SEGURANÇA
+// ==========================================
+
+export type AuditActionType =
+  | 'LOGIN'
+  | 'LOGOUT'
+  | 'CREATE'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'PUBLISH'
+  | 'APPROVE'
+  | 'REJECT'
+  | 'VERIFY'
+  | 'EXPORT'
+  | 'PERMISSION_CHANGE';
+
+export interface AuditLog {
+  id: string;
+  userId: string;
+  userName: string;
+  userRole: UserRole;
+  action: AuditActionType;
+  entityType: 'article' | 'candidate' | 'source' | 'lead' | 'property' | 'settings' | 'user' | 'indicator';
+  entityId: string;
+  entityTitle?: string;
+  previousState?: any;
+  newState?: any;
+  ipAddress?: string;
+  userAgent?: string;
+  timestamp: string;
+  notes?: string;
+}
+
+// ==========================================
+// GRIT 2.0 - CENTRAL DE FONTES HOMOLOGADAS
+// ==========================================
+
+export type SourceType =
+  | 'FONTE_OFICIAL'
+  | 'IMPRENSA_NACIONAL'
+  | 'IMPRENSA_REGIONAL'
+  | 'VEICULO_ESPECIALIZADO'
+  | 'EMPRESA'
+  | 'UNIVERSIDADE'
+  | 'AGENCIA_NOTICIAS'
+  | 'BLOG'
+  | 'FONTE_NAO_HOMOLOGADA';
+
+export interface NewsSource {
+  id: string;
+  name: string;
+  domain: string;
+  type: SourceType;
+  category: string;
+  trustScore: number; // 0 to 100
+  isActive: boolean;
+  allowsAggregation: boolean;
+  rssUrl?: string;
+  apiUrl?: string;
+  notes?: string;
+  lastVerifiedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ==========================================
+// GRIT 2.0 - GRIT VERIFY & BANCO DE PAUTAS
+// ==========================================
+
+export type VerificationStatus =
+  | 'NAO_VERIFICADO'
+  | 'EM_VERIFICACAO'
+  | 'VERIFICADO'
+  | 'DIVERGENTE'
+  | 'FONTE_INSUFICIENTE'
+  | 'REJEITADO'
+  | 'APROVADO_EDITOR'
+  | 'PUBLICADO';
+
+export type CandidateKanbanStatus =
+  | 'DESCOBERTA'
+  | 'EM_ANALISE'
+  | 'VALIDANDO'
+  | 'PRONTA_EDICAO'
+  | 'AGUARDANDO_APROVACAO'
+  | 'APROVADA'
+  | 'AGENDADA'
+  | 'PUBLICADA'
+  | 'REJEITADA';
+
+export interface TrustScoreBreakdown {
+  score: number; // 0 to 100
+  rating: 'MUITO_ALTA' | 'ALTA' | 'MODERADA' | 'BAIXA' | 'NAO_PUBLICAR';
+  sourceWeight: number; // 25%
+  urlExistenceWeight: number; // 15%
+  dateValidityWeight: number; // 10%
+  authorIdentifiedWeight: number; // 5%
+  corroborationWeight: number; // 20%
+  coherenceWeight: number; // 10%
+  institutionalOriginWeight: number; // 15%
+  notes: string[];
+}
+
+export interface NewsCandidate {
+  id: string;
+  titleOriginal: string;
+  titleSuggested: string;
+  summary: string;
+  urlOriginal: string;
+  sourceId: string;
+  sourceName: string;
+  sourceDomain: string;
+  sourceType: SourceType;
+  authorOriginal?: string;
+  publishedAtOriginal: string;
+  capturedAt: string;
+  lastUpdatedAt: string;
+  categoryId: string;
+  tags: string[];
+  
+  // Scores
+  trustScore: number; // 0 - 100
+  trustBreakdown?: TrustScoreBreakdown;
+  duplicationScore: number; // 0 - 100%
+  duplicateOfId?: string;
+  trendingScore: number; // 0 - 100
+  relevanceScore: number; // 0 - 100
+  opportunityScore: number; // 0 - 100 (GRIT Opportunity Score)
+  seoScore: number; // 0 - 100
+  
+  // Geographic
+  city?: string;
+  state?: string;
+  country?: string;
+  
+  // Status & Workflow
+  verificationStatus: VerificationStatus;
+  kanbanStatus: CandidateKanbanStatus;
+  corroboratingSourcesCount: number;
+  corroboratingUrls?: string[];
+  requiresReview: boolean;
+  verifiedAt?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedReason?: string;
+  articleId?: string; // linked when published
+  
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ==========================================
+// GRIT 2.0 - VALIDADOR DE INDICADORES OFICIAIS
+// ==========================================
+
+export interface DataIndicator {
+  id: string;
+  name: string; // Ex: "Taxa Selic", "IPCA Acumulado 12m", "PIB Trimestral"
+  value: string; // Ex: "10,75", "4,24"
+  unit: string; // "% a.a.", "R$ Bilhões", "Índice"
+  period: string; // Ex: "Agosto/2026", "2º Trimestre 2026"
+  sourceName: string; // Ex: "Banco Central do Brasil", "IBGE", "IPEA"
+  sourceUrl: string;
+  collectedAt: string;
+  lastUpdatedAt: string;
+  methodology?: string;
+  responsibleEntity: string;
+  isValidated: boolean;
+  history?: { period: string; value: string }[];
+}
+
+// ==========================================
+// GRIT 2.0 - BANCO DE OPORTUNIDADES B2B
+// ==========================================
+
+export interface GritOpportunity {
+  id: string;
+  originNewsId?: string;
+  originTitle: string;
+  opportunityType: 'FORNECEDORES' | 'IMOBILIARIO' | 'ENERGIA_SOLAR' | 'TECNOLOGIA' | 'PET_CARE' | 'B2B_LEAD' | 'INFRAESTRUTURA';
+  description: string;
+  targetIndustry: string;
+  estimatedMarketValue?: string;
+  potentialPartnersCount: number;
+  status: 'IDENTIFICADA' | 'EM_PROSPECCAO' | 'LEADS_GERADOS' | 'CONVERTIDA';
+  city?: string;
+  state?: string;
+  createdAt: string;
 }
 
 

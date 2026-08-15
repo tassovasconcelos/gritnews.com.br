@@ -346,7 +346,159 @@ CREATE TABLE IF NOT EXISTS tenpets_partners (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- HABILITAR ROW LEVEL SECURITY (RLS) - Permissões de Leitura Pública
+-- 14. Tabela de Fontes Homologadas (GRIT 2.0)
+CREATE TABLE IF NOT EXISTS sources (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  domain TEXT UNIQUE NOT NULL,
+  type TEXT NOT NULL,
+  category TEXT NOT NULL,
+  trust_score INT DEFAULT 90,
+  is_active BOOLEAN DEFAULT TRUE,
+  allows_aggregation BOOLEAN DEFAULT TRUE,
+  rss_url TEXT,
+  api_url TEXT,
+  notes TEXT,
+  last_verified_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 15. Tabela de Pautas e Notícias Candidatas (GRIT Verify & Kanban)
+CREATE TABLE IF NOT EXISTS news_candidates (
+  id TEXT PRIMARY KEY,
+  title_original TEXT NOT NULL,
+  title_suggested TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  url_original TEXT NOT NULL,
+  source_id TEXT REFERENCES sources(id) ON DELETE SET NULL,
+  source_name TEXT NOT NULL,
+  source_domain TEXT NOT NULL,
+  source_type TEXT NOT NULL,
+  author_original TEXT,
+  published_at_original TIMESTAMPTZ,
+  captured_at TIMESTAMPTZ DEFAULT NOW(),
+  last_updated_at TIMESTAMPTZ DEFAULT NOW(),
+  category_id TEXT,
+  tags TEXT[],
+  trust_score INT DEFAULT 80,
+  duplication_score INT DEFAULT 0,
+  trending_score INT DEFAULT 50,
+  relevance_score INT DEFAULT 80,
+  opportunity_score INT DEFAULT 70,
+  seo_score INT DEFAULT 80,
+  city TEXT,
+  state TEXT,
+  verification_status TEXT DEFAULT 'NAO_VERIFICADO',
+  kanban_status TEXT DEFAULT 'DESCOBERTA',
+  corroborating_sources_count INT DEFAULT 0,
+  corroborating_urls TEXT[],
+  requires_review BOOLEAN DEFAULT TRUE,
+  verified_at TIMESTAMPTZ,
+  approved_by TEXT,
+  approved_at TIMESTAMPTZ,
+  rejected_reason TEXT,
+  article_id TEXT REFERENCES articles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 16. Tabela de Logs de Auditoria e Segurança (Audit Logs)
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  user_name TEXT NOT NULL,
+  user_role TEXT NOT NULL,
+  action TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  entity_title TEXT,
+  previous_state JSONB,
+  new_state JSONB,
+  ip_address TEXT,
+  user_agent TEXT,
+  notes TEXT,
+  timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 17. Tabela de Indicadores Econômicos e Oficiais (Data Validator)
+CREATE TABLE IF NOT EXISTS data_indicators (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  value TEXT NOT NULL,
+  unit TEXT NOT NULL,
+  period TEXT NOT NULL,
+  source_name TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  collected_at TIMESTAMPTZ DEFAULT NOW(),
+  last_updated_at TIMESTAMPTZ DEFAULT NOW(),
+  methodology TEXT,
+  responsible_entity TEXT NOT NULL,
+  is_validated BOOLEAN DEFAULT TRUE,
+  history JSONB
+);
+
+-- 18. Tabela de Oportunidades Comerciais B2B
+CREATE TABLE IF NOT EXISTS opportunities (
+  id TEXT PRIMARY KEY,
+  origin_news_id TEXT,
+  origin_title TEXT NOT NULL,
+  opportunity_type TEXT NOT NULL,
+  description TEXT NOT NULL,
+  target_industry TEXT NOT NULL,
+  estimated_market_value TEXT,
+  potential_partners_count INT DEFAULT 0,
+  status TEXT DEFAULT 'IDENTIFICADA',
+  city TEXT,
+  state TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 19. Tabela de Imóveis no Eusébio (CE)
+CREATE TABLE IF NOT EXISTS eusebio_properties (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  property_type TEXT NOT NULL,
+  transaction_type TEXT DEFAULT 'SALE',
+  condo_name TEXT,
+  price NUMERIC NOT NULL,
+  condo_fee NUMERIC,
+  iptu_annual NUMERIC,
+  neighborhood TEXT NOT NULL,
+  bedrooms INT DEFAULT 3,
+  suites INT DEFAULT 2,
+  bathrooms INT DEFAULT 3,
+  garage_spots INT DEFAULT 2,
+  area_total NUMERIC NOT NULL,
+  description TEXT NOT NULL,
+  highlights TEXT[],
+  images TEXT[],
+  featured BOOLEAN DEFAULT FALSE,
+  verified BOOLEAN DEFAULT TRUE,
+  realtor JSONB,
+  views_count INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 20. Tabela de Vendas do Playbook (R$ 29,90)
+CREATE TABLE IF NOT EXISTS playbook_orders (
+  id TEXT PRIMARY KEY,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT NOT NULL,
+  customer_phone TEXT NOT NULL,
+  payment_method TEXT NOT NULL,
+  amount NUMERIC DEFAULT 29.90,
+  status TEXT DEFAULT 'PENDING_PIX',
+  pix_code TEXT,
+  coupon_code TEXT,
+  access_sent BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  paid_at TIMESTAMPTZ,
+  notes TEXT
+);
+
+-- HABILITAR ROW LEVEL SECURITY (RLS)
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE authors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
@@ -359,8 +511,15 @@ ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tenpets_articles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tenpets_rescues ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tenpets_partners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE news_candidates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE data_indicators ENABLE ROW LEVEL SECURITY;
+ALTER TABLE opportunities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE eusebio_properties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE playbook_orders ENABLE ROW LEVEL SECURITY;
 
--- Políticas de acesso público para leitura das notícias e tenpets
+-- Políticas de acesso público para leitura das notícias, imóveis e indicadores
 CREATE POLICY "Leitura publica de categorias" ON categories FOR SELECT USING (true);
 CREATE POLICY "Leitura publica de autores" ON authors FOR SELECT USING (true);
 CREATE POLICY "Leitura publica de artigos" ON articles FOR SELECT USING (true);
@@ -370,13 +529,21 @@ CREATE POLICY "Leitura publica de comentarios" ON comments FOR SELECT USING (tru
 CREATE POLICY "Leitura publica tenpets_articles" ON tenpets_articles FOR SELECT USING (true);
 CREATE POLICY "Leitura publica tenpets_rescues" ON tenpets_rescues FOR SELECT USING (true);
 CREATE POLICY "Leitura publica tenpets_partners" ON tenpets_partners FOR SELECT USING (true);
+CREATE POLICY "Leitura publica de fontes" ON sources FOR SELECT USING (true);
+CREATE POLICY "Leitura publica de indicadores" ON data_indicators FOR SELECT USING (true);
+CREATE POLICY "Leitura publica de imoveis" ON eusebio_properties FOR SELECT USING (true);
 CREATE POLICY "Inscricao publica na newsletter" ON newsletter_subscribers FOR INSERT WITH CHECK (true);
 CREATE POLICY "Envio publico de leads B2B" ON leads FOR INSERT WITH CHECK (true);
+CREATE POLICY "Criacao publica de pedidos playbook" ON playbook_orders FOR INSERT WITH CHECK (true);
 
 -- Criar Índices de Alta Performance para Busca e SEO
 CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category_id);
 CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published_at DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
+CREATE INDEX IF NOT EXISTS idx_news_candidates_kanban ON news_candidates(kanban_status);
+CREATE INDEX IF NOT EXISTS idx_news_candidates_trust ON news_candidates(trust_score DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_properties_neighborhood ON eusebio_properties(neighborhood);
 CREATE INDEX IF NOT EXISTS idx_leads_created ON leads(created_at DESC);
 `;
 }
