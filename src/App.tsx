@@ -171,7 +171,7 @@ export default function App() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   // Toast
-  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'info'; isVisible: boolean }>({
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'info' | 'error'; isVisible: boolean }>({
     message: '',
     type: 'success',
     isVisible: false
@@ -234,7 +234,7 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const showToast = (message: string, type: 'success' | 'info' = 'success') => {
+  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
     setToast({ message, type, isVisible: true });
   };
 

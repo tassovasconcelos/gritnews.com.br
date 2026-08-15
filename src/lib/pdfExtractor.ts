@@ -1,9 +1,14 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import { ArticleBlock } from '../types';
 
-// Configure pdfjs worker using CDN compatible with pdfjs-dist version
+// Set up worker source with multi-CDN fallback
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/pdf.worker.min.mjs`;
+  try {
+    const version = pdfjsLib.version || '4.10.38';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${version}/build/pdf.worker.min.mjs`;
+  } catch (e) {
+    console.warn('Could not set default PDF worker source:', e);
+  }
 }
 
 export interface ExtractedPdfResult {
@@ -16,41 +21,132 @@ export interface ExtractedPdfResult {
   blocks: ArticleBlock[];
   pdfDataUrl: string;
   fileName: string;
+  keyMetrics: { label: string; value: string }[];
 }
 
 /**
  * Renders a PDF page to a canvas and returns a compressed JPEG data URL
  */
-async function renderPageToCanvasImage(page: pdfjsLib.PDFPageProxy, scale = 1.2): Promise<string> {
+async function renderPageToCanvasImage(page: pdfjsLib.PDFPageProxy, scale = 1.3): Promise<string> {
   try {
     const viewport = page.getViewport({ scale });
     const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-
+    const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) return '';
 
-    // White background
+    // Set canvas dimensions
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+
+    // Clean white background
     context.fillStyle = '#FFFFFF';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    await page.render({
+    const renderContext = {
       canvasContext: context,
       canvas: canvas as any,
       viewport: viewport
-    }).promise;
+    };
 
-    // Return compressed JPEG image
+    await page.render(renderContext).promise;
+
+    // Return compressed JPEG (quality 0.82 balances crisp readability and storage footprint)
     return canvas.toDataURL('image/jpeg', 0.82);
   } catch (err) {
-    console.error('Error rendering PDF page to image:', err);
+    console.error('Error rendering PDF page to image canvas:', err);
     return '';
   }
 }
 
 /**
- * Main function to extract text and images from a PDF file
+ * Fallback binary text extractor for PDFs if pdfjs worker or parser fails
+ */
+function extractTextFromBinaryPdf(buffer: ArrayBuffer): string {
+  try {
+    const uint8 = new Uint8Array(buffer);
+    let raw = '';
+    const chunk = 8192;
+    for (let i = 0; i < uint8.length; i += chunk) {
+      raw += String.fromCharCode.apply(null, Array.from(uint8.subarray(i, i + chunk)));
+    }
+
+    // Extract text blocks inside BT ... ET operators or (strings)
+    const textPieces: string[] = [];
+    const textRegex = /\(([^)]+)\)\s*T[jJ]/g;
+    let match;
+    while ((match = textRegex.exec(raw)) !== null) {
+      if (match[1] && match[1].length > 1) {
+        textPieces.push(match[1]);
+      }
+    }
+
+    // Also look for bracketed TJ arrays
+    const tjRegex = /\[([^\]]+)\]\s*TJ/g;
+    while ((match = tjRegex.exec(raw)) !== null) {
+      const inside = match[1];
+      const innerMatches = inside.match(/\(([^)]+)\)/g);
+      if (innerMatches) {
+        innerMatches.forEach(m => {
+          const clean = m.replace(/[()]/g, '').trim();
+          if (clean.length > 1) textPieces.push(clean);
+        });
+      }
+    }
+
+    if (textPieces.length > 0) {
+      return textPieces.join(' ').replace(/\\([0-9]{3})/g, '').replace(/\\r|\\n|\\t/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+  } catch (e) {
+    console.warn('Fallback binary PDF extractor error:', e);
+  }
+  return '';
+}
+
+/**
+ * Helper to clean and format extracted text into high-impact sentences
+ */
+function cleanExtractedSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+|\n{2,}/)
+    .map(s => s.trim())
+    .filter(s => s.length > 25 && !s.startsWith('%') && !s.includes('obj') && !s.includes('endobj'));
+}
+
+/**
+ * Extract numbers/metrics from text to give high journalistic analytical power
+ */
+function extractKeyMetrics(text: string): { label: string; value: string }[] {
+  const metrics: { label: string; value: string }[] = [];
+  
+  // Look for currency (R$ / $ / €)
+  const currencyMatch = text.match(/(?:R\$|\$|€|USD|BRL)\s*[\d.,]+(?:\s*(?:mil|milhões|bilhões|milhão|bilhão|k|M|B))?/gi);
+  if (currencyMatch && currencyMatch[0]) {
+    metrics.push({ label: 'Montante Citado', value: currencyMatch[0].trim() });
+  }
+
+  // Look for percentages
+  const pctMatch = text.match(/[\d.,]+(?:\s*|\s*)%/g);
+  if (pctMatch && pctMatch[0]) {
+    metrics.push({ label: 'Variação / Índice', value: pctMatch[0].trim() });
+  }
+
+  // Look for years / dates
+  const yearMatch = text.match(/\b(202[0-9]|199[0-9]|20[0-1][0-9])\b/g);
+  if (yearMatch && yearMatch[0]) {
+    metrics.push({ label: 'Período de Referência', value: yearMatch[0] });
+  }
+
+  // Look for count or large numbers
+  const countMatch = text.match(/[\d.,]+\s*(?:usuários|empresas|casos|pontos|pessoas|habitantes|veículos|produtos|leitores)/gi);
+  if (countMatch && countMatch[0]) {
+    metrics.push({ label: 'Volume Quantitativo', value: countMatch[0].trim() });
+  }
+
+  return metrics.slice(0, 4);
+}
+
+/**
+ * Main function to extract text and images from a PDF file with complete fault tolerance and maximum intensity
  */
 export async function extractPdfContent(file: File): Promise<ExtractedPdfResult> {
   const fileName = file.name;
@@ -58,12 +154,11 @@ export async function extractPdfContent(file: File): Promise<ExtractedPdfResult>
 
   // Read array buffer for PDFjs
   const arrayBuffer = await file.arrayBuffer();
-  
-  // Create a lightweight compressed data URL for attachment preview (to avoid LocalStorage quota crash)
+
+  // Create inline preview URL if file is reasonable size
   let pdfDataUrl = '';
   try {
-    // If file is smaller than 1.5MB, use readAsDataURL, otherwise compress/truncate notice
-    if (file.size <= 1.5 * 1024 * 1024) {
+    if (file.size <= 2 * 1024 * 1024) {
       const reader = new FileReader();
       pdfDataUrl = await new Promise((resolve) => {
         reader.onload = (e) => resolve((e.target?.result as string) || '');
@@ -72,176 +167,218 @@ export async function extractPdfContent(file: File): Promise<ExtractedPdfResult>
       });
     }
   } catch (e) {
-    console.warn('PDF file too large for full inline base64, using lightweight reference:', e);
+    console.warn('PDF file conversion to data URL skipped:', e);
   }
 
   let fullText = '';
   const pagesText: string[] = [];
   const pageImages: string[] = [];
 
+  // 1. Attempt PDF.js parsing
   try {
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    // Try primary loading with worker and fallback settings
+    const loadingTask = pdfjsLib.getDocument({
+      data: arrayBuffer,
+      cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '4.10.38'}/cmaps/`,
+      cMapPacked: true,
+      useSystemFonts: true
+    });
+
     const pdf = await loadingTask.promise;
-    const numPages = Math.min(pdf.numPages, 12); // Process up to 12 pages
+    const numPages = Math.min(pdf.numPages, 16); // Extract up to 16 pages
 
     for (let i = 1; i <= numPages; i++) {
-      const page = await pdf.getPage(i);
-      
-      // Extract text content
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => item.str || '')
-        .join(' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      try {
+        const page = await pdf.getPage(i);
 
-      if (pageText) {
-        pagesText.push(pageText);
-        fullText += ` ${pageText}`;
-      }
+        // Extract text
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str || '')
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
 
-      // Render page image (for pages 1 to 5 to avoid heavy memory)
-      if (i <= 5) {
-        const pageImg = await renderPageToCanvasImage(page, 1.2);
-        if (pageImg) {
-          pageImages.push(pageImg);
+        if (pageText) {
+          pagesText.push(pageText);
+          fullText += ` ${pageText}`;
         }
+
+        // Render page as image (capture first 6 pages for visual illustrations and evidence blocks)
+        if (i <= 6) {
+          const pageImg = await renderPageToCanvasImage(page, 1.3);
+          if (pageImg && pageImg.length > 500) {
+            pageImages.push(pageImg);
+          }
+        }
+      } catch (pageErr) {
+        console.warn(`Error on page ${i}:`, pageErr);
       }
     }
   } catch (err) {
-    console.error('Error parsing PDF with pdfjs:', err);
+    console.warn('PDF.js standard parse encountered an error, activating secondary stream parser:', err);
+    // Secondary fallback: extract text from raw binary stream
+    const fallbackText = extractTextFromBinaryPdf(arrayBuffer);
+    if (fallbackText) {
+      fullText = fallbackText;
+      pagesText.push(fallbackText);
+    }
   }
 
-  // Fallback if no text extracted (e.g. scanned image PDF)
-  if (!fullText.trim()) {
-    fullText = `Documento em PDF "${fileName}". Conteúdo visual e dados consolidados extraídos diretamente da publicação original.`;
+  // If still empty (e.g. image-only PDF), generate rich contextual text
+  if (!fullText || fullText.trim().length < 30) {
+    fullText = `O documento oficial "${fileName}" reúne registros visuais, tabelas e evidências documentais de alto valor estratégico e informativo. O arquivo completo encontra-se diagramado com capturas das páginas originais e disponível para download na íntegra.`;
   }
 
-  // Generate intense, high-impact journalistic headline & structure
-  const firstParagraphs = fullText
-    .split(/(?:\.\s+|\n+)/)
-    .filter(p => p.trim().length > 20);
+  // Parse sentences and metrics
+  const sentences = cleanExtractedSentences(fullText);
+  const keyMetrics = extractKeyMetrics(fullText);
 
-  const rawTitle = firstParagraphs[0] || cleanName;
-  const headline = rawTitle.length > 90 ? rawTitle.substring(0, 90) + '...' : rawTitle;
+  // Generate intense, high-impact journalistic headline
+  const headlineCandidate = sentences[0] || cleanName;
+  let formattedTitle = headlineCandidate
+    .replace(/^[\d\s.\-_]+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  const title = headline.charAt(0).toUpperCase() + headline.slice(1);
-  const subtitle = firstParagraphs[1] 
-    ? (firstParagraphs[1].length > 130 ? firstParagraphs[1].substring(0, 130) + '...' : firstParagraphs[1])
-    : `Reportagem e investigação especial baseada no documento oficial "${fileName}"`;
+  if (formattedTitle.length > 95) {
+    formattedTitle = formattedTitle.substring(0, 95) + '...';
+  }
+  if (formattedTitle.length < 15) {
+    formattedTitle = `Dossiê Especial: As Revelações e Dados do Documento "${cleanName}"`;
+  }
+  const title = formattedTitle.charAt(0).toUpperCase() + formattedTitle.slice(1);
 
-  const summary = firstParagraphs.slice(0, 3).join(' ') 
-    ? (firstParagraphs.slice(0, 3).join(' ').substring(0, 260) + '...')
-    : `Análise profunda e dados exclusivos extraídos da publicação em PDF "${fileName}". Documentação completa anexada para consulta pública e transparência.`;
+  // Subtitle / Linha Fina
+  const subCandidate = sentences[1] || sentences[0] || `Análise detalhada e dados extraídos do documento oficial ${fileName}`;
+  const subtitle = subCandidate.length > 150 
+    ? subCandidate.substring(0, 150) + '...'
+    : subCandidate;
 
-  // Build INTENSE, multi-block journalistic structure
+  // Summary / Lead
+  const summaryParts = sentences.slice(0, 3).join(' ');
+  const summary = summaryParts.length > 280
+    ? summaryParts.substring(0, 280) + '...'
+    : summaryParts || `Reportagem investigativa e estruturação de dados baseada no arquivo "${fileName}". Conteúdo completo verificado com registros visuais e documento anexo na íntegra.`;
+
+  // Construct High-Intensity Magazine/Newspaper Blocks
   const blocks: ArticleBlock[] = [];
 
-  // Head
+  // 1. High Impact Headline Block
   blocks.push({
     id: `b-head-${Date.now()}-1`,
     type: 'heading2',
-    content: `🔥 Exclusivo: O Impacto e os Fatos de "${title}"`
+    content: `🔥 Investigação & Análise: Os Fatos Documentados em "${title}"`
   });
 
-  // Callout badge box
+  // 2. Callout Box (Official Attachment Badge)
   blocks.push({
     id: `b-callout-${Date.now()}-1`,
     type: 'callout',
-    content: `📌 **DOCUMENTO OFICIAL ANEXADO**: Esta matéria foi gerada a partir da análise direta do arquivo PDF "${fileName}". A íntegra das imagens, páginas e gráficos está disponível para visualização e download no leitor integrado abaixo.`
+    content: `📄 **DOCUMENTO E EVIDÊNCIAS ANEXADAS**: Esta matéria foi gerada a partir da extração e leitura detalhada do arquivo **${fileName}**. Todas as páginas, gráficos e dados originais foram processados e encontram-se disponíveis no leitor e acervo digital abaixo.`
   });
 
-  // First paragraph with intensity
-  const introText = firstParagraphs.slice(0, 2).join(' ') || 
-    `O documento registrado sob o nome "${fileName}" traz revelações e dados cruciais para a compreensão do cenário atual. Ao examinar cada uma de suas páginas, sobressai a urgência de dar visibilidade a esses fatos com precisão e clareza jornalística.`;
-  
+  // 3. Lead Paragraph (Intense context)
+  const p1Content = sentences.slice(0, 2).join(' ') ||
+    `O material contido em "${fileName}" estabelece um panorama decisivo para a compreensão dos fatos recentes. A apuração rigorosa de cada dado traz à tona elementos que transformam a perspectiva sobre o tema, exigindo atenção detalhada de analistas, profissionais e do público em geral.`;
+
   blocks.push({
     id: `b-p-${Date.now()}-1`,
     type: 'paragraph',
-    content: introText
+    content: p1Content
   });
 
-  // Insert First Rendered Image from PDF if available!
+  // 4. Extracted Page 1 Image (Sharp copy of the original PDF page)
   if (pageImages[0]) {
     blocks.push({
       id: `b-img-${Date.now()}-1`,
       type: 'image',
       content: pageImages[0],
-      caption: `📸 Registro Oficial — Página 1 do Documento PDF "${fileName}"`
+      caption: `📸 Evidência Documental — Reprodução da Página 1 do Documento "${fileName}"`
     });
   }
 
-  // Highlight Quote (Aspas intensas)
-  const quoteText = firstParagraphs[2] || `“Quando os fatos são documentados com rigor, a informação deixa de ser opinião e passa a ser transformação.”`;
-  blocks.push({
-    id: `b-quote-${Date.now()}-1`,
-    type: 'quote',
-    content: quoteText.length > 200 ? quoteText.substring(0, 200) + '...' : quoteText
-  });
-
-  // Second Heading
+  // 5. Section: Pontos Cruciais & Métricas
   blocks.push({
     id: `b-head-${Date.now()}-2`,
     type: 'heading3',
-    content: '⚡ Análise dos Fatos e Desdobramentos'
+    content: '⚡ Pontos Críticos e Revelações dos Dados'
   });
 
-  // Second Paragraphs
-  const midText = firstParagraphs.slice(2, 5).join(' ') ||
-    `A análise pormenorizada do arquivo revela indicadores chave que moldam as próximas decisões na área. O engajamento com estas informações é fundamental para garantir a transparência das ações e a prestação de contas à sociedade.`;
+  const p2Content = sentences.slice(2, 5).join(' ') ||
+    `Os indicadores consolidados ao longo do relatório apontam tendências claras e exigem um olhar crítico sobre as metas estabelecidas. A consistência dos dados reflete a seriedade dos registros e consolida o documento como fonte de referência fundamental.`;
 
   blocks.push({
     id: `b-p-${Date.now()}-2`,
     type: 'paragraph',
-    content: midText
+    content: p2Content
   });
 
-  // Insert Second Rendered Image from PDF if available!
+  // 6. Highlight Quote
+  const quoteSentence = sentences.find(s => s.length > 50 && s.length < 180) || 
+    `“A transparência na disponibilização de documentos e relatórios técnicos é o alicerce fundamental para a tomada de decisão assertiva e o fortalecimento da credibilidade institucional.”`;
+
+  blocks.push({
+    id: `b-quote-${Date.now()}-1`,
+    type: 'quote',
+    content: `“${quoteSentence.replace(/^["“”']|["“”']$/g, '')}”`
+  });
+
+  // 7. Extracted Page 2 Image (Charts, tables or secondary evidence)
   if (pageImages[1]) {
     blocks.push({
       id: `b-img-${Date.now()}-2`,
       type: 'image',
       content: pageImages[1],
-      caption: `📸 Registro Visual e Gráficos — Página 2 do PDF "${fileName}"`
-    });
-  } else if (pageImages[0]) {
-    blocks.push({
-      id: `b-img-${Date.now()}-2`,
-      type: 'image',
-      content: pageImages[0],
-      caption: `📷 Documentação anexada do relatório "${fileName}"`
+      caption: `📊 Gráficos e Registros — Página 2 extraída do arquivo "${fileName}"`
     });
   }
 
-  // Additional paragraphs if full text available
-  if (firstParagraphs.length > 5) {
+  // 8. Section: Análise Aprofundada dos Desdobramentos
+  if (sentences.length > 5) {
     blocks.push({
       id: `b-head-${Date.now()}-3`,
       type: 'heading3',
-      content: '🔍 Conclusão e Transparência de Dados'
+      content: '🔍 Desdobramentos e Perspectivas Estratégicas'
     });
+
+    const p3Content = sentences.slice(5, 9).join(' ') ||
+      `À medida que novos atores analisam os desdobramentos deste relatório, ampliam-se as discussões acerca das diretrizes operacionais e regulatórias. O acesso irrestrito ao material completo viabiliza uma leitura independente e aprofundada dos impactos futuros.`;
+
     blocks.push({
       id: `b-p-${Date.now()}-3`,
       type: 'paragraph',
-      content: firstParagraphs.slice(5, 8).join(' ')
+      content: p3Content
     });
   }
 
-  // Insert 3rd image if present
+  // 9. Extracted Page 3 Image (if available)
   if (pageImages[2]) {
     blocks.push({
       id: `b-img-${Date.now()}-3`,
       type: 'image',
       content: pageImages[2],
-      caption: `📸 Detalhe e Evidência — Página 3 do PDF "${fileName}"`
+      caption: `📑 Anexo Técnico e Conclusões — Página 3 do PDF "${fileName}"`
     });
   }
 
-  // Final Callout
+  // 10. Additional pages images gallery or callout
+  if (pageImages.length > 3) {
+    for (let pi = 3; pi < Math.min(pageImages.length, 6); pi++) {
+      blocks.push({
+        id: `b-img-${Date.now()}-${pi + 1}`,
+        type: 'image',
+        content: pageImages[pi],
+        caption: `📄 Registro Oficial — Página ${pi + 1} do Documento "${fileName}"`
+      });
+    }
+  }
+
+  // 11. Final Callout with High Engagement
   blocks.push({
     id: `b-callout-${Date.now()}-2`,
     type: 'callout',
-    content: `📢 **Compartilhe esta informação**: O acesso à informação confiável fortalece a cidadania. Baixe o PDF anexado e compartilhe esta reportagem com sua rede.`
+    content: `📢 **CONSULTE A ÍNTEGRA**: Para verificar todos os detalhes, assinaturas e dados brutos, faça o download do PDF original através dos botões no topo ou rodapé desta publicação. Compartilhe esta matéria para ampliar o acesso à informação de qualidade.`
   });
 
   return {
@@ -253,6 +390,7 @@ export async function extractPdfContent(file: File): Promise<ExtractedPdfResult>
     pageImages,
     blocks,
     pdfDataUrl,
-    fileName
+    fileName,
+    keyMetrics
   };
 }

@@ -65,6 +65,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
   const [pdfUrl, setPdfUrl] = useState<string>('');
   const [pdfFileName, setPdfFileName] = useState<string>('');
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
+  const [extractedImages, setExtractedImages] = useState<string[]>([]);
   const [blocks, setBlocks] = useState<ArticleBlock[]>([
     { id: 'b-1', type: 'paragraph', content: 'Escreva a introdução da matéria...' }
   ]);
@@ -104,6 +105,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setSummary('');
     setPdfUrl('');
     setPdfFileName('');
+    setExtractedImages([]);
     setCategoryId(categories[0]?.id || '');
     setAuthorId(authors[0]?.id || '');
     setFeaturedImage('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1200');
@@ -124,6 +126,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
     setSummary(art.summary);
     setPdfUrl(art.pdfUrl || '');
     setPdfFileName(art.pdfUrl ? 'documento-anexo.pdf' : '');
+    setExtractedImages([]);
     setCategoryId(art.categoryId);
     setAuthorId(art.authorId);
     setFeaturedImage(art.featuredImage);
@@ -148,6 +151,7 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
       // Store PDF url reference and file name
       setPdfUrl(extracted.pdfDataUrl);
       setPdfFileName(file.name);
+      setExtractedImages(extracted.pageImages || []);
 
       // Add extracted page images to Acervo / Media Assets
       if (extracted.pageImages && extracted.pageImages.length > 0) {
@@ -173,6 +177,10 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
       setSubtitle(extracted.subtitle);
       setSummary(extracted.summary);
       setBlocks(extracted.blocks);
+
+      // Open editor modal if not already opened
+      setActiveTab('editor');
+      setIsModalOpen(true);
 
       setIsProcessingPdf(false);
       onShowToast(`PDF "${file.name}" processado com sucesso! ${extracted.pageImages.length} imagem(ns) extraída(s).`, 'success');
@@ -359,13 +367,32 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
           <p className="text-sm text-[#5C6B7A]">Crie, diagrame por blocos, ilustre e publique matérias em gritnews.com.br</p>
         </div>
 
-        <button
-          onClick={handleOpenNew}
-          className="bg-[#145EDB] hover:bg-[#0f4eb8] text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md cursor-pointer self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Criar Nova Matéria</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <label className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md cursor-pointer transition-all">
+            <Upload className="w-4 h-4 text-slate-950" />
+            <span>{isProcessingPdf ? 'Processando PDF...' : '📄 Anexar PDF & Gerar Matéria'}</span>
+            <input
+              type="file"
+              accept=".pdf,application/pdf"
+              className="hidden"
+              disabled={isProcessingPdf}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleUploadPdfAndGenerateArticle(file);
+                }
+              }}
+            />
+          </label>
+
+          <button
+            onClick={handleOpenNew}
+            className="bg-[#145EDB] hover:bg-[#0f4eb8] text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Criar Nova Matéria</span>
+          </button>
+        </div>
       </div>
 
       {/* Articles Table */}
@@ -545,32 +572,83 @@ export const AdminArticles: React.FC<AdminArticlesProps> = ({
                     </div>
 
                     {pdfUrl && (
-                      <div className="bg-slate-900/90 p-3 rounded-xl border border-amber-500/40 flex items-center justify-between gap-3 text-xs">
-                        <div className="flex items-center gap-2 overflow-hidden text-slate-200 font-mono">
-                          <FileCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span className="truncate">PDF Anexado ao Artigo: <strong>{pdfFileName || 'documento.pdf'}</strong></span>
+                      <div className="space-y-3">
+                        <div className="bg-slate-900/90 p-3 rounded-xl border border-amber-500/40 flex items-center justify-between gap-3 text-xs">
+                          <div className="flex items-center gap-2 overflow-hidden text-slate-200 font-mono">
+                            <FileCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <span className="truncate">PDF Anexado ao Artigo: <strong>{pdfFileName || 'documento.pdf'}</strong></span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <a
+                              href={pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-amber-300 hover:underline text-[11px] font-bold"
+                            >
+                              Visualizar PDF
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPdfUrl('');
+                                setPdfFileName('');
+                                setExtractedImages([]);
+                                onShowToast('PDF anexo removido.');
+                              }}
+                              className="text-red-400 hover:text-red-300 text-[11px] font-bold cursor-pointer"
+                            >
+                              Remover
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <a
-                            href={pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-amber-300 hover:underline text-[11px] font-bold"
-                          >
-                            Visualizar PDF
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPdfUrl('');
-                              setPdfFileName('');
-                              onShowToast('PDF anexo removido.');
-                            }}
-                            className="text-red-400 hover:text-red-300 text-[11px] font-bold cursor-pointer"
-                          >
-                            Remover
-                          </button>
-                        </div>
+
+                        {extractedImages.length > 0 && (
+                          <div className="bg-slate-950/60 p-3 rounded-xl border border-white/10 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                                <ImageIcon className="w-3.5 h-3.5" />
+                                <span>{extractedImages.length} Imagens Extraídas do PDF:</span>
+                              </span>
+                              <span className="text-[11px] text-slate-400">Clique para definir como Capa ou Inserir no Texto</span>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                              {extractedImages.map((img, idx) => (
+                                <div key={idx} className="group relative bg-slate-900 rounded-lg overflow-hidden border border-slate-700/50 hover:border-amber-400 transition-all">
+                                  <img
+                                    src={img}
+                                    alt={`Página ${idx + 1}`}
+                                    className="w-full h-20 object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-1 p-1 transition-opacity">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setFeaturedImage(img);
+                                        onShowToast(`Página ${idx + 1} definida como Capa da Matéria!`);
+                                      }}
+                                      className="w-full text-[9px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold py-1 px-1 rounded text-center cursor-pointer"
+                                    >
+                                      ⭐ Capa
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleAddBlock('image', img, `📸 Registro do Documento — Página ${idx + 1}`);
+                                        onShowToast(`Imagem da Página ${idx + 1} inserida nos blocos!`);
+                                      }}
+                                      className="w-full text-[9px] bg-[#145EDB] hover:bg-[#0f4eb8] text-white font-bold py-1 px-1 rounded text-center cursor-pointer"
+                                    >
+                                      ➕ Bloco
+                                    </button>
+                                  </div>
+                                  <div className="absolute bottom-0 left-0 right-0 bg-slate-950/80 text-[9px] text-slate-300 font-mono text-center py-0.5">
+                                    Pág {idx + 1}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
