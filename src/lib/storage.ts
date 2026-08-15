@@ -1,5 +1,5 @@
-import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner } from '../types';
-import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS, INITIAL_TENPETS_ARTICLES, INITIAL_TENPETS_RESCUES, INITIAL_TENPETS_PARTNERS } from '../data/initialData';
+import { Article, Category, AuthorProfile, Partner, Offer, AdCampaign, NewsletterSubscriber, Lead, Comment, SiteSettings, MediaAsset, TrendingTopic, TenPetsArticle, TenPetsRescue, TenPetsPartner, EusebioProperty } from '../types';
+import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_AUTHORS, INITIAL_PARTNERS, INITIAL_OFFERS, INITIAL_AD_CAMPAIGNS, INITIAL_SITE_SETTINGS, INITIAL_TENPETS_ARTICLES, INITIAL_TENPETS_RESCUES, INITIAL_TENPETS_PARTNERS, INITIAL_EUSEBIO_PROPERTIES } from '../data/initialData';
 
 const KEYS = {
   ARTICLES: 'grit_news_articles_v3',
@@ -18,7 +18,8 @@ const KEYS = {
   CURRENT_ROLE: 'grit_news_current_role_v1',
   TENPETS_ARTICLES: 'grit_news_tenpets_articles_v2',
   TENPETS_RESCUES: 'grit_news_tenpets_rescues_v1',
-  TENPETS_PARTNERS: 'grit_news_tenpets_partners_v1'
+  TENPETS_PARTNERS: 'grit_news_tenpets_partners_v1',
+  EUSEBIO_PROPERTIES: 'grit_news_eusebio_properties_v1'
 };
 
 function loadItem<T>(key: string, defaultValue: T): T {
@@ -150,6 +151,7 @@ export function initStorage(): void {
   syncSeedList(KEYS.TENPETS_ARTICLES, INITIAL_TENPETS_ARTICLES);
   syncSeedList(KEYS.TENPETS_RESCUES, INITIAL_TENPETS_RESCUES);
   syncSeedList(KEYS.TENPETS_PARTNERS, INITIAL_TENPETS_PARTNERS);
+  syncSeedList(KEYS.EUSEBIO_PROPERTIES, INITIAL_EUSEBIO_PROPERTIES);
 }
 
 const INITIAL_MEDIA: MediaAsset[] = [
@@ -806,4 +808,31 @@ export function deleteTenPetsPartner(id: string): void {
   const current = getTenPetsPartners().filter(item => item.id !== id);
   saveTenPetsPartners(current);
 }
+
+// Eusebio Properties
+export function getEusebioProperties(): EusebioProperty[] {
+  initStorage();
+  return loadItem<EusebioProperty[]>(KEYS.EUSEBIO_PROPERTIES, INITIAL_EUSEBIO_PROPERTIES);
+}
+
+export function saveEusebioProperties(properties: EusebioProperty[]): void {
+  saveItem(KEYS.EUSEBIO_PROPERTIES, properties);
+}
+
+export function addEusebioProperty(property: EusebioProperty): void {
+  const current = getEusebioProperties();
+  saveEusebioProperties([property, ...current]);
+}
+
+export function updateEusebioProperty(property: EusebioProperty): void {
+  const current = getEusebioProperties();
+  const updated = current.map(item => item.id === property.id ? property : item);
+  saveEusebioProperties(updated);
+}
+
+export function deleteEusebioProperty(id: string): void {
+  const current = getEusebioProperties().filter(item => item.id !== id);
+  saveEusebioProperties(current);
+}
+
 

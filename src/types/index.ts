@@ -303,3 +303,41 @@ export interface TenPetsPartner {
   featured: boolean;
 }
 
+export type PropertyType = 'casa_condominio' | 'apartamento' | 'lote_terreno' | 'comercial' | 'cobertura';
+export type PropertyPurpose = 'venda' | 'locacao';
+
+export interface EusebioProperty {
+  id: string;
+  title: string;
+  slug: string;
+  type: PropertyType;
+  purpose: PropertyPurpose;
+  price: number;
+  condoFee?: number;
+  iptu?: number;
+  neighborhood: string;
+  address?: string;
+  bedrooms: number;
+  suites: number;
+  bathrooms: number;
+  garageSpots: number;
+  areaTotal: number;
+  areaPrivate?: number;
+  description: string;
+  highlights: string[];
+  images: string[];
+  featured: boolean;
+  verified: boolean;
+  realtor: {
+    name: string;
+    creci?: string;
+    agency?: string;
+    phone: string; // WhatsApp
+    email?: string;
+    avatar?: string;
+  };
+  createdAt: string;
+  viewsCount: number;
+}
+
+

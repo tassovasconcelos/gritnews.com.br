@@ -7,6 +7,7 @@ interface FooterProps {
   categories: Category[];
   onSelectCategory: (slug?: string) => void;
   onNavigateOffers: () => void;
+  onNavigateImoveis?: () => void;
   onOpenDocs: () => void;
   onNavigateAdmin?: () => void;
   onOpenContactModal?: () => void;
@@ -16,6 +17,7 @@ export const Footer: React.FC<FooterProps> = ({
   categories,
   onSelectCategory,
   onNavigateOffers,
+  onNavigateImoveis,
   onOpenDocs,
   onNavigateAdmin,
   onOpenContactModal
@@ -84,6 +86,13 @@ export const Footer: React.FC<FooterProps> = ({
                   Central de Ofertas B2B
                 </button>
               </li>
+              {onNavigateImoveis && (
+                <li>
+                  <button onClick={onNavigateImoveis} className="text-[#FF8A00] hover:text-amber-300 font-bold transition-colors">
+                    Imóveis no Eusébio (Casas & Lotes)
+                  </button>
+                </li>
+              )}
               <li>
                 <button onClick={onOpenDocs} className="hover:text-[#FF8A00] transition-colors">
                   Manual de Publicação & Hostinger

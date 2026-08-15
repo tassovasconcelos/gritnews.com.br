@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope } from 'lucide-react';
+import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope, Building2 } from 'lucide-react';
 import { Category } from '../../types';
 import { GritNewsLogo } from '../ui/GritNewsLogo';
 import { TenPetsLogo } from '../ui/TenPetsLogo';
@@ -12,6 +12,7 @@ interface NavbarProps {
   onNavigateBookmarks: () => void;
   onNavigateAdmin: () => void;
   onNavigateTenPets: () => void;
+  onNavigateImoveis?: () => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
   onOpenDocs: () => void;
@@ -40,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateBookmarks,
   onNavigateAdmin,
   onNavigateTenPets,
+  onNavigateImoveis,
   onSearch,
   onNavigateHome,
   onOpenDocs,
@@ -181,6 +183,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             Todas as Notícias
           </button>
 
+          {/* Imóveis Eusébio Hub Navigation Button */}
+          {onNavigateImoveis && (
+            <button
+              onClick={onNavigateImoveis}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-[#0D182A] hover:bg-[#1E293B] text-white shadow-xs hover:scale-105 transition-all border border-amber-500/50"
+            >
+              <Building2 className="w-3.5 h-3.5 text-[#FF8A00]" />
+              <span>Imóveis Eusébio</span>
+              <span className="bg-[#FF8A00] text-slate-950 text-[9px] px-1.5 py-0.2 rounded font-black uppercase tracking-wider">
+                Novo
+              </span>
+            </button>
+          )}
+
           {/* TenPets Subdomain Portal Button */}
           <button
             onClick={onNavigateTenPets}
@@ -251,6 +267,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+            {onNavigateImoveis && (
+              <button
+                onClick={() => {
+                  onNavigateImoveis();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-[#0D182A] text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-amber-500/50"
+              >
+                <Building2 className="w-4 h-4 text-[#FF8A00]" />
+                <span>Hub de Imóveis no Eusébio (Novo)</span>
+              </button>
+            )}
+
             <a
               href="https://meli.la/1kXwMJQ"
               target="_blank"

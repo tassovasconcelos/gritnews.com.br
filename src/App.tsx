@@ -12,6 +12,7 @@ import { BookmarksView } from './components/views/BookmarksView';
 import { TagView } from './components/views/TagView';
 import { DocumentationModal } from './components/views/DocumentationModal';
 import { TenPetsView } from './components/views/TenPetsView';
+import { EusebioImoveisView } from './components/views/EusebioImoveisView';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
@@ -43,6 +44,7 @@ type ViewMode =
   | 'bookmarks'
   | 'tag'
   | 'tenpets'
+  | 'imoveis'
   | 'admin';
 
 const resolveRouteFromUrl = (
@@ -72,7 +74,19 @@ const resolveRouteFromUrl = (
     return { view: 'tenpets' as ViewMode };
   }
 
-  // 2. Admin / Offers / Bookmarks
+  // 2. Imóveis no Eusébio
+  if (
+    params.get('view') === 'imoveis' ||
+    params.get('view') === 'eusebio' ||
+    pathLower.includes('/imoveis') ||
+    pathLower.includes('/eusebio') ||
+    hash.includes('imoveis') ||
+    hash.includes('eusebio')
+  ) {
+    return { view: 'imoveis' as ViewMode };
+  }
+
+  // 3. Admin / Offers / Bookmarks
   if (params.get('view') === 'admin' || pathLower.includes('/admin')) return { view: 'admin' as ViewMode };
   if (params.get('view') === 'offers' || pathLower.includes('/offers')) return { view: 'offers' as ViewMode };
   if (params.get('view') === 'bookmarks' || pathLower.includes('/bookmarks')) return { view: 'bookmarks' as ViewMode };
@@ -394,6 +408,10 @@ export default function App() {
         onNavigateBookmarks={handleNavigateBookmarks}
         onNavigateAdmin={handleNavigateAdmin}
         onNavigateTenPets={handleNavigateTenPets}
+        onNavigateImoveis={() => {
+          setCurrentView('imoveis');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onOpenContactModal={() => setIsContactModalOpen(true)}
         bookmarksCount={getBookmarks().length}
@@ -414,6 +432,12 @@ export default function App() {
             onSelectPartner={handleSelectPartner}
             onNavigateOffers={handleNavigateOffers}
             onOpenLeadModal={setLeadModalOffer}
+            onShowToast={showToast}
+          />
+        )}
+
+        {currentView === 'imoveis' && (
+          <EusebioImoveisView
             onShowToast={showToast}
           />
         )}
@@ -518,6 +542,10 @@ export default function App() {
         categories={categories}
         onSelectCategory={handleSelectCategory}
         onNavigateOffers={() => setCurrentView('offers')}
+        onNavigateImoveis={() => {
+          setCurrentView('imoveis');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onNavigateAdmin={() => setCurrentView('admin')}
         onOpenContactModal={() => setIsContactModalOpen(true)}
