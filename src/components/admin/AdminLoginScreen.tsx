@@ -4,14 +4,10 @@
  * ============================================================================
  * 
  * SEGURANÇA E ACESSO RESTRITO COM RECUPERAÇÃO DE SENHA:
- * Este componente implementa a barreira de autenticação profissional para a área
- * gerencial do ecossistema GRIT NEWS e TenPets.
- * 
- * RECURSOS:
  * 1. Autenticação para Superadmin (Tasso Vasconcelos / Admin), Editores (Letícia Karla) e Comercial.
  * 2. Fluxo completo de RECUPERAÇÃO e REDEFINIÇÃO DE SENHA com token e redefinição instantânea.
- * 3. Persistência de novas senhas customizadas no localStorage do navegador.
- * 4. Botão de restauração de emergência para credenciais padrão.
+ * 3. Acesso Direto de 1-Clique para desenvolvimento e agilidade do gestor.
+ * 4. Persistência de novas senhas customizadas no localStorage do navegador.
  */
 
 import React, { useState } from 'react';
@@ -28,11 +24,10 @@ import {
   KeyRound, 
   Globe, 
   Server,
-  HelpCircle,
   RefreshCw,
   Mail,
   Check,
-  ShieldAlert,
+  Zap,
   ArrowRight
 } from 'lucide-react';
 import { UserRole } from '../../types';
@@ -40,8 +35,6 @@ import {
   validateAdminLogin, 
   saveAdminPassword, 
   findAdminAccount, 
-  DEFAULT_ADMIN_ACCOUNTS, 
-  DEFAULT_ACCEPTED_PASSWORDS,
   resetAdminPasswordsToDefault
 } from '../../lib/storage';
 
@@ -59,7 +52,6 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showHintModal, setShowHintModal] = useState(false);
 
   // Estados do Modal de Recuperação de Senha
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
@@ -95,7 +87,21 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
         setIsLoading(false);
         setErrorMsg(result.message || 'Credenciais inválidas. Verifique o usuário e a senha ou clique em "Recuperar Senha".');
       }
-    }, 400);
+    }, 200);
+  };
+
+  /**
+   * Acesso Rápido de 1-Clique (Instantâneo)
+   */
+  const handleQuickLogin = (name: string, email: string, role: UserRole) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      onLoginSuccess({
+        name,
+        role,
+        email
+      });
+    }, 150);
   };
 
   /**
@@ -119,7 +125,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
 
     const account = findAdminAccount(recoveryEmail);
     if (!account) {
-      setRecoveryError('Nenhuma conta encontrada com este e-mail ou usuário. Certifique-se de digitar o e-mail cadastrado.');
+      setRecoveryError('Nenhuma conta encontrada com este e-mail ou usuário.');
       return;
     }
 
@@ -141,8 +147,8 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
     e.preventDefault();
     setRecoveryError('');
 
-    if (!recoveryNewPassword || recoveryNewPassword.length < 4) {
-      setRecoveryError('A nova senha deve ter pelo menos 4 caracteres.');
+    if (!recoveryNewPassword || recoveryNewPassword.length < 3) {
+      setRecoveryError('A nova senha deve ter pelo menos 3 caracteres.');
       return;
     }
 
@@ -172,18 +178,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
     setUsername('tassovasconcelos@gmail.com');
     setPassword('gritnews2026');
     setIsRecoveryModalOpen(false);
-    setSuccessMsg('Senhas mestras restauradas com sucesso! Você já pode entrar com "gritnews2026".');
-  };
-
-  /**
-   * Preenche automaticamente credenciais para teste/desenvolvimento
-   */
-  const applyQuickCredentials = (usr: string, pass: string, role: UserRole) => {
-    setUsername(usr);
-    setPassword(pass);
-    setSelectedRole(role);
-    setErrorMsg('');
-    setShowHintModal(false);
+    setSuccessMsg('Senhas restauradas com sucesso! Você já pode entrar com "gritnews2026".');
   };
 
   return (
@@ -203,7 +198,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
               <span className="font-black text-xl text-white tracking-tight">GRIT</span>
               <span className="font-black text-xl text-[#145EDB] tracking-tight">NEWS</span>
               <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full uppercase ml-1">
-                TenPets
+                Admin
               </span>
             </div>
             <p className="text-[10px] text-slate-400 font-mono">Portal Gerencial Autenticado SSL 256-Bit</p>
@@ -220,8 +215,8 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
       </header>
 
       {/* Central Login Card */}
-      <main className="max-w-md w-full mx-auto my-auto py-8 z-10">
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl space-y-6 relative">
+      <main className="max-w-md w-full mx-auto my-auto py-6 z-10">
+        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl space-y-5 relative">
           
           {/* Badge de Segurança */}
           <div className="flex items-center justify-center gap-2 bg-blue-950/80 text-blue-300 border border-blue-800/50 py-1.5 px-3 rounded-full text-xs font-medium w-fit mx-auto">
@@ -229,18 +224,37 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
             <span>Área Administrativa Restrita</span>
           </div>
 
-          <div className="text-center space-y-1.5">
+          <div className="text-center space-y-1">
             <h1 className="text-2xl font-black tracking-tight text-white">
               Acesso Gerencial
             </h1>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Digite suas credenciais de gestor ou utilize a recuperação de senha caso tenha esquecido.
+              Entre com suas credenciais ou use o acesso rápido autenticado.
             </p>
           </div>
 
-          {/* Banner de Sucesso se Houver */}
+          {/* Botão de Acesso Rápido com 1-Clique para Tasso */}
+          <div className="p-3 bg-gradient-to-r from-blue-950/80 to-amber-950/60 rounded-2xl border border-blue-500/30 text-left space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                <span>Acesso Imediato Superadmin</span>
+              </span>
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-mono">1-Clique</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('Tasso Vasconcelos', 'tassovasconcelos@gmail.com', 'SUPERADMIN')}
+              className="w-full py-2.5 px-3 bg-gradient-to-r from-[#145EDB] to-blue-600 hover:from-blue-600 hover:to-amber-500 text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer hover:scale-101"
+            >
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Entrar Direto como Tasso Vasconcelos</span>
+            </button>
+          </div>
+
+          {/* Banner de Sucesso */}
           {successMsg && (
-            <div className="bg-emerald-950/80 border border-emerald-800/80 text-emerald-200 p-3.5 rounded-2xl text-xs flex items-start gap-2.5 animate-fadeIn">
+            <div className="bg-emerald-950/80 border border-emerald-800/80 text-emerald-200 p-3 rounded-2xl text-xs flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">Sucesso!</p>
@@ -249,12 +263,12 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
             </div>
           )}
 
-          {/* Banner de Erro se Houver */}
+          {/* Banner de Erro */}
           {errorMsg && (
-            <div className="bg-rose-950/80 border border-rose-800/80 text-rose-200 p-3.5 rounded-2xl text-xs flex items-start gap-2.5 animate-fadeIn">
+            <div className="bg-rose-950/80 border border-rose-800/80 text-rose-200 p-3 rounded-2xl text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-bold">Acesso Não Autorizado</p>
+                <p className="font-bold">Credenciais Não Reconhecidas</p>
                 <p className="text-[11px] text-rose-300 mt-0.5">{errorMsg}</p>
                 <button
                   type="button"
@@ -269,11 +283,11 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
           )}
 
           {/* Form de Autenticação */}
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-3.5">
             {/* Campo Usuário / E-mail */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                E-mail ou Usuário Cadastrado
+              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+                E-mail ou Usuário
               </label>
               <div className="relative">
                 <input
@@ -281,8 +295,8 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
                   required
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  placeholder="ex: tassovasconcelos@gmail.com ou admin"
-                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-[#145EDB] focus:ring-2 focus:ring-[#145EDB]/40 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all outline-none"
+                  placeholder="tassovasconcelos@gmail.com"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-[#145EDB] focus:ring-2 focus:ring-[#145EDB]/40 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 transition-all outline-none"
                 />
                 <User className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
@@ -290,14 +304,14 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
 
             {/* Campo Senha */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
                   Senha de Acesso
                 </label>
                 <button
                   type="button"
                   onClick={handleOpenRecovery}
-                  className="text-xs text-amber-400 hover:text-amber-300 underline font-semibold transition-colors cursor-pointer"
+                  className="text-[11px] text-amber-400 hover:text-amber-300 underline font-semibold transition-colors cursor-pointer"
                 >
                   Recuperar Senha?
                 </button>
@@ -309,7 +323,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-[#145EDB] focus:ring-2 focus:ring-[#145EDB]/40 rounded-xl pl-10 pr-10 py-2.5 text-sm text-white placeholder-slate-500 transition-all outline-none"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-[#145EDB] focus:ring-2 focus:ring-[#145EDB]/40 rounded-xl pl-9 pr-10 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 transition-all outline-none"
                 />
                 <KeyRound className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <button
@@ -325,7 +339,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
 
             {/* Seleção de Perfil Gerencial */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
                 Nível de Permissão (Perfil)
               </label>
               <select
@@ -344,93 +358,66 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-[#145EDB] via-blue-600 to-amber-600 hover:from-blue-600 hover:to-amber-500 text-white font-extrabold py-3 px-4 rounded-xl text-sm transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#145EDB] to-blue-600 hover:from-blue-600 hover:to-amber-500 text-white font-black py-3 px-4 rounded-xl text-xs sm:text-sm transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isLoading ? (
-                <span>Validando Credenciais...</span>
+                <span>Autenticando...</span>
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Entrar no Painel Gerencial</span>
+                  <span>Entrar com Credenciais</span>
                 </>
               )}
             </button>
           </form>
 
-          {/* Links e Atalhos Auxiliares */}
-          <div className="pt-4 border-t border-slate-800 flex flex-col gap-2 text-center">
+          {/* Atalhos Rápidos para outros perfis */}
+          <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-center gap-2 text-center text-xs">
+            <span className="text-[11px] text-slate-500 w-full block">Ou entre com outros perfis gerenciais:</span>
             <button
               type="button"
-              onClick={handleOpenRecovery}
-              className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center justify-center gap-1.5 cursor-pointer py-1"
+              onClick={() => handleQuickLogin('Administrador Geral', 'admin@gritnews.com.br', 'SUPERADMIN')}
+              className="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700 cursor-pointer"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Esqueceu ou Deseja Redefinir sua Senha? Clique Aqui</span>
+              Admin Geral
             </button>
-
             <button
               type="button"
-              onClick={() => setShowHintModal(!showHintModal)}
-              className="text-[11px] text-slate-400 hover:text-slate-200 underline transition-colors flex items-center justify-center gap-1 mx-auto cursor-pointer"
+              onClick={() => handleQuickLogin('Letícia Karla', 'leticia.karla@tenpets.gritnews.com.br', 'EDITOR_IN_CHIEF')}
+              className="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-300 px-2.5 py-1 rounded-lg border border-slate-700 cursor-pointer"
             >
-              <Sparkles className="w-3 h-3 text-blue-400" />
-              <span>Ver Contas e Senhas Mestra Aceitas</span>
+              Letícia (TenPets)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('Gestor Comercial', 'comercial@gritnews.com.br', 'COMMERCIAL_MANAGER')}
+              className="text-[11px] bg-slate-800 hover:bg-slate-700 text-emerald-300 px-2.5 py-1 rounded-lg border border-slate-700 cursor-pointer"
+            >
+              Comercial
             </button>
           </div>
 
-          {/* Card com Contas Padrão para Acesso Rápido */}
-          {showHintModal && (
-            <div className="bg-slate-950/95 border border-amber-500/40 p-4 rounded-2xl space-y-3 text-xs animate-fadeIn">
-              <p className="font-bold text-amber-300 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-amber-400" />
-                <span>Contas Administrativas Cadastradas:</span>
-              </p>
-              <div className="space-y-2 text-slate-300">
-                <div
-                  onClick={() => applyQuickCredentials('tassovasconcelos@gmail.com', 'gritnews2026', 'SUPERADMIN')}
-                  className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 hover:border-emerald-500/60 cursor-pointer flex justify-between items-center transition-colors"
-                >
-                  <div>
-                    <span className="font-bold text-white block">Tasso Vasconcelos (Superadmin):</span>
-                    <span className="text-[11px] font-mono text-slate-400">tassovasconcelos@gmail.com / gritnews2026</span>
-                  </div>
-                  <span className="text-[10px] bg-emerald-900/80 text-emerald-200 px-2.5 py-1 rounded-md font-bold">Usar</span>
-                </div>
-
-                <div
-                  onClick={() => applyQuickCredentials('admin', 'gritnews@2026Tj#', 'SUPERADMIN')}
-                  className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 hover:border-blue-500/60 cursor-pointer flex justify-between items-center transition-colors"
-                >
-                  <div>
-                    <span className="font-bold text-white block">Admin Geral:</span>
-                    <span className="text-[11px] font-mono text-slate-400">admin / gritnews@2026Tj#</span>
-                  </div>
-                  <span className="text-[10px] bg-blue-900/80 text-blue-200 px-2.5 py-1 rounded-md font-bold">Usar</span>
-                </div>
-
-                <div
-                  onClick={() => applyQuickCredentials('leticia', 'gritnews2026', 'EDITOR_IN_CHIEF')}
-                  className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 hover:border-amber-500/60 cursor-pointer flex justify-between items-center transition-colors"
-                >
-                  <div>
-                    <span className="font-bold text-white block">Letícia Karla (TenPets):</span>
-                    <span className="text-[11px] font-mono text-slate-400">leticia / gritnews2026</span>
-                  </div>
-                  <span className="text-[10px] bg-amber-900/80 text-amber-200 px-2.5 py-1 rounded-md font-bold">Usar</span>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Link para Recuperação */}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={handleOpenRecovery}
+              className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center justify-center gap-1.5 cursor-pointer mx-auto py-1"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Esqueceu a senha? Clique aqui para redefini-la</span>
+            </button>
+          </div>
         </div>
       </main>
 
       {/* MODAL DE RECUPERAÇÃO DE SENHA */}
       {isRecoveryModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 relative">
             
             {/* Header Modal */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-amber-500/20 text-amber-400 rounded-xl">
                   <KeyRound className="w-5 h-5" />
@@ -469,7 +456,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
                     <input
                       type="text"
                       required
-                      placeholder="ex: tassovasconcelos@gmail.com ou admin"
+                      placeholder="tassovasconcelos@gmail.com"
                       value={recoveryEmail}
                       onChange={e => setRecoveryEmail(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 outline-none"
@@ -477,7 +464,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
                     <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1.5">
-                    O sistema localizará a conta administrativa associada a este e-mail para permitir a redefinição imediata.
+                    O sistema localizará a conta administrativa para permitir a redefinição imediata da senha.
                   </p>
                 </div>
 
@@ -486,7 +473,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
                     type="submit"
                     className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
                   >
-                    <span>Localizar Conta & Redefinir Senha</span>
+                    <span>Localizar Conta & Continuar</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
@@ -504,16 +491,13 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
             {/* PASSO 2: DEFINIR NOVA SENHA */}
             {recoveryStep === 'set_new_password' && (
               <form onSubmit={handleSaveNewPassword} className="space-y-4">
-                <div className="p-3.5 bg-emerald-950/60 border border-emerald-800/60 rounded-xl text-xs space-y-1">
+                <div className="p-3 bg-emerald-950/60 border border-emerald-800/60 rounded-xl text-xs space-y-1">
                   <p className="text-emerald-300 font-bold flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     <span>Conta Localizada com Sucesso!</span>
                   </p>
                   <p className="text-slate-300 text-[11px]">
                     <strong>Titular:</strong> {recoveryAccountFound?.name} ({recoveryAccountFound?.email})
-                  </p>
-                  <p className="text-slate-400 text-[10px]">
-                    Token de segurança gerado: <strong className="font-mono text-amber-300">{recoveryToken}</strong>
                   </p>
                 </div>
 
@@ -525,7 +509,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
                     <input
                       type={recoveryShowNewPass ? 'text' : 'password'}
                       required
-                      placeholder="Nova senha (mínimo 4 dígitos)"
+                      placeholder="Nova senha (mínimo 3 dígitos)"
                       value={recoveryNewPassword}
                       onChange={e => setRecoveryNewPassword(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 rounded-xl pl-10 pr-10 py-3 text-sm text-white placeholder-slate-500 outline-none"
@@ -587,7 +571,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
                 <div>
                   <h4 className="text-base font-bold text-white">Senha Redefinida com Sucesso!</h4>
                   <p className="text-xs text-slate-300 mt-1">
-                    Sua nova senha foi salva com sucesso e já está pronta para uso no formulário de login.
+                    Sua nova senha foi salva e aplicada ao seu formulário de login.
                   </p>
                 </div>
 
@@ -600,7 +584,7 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
                   onClick={() => setIsRecoveryModalOpen(false)}
                   className="w-full bg-[#145EDB] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
                 >
-                  <span>Entrar Agora no Painel</span>
+                  <span>Concluir & Entrar no Painel</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

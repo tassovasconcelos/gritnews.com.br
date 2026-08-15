@@ -140,7 +140,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={onNavigateBookmarks}
-            className="flex items-center gap-1.5 bg-[#F1F5F9] hover:bg-[#EAF3FF] text-[#0D182A] font-bold px-3.5 py-2 rounded-xl text-xs border border-[#E2E8F0] hover:border-[#146EF5] transition-all relative"
+            className="flex items-center gap-1.5 bg-[#F1F5F9] hover:bg-[#EAF3FF] text-[#0D182A] font-bold px-3.5 py-2 rounded-xl text-xs border border-[#E2E8F0] hover:border-[#146EF5] transition-all relative cursor-pointer"
           >
             <Bookmark className="w-3.5 h-3.5 text-[#146EF5]" />
             <span>Salvos</span>
@@ -149,6 +149,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {bookmarksCount}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={onNavigateAdmin}
+            className="flex items-center gap-1.5 bg-slate-900 hover:bg-blue-900 text-amber-300 hover:text-white font-black px-3.5 py-2 rounded-xl text-xs border border-amber-400/40 shadow-xs hover:scale-102 transition-all cursor-pointer"
+            title="Acessar Painel Gerencial & CMS"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
+            <span>Admin CMS</span>
           </button>
         </div>
 
@@ -334,10 +343,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onNavigateOffers();
                 setMobileMenuOpen(false);
               }}
-              className="w-full bg-[#FF8500] text-white font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2"
+              className="w-full bg-[#FF8500] text-white font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 cursor-pointer"
             >
               <Tag className="w-4 h-4" />
               <span>Central de Ofertas</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onNavigateAdmin();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-amber-300 font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-amber-400/40 cursor-pointer"
+            >
+              <LayoutDashboard className="w-4 h-4 text-amber-400" />
+              <span>Acessar Painel Gerencial (Admin CMS)</span>
             </button>
           </div>
         </div>
