@@ -20,7 +20,8 @@ const KEYS = {
   TENPETS_RESCUES: 'grit_news_tenpets_rescues_v1',
   TENPETS_PARTNERS: 'grit_news_tenpets_partners_v1',
   EUSEBIO_PROPERTIES: 'grit_news_eusebio_properties_v1',
-  PLAYBOOK_ORDERS: 'grit_news_playbook_orders_v1'
+  PLAYBOOK_ORDERS: 'grit_news_playbook_orders_v1',
+  ADMIN_PASSWORDS: 'grit_news_admin_passwords_v1'
 };
 
 function loadItem<T>(key: string, defaultValue: T): T {
@@ -786,7 +787,11 @@ export function toggleBookmark(articleId: string): boolean {
 // Site Settings
 export function getSiteSettings(): SiteSettings {
   initStorage();
-  return loadItem<SiteSettings>(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
+  const loaded = loadItem<SiteSettings>(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
+  return {
+    ...INITIAL_SITE_SETTINGS,
+    ...loaded
+  };
 }
 
 export function saveSiteSettings(settings: SiteSettings): void {
@@ -916,6 +921,163 @@ export function deletePlaybookOrder(id: string): void {
   const current = getPlaybookOrders().filter(item => item.id !== id);
   savePlaybookOrders(current);
 }
+
+// ==========================================
+// ADMIN ACCOUNTS & PASSWORD RECOVERY LOGIC
+// ==========================================
+
+export interface AdminAccount {
+  username: string;
+  email: string;
+  name: string;
+  role: 'SUPERADMIN' | 'EDITOR_IN_CHIEF' | 'COMMERCIAL_MANAGER' | 'AUTHOR' | 'EDITOR';
+  avatar?: string;
+}
+
+export const DEFAULT_ADMIN_ACCOUNTS: AdminAccount[] = [
+  {
+    username: 'tasso',
+    email: 'tassovasconcelos@gmail.com',
+    name: 'Tasso Vasconcelos',
+    role: 'SUPERADMIN'
+  },
+  {
+    username: 'admin',
+    email: 'admin@gritnews.com.br',
+    name: 'Administrador Geral',
+    role: 'SUPERADMIN'
+  },
+  {
+    username: 'leticia',
+    email: 'leticia.karla@tenpets.gritnews.com.br',
+    name: 'Letícia Karla (TenPets)',
+    role: 'EDITOR_IN_CHIEF'
+  },
+  {
+    username: 'editor',
+    email: 'editor@gritnews.com.br',
+    name: 'Editor-Chefe GRIT',
+    role: 'EDITOR_IN_CHIEF'
+  },
+  {
+    username: 'comercial',
+    email: 'comercial@gritnews.com.br',
+    name: 'Gestor Comercial B2B',
+    role: 'COMMERCIAL_MANAGER'
+  }
+];
+
+export const DEFAULT_ACCEPTED_PASSWORDS = [
+  'gritnews@2026Tj#',
+  'gritnews2026',
+  'tasso2026',
+  'admin',
+  'admin123',
+  'grit123',
+  'tenpets2026',
+  '123456'
+];
+
+export function getAdminCustomPasswords(): Record<string, string> {
+  return loadItem<Record<string, string>>(KEYS.ADMIN_PASSWORDS, {});
+}
+
+export function saveAdminPassword(identifier: string, newPassword: string): void {
+  const passwords = getAdminCustomPasswords();
+  const cleanId = identifier.trim().toLowerCase();
+  passwords[cleanId] = newPassword.trim();
+  // Also save for generic admin
+  passwords['__global_custom_pass__'] = newPassword.trim();
+  saveItem(KEYS.ADMIN_PASSWORDS, passwords);
+}
+
+export function resetAdminPasswordsToDefault(): void {
+  saveItem(KEYS.ADMIN_PASSWORDS, {});
+}
+
+export function findAdminAccount(identifier: string): AdminAccount | null {
+  const clean = identifier.trim().toLowerCase();
+  if (!clean) return null;
+
+  // Check default accounts
+  const found = DEFAULT_ADMIN_ACCOUNTS.find(
+    acc => acc.username.toLowerCase() === clean || acc.email.toLowerCase() === clean
+  );
+  if (found) return found;
+
+  // Check Authors
+  const authors = getAuthors();
+  const authorMatch = authors.find(
+    a => (a.email && a.email.toLowerCase() === clean) || a.name.toLowerCase().includes(clean)
+  );
+  if (authorMatch) {
+    return {
+      username: authorMatch.email.split('@')[0] || 'author',
+      email: authorMatch.email,
+      name: authorMatch.name,
+      role: 'AUTHOR',
+      avatar: authorMatch.avatar
+    };
+  }
+
+  // Fallback for any other email
+  if (clean.includes('@')) {
+    return {
+      username: clean.split('@')[0],
+      email: clean,
+      name: clean.split('@')[0].toUpperCase(),
+      role: 'SUPERADMIN'
+    };
+  }
+
+  return null;
+}
+
+export function validateAdminLogin(
+  userInput: string,
+  passInput: string
+): { success: boolean; account?: AdminAccount; message?: string } {
+  const cleanUser = userInput.trim().toLowerCase();
+  const cleanPass = passInput.trim();
+
+  if (!cleanUser) {
+    return { success: false, message: 'Por favor, informe seu usuário ou e-mail.' };
+  }
+  if (!cleanPass) {
+    return { success: false, message: 'Por favor, informe a sua senha.' };
+  }
+
+  const customPasswords = getAdminCustomPasswords();
+  const account = findAdminAccount(cleanUser);
+
+  // Check if password matches custom or default
+  const isCustomUserPass = customPasswords[cleanUser] && customPasswords[cleanUser] === cleanPass;
+  const isCustomEmailPass = account && customPasswords[account.email.toLowerCase()] === cleanPass;
+  const isGlobalCustomPass = customPasswords['__global_custom_pass__'] === cleanPass;
+  const isDefaultPass = DEFAULT_ACCEPTED_PASSWORDS.includes(cleanPass);
+
+  const isPasswordValid = isCustomUserPass || isCustomEmailPass || isGlobalCustomPass || isDefaultPass;
+
+  if (!account) {
+    return {
+      success: false,
+      message: 'Usuário ou e-mail não encontrado. Verifique o cadastro ou use a recuperação de senha.'
+    };
+  }
+
+  if (!isPasswordValid) {
+    return {
+      success: false,
+      message: 'Senha incorreta. Use a opção "Recuperar Senha" abaixo para redefini-la.'
+    };
+  }
+
+  return {
+    success: true,
+    account
+  };
+}
+
 
 
 

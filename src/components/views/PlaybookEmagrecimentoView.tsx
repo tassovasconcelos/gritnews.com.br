@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { addPlaybookOrder } from '../../lib/storage';
+import { addPlaybookOrder, getSiteConfig } from '../../lib/storage';
 import { PlaybookOrder, PlaybookOrderStatus } from '../../types';
+import { generatePixBrCode } from '../../lib/pixUtils';
 import { PlaybookMetabolicQuiz } from '../tools/PlaybookMetabolicQuiz';
 import { 
   Flame, 
@@ -50,6 +51,10 @@ export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps>
   const [customerPhone, setCustomerPhone] = useState('');
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState('');
+  const [generatedPixCode, setGeneratedPixCode] = useState('');
+
+  const siteConfig = getSiteConfig();
 
   const handleOpenCheckout = () => {
     setIsCheckoutOpen(true);
@@ -65,10 +70,26 @@ export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps>
 
     setIsProcessingOrder(true);
 
+    const generatedId = `ord-pb-${Date.now().toString().slice(-6)}`;
+    setCurrentOrderId(generatedId);
+
+    // Generate dynamic PIX code using the configured admin key
+    const pixCode = generatePixBrCode({
+      pixKey: siteConfig.pixKey || 'tassovasconcelos@gmail.com',
+      pixKeyType: siteConfig.pixKeyType || 'email',
+      beneficiaryName: siteConfig.pixBeneficiaryName || 'TASSO VASCONCELOS',
+      beneficiaryCity: siteConfig.pixCity || 'FORTALEZA',
+      amount: 29.90,
+      txId: generatedId.replace(/[^a-zA-Z0-9]/g, '').slice(-15),
+      description: 'Playbook Emagrecimento'
+    });
+
+    setGeneratedPixCode(pixCode);
+
     const orderStatus: PlaybookOrderStatus = paymentMethod === 'card' ? 'PAID' : 'PENDING_PIX';
 
     const newOrder: PlaybookOrder = {
-      id: `ord-pb-${Date.now().toString().slice(-6)}`,
+      id: generatedId,
       customerName,
       customerEmail,
       customerPhone,
@@ -78,7 +99,9 @@ export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps>
       accessSent: paymentMethod === 'card',
       createdAt: new Date().toISOString(),
       paidAt: paymentMethod === 'card' ? new Date().toISOString() : undefined,
-      notes: paymentMethod === 'card' ? 'Aprovado via Gateway de Cartão.' : 'PIX Copia e Cola gerado no checkout.'
+      notes: paymentMethod === 'card' 
+        ? 'Aprovado via Gateway Mercado Pago / Cartão.' 
+        : `PIX gerado para chave: ${siteConfig.pixKey || 'tassovasconcelos@gmail.com'}`
     };
 
     addPlaybookOrder(newOrder);
@@ -86,14 +109,28 @@ export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps>
     setTimeout(() => {
       setIsProcessingOrder(false);
       setOrderCompleted(true);
-      onShowToast('Pedido gerado com sucesso! Instruções enviadas ao seu e-mail e WhatsApp.', 'success');
-    }, 1000);
+      onShowToast('Pedido gerado com sucesso! Conclua o pagamento via PIX ou Mercado Pago.', 'success');
+    }, 800);
   };
 
-
   const handleCopyPix = () => {
-    navigator.clipboard.writeText('00020126580014br.gov.bcb.pix0136gritnews-playbook-2990@pagamentos.com520400005303986540529.905802BR5925GRIT NEWS MIDIA DIGITAL6009FORTALEZA62070503***6304E8F2');
+    const codeToCopy = generatedPixCode || generatePixBrCode({
+      pixKey: siteConfig.pixKey || 'tassovasconcelos@gmail.com',
+      pixKeyType: siteConfig.pixKeyType || 'email',
+      beneficiaryName: siteConfig.pixBeneficiaryName || 'TASSO VASCONCELOS',
+      beneficiaryCity: siteConfig.pixCity || 'FORTALEZA',
+      amount: 29.90,
+      txId: 'PLAYBOOK2990',
+      description: 'Playbook Emagrecimento'
+    });
+    navigator.clipboard.writeText(codeToCopy);
     onShowToast('Código PIX Copia e Cola copiado com sucesso!', 'success');
+  };
+
+  const handleCopyPixKeyOnly = () => {
+    const keyToCopy = siteConfig.pixKey || 'tassovasconcelos@gmail.com';
+    navigator.clipboard.writeText(keyToCopy);
+    onShowToast(`Chave PIX (${keyToCopy}) copiada!`, 'success');
   };
 
   const toggleFaq = (index: number) => {
@@ -725,17 +762,62 @@ export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps>
 
                 {paymentMethod === 'pix' && (
                   <div className="bg-slate-800 p-4 rounded-2xl border border-amber-400/40 space-y-3">
-                    <p className="text-xs text-amber-400 font-bold">PIX Copia e Cola:</p>
-                    <div className="p-2 bg-slate-900 rounded-lg text-[10px] text-slate-300 font-mono break-all text-left select-all">
-                      00020126580014br.gov.bcb.pix0136gritnews-playbook-2990@pagamentos.com520400005303986540529.905802BR5925GRIT NEWS MIDIA DIGITAL6009FORTALEZA62070503***6304E8F2
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
+                        <QrCode className="w-4 h-4" />
+                        <span>PIX Copia e Cola Oficial (R$ 29,90):</span>
+                      </p>
+                      <span className="text-[10px] text-slate-400 font-mono">ID: {currentOrderId || 'ORD-PB'}</span>
                     </div>
-                    <button
-                      onClick={handleCopyPix}
-                      className="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer"
+
+                    <div className="p-2.5 bg-slate-900 rounded-lg text-[10px] text-slate-300 font-mono break-all text-left select-all border border-slate-700">
+                      {generatedPixCode || '00020126580014br.gov.bcb.pix0136' + (siteConfig.pixKey || 'tassovasconcelos@gmail.com')}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        onClick={handleCopyPix}
+                        className="py-2.5 px-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
+                      >
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar Código Copia e Cola</span>
+                      </button>
+
+                      <button
+                        onClick={handleCopyPixKeyOnly}
+                        className="py-2.5 px-3 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-600"
+                      >
+                        <Zap className="w-4 h-4 text-amber-400" />
+                        <span>Copiar Somente Chave</span>
+                      </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-700/60 text-[11px] text-slate-400 flex flex-wrap justify-between items-center gap-2 text-left">
+                      <div>
+                        <span className="text-slate-500">Beneficiário:</span> <strong className="text-slate-300">{siteConfig.pixBeneficiaryName || 'TASSO VASCONCELOS'}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Chave:</span> <strong className="text-slate-300">{siteConfig.pixKey || 'tassovasconcelos@gmail.com'}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Cidade:</span> <strong className="text-slate-300">{siteConfig.pixCity || 'FORTALEZA'}</strong>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {siteConfig.mercadoPagoWalletUrl && (
+                  <div className="p-3 bg-sky-950/40 border border-sky-500/30 rounded-xl text-xs space-y-2 text-left">
+                    <p className="text-sky-300 font-bold">Prefere pagar via Mercado Pago?</p>
+                    <a
+                      href={siteConfig.mercadoPagoWalletUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 py-2 px-4 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold rounded-lg text-xs transition-colors"
                     >
-                      <Copy className="w-4 h-4" />
-                      <span>Copiar Código PIX</span>
-                    </button>
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Abrir Checkout Mercado Pago</span>
+                    </a>
                   </div>
                 )}
 

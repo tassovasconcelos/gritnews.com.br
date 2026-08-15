@@ -226,6 +226,18 @@ export interface SiteSettings {
   maintenanceMode: boolean;
   lgpdBannerText: string;
   lgpdEnabled?: boolean;
+
+  // PIX & Mercado Pago Payment Gateway Settings
+  pixKey?: string;
+  pixKeyType?: 'email' | 'cpf' | 'cnpj' | 'phone' | 'random';
+  pixBeneficiaryName?: string;
+  pixCity?: string;
+  mercadoPagoAccessToken?: string;
+  mercadoPagoPublicKey?: string;
+  mercadoPagoWebhookSecret?: string;
+  mercadoPagoSandbox?: boolean;
+  mercadoPagoAutoApprove?: boolean;
+  mercadoPagoWalletUrl?: string;
 }
 
 export type SiteConfig = SiteSettings;

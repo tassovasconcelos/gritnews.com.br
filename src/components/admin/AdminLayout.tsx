@@ -16,7 +16,8 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare,
   Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe,
-  Database, PawPrint, LogOut, Lock, HelpCircle, Flame, Building2, ShoppingBag
+  Database, PawPrint, LogOut, Lock, HelpCircle, Flame, Building2, ShoppingBag,
+  CreditCard
 } from 'lucide-react';
 import { ViralPautasWidget } from '../ui/ViralPautasWidget';
 import { UserRole, Article, Category, Lead, NewsletterSubscriber, Offer, AdCampaign, AuthorProfile } from '../../types';
@@ -36,6 +37,7 @@ import { AdminTenPets } from './AdminTenPets';
 import { AdminGuide } from './AdminGuide';
 import { AdminImoveis } from './AdminImoveis';
 import { AdminPlaybookOrders } from './AdminPlaybookOrders';
+import { AdminPayments } from './AdminPayments';
 import { AdminLoginScreen } from './AdminLoginScreen';
 import { DocumentationModal } from '../views/DocumentationModal';
 import { GritNewsLogo } from '../ui/GritNewsLogo';
@@ -59,6 +61,7 @@ type AdminTab =
   | 'articles'
   | 'imoveis'
   | 'playbook'
+  | 'payments'
   | 'tenpets'
   | 'viral'
   | 'categories'
@@ -158,6 +161,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'articles', label: 'CMS Artigos & Notícias', icon: FileText, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'imoveis', label: 'Imóveis no Eusébio', icon: Building2, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'COMMERCIAL_MANAGER'] },
     { id: 'playbook', label: 'Vendas Playbook (R$ 29,90)', icon: ShoppingBag, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER', 'EDITOR_IN_CHIEF'] },
+    { id: 'payments', label: '💳 PIX & Mercado Pago', icon: CreditCard, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER'] },
     { id: 'tenpets', label: 'TenPets (Resgates & Ciência)', icon: PawPrint, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'trends', label: 'Automação Trends & IA', icon: Sparkles, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'media', label: 'Gerenciador de Mídia', icon: Image, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
@@ -309,6 +313,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         {activeTab === 'playbook' && (
           <AdminPlaybookOrders
+            onShowToast={onShowToast}
+          />
+        )}
+
+        {activeTab === 'payments' && (
+          <AdminPayments
             onShowToast={onShowToast}
           />
         )}

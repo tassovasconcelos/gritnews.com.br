@@ -1604,7 +1604,13 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   newsletterDoubleOptIn: true,
   autoApproveComments: false,
   maintenanceMode: false,
-  lgpdBannerText: 'Nós utilizamos cookies e tecnologias semelhantes para melhorar a sua experiência de navegação, analisar nosso tráfego e personalizar conteúdos de acordo com nossa Política de Privacidade (LGPD).'
+  lgpdBannerText: 'Nós utilizamos cookies e tecnologias semelhantes para melhorar a sua experiência de navegação, analisar nosso tráfego e personalizar conteúdos de acordo com nossa Política de Privacidade (LGPD).',
+  pixKey: 'tassovasconcelos@gmail.com',
+  pixKeyType: 'email',
+  pixBeneficiaryName: 'TASSO VASCONCELOS',
+  pixCity: 'FORTALEZA',
+  mercadoPagoSandbox: false,
+  mercadoPagoAutoApprove: true
 };
 
 export const INITIAL_TENPETS_ARTICLES: TenPetsArticle[] = [

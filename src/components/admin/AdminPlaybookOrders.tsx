@@ -19,7 +19,7 @@ import {
   Check
 } from 'lucide-react';
 import { PlaybookOrder, PlaybookOrderStatus, PlaybookPaymentMethod } from '../../types';
-import { getPlaybookOrders, addPlaybookOrder, updatePlaybookOrder, deletePlaybookOrder } from '../../lib/storage';
+import { getPlaybookOrders, addPlaybookOrder, updatePlaybookOrder, deletePlaybookOrder, getSiteConfig } from '../../lib/storage';
 
 interface AdminPlaybookOrdersProps {
   onShowToast: (msg: string) => void;
@@ -198,6 +198,32 @@ export const AdminPlaybookOrders: React.FC<AdminPlaybookOrdersProps> = ({ onShow
           </button>
         </div>
       </div>
+
+      {/* Top Banner PIX Ativo */}
+      {(() => {
+        const siteConfig = getSiteConfig();
+        return (
+          <div className="bg-emerald-950/80 text-white p-4 rounded-2xl border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                <QrCode className="w-5 h-5" />
+              </div>
+              <div className="text-xs">
+                <p className="font-bold text-emerald-200">
+                  Chave PIX Ativa no Checkout: <span className="font-mono text-white bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-500/30">{siteConfig.pixKey || 'tassovasconcelos@gmail.com'}</span> ({siteConfig.pixKeyType || 'email'})
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  Titular: <strong>{siteConfig.pixBeneficiaryName || 'TASSO VASCONCELOS'}</strong> • Cidade: <strong>{siteConfig.pixCity || 'FORTALEZA'}</strong> • Mercado Pago: <strong>{siteConfig.mercadoPagoAccessToken ? 'Integrado' : 'PIX Direto'}</strong>
+                </p>
+              </div>
+            </div>
+
+            <span className="text-[11px] bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-lg border border-emerald-500/30 font-medium">
+              Altere na aba "PIX & Mercado Pago"
+            </span>
+          </div>
+        );
+      })()}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

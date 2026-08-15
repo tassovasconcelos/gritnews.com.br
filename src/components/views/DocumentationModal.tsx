@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
-import { FileText, Download, Check, Server, Shield, Database, Search, Edit3, Globe } from 'lucide-react';
+import { FileText, Download, Check, Server, Shield, Database, Search, Edit3, Globe, DollarSign } from 'lucide-react';
 
 interface DocumentationModalProps {
   isOpen: boolean;
@@ -101,6 +101,26 @@ Monólito modular construído em Next.js (React + TypeScript) com renderização
 1. **Experiência e Especialização:** Autores credenciados com biografia e especialidades visíveis.
 2. **Autoridade e Confiança:** Transparência obrigatória em conteúdos patrocinados e links de afiliados.
 3. **Clareza de Leitura:** Formatação em blocos estruturados, títulos claros e sumário interativo.`
+  },
+  monetizacao: {
+    title: 'MONETIZACAO_ECOSSISTEMA.md',
+    icon: DollarSign,
+    content: `# Estratégia de Monetização & Ferramentas Interativas GRIT NEWS
+
+## 1. Hub Imóveis no Eusébio & Simulador de Rentabilidade (ROI)
+- **Localização:** Rota \`?view=imoveis\` e widget na Home.
+- **Ferramenta:** \`EusebioRoiCalculator.tsx\` — Cálculo dinâmico de Cap Rate, Yield Líquido, valorização patrimonial e comparativo direto com CDI/Renda Fixa para o mercado do Eusébio e Alphaville Ceará.
+- **Geração de Leads:** Captação qualificada com disparo direto formatado para o WhatsApp do corretor parceiro.
+
+## 2. Infoproduto: Playbook Emagrecimento Saudável (R$ 29,90)
+- **Localização:** Rota \`?view=playbook\` e banner de conversão.
+- **Ferramenta:** \`PlaybookMetabolicQuiz.tsx\` — Quiz interativo de 5 etapas baseado na equação de Mifflin-St Jeor (TMB/TDEE) para fornecer diagnóstico metabólico imediato e conversão de alta precisão.
+- **Checkout Integrado:** Suporte a PIX Copia e Cola instantâneo e Cartão com simulação de liberação imediata.
+
+## 3. Afiliados & Lojas Recomendadas
+- Vitrine Mercado Livre (Link: \`https://meli.la/1kXwMJQ\`).
+- Vitrine Amazon Oficial Tasso Vasconcelos (\`https://www.amazon.com.br/shop/tassovasconcelos\`).
+- Central de Ofertas B2B integradas ao CMS.`
   },
   database: {
     title: 'DATABASE.md',
