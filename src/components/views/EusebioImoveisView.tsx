@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { EusebioProperty, PropertyPurpose, PropertyType } from '../../types';
 import { getEusebioProperties, addEusebioProperty } from '../../lib/storage';
+import { EusebioRoiCalculator } from '../tools/EusebioRoiCalculator';
 
 interface EusebioImoveisViewProps {
   onShowToast: (message: string, type?: 'success' | 'info') => void;
@@ -312,6 +313,16 @@ export const EusebioImoveisView: React.FC<EusebioImoveisViewProps> = ({ onShowTo
             {/* Action Card */}
             <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-3 shrink-0">
               <button
+                onClick={() => {
+                  const target = document.getElementById('roi-calculator-section');
+                  if (target) target.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-sm"
+              >
+                <Calculator className="w-4 h-4" />
+                <span>Simulador de ROI & Yield</span>
+              </button>
+              <button
                 onClick={() => setIsPublishModalOpen(true)}
                 className="flex items-center justify-center gap-2 px-6 py-3.5 bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold rounded-xl shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-sm"
               >
@@ -326,7 +337,7 @@ export const EusebioImoveisView: React.FC<EusebioImoveisViewProps> = ({ onShowTo
                 className="flex items-center justify-center gap-2 px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl border border-white/15 transition-all text-sm cursor-pointer"
               >
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
-                <span>Panorama do Eusébio 2026</span>
+                <span>Panorama Eusébio 2026</span>
               </button>
             </div>
           </div>
@@ -667,6 +678,11 @@ export const EusebioImoveisView: React.FC<EusebioImoveisViewProps> = ({ onShowTo
             ))}
           </div>
         )}
+
+        {/* Interactive ROI & Yield Calculator Section */}
+        <section id="roi-calculator-section" className="mt-16">
+          <EusebioRoiCalculator onShowToast={onShowToast} />
+        </section>
 
         {/* Editorial Section: Por que investir no Eusébio */}
         <section id="market-editorial-section" className="mt-16 bg-white rounded-3xl p-6 sm:p-10 border border-[#E2E8F0] shadow-sm">

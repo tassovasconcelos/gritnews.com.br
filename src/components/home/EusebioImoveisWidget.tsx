@@ -59,13 +59,28 @@ export const EusebioImoveisWidget: React.FC<EusebioImoveisWidgetProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={onNavigateImoveis}
-          className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-emerald-500/30 self-start md:self-auto cursor-pointer shrink-0"
-        >
-          <span>Ver Catálogo Completo</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 self-start md:self-auto shrink-0">
+          <button
+            onClick={() => {
+              onNavigateImoveis();
+              setTimeout(() => {
+                const target = document.getElementById('roi-calculator-section');
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+              }, 150);
+            }}
+            className="px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 border border-white/20 transition-all cursor-pointer"
+          >
+            <span>Simulador de ROI</span>
+          </button>
+
+          <button
+            onClick={onNavigateImoveis}
+            className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-emerald-500/30 cursor-pointer"
+          >
+            <span>Ver Imóveis</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Properties Grid */}

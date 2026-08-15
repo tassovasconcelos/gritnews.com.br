@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { addPlaybookOrder } from '../../lib/storage';
 import { PlaybookOrder, PlaybookOrderStatus } from '../../types';
+import { PlaybookMetabolicQuiz } from '../tools/PlaybookMetabolicQuiz';
 import { 
   Flame, 
   Sparkles, 
@@ -30,7 +31,8 @@ import {
   AlertCircle,
   Coffee,
   Apple,
-  Copy
+  Copy,
+  Calculator
 } from 'lucide-react';
 
 interface PlaybookEmagrecimentoViewProps {
@@ -136,6 +138,17 @@ export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps>
                 <span>QUERO O PLAYBOOK POR R$ 29,90</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
+
+              <button
+                onClick={() => {
+                  const target = document.getElementById('quiz-metabolico-section');
+                  if (target) target.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="w-full sm:w-auto px-6 py-4 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-sm sm:text-base rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Calculator className="w-4 h-4 text-emerald-400" />
+                <span>Calcular Meu Diagnóstico Metabólico (Grátis)</span>
+              </button>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-6 pt-2 text-xs text-slate-400 font-medium">
@@ -231,6 +244,16 @@ export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Interactive Metabolic Quiz & Diagnosis Funnel */}
+      <section id="quiz-metabolico-section" className="py-12 bg-slate-950/60 border-y border-slate-800">
+        <div className="max-w-5xl mx-auto px-4">
+          <PlaybookMetabolicQuiz 
+            onNavigateCheckout={handleOpenCheckout}
+            onShowToast={onShowToast}
+          />
         </div>
       </section>
 

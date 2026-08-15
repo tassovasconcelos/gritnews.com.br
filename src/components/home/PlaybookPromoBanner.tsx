@@ -82,13 +82,15 @@ export const PlaybookPromoBanner: React.FC<PlaybookPromoBannerProps> = ({ onNavi
             <p className="text-[11px] text-emerald-300 font-bold mt-1">Pagamento Único • Liberação Imediata</p>
           </div>
 
-          <button
-            onClick={onNavigatePlaybook}
-            className="w-full py-4 bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-2xl text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-emerald-500/40 cursor-pointer"
-          >
-            <span>Conhecer o Playbook</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={onNavigatePlaybook}
+              className="w-full py-4 bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-2xl text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-emerald-500/40 cursor-pointer"
+            >
+              <span>Conhecer o Playbook</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
 
           <div className="flex items-center justify-center gap-3 text-[10px] text-slate-400 font-medium pt-1">
             <span className="flex items-center gap-1">
