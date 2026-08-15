@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope, Building2, Flame } from 'lucide-react';
+import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope, Building2, Flame, BarChart3, ShieldCheck, Feather } from 'lucide-react';
 import { Category } from '../../types';
 import { GritNewsLogo } from '../ui/GritNewsLogo';
 import { TenPetsLogo } from '../ui/TenPetsLogo';
@@ -14,6 +14,9 @@ interface NavbarProps {
   onNavigateTenPets: () => void;
   onNavigateImoveis?: () => void;
   onNavigatePlaybook?: () => void;
+  onNavigateRadar?: () => void;
+  onNavigateFato?: () => void;
+  onNavigateOpiniao?: () => void;
   onNavigateCheckout?: (productId?: string) => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
@@ -45,6 +48,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateTenPets,
   onNavigateImoveis,
   onNavigatePlaybook,
+  onNavigateRadar,
+  onNavigateFato,
+  onNavigateOpiniao,
   onNavigateCheckout,
   onSearch,
   onNavigateHome,
@@ -205,6 +211,40 @@ export const Navbar: React.FC<NavbarProps> = ({
             Todas as Notícias
           </button>
 
+          {/* Radar Mercados Button */}
+          {onNavigateRadar && (
+            <button
+              onClick={onNavigateRadar}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-blue-950/80 hover:bg-blue-900 text-blue-300 hover:text-white shadow-xs hover:scale-105 transition-all border border-blue-600/40"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-blue-400" />
+              <span>Radar Mercados</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            </button>
+          )}
+
+          {/* GRIT Fato Fact-Checking Button */}
+          {onNavigateFato && (
+            <button
+              onClick={onNavigateFato}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 hover:text-white shadow-xs hover:scale-105 transition-all border border-emerald-600/40"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>GRIT Fato</span>
+            </button>
+          )}
+
+          {/* Colunas & Opinião Button */}
+          {onNavigateOpiniao && (
+            <button
+              onClick={onNavigateOpiniao}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white shadow-xs hover:scale-105 transition-all border border-purple-600/40"
+            >
+              <Feather className="w-3.5 h-3.5 text-purple-400" />
+              <span>Colunas & Opinião</span>
+            </button>
+          )}
+
           {/* Imóveis Eusébio Hub Navigation Button */}
           {onNavigateImoveis && (
             <button
@@ -303,6 +343,45 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+            {onNavigateRadar && (
+              <button
+                onClick={() => {
+                  onNavigateRadar();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-blue-950 text-blue-200 hover:text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-blue-700/50 shadow-xs"
+              >
+                <BarChart3 className="w-4 h-4 text-blue-400" />
+                <span>Radar Econômico & Mercados (Cotações ao Vivo)</span>
+              </button>
+            )}
+
+            {onNavigateFato && (
+              <button
+                onClick={() => {
+                  onNavigateFato();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-emerald-950 text-emerald-200 hover:text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-emerald-700/50 shadow-xs"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>GRIT Fato (Agência de Fact-Checking)</span>
+              </button>
+            )}
+
+            {onNavigateOpiniao && (
+              <button
+                onClick={() => {
+                  onNavigateOpiniao();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-purple-950 text-purple-200 hover:text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-purple-700/50 shadow-xs"
+              >
+                <Feather className="w-4 h-4 text-purple-400" />
+                <span>Colunas & Opinião dos Especialistas</span>
+              </button>
+            )}
+
             {onNavigateCheckout && (
               <button
                 onClick={() => {

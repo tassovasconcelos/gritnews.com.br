@@ -15,6 +15,9 @@ import { TenPetsView } from './components/views/TenPetsView';
 import { EusebioImoveisView } from './components/views/EusebioImoveisView';
 import { PlaybookEmagrecimentoView } from './components/views/PlaybookEmagrecimentoView';
 import { CheckoutView } from './components/views/CheckoutView';
+import { RadarMercadosView } from './components/views/RadarMercadosView';
+import { GritFatoView } from './components/views/GritFatoView';
+import { OpiniaoView } from './components/views/OpiniaoView';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
@@ -49,6 +52,9 @@ type ViewMode =
   | 'imoveis'
   | 'playbook'
   | 'checkout'
+  | 'radar'
+  | 'fato'
+  | 'opiniao'
   | 'admin';
 
 const resolveRouteFromUrl = (
@@ -116,7 +122,47 @@ const resolveRouteFromUrl = (
     return { view: 'playbook' as ViewMode };
   }
 
-  // 4. Admin / Offers / Bookmarks
+  // 4. Radar Econômico & Mercados
+  if (
+    params.get('view') === 'radar' ||
+    params.get('view') === 'mercados' ||
+    pathLower.includes('/radar') ||
+    pathLower.includes('/mercados') ||
+    hash.includes('radar') ||
+    hash.includes('mercados')
+  ) {
+    return { view: 'radar' as ViewMode };
+  }
+
+  // 5. GRIT Fato / Fact-Checking
+  if (
+    params.get('view') === 'fato' ||
+    params.get('view') === 'factcheck' ||
+    params.get('view') === 'verificacao' ||
+    pathLower.includes('/fato') ||
+    pathLower.includes('/factcheck') ||
+    pathLower.includes('/verificacao') ||
+    hash.includes('fato') ||
+    hash.includes('factcheck')
+  ) {
+    return { view: 'fato' as ViewMode };
+  }
+
+  // 6. Opinião & Colunistas
+  if (
+    params.get('view') === 'opiniao' ||
+    params.get('view') === 'colunas' ||
+    params.get('view') === 'editorial' ||
+    pathLower.includes('/opiniao') ||
+    pathLower.includes('/colunas') ||
+    pathLower.includes('/editorial') ||
+    hash.includes('opiniao') ||
+    hash.includes('colunas')
+  ) {
+    return { view: 'opiniao' as ViewMode };
+  }
+
+  // 7. Admin / Offers / Bookmarks
   if (params.get('view') === 'admin' || pathLower.includes('/admin')) return { view: 'admin' as ViewMode };
   if (params.get('view') === 'offers' || pathLower.includes('/offers')) return { view: 'offers' as ViewMode };
   if (params.get('view') === 'bookmarks' || pathLower.includes('/bookmarks')) return { view: 'bookmarks' as ViewMode };
@@ -377,6 +423,24 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleNavigateRadar = () => {
+    setCurrentView('radar');
+    window.history.pushState({ view: 'radar' }, '', '?view=radar');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateFato = () => {
+    setCurrentView('fato');
+    window.history.pushState({ view: 'fato' }, '', '?view=fato');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateOpiniao = () => {
+    setCurrentView('opiniao');
+    window.history.pushState({ view: 'opiniao' }, '', '?view=opiniao');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleNavigateCheckout = (productId = 'prod-playbook-emagrecimento') => {
     setSelectedCheckoutProductId(productId);
     setCurrentView('checkout');
@@ -447,6 +511,9 @@ export default function App() {
         onNavigateBookmarks={handleNavigateBookmarks}
         onNavigateAdmin={handleNavigateAdmin}
         onNavigateTenPets={handleNavigateTenPets}
+        onNavigateRadar={handleNavigateRadar}
+        onNavigateFato={handleNavigateFato}
+        onNavigateOpiniao={handleNavigateOpiniao}
         onNavigateImoveis={() => {
           setCurrentView('imoveis');
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -492,6 +559,31 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onOpenLeadModal={setLeadModalOffer}
+            onShowToast={showToast}
+          />
+        )}
+
+        {currentView === 'radar' && (
+          <RadarMercadosView
+            articles={articles}
+            onSelectArticle={handleSelectArticle}
+            onNavigateCheckout={handleNavigateCheckout}
+            onShowToast={showToast}
+          />
+        )}
+
+        {currentView === 'fato' && (
+          <GritFatoView
+            onShowToast={showToast}
+          />
+        )}
+
+        {currentView === 'opiniao' && (
+          <OpiniaoView
+            articles={articles}
+            authors={authors}
+            onSelectArticle={handleSelectArticle}
+            onSelectAuthor={handleSelectAuthor}
             onShowToast={showToast}
           />
         )}
@@ -612,6 +704,10 @@ export default function App() {
         categories={categories}
         onSelectCategory={handleSelectCategory}
         onNavigateOffers={() => setCurrentView('offers')}
+        onNavigateTenPets={handleNavigateTenPets}
+        onNavigateRadar={handleNavigateRadar}
+        onNavigateFato={handleNavigateFato}
+        onNavigateOpiniao={handleNavigateOpiniao}
         onNavigateImoveis={() => {
           setCurrentView('imoveis');
           window.scrollTo({ top: 0, behavior: 'smooth' });

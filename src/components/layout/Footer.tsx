@@ -7,6 +7,10 @@ interface FooterProps {
   categories: Category[];
   onSelectCategory: (slug?: string) => void;
   onNavigateOffers: () => void;
+  onNavigateTenPets?: () => void;
+  onNavigateRadar?: () => void;
+  onNavigateFato?: () => void;
+  onNavigateOpiniao?: () => void;
   onNavigateImoveis?: () => void;
   onNavigatePlaybook?: () => void;
   onNavigateCheckout?: (productId?: string) => void;
@@ -19,6 +23,10 @@ export const Footer: React.FC<FooterProps> = ({
   categories,
   onSelectCategory,
   onNavigateOffers,
+  onNavigateTenPets,
+  onNavigateRadar,
+  onNavigateFato,
+  onNavigateOpiniao,
   onNavigateImoveis,
   onNavigatePlaybook,
   onNavigateCheckout,
@@ -85,6 +93,34 @@ export const Footer: React.FC<FooterProps> = ({
                   <ArrowUpRight className="w-3 h-3" />
                 </a>
               </li>
+              {onNavigateRadar && (
+                <li>
+                  <button onClick={onNavigateRadar} className="text-blue-300 hover:text-white font-bold transition-colors">
+                    Radar Econômico & Mercados (Cotações ao Vivo)
+                  </button>
+                </li>
+              )}
+              {onNavigateFato && (
+                <li>
+                  <button onClick={onNavigateFato} className="text-emerald-300 hover:text-white font-bold transition-colors">
+                    GRIT Fato (Agência de Fact-Checking Independente)
+                  </button>
+                </li>
+              )}
+              {onNavigateOpiniao && (
+                <li>
+                  <button onClick={onNavigateOpiniao} className="text-purple-300 hover:text-white font-bold transition-colors">
+                    Colunas & Opinião (Conselho Editorial)
+                  </button>
+                </li>
+              )}
+              {onNavigateTenPets && (
+                <li>
+                  <button onClick={onNavigateTenPets} className="text-[#84b256] hover:text-emerald-300 font-bold transition-colors">
+                    TenPets (Causa Animal & Medicina Veterinária)
+                  </button>
+                </li>
+              )}
               <li>
                 <button onClick={onNavigateOffers} className="hover:text-[#FF8A00] transition-colors">
                   Central de Ofertas B2B

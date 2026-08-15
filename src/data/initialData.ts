@@ -1590,6 +1590,301 @@ export const INITIAL_ARTICLES: Article[] = [
       metaDescription: 'Guia estratégico da Reforma Tributária: Dr. Moacir Rocha explica IBS, CBS e o cronograma de transição fiscal para empresas B2B se prepararem agora.',
       keywords: ['reforma tributária', 'IBS', 'CBS', 'planejamento fiscal', 'empresas B2B', 'moacir rocha', 'moacir rocha advocacia', 'direito tributario']
     }
+  },
+  {
+    id: 'art-datacenter-ia-nordeste-energia-limpa',
+    title: 'Data Centers de Inteligência Artificial e Energia Limpa: Por que o Nordeste Brasileiro Virou o Novo Hub Global de IA',
+    slug: 'data-centers-inteligencia-artificial-energia-limpa-nordeste-brasil-hub-global',
+    subtitle: 'A confluência de cabos submarinos internacionais, energia eólica e solar abundante atrai aportes bilionários de big techs para Ceará, Rio Grande do Norte e Bahia.',
+    summary: 'Com a explosão de modelos de linguagem e computação em nuvem de alta densidade, o Nordeste brasileiro se consolida como a rota preferencial para data centers verdes. Gigantes globais buscam neutralidade de carbono e baixa latência internacional para alimentar a infraestrutura de inteligência artificial de próxima geração.',
+    categoryId: 'cat-tech',
+    tags: ['Inteligência Artificial', 'Data Centers', 'Energia Solar', 'Energia Eólica', 'Infraestrutura', 'Nordeste', 'Ceará', 'Cloud Computing', 'ESG'],
+    authorId: 'author-renato',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Infraestrutura de data center de alta performance alimentada por matriz elétrica 100% renovável no litoral nordestino.',
+    publishedAt: '2026-08-12T14:00:00Z',
+    updatedAt: '2026-08-12T14:30:00Z',
+    readingTimeMinutes: 6,
+    viewsCount: 1420,
+    likesCount: 98,
+    sharesCount: 45,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: false,
+    blocks: [
+      {
+        id: 'dc1',
+        type: 'paragraph',
+        content: 'O treinamento e a inferência de **modelos fundacionais de Inteligência Artificial** demandam uma quantidade monumental de energia elétrica e refrigeração. Diante do aperto regulatório em mercados maduros e das metas corporativas de descarbonização, os maiores operadores globais de infraestrutura em nuvem voltaram seus olhos para o **Nordeste brasileiro**, em especial o Ceará e o Rio Grande do Norte.'
+      },
+      {
+        id: 'dc2',
+        type: 'callout',
+        content: '⚡ **Destaque Estratégico:** A região reúne a menor pegada de carbono por megawatt-hora do continente e o maior entroncamento de cabos submarinos de fibra óptica de alta capacidade da América do Sul na Praia do Futuro, em Fortaleza.'
+      },
+      {
+        id: 'dc3',
+        type: 'heading2',
+        content: '1. A Equação: PPA Verde + Refrigeração Líquida + Baixa Latência'
+      },
+      {
+        id: 'dc4',
+        type: 'paragraph',
+        content: 'Os novos campi de data center projetados para a região operam com contratos de longo prazo de energia renovável (PPAs) vinculados a parques eólicos e solares do semiárido. A proximidade física com as subestações do Sistema Interligado Nacional (SIN) permite estabilidade de tensão e custos operacionais até 35% inferiores aos de polos tradicionais na Europa e na costa leste dos EUA.'
+      },
+      {
+        id: 'dc5',
+        type: 'quote',
+        content: '“A IA generativa não é apenas uma revolução de software — é uma revolução de infraestrutura física pesada e energia sustentável. Quem tiver eletricidade limpa barata e conectividade de fibra óptica liderará a economia dos próximos 20 anos.” — **Renato Silva**, Editor de Tecnologia e Automação do GRIT NEWS.'
+      },
+      {
+        id: 'dc6',
+        type: 'heading2',
+        content: '2. Impactos na Cadeia de Suprimentos B2B e Empregos Qualificados'
+      },
+      {
+        id: 'dc7',
+        type: 'paragraph',
+        content: 'A instalação desses complexos movimenta fornecedores locais de engenharia elétrica de alta potência, cabeamento estruturado, segurança patrimonial automatizada e climatização industrial. Além disso, a atração de talentos em engenharia de sistemas e computação distribuída impulsiona ecossistemas universitários e centros de pesquisa da região.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Data Centers de IA e Energia Limpa no Nordeste | GRIT NEWS',
+      metaDescription: 'Descubra como o Nordeste brasileiro atrai investimentos bilionários em data centers verdes para abastecer a infraestrutura global de inteligência artificial.',
+      keywords: ['data centers', 'inteligencia artificial', 'energia limpa', 'nordeste', 'ceara', 'nuvem', 'ESG', 'cabos submarinos']
+    }
+  },
+  {
+    id: 'art-medicina-genomica-longevidade-2026',
+    title: 'Medicina de Precisão e Longevidade Saudável: Como a Genômica e Biomarcadores Redefinem a Saúde Preventiva',
+    slug: 'medicina-precisao-longevidade-saudavel-genomica-biomarcadores-saude-preventiva',
+    subtitle: 'Painéis genéticos acessíveis, modulação da microbiota e biomarcadores em tempo real transformam a medicina de tratamento reativo em engenharia da longevidade.',
+    summary: 'A Dra. Camila Torres analisa os novos protocolos de medicina personalizada que integram mapeamento genômico, monitoramento metabólico contínuo e terapias celulares para prolongar os anos de vida produtiva e com vitalidade plena.',
+    categoryId: 'cat-saude',
+    tags: ['Medicina Preventiva', 'Genômica', 'Longevidade', 'Dra. Camila Torres', 'Healthtechs', 'Biomarcadores', 'Nutrigenômica'],
+    authorId: 'author-camila',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Laboratório avançado de sequenciamento genético e análise de biomarcadores metabólicos.',
+    publishedAt: '2026-08-14T09:00:00Z',
+    updatedAt: '2026-08-14T09:30:00Z',
+    readingTimeMinutes: 7,
+    viewsCount: 2150,
+    likesCount: 164,
+    sharesCount: 82,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: false,
+    blocks: [
+      {
+        id: 'med1',
+        type: 'paragraph',
+        content: 'O paradigma tradicional da saúde sempre foi reativo: tratar sintomas após a manifestação clínica de doenças crônicas como diabetes tipo 2, hipertensão e declínio neurodegenerativo. No entanto, a convergência entre **sequenciamento genômico de baixo custo**, inteligência artificial diagnóstica e sensores metabólicos vestíveis está inaugurando a era da **Medicina 3.0**.'
+      },
+      {
+        id: 'med2',
+        type: 'heading2',
+        content: '1. O Papel da Nutrigenômica e Modulação Metabólica'
+      },
+      {
+        id: 'med3',
+        type: 'paragraph',
+        content: 'Cada organismo metaboliza carboidratos, lipídios e micronutrientes de forma única. O mapeamento de polimorfismos genéticos (SNPs) associados ao metabolismo da glicose, metilação e resposta inflamatória permite desenhar rotinas alimentares e suplementação com precisão cirúrgica.'
+      },
+      {
+        id: 'med4',
+        type: 'quote',
+        content: '“Viver muito não tem valor se os anos adicionais forem acompanhados por fragilidade ou perda cognitiva. O objetivo da medicina contemporânea é expandir o healthspan — o período da vida vivido em plena autonomia física e mental.” — **Dra. Camila Torres**, Especialista em Saúde e Inovação do GRIT NEWS.'
+      },
+      {
+        id: 'med5',
+        type: 'heading2',
+        content: '2. Biomarcadores Chave para Monitoramento Trimestral'
+      },
+      {
+        id: 'med6',
+        type: 'paragraph',
+        content: 'Protocolos de longevidade de ponta priorizam a vigilância de marcadores inflamatórios subclínicos: Proteína C-Reativa ultrassensível (PCR-us), Apolipoproteína B (ApoB), insulina de jejum com cálculo HOMA-IR, ferritina e variabilidade da frequência cardíaca (VFC) durante o sono profundo.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Medicina de Precisão e Longevidade Saudável | GRIT NEWS',
+      metaDescription: 'Dra. Camila Torres detalha como genômica, testes metabólicos e hábitos orientados por dados aumentam a expectativa de vida com vitalidade e vigor.',
+      keywords: ['medicina preventiva', 'longevidade', 'genômica', 'dra camila torres', 'biomarcadores', 'saúde 3.0', 'nutrigenômica']
+    }
+  },
+  {
+    id: 'art-direito-animalista-stj-resgate',
+    title: 'Direito Animalista no Brasil: As Novas Decisões do STJ e o Reconhecimento dos Animais como Sujeitos de Cuidados',
+    slug: 'direito-animalista-brasil-stj-reconhecimento-animais-sujeitos-cuidados-tenpets',
+    subtitle: 'Jurisprudência recente consolida a guarda compartilhada, pensão alimentar e responsabilização civil estrita por abandono e negligência veterinária.',
+    summary: 'Letícia Karla, fundadora do TenPets, analisa as transformações jurídicas nos tribunais superiores que afastam a visão meramente patrimonial dos animais de estimação, elevando-os à condição de membros da família multiespécie.',
+    categoryId: 'cat-pet',
+    tags: ['Direito Animal', 'STJ', 'Guarda Compartilhada', 'Letícia Karla', 'TenPets', 'Proteção Animal', 'Legislação'],
+    authorId: 'author-leticia',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Cão sob cuidados e reabilitação na rede TenPets: a dignidade animal ganha respaldo jurídico sólido.',
+    publishedAt: '2026-08-13T11:00:00Z',
+    updatedAt: '2026-08-13T11:30:00Z',
+    readingTimeMinutes: 6,
+    viewsCount: 1890,
+    likesCount: 230,
+    sharesCount: 112,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: false,
+    blocks: [
+      {
+        id: 'dan1',
+        type: 'paragraph',
+        content: 'Historicamente enquadrados pelo Código Civil como “coisas” ou semoventes suscetíveis de apropriação, os animais domésticos vivenciam uma verdadeira revolução jurídica no Brasil. Acórdãos paradigmáticos do **Superior Tribunal de Justiça (STJ)** reconhecem a existência da **família multiespécie** e o vínculo afetivo indissociável entre tutores e seus companheiros de quatro patas.'
+      },
+      {
+        id: 'dan2',
+        type: 'heading2',
+        content: '1. Guarda Compartilhada e Fixação de Despesas Veterinárias'
+      },
+      {
+        id: 'dan3',
+        type: 'paragraph',
+        content: 'Em processos de divórcio e dissolução de união estável, magistrados já determinam regimes de visitas alternadas e a partilha proporcional dos custos com alimentação terapêutica, vacinas, fisioterapia e planos de saúde veterinários, aplicando princípios de proteção análogos ao melhor interesse dos vulneráveis.'
+      },
+      {
+        id: 'dan4',
+        type: 'quote',
+        content: '“Quem resgata uma vida das ruas aprende na prática o que a lei agora formaliza: animais sentem dor, medo, saudade e gratidão. A justiça brasileira dá um passo civilizatório indispensável ao punir severamente o abandono e garantir amparo a quem não pode falar por si.” — **Letícia Karla**, Coordenadora do TenPets.'
+      },
+      {
+        id: 'dan5',
+        type: 'heading2',
+        content: '2. Responsabilidade das Prefeituras e Financiamento do Terceiro Setor'
+      },
+      {
+        id: 'dan6',
+        type: 'paragraph',
+        content: 'Outro vetor de avanço é a exigência de políticas públicas contínuas de castração gratuita, microchipagem e fomento a lares temporários mantidos por ONGs e protetores independentes. A jurisprudência vem fixando que a omissão estatal no controle de zoonoses e abandono gera responsabilidade civil objetiva.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Direito Animalista no Brasil e Decisões do STJ | GRIT NEWS',
+      metaDescription: 'Entenda como o STJ reconheceu a guarda compartilhada de pets, pensão e direitos da família multiespécie sob a ótica de Letícia Karla (TenPets).',
+      keywords: ['direito animal', 'STJ', 'guarda pet', 'leticia karla', 'tenpets', 'resgate animal', 'família multiespécie']
+    }
+  },
+  {
+    id: 'art-eusebio-polo-gastronomico-imobiliario-nordeste',
+    title: 'O Efeito Eusébio: Como o Município Cearense se Tornou o Polo de Alto Padrão e Maior Valorização Imobiliária',
+    slug: 'efeito-eusebio-polo-alto-padrao-maior-valorizacao-imobiliaria-ceara',
+    subtitle: 'Com condomínios horizontais planejados, segurança de ponta e centros empresariais em expansão, a cidade lidera o PIB per capita e atrai famílias e investidores.',
+    summary: 'Tasso Vasconcelos analisa os fatores macroeconômicos e urbanísticos que transformaram Eusébio na capital do bem-viver no Ceará, com valorização anual acima de dois dígitos no metro quadrado construído.',
+    categoryId: 'cat-negocios',
+    tags: ['Eusébio', 'Mercado Imobiliário', 'Investimentos', 'Tasso Vasconcelos', 'Alphaville', 'Ceará', 'Urbanismo', 'Imóveis de Luxo'],
+    authorId: 'author-tasso',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Condomínio de alto padrão em Eusébio (CE): arquitetura contemporânea e ampla área verde preservada.',
+    publishedAt: '2026-08-15T08:00:00Z',
+    updatedAt: '2026-08-15T08:30:00Z',
+    readingTimeMinutes: 7,
+    viewsCount: 3120,
+    likesCount: 285,
+    sharesCount: 140,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: false,
+    blocks: [
+      {
+        id: 'eub1',
+        type: 'paragraph',
+        content: 'Localizado a apenas 15 minutos dos principais centros comerciais de Fortaleza, o município de **Eusébio (CE)** consolidou-se como o endereço mais desejado pelas classes A e B no Nordeste. O que antes era uma pacata cidade litorânea converteu-se no mais bem-sucedido case de **urbanismo horizontal de alto padrão** do Brasil.'
+      },
+      {
+        id: 'eub2',
+        type: 'callout',
+        content: '📈 **Indicador GRIT Real Estate:** A valorização média do metro quadrado nos condomínios fechados de Eusébio superou 14,8% nos últimos 12 meses, impulsionada por novos colégios bilíngues, centros médicos e malls de conveniência.'
+      },
+      {
+        id: 'eub3',
+        type: 'heading2',
+        content: '1. O Triângulo de Ouro: Segurança, Espaço e Conectividade'
+      },
+      {
+        id: 'eub4',
+        type: 'paragraph',
+        content: 'A busca por casas amplas com quintal privativo, aliada à infraestrutura de fibra óptica de altíssima velocidade e monitoramento inteligente por câmeras térmicas e IA nos acessos viários, fez com que executivos, profissionais liberais e empresários fixassem residência definitiva no município.'
+      },
+      {
+        id: 'eub5',
+        type: 'quote',
+        content: '“Eusébio não vende apenas tijolos e terrenos; vende qualidade de vida, tempo com a família e a certeza de um patrimônio com alta liquidez e blindagem inflacionária.” — **Tasso Vasconcelos**, CEO & Editor-Chefe do GRIT NEWS.'
+      },
+      {
+        id: 'eub6',
+        type: 'heading2',
+        content: '2. O Polo Tecnológico e Industrial de Saúde da FIOCRUZ'
+      },
+      {
+        id: 'eub7',
+        type: 'paragraph',
+        content: 'A presença do Polo Industrial e Tecnológico de Saúde (PITS), ancorado pela FIOCRUZ Ceará, transformou a região em um ímã de empresas farmacêuticas, biotecnologia e logística de insumos médicos. Isso cria uma base sólida de empregos com salários médios bem acima da média estadual.'
+      }
+    ],
+    seo: {
+      metaTitle: 'O Efeito Eusébio: Polo de Alto Padrão e Valorização Imobiliária | GRIT NEWS',
+      metaDescription: 'Análise de mercado: entenda por que Eusébio (CE) lidera o crescimento imobiliário de alto padrão e atrai investimentos de famílias e investidores.',
+      keywords: ['eusebio imoveis', 'mercado imobiliario ceara', 'tasso vasconcelos', 'alphaville eusebio', 'investimento imobiliario', 'casas em condominio']
+    }
+  },
+  {
+    id: 'art-ciberseguranca-agentes-ia-autonomos-b2b',
+    title: 'A Nova Fronteira da Cibersegurança: Protegendo Redes Corporativas Contra Agentes Autônomos de IA',
+    slug: 'ciberseguranca-protecao-redes-corporativas-agentes-autonomos-ia-soc-zero-trust',
+    subtitle: 'Com o surgimento de malware impulsionado por LLMs e ataques de phishing hiperpersonalizados, os times de segurança adotam arquitetura Zero Trust baseada em inteligência preditiva.',
+    summary: 'A proliferação de agentes de IA capazes de interagir com bancos de dados e APIs corporativas abre novos vetores de risco. Conheça as estratégias recomendadas por especialistas para blindar sistemas críticos de empresas em 2026.',
+    categoryId: 'cat-tech',
+    tags: ['Cibersegurança', 'Zero Trust', 'Inteligência Artificial', 'LGPD', 'Cloud Security', 'Renato Silva', 'B2B'],
+    authorId: 'author-renato',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Centro de Operações de Segurança (SOC) monitorando anomalias e tentativas de invasão em tempo real.',
+    publishedAt: '2026-08-15T09:30:00Z',
+    updatedAt: '2026-08-15T09:30:00Z',
+    readingTimeMinutes: 6,
+    viewsCount: 1650,
+    likesCount: 142,
+    sharesCount: 78,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: false,
+    blocks: [
+      {
+        id: 'cib1',
+        type: 'paragraph',
+        content: 'Até pouco tempo, as ameaças virtuais dependiam de scripts estáticos e campanhas genéricas de phishing facilmente detectáveis por filtros de e-mail. Em 2026, o cenário mudou drasticamente com a automação de ataques por **agentes autônomos de IA**, capazes de analisar o estilo de comunicação de executivos e explorar falhas de autenticação em segundos.'
+      },
+      {
+        id: 'cib2',
+        type: 'heading2',
+        content: '1. A Falácia do Perímetro e o Imperativo do Zero Trust'
+      },
+      {
+        id: 'cib3',
+        type: 'paragraph',
+        content: 'No modelo Zero Trust (“Nunca Confie, Sempre Verifique”), nenhum usuário, dispositivo ou aplicativo interno possui acesso irrestrito. Cada requisição a microsserviços, ERPs e bancos de dados é autenticada com base em telemetria comportamental e biometria multifator.'
+      },
+      {
+        id: 'cib4',
+        type: 'callout',
+        content: '🛡️ **Checklist de Defesa Corporativa:** 1) Auditar integrações de APIs de LLMs; 2) Proibir o uso de credenciais em hardcode; 3) Implementar honeypots inteligentes; 4) Treinar colaboradores com simulações de deepfake de voz.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Cibersegurança e Agentes Autônomos de IA | GRIT NEWS',
+      metaDescription: 'Estratégias avançadas de cibersegurança Zero Trust para proteger empresas contra ataques automatizados e vazamento de dados confidenciais.',
+      keywords: ['cibersegurança', 'agentes de IA', 'zero trust', 'segurança da informação', 'SOC', 'LGPD', 'renato silva']
+    }
   }
 ];
 
