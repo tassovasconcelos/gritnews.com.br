@@ -9,6 +9,7 @@ interface FooterProps {
   onNavigateOffers: () => void;
   onNavigateImoveis?: () => void;
   onNavigatePlaybook?: () => void;
+  onNavigateCheckout?: (productId?: string) => void;
   onOpenDocs: () => void;
   onNavigateAdmin?: () => void;
   onOpenContactModal?: () => void;
@@ -20,6 +21,7 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigateOffers,
   onNavigateImoveis,
   onNavigatePlaybook,
+  onNavigateCheckout,
   onOpenDocs,
   onNavigateAdmin,
   onOpenContactModal
@@ -88,6 +90,13 @@ export const Footer: React.FC<FooterProps> = ({
                   Central de Ofertas B2B
                 </button>
               </li>
+              {onNavigateCheckout && (
+                <li>
+                  <button onClick={() => onNavigateCheckout()} className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors">
+                    Checkout Mercado Pago (Todos os Produtos)
+                  </button>
+                </li>
+              )}
               {onNavigateImoveis && (
                 <li>
                   <button onClick={onNavigateImoveis} className="text-[#FF8A00] hover:text-amber-300 font-bold transition-colors">

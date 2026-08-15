@@ -37,6 +37,7 @@ import { EusebioRoiCalculator } from '../tools/EusebioRoiCalculator';
 
 interface EusebioImoveisViewProps {
   onShowToast: (message: string, type?: 'success' | 'info') => void;
+  onNavigateCheckout?: (productId?: string) => void;
 }
 
 const NEIGHBORHOODS = [
@@ -60,7 +61,10 @@ const PROPERTY_TYPES: { label: string; value: string }[] = [
   { label: 'Comercial & Salas', value: 'comercial' }
 ];
 
-export const EusebioImoveisView: React.FC<EusebioImoveisViewProps> = ({ onShowToast }) => {
+export const EusebioImoveisView: React.FC<EusebioImoveisViewProps> = ({ 
+  onShowToast,
+  onNavigateCheckout
+}) => {
   const [properties, setProperties] = useState<EusebioProperty[]>(getEusebioProperties());
   
   // Filters State
@@ -322,6 +326,15 @@ export const EusebioImoveisView: React.FC<EusebioImoveisViewProps> = ({ onShowTo
                 <Calculator className="w-4 h-4" />
                 <span>Simulador de ROI & Yield</span>
               </button>
+              {onNavigateCheckout && (
+                <button
+                  onClick={() => onNavigateCheckout('prod-destaque-eusebio-imoveis')}
+                  className="flex items-center justify-center gap-2 px-5 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-sm"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>Destaque Topo (R$ 149)</span>
+                </button>
+              )}
               <button
                 onClick={() => setIsPublishModalOpen(true)}
                 className="flex items-center justify-center gap-2 px-6 py-3.5 bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold rounded-xl shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-sm"

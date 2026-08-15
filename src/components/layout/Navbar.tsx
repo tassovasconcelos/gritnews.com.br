@@ -14,6 +14,7 @@ interface NavbarProps {
   onNavigateTenPets: () => void;
   onNavigateImoveis?: () => void;
   onNavigatePlaybook?: () => void;
+  onNavigateCheckout?: (productId?: string) => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
   onOpenDocs: () => void;
@@ -44,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateTenPets,
   onNavigateImoveis,
   onNavigatePlaybook,
+  onNavigateCheckout,
   onSearch,
   onNavigateHome,
   onOpenDocs,
@@ -75,6 +77,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             </p>
           </div>
           <div className="hidden md:flex items-center gap-4 shrink-0 text-xs text-gray-300">
+            {onNavigateCheckout && (
+              <button
+                onClick={() => onNavigateCheckout()}
+                className="text-emerald-400 hover:text-emerald-300 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Checkout Oficial Mercado Pago</span>
+              </button>
+            )}
             {onOpenContactModal && (
               <button
                 onClick={onOpenContactModal}
@@ -109,6 +120,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Buttons */}
         <div className="hidden lg:flex items-center gap-2">
+          {onNavigateCheckout && (
+            <button
+              onClick={() => onNavigateCheckout()}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-black px-3.5 py-2 rounded-xl text-xs shadow-sm hover:scale-102 transition-all cursor-pointer border border-emerald-500/30"
+              title="Central de Compras e Checkout Mercado Pago"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-emerald-200" />
+              <span>Checkout MP</span>
+            </button>
+          )}
+
           <a
             href="https://meli.la/1kXwMJQ"
             target="_blank"
@@ -116,18 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-black px-3 py-2 rounded-xl text-xs border border-yellow-500/40 shadow-xs hover:scale-102 transition-all cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5 fill-current text-slate-900" />
-            <span>Lista Mercado Livre</span>
-          </a>
-
-          <a
-            href="https://www.amazon.com.br/shop/tassovasconcelos"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-2 rounded-xl text-xs border border-slate-200 transition-all cursor-pointer"
-            title="Loja Amazon de Tasso Vasconcelos"
-          >
-            <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
-            <span>Amazon</span>
+            <span>Lista ML</span>
           </a>
 
           <button
@@ -292,6 +303,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+            {onNavigateCheckout && (
+              <button
+                onClick={() => {
+                  onNavigateCheckout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 shadow-sm"
+              >
+                <ShoppingBag className="w-4 h-4 text-emerald-200" />
+                <span>Checkout Oficial Mercado Pago & PIX</span>
+              </button>
+            )}
+
             {onNavigateImoveis && (
               <button
                 onClick={() => {

@@ -361,24 +361,63 @@ export interface EusebioProperty {
   viewsCount: number;
 }
 
-export type PlaybookPaymentMethod = 'pix' | 'card' | 'boleto';
-export type PlaybookOrderStatus = 'PAID' | 'PENDING_PIX' | 'REFUNDED' | 'CANCELLED';
+export type PlaybookPaymentMethod = 'pix' | 'card' | 'boleto' | 'mercadopago_wallet';
+export type PlaybookOrderStatus = 'PAID' | 'PENDING_PIX' | 'PROCESSING' | 'REFUNDED' | 'CANCELLED';
+
+export type CommercialProductType = 
+  | 'INFOPRODUCT' 
+  | 'AD_BANNER' 
+  | 'SPONSORED_POST' 
+  | 'REAL_ESTATE_FEATURE' 
+  | 'REAL_ESTATE_CONSULTING' 
+  | 'DONATION_TENPETS' 
+  | 'MEMBERSHIP' 
+  | 'CUSTOM_OFFER';
+
+export interface CommercialProduct {
+  id: string;
+  sku: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  type: CommercialProductType;
+  category: string;
+  originalPrice?: number;
+  price: number;
+  badge?: string;
+  image?: string;
+  downloadUrl?: string; // Para produtos digitais (ex: PDF do Playbook)
+  benefits: string[];
+  featured?: boolean;
+  requiresShipping?: boolean;
+}
 
 export type PlaybookOrder = {
   id: string;
+  productId?: string;
+  productTitle?: string;
+  productType?: CommercialProductType;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  customerCpf?: string;
   paymentMethod: PlaybookPaymentMethod;
   amount: number;
+  originalAmount?: number;
+  installments?: number;
   status: PlaybookOrderStatus;
   pixCode?: string;
   couponCode?: string;
+  discountAmount?: number;
   accessSent: boolean;
+  downloadUrl?: string;
+  mercadoPagoPaymentId?: string;
   createdAt: string;
   paidAt?: string;
   notes?: string;
 };
+
+export type CommercialOrder = PlaybookOrder;
 
 // ==========================================
 // GRIT 2.0 - AUDITORIA & SEGURANÇA

@@ -122,9 +122,9 @@ export const ViralPautasWidget: React.FC<ViralPautasWidgetProps> = ({ onShowToas
       slug,
       subtitle: pauta.topic,
       summary: `${pauta.googleSeoTitle}. Pauta diária otimizada para engajamento em massa no TikTok, Meta e Google Search.`,
-      categoryId: pauta.category === 'pet' ? 'cat-pet' : pauta.category === 'juridico' ? 'cat-negocios' : 'cat-tecnologia',
+      categoryId: pauta.category === 'pet' ? 'cat-pet' : pauta.category === 'juridico' ? 'cat-negocios' : 'cat-tech',
       tags: pauta.suggestedTags,
-      authorId: pauta.category === 'pet' ? 'aut-leticia' : 'aut-tasso',
+      authorId: pauta.category === 'pet' ? 'author-leticia' : 'author-tasso',
       status: 'PUBLISHED',
       featuredImage: pauta.category === 'pet' 
         ? 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1200'

@@ -38,9 +38,13 @@ import {
 
 interface PlaybookEmagrecimentoViewProps {
   onShowToast: (message: string, type?: 'success' | 'info') => void;
+  onNavigateCheckout?: (productId?: string) => void;
 }
 
-export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps> = ({ onShowToast }) => {
+export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps> = ({ 
+  onShowToast,
+  onNavigateCheckout
+}) => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -57,6 +61,10 @@ export const PlaybookEmagrecimentoView: React.FC<PlaybookEmagrecimentoViewProps>
   const siteConfig = getSiteConfig();
 
   const handleOpenCheckout = () => {
+    if (onNavigateCheckout) {
+      onNavigateCheckout('prod-playbook-emagrecimento');
+      return;
+    }
     setIsCheckoutOpen(true);
     setOrderCompleted(false);
   };

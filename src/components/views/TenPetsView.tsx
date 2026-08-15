@@ -33,9 +33,13 @@ import { TenPetsLogo } from '../ui/TenPetsLogo';
 
 interface TenPetsViewProps {
   onShowToast: (message: string, type?: 'success' | 'info') => void;
+  onNavigateCheckout?: (productId?: string) => void;
 }
 
-export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
+export const TenPetsView: React.FC<TenPetsViewProps> = ({ 
+  onShowToast,
+  onNavigateCheckout
+}) => {
   const [articles] = useState<TenPetsArticle[]>(getTenPetsArticles());
   const [rescues] = useState<TenPetsRescue[]>(getTenPetsRescues());
   const [partners] = useState<TenPetsPartner[]>(getTenPetsPartners());
@@ -733,22 +737,33 @@ export const TenPetsView: React.FC<TenPetsViewProps> = ({ onShowToast }) => {
                 <span className="font-mono text-base sm:text-lg font-black text-amber-300 break-all">
                   gritsolucoes@gmail.com
                 </span>
-                <button
-                  onClick={copyPixKey}
-                  className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
-                >
-                  {pixCopied ? (
-                    <>
-                      <Check className="w-4 h-4 text-slate-950" />
-                      <span>Copiado!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      <span>Copiar Pix</span>
-                    </>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={copyPixKey}
+                    className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
+                  >
+                    {pixCopied ? (
+                      <>
+                        <Check className="w-4 h-4 text-slate-950" />
+                        <span>Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar Pix</span>
+                      </>
+                    )}
+                  </button>
+                  {onNavigateCheckout && (
+                    <button
+                      onClick={() => onNavigateCheckout('prod-doacao-tenpets-vip')}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                      <Heart className="w-3.5 h-3.5 fill-current text-rose-600" />
+                      <span>Doar no Cartão / MP</span>
+                    </button>
                   )}
-                </button>
+                </div>
               </div>
 
               <p className="text-[11px] text-slate-300 font-light">

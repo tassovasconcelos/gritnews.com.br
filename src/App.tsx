@@ -14,6 +14,7 @@ import { DocumentationModal } from './components/views/DocumentationModal';
 import { TenPetsView } from './components/views/TenPetsView';
 import { EusebioImoveisView } from './components/views/EusebioImoveisView';
 import { PlaybookEmagrecimentoView } from './components/views/PlaybookEmagrecimentoView';
+import { CheckoutView } from './components/views/CheckoutView';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
@@ -47,6 +48,7 @@ type ViewMode =
   | 'tenpets'
   | 'imoveis'
   | 'playbook'
+  | 'checkout'
   | 'admin';
 
 const resolveRouteFromUrl = (
@@ -63,6 +65,19 @@ const resolveRouteFromUrl = (
   const search = window.location.search;
   const params = new URLSearchParams(search);
   const hash = window.location.hash;
+
+  // 0. Checkout Unificado Mercado Pago
+  if (
+    params.get('view') === 'checkout' ||
+    pathLower.includes('/checkout') ||
+    pathLower.includes('/pagamento') ||
+    hash.includes('checkout')
+  ) {
+    return {
+      view: 'checkout' as ViewMode,
+      checkoutProductId: params.get('product') || params.get('prod') || 'prod-playbook-emagrecimento'
+    };
+  }
 
   // 1. TenPets Subdomain / View
   if (
@@ -186,6 +201,7 @@ export default function App() {
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCheckoutProductId, setSelectedCheckoutProductId] = useState<string>('prod-playbook-emagrecimento');
 
   // Modal Lead Quote
   const [leadModalOffer, setLeadModalOffer] = useState<Offer | null>(null);
@@ -224,6 +240,7 @@ export default function App() {
   ) => {
     const route = resolveRouteFromUrl(loadedArticles, loadedCategories, loadedAuthors, loadedPartners);
     setCurrentView(route.view);
+    if (route.checkoutProductId) setSelectedCheckoutProductId(route.checkoutProductId);
     if (route.article) setSelectedArticle(route.article);
     if (route.category) setSelectedCategory(route.category);
     if (route.author) setSelectedAuthor(route.author);
@@ -360,6 +377,13 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleNavigateCheckout = (productId = 'prod-playbook-emagrecimento') => {
+    setSelectedCheckoutProductId(productId);
+    setCurrentView('checkout');
+    window.history.pushState({ view: 'checkout', product: productId }, '', `?view=checkout&product=${productId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleLeadQuoteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadName || !leadEmail || !leadModalOffer) return;
@@ -431,6 +455,7 @@ export default function App() {
           setCurrentView('playbook');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onNavigateCheckout={handleNavigateCheckout}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onOpenContactModal={() => setIsContactModalOpen(true)}
         bookmarksCount={getBookmarks().length}
@@ -438,6 +463,14 @@ export default function App() {
 
       {/* Main Content Router */}
       <main className="flex-1">
+        {currentView === 'checkout' && (
+          <CheckoutView
+            initialProductId={selectedCheckoutProductId}
+            onBackToHome={handleNavigateHome}
+            onShowToast={showToast}
+          />
+        )}
+
         {currentView === 'home' && (
           <HomeView
             articles={articles}
@@ -466,18 +499,21 @@ export default function App() {
         {currentView === 'playbook' && (
           <PlaybookEmagrecimentoView
             onShowToast={showToast}
+            onNavigateCheckout={handleNavigateCheckout}
           />
         )}
 
         {currentView === 'imoveis' && (
           <EusebioImoveisView
             onShowToast={showToast}
+            onNavigateCheckout={handleNavigateCheckout}
           />
         )}
 
         {currentView === 'tenpets' && (
           <TenPetsView
             onShowToast={showToast}
+            onNavigateCheckout={handleNavigateCheckout}
           />
         )}
 
@@ -525,6 +561,7 @@ export default function App() {
             onBackToHome={() => setCurrentView('home')}
             onOpenLeadModal={setLeadModalOffer}
             onShowToast={showToast}
+            onNavigateCheckout={handleNavigateCheckout}
           />
         )}
 
@@ -583,6 +620,7 @@ export default function App() {
           setCurrentView('playbook');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onNavigateCheckout={handleNavigateCheckout}
         onOpenDocs={() => setIsDocModalOpen(true)}
         onNavigateAdmin={() => setCurrentView('admin')}
         onOpenContactModal={() => setIsContactModalOpen(true)}

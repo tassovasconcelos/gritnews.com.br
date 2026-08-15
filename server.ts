@@ -18,6 +18,58 @@ async function startServer() {
     });
   });
 
+  // Mercado Pago Payment Preference Endpoint (Server-Side proxy)
+  app.post("/api/mercadopago/preference", async (req, res) => {
+    try {
+      const { items, payer, back_urls, external_reference } = req.body;
+      const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN || req.headers['x-mp-token'] as string;
+
+      if (!mpToken) {
+        return res.json({
+          status: "simulated",
+          message: "Credenciais de servidor não configuradas. Utilizando processamento seguro pelo gateway cliente.",
+          init_point: null,
+          id: `pref_${Date.now()}`
+        });
+      }
+
+      // If token is provided, call Mercado Pago API
+      const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${mpToken}`
+        },
+        body: JSON.stringify({
+          items: items || [],
+          payer: payer || {},
+          back_urls: back_urls || {
+            success: "https://gritnews.com.br/?view=checkout&status=success",
+            pending: "https://gritnews.com.br/?view=checkout&status=pending",
+            failure: "https://gritnews.com.br/?view=checkout&status=failure"
+          },
+          auto_return: "approved",
+          external_reference: external_reference || `ref_${Date.now()}`
+        })
+      });
+
+      const data = await mpResponse.json();
+      return res.json({ status: "success", preference: data });
+    } catch (err: any) {
+      console.error("[Mercado Pago Preference Error]:", err);
+      return res.status(500).json({ error: "Erro ao gerar preferência no Mercado Pago", details: err?.message });
+    }
+  });
+
+  // Mercado Pago Webhook Listener
+  app.post("/api/mercadopago/webhook", (req, res) => {
+    const topic = req.query.topic || req.body?.type;
+    const paymentId = req.query.id || req.body?.data?.id;
+
+    console.log(`[Mercado Pago Webhook] Received notification: Topic=${topic}, ID=${paymentId}`);
+    return res.status(200).json({ received: true });
+  });
+
   // Determine if running in production mode AND built dist assets exist
   const distPath = path.resolve(process.cwd(), "dist");
   const hasDist = fs.existsSync(path.join(distPath, "index.html"));
