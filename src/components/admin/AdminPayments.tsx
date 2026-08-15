@@ -25,6 +25,7 @@ import {
 import { SiteConfig } from '../../types';
 import { getSiteConfig, saveSiteConfig } from '../../lib/storage';
 import { generatePixBrCode, validatePixKey } from '../../lib/pixUtils';
+import { testMercadoPagoCredentials } from '../../lib/mercadoPagoService';
 
 interface AdminPaymentsProps {
   onShowToast: (msg: string) => void;
@@ -66,36 +67,33 @@ export const AdminPayments: React.FC<AdminPaymentsProps> = ({ onShowToast }) => 
     onShowToast('Configurações de PIX e Mercado Pago salvas com sucesso!');
   };
 
-  const handleTestMercadoPago = () => {
+  const handleTestMercadoPago = async () => {
     setIsTestingMp(true);
     setMpTestResult(null);
 
-    setTimeout(() => {
+    const token = config.mercadoPagoAccessToken?.trim() || '';
+
+    if (!token) {
       setIsTestingMp(false);
-      const token = config.mercadoPagoAccessToken?.trim() || '';
+      setMpTestResult({
+        success: false,
+        message: 'Informe o Access Token do Mercado Pago (começa com APP_USR-... ou TEST-...) para testar a conexão.'
+      });
+      return;
+    }
 
-      if (!token) {
-        setMpTestResult({
-          success: false,
-          message: 'Informe o Access Token do Mercado Pago (começa com APP_USR-... ou TEST-...) para testar a conexão.'
-        });
-        return;
-      }
+    const result = await testMercadoPagoCredentials(token);
+    setIsTestingMp(false);
+    setMpTestResult({
+      success: result.success,
+      message: result.message
+    });
 
-      if (token.startsWith('APP_USR-') || token.startsWith('TEST-') || token.length > 20) {
-        const isProd = token.startsWith('APP_USR-');
-        setMpTestResult({
-          success: true,
-          message: `Conexão validada com sucesso! Gateway Mercado Pago pronto em modo ${isProd ? 'PRODUÇÃO (Recebimentos Reais)' : 'SANDBOX (Testes)'}. Os pagamentos por PIX e Cartão serão creditados na sua conta.`
-        });
-        onShowToast('Credenciais do Mercado Pago verificadas com sucesso!');
-      } else {
-        setMpTestResult({
-          success: false,
-          message: 'Formato de Access Token inválido. Os tokens do Mercado Pago iniciam geralmente com "APP_USR-" (Produção) ou "TEST-" (Sandbox).'
-        });
-      }
-    }, 1200);
+    if (result.success) {
+      onShowToast('Credenciais do Mercado Pago verificadas com sucesso!');
+    } else {
+      onShowToast(result.message);
+    }
   };
 
   const handleCopyGeneratedPix = () => {

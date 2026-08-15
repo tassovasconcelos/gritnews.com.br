@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ShieldCheck,
   Lock,
@@ -24,12 +24,13 @@ import {
   Clock,
   Send,
   Building,
-  HeartHandshake
+  HeartHandshake,
+  RefreshCw
 } from 'lucide-react';
 import { CommercialProduct, PlaybookOrder, SiteConfig } from '../../types';
 import { COMMERCIAL_PRODUCTS, getProductById } from '../../data/commercialProducts';
-import { getSiteConfig, addPlaybookOrder } from '../../lib/storage';
-import { processMercadoPagoCheckout, detectCardBrand } from '../../lib/mercadoPagoService';
+import { getSiteConfig, addPlaybookOrder, getPlaybookOrders, updatePlaybookOrder } from '../../lib/storage';
+import { processMercadoPagoCheckout, detectCardBrand, checkMercadoPagoPaymentStatus } from '../../lib/mercadoPagoService';
 import confetti from 'canvas-confetti';
 
 interface CheckoutViewProps {
@@ -73,28 +74,96 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
 
-  // Processamento
+  // Processamento & Conclusão
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<PlaybookOrder | null>(null);
   const [pixQrCodeUrl, setPixQrCodeUrl] = useState<string>('');
   const [pixPayloadCode, setPixPayloadCode] = useState<string>('');
+  const [checkoutProUrl, setCheckoutProUrl] = useState<string>('');
+  const [isPaymentConfirmedRealTime, setIsPaymentConfirmedRealTime] = useState(false);
+  const [isPollingStatus, setIsPollingStatus] = useState(false);
 
   // Timer do Pix (15 minutos)
   const [timeLeft, setTimeLeft] = useState(900);
+  const pollingIntervalRef = useRef<any>(null);
 
   useEffect(() => {
     setSiteConfig(getSiteConfig());
+
+    // Verificar se retornou com parâmetro de status de pagamento do Mercado Pago
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const returnStatus = params.get('status') || params.get('collection_status');
+      const paymentId = params.get('payment_id') || params.get('collection_id');
+      if (returnStatus === 'approved' || returnStatus === 'success') {
+        onShowToast('Pagamento confirmado com sucesso via Mercado Pago!', 'success');
+      }
+    }
   }, []);
 
+  // Timer regressivo para o PIX
   useEffect(() => {
-    if (orderCompleted && paymentMethod === 'pix') {
+    if (orderCompleted && paymentMethod === 'pix' && !isPaymentConfirmedRealTime) {
       const timer = setInterval(() => {
         setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [orderCompleted, paymentMethod]);
+  }, [orderCompleted, paymentMethod, isPaymentConfirmedRealTime]);
+
+  // Polling em tempo real para verificar se o pagamento PIX foi aprovado
+  useEffect(() => {
+    if (orderCompleted && paymentMethod === 'pix' && completedOrder?.mercadoPagoPaymentId && !isPaymentConfirmedRealTime) {
+      setIsPollingStatus(true);
+      
+      pollingIntervalRef.current = setInterval(async () => {
+        try {
+          const statusRes = await checkMercadoPagoPaymentStatus(
+            completedOrder.mercadoPagoPaymentId!,
+            siteConfig.mercadoPagoAccessToken
+          );
+
+          if (statusRes.status === 'approved') {
+            setIsPaymentConfirmedRealTime(true);
+            setIsPollingStatus(false);
+            clearInterval(pollingIntervalRef.current);
+
+            // Atualizar o pedido para PAID
+            const updated: PlaybookOrder = {
+              ...completedOrder,
+              status: 'PAID',
+              accessSent: true,
+              paidAt: new Date().toISOString(),
+              notes: `Pagamento PIX confirmado e aprovado em tempo real pelo Mercado Pago! ID: ${completedOrder.mercadoPagoPaymentId}`
+            };
+            setCompletedOrder(updated);
+            updatePlaybookOrder(completedOrder.id, {
+              status: 'PAID',
+              accessSent: true,
+              paidAt: new Date().toISOString()
+            });
+
+            try {
+              confetti({
+                particleCount: 100,
+                spread: 80,
+                origin: { y: 0.5 }
+              });
+            } catch (e) {}
+
+            onShowToast('PIX Reconhecido! Seu acesso e materiais estão 100% liberados.', 'success');
+          }
+        } catch (e) {
+          console.debug('Polling Mercado Pago status check...', e);
+        }
+      }, 4000);
+
+      return () => {
+        if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+      };
+    }
+  }, [orderCompleted, paymentMethod, completedOrder, isPaymentConfirmedRealTime, siteConfig.mercadoPagoAccessToken]);
 
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -177,11 +246,11 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
     if (paymentMethod === 'card') {
       const cleanCard = cardNumber.replace(/\D/g, '');
       if (cleanCard.length < 15) {
-        onShowToast('Informe os 16 dígitos do cartão de crédito.', 'error');
+        onShowToast('Informe os 16 dígitos do seu cartão de crédito.', 'error');
         return;
       }
       if (!cardHolderName.trim()) {
-        onShowToast('Informe o nome do titular como impresso no cartão.', 'error');
+        onShowToast('Informe o nome do titular impresso no cartão.', 'error');
         return;
       }
       if (!cardExpiry.includes('/') || cardExpiry.length < 5) {
@@ -224,8 +293,9 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
         setCompletedOrder(result.order);
         if (result.pixQrCodeDataUrl) setPixQrCodeUrl(result.pixQrCodeDataUrl);
         if (result.pixPayload) setPixPayloadCode(result.pixPayload);
+        if (result.mercadoPagoInitPoint) setCheckoutProUrl(result.mercadoPagoInitPoint);
 
-        // Se for Wallet Mercado Pago, redirecionar se configurado
+        // Se for Wallet Mercado Pago, redirecionar
         if (paymentMethod === 'mercadopago_wallet' && result.mercadoPagoInitPoint) {
           window.open(result.mercadoPagoInitPoint, '_blank');
         }
@@ -246,7 +316,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       }
     } catch (err) {
       console.error('Erro no checkout:', err);
-      onShowToast('Ocorreu um erro ao processar o pagamento.', 'error');
+      onShowToast('Ocorreu um erro ao processar o pagamento com o Mercado Pago.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -532,7 +602,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     </div>
                     <div>
                       <p className="text-xs font-black text-[#0B2343]">Conta Mercado Pago</p>
-                      <p className="text-[11px] text-slate-500">Saldo ou Mercado Crédito</p>
+                      <p className="text-[11px] text-slate-500">Saldo ou Checkout Pro</p>
                     </div>
                   </button>
                 </div>
@@ -545,9 +615,9 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                       <span>Como funciona o pagamento por PIX:</span>
                     </div>
                     <ul className="space-y-1 text-[11px] text-emerald-900 list-disc list-inside">
-                      <li>Ao clicar no botão abaixo, geramos o QR Code dinâmico e o código Copia e Cola.</li>
-                      <li>Você copia o código ou aponta a câmera no app do seu banco (qualquer instituição bancária).</li>
-                      <li>A liberação do seu produto ou serviço ocorre instantaneamente após o pagamento.</li>
+                      <li>Ao clicar no botão abaixo, geramos o QR Code dinâmico e o código Copia e Cola oficial do Mercado Pago / Banco Central.</li>
+                      <li>Você copia o código ou aponta a câmera no app de qualquer instituição bancária.</li>
+                      <li>Nosso sistema possui verificação em tempo real: assim que o banco confirmar, a tela atualiza e o acesso é liberado instantaneamente.</li>
                     </ul>
                   </div>
                 )}
@@ -645,9 +715,12 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
                 {paymentMethod === 'mercadopago_wallet' && (
                   <div className="p-4 bg-sky-50 border border-sky-200 rounded-2xl space-y-2 text-xs text-sky-950">
-                    <p className="font-bold text-sky-900">Pague com o ecossistema Mercado Pago:</p>
+                    <p className="font-bold text-sky-900 flex items-center gap-1.5">
+                      <Zap className="w-4 h-4 text-sky-600" />
+                      Pague com a sua conta Mercado Pago:
+                    </p>
                     <p className="text-[11px] text-sky-800">
-                      Você poderá utilizar o saldo da sua conta Mercado Pago, cartões salvos ou a linha de crédito Mercado Crédito com total segurança e praticidade.
+                      Ao clicar em finalizar, você será direcionado ao ambiente seguro do Mercado Pago com sua preferência configurada, podendo pagar com saldo, cartão salvo ou Mercado Crédito.
                     </p>
                   </div>
                 )}
@@ -742,7 +815,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   className="w-full py-4 bg-gradient-to-r from-[#FF8500] via-[#FF9E2C] to-[#FF8500] hover:from-[#E67700] hover:to-[#E67700] text-slate-950 font-black text-sm rounded-2xl shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
-                    <span>Processando no Mercado Pago...</span>
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Conectando ao Mercado Pago...</span>
+                    </span>
                   ) : (
                     <>
                       <span>FINALIZAR PAGAMENTO (R$ {finalPrice.toFixed(2)})</span>
@@ -768,7 +844,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
           </div>
         ) : (
           /* =========================================================
-             TELA DE SUCESSO / CONFIRMAÇÃO DO PEDIDO (PIX & CARTÃO)
+             TELA DE SUCESSO / CONFIRMAÇÃO DO PEDIDO (PIX, CARTÃO OU WALLET)
              ========================================================= */
           <div className="max-w-2xl mx-auto bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-xl text-center space-y-6">
             
@@ -778,18 +854,30 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
             <div className="space-y-1">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                Pedido Gerado com Sucesso
+                {isPaymentConfirmedRealTime || paymentMethod === 'card' ? 'Pagamento Aprovado' : 'Pedido Gerado com Sucesso'}
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-[#0B2343]">
-                {paymentMethod === 'card' ? 'Pagamento Aprovado!' : 'Pedido Criado no Mercado Pago!'}
+                {isPaymentConfirmedRealTime || paymentMethod === 'card'
+                  ? 'Pagamento Confirmado no Mercado Pago!'
+                  : paymentMethod === 'mercadopago_wallet'
+                  ? 'Pedido Pronto no Mercado Pago!'
+                  : 'Cobrança PIX Gerada!'}
               </h2>
               <p className="text-xs text-slate-600">
                 Obrigado, <strong className="text-[#0B2343]">{customerName}</strong>! Pedido código: <strong className="font-mono text-[#145EDB]">{completedOrder?.id}</strong>
               </p>
             </div>
 
-            {/* SE FOR PIX: EXIBIR O QR CODE E CÓDIGO COPIA E COLA */}
-            {paymentMethod === 'pix' && (
+            {/* SE O PIX FOI CONFIRMADO EM TEMPO REAL */}
+            {isPaymentConfirmedRealTime && (
+              <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-900 text-xs font-bold flex items-center justify-center gap-2">
+                <Sparkles className="w-5 h-5 text-emerald-600" />
+                <span>Identificamos seu pagamento PIX no Mercado Pago com sucesso!</span>
+              </div>
+            )}
+
+            {/* SE FOR PIX PENDENTE: EXIBIR O QR CODE E CÓDIGO COPIA E COLA */}
+            {paymentMethod === 'pix' && !isPaymentConfirmedRealTime && (
               <div className="bg-[#F7F9FC] p-6 rounded-2xl border-2 border-emerald-500/30 text-left space-y-4">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-extrabold text-emerald-800 flex items-center gap-1.5">
@@ -801,6 +889,13 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     <span>Expira em {formatTimer(timeLeft)}</span>
                   </div>
                 </div>
+
+                {isPollingStatus && (
+                  <div className="flex items-center gap-2 text-[11px] text-sky-700 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-200">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-600" />
+                    <span>Aguardando transferência... Ao pagar no app do seu banco, a confirmação é automática.</span>
+                  </div>
+                )}
 
                 {/* QR Code Imagem Gerada Dinamicamente */}
                 {pixQrCodeUrl && (
@@ -864,6 +959,24 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     <strong className="text-slate-900">{siteConfig.pixCity || 'FORTALEZA'}</strong>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* SE FOR CHECKOUT PRO / WALLET: LINK DE REDIRECIONAMENTO */}
+            {paymentMethod === 'mercadopago_wallet' && checkoutProUrl && (
+              <div className="p-5 bg-sky-50 border border-sky-200 rounded-2xl text-center space-y-3">
+                <p className="text-xs font-bold text-sky-900">
+                  Clique no botão abaixo para acessar o Checkout Pro Seguro do Mercado Pago:
+                </p>
+                <a
+                  href={checkoutProUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 bg-sky-600 hover:bg-sky-700 text-white font-black text-xs rounded-xl shadow-md transition-all"
+                >
+                  <span>Pagar no Ambiente Oficial Mercado Pago</span>
+                  <ExternalLink className="w-4 h-4" />
+                </a>
               </div>
             )}
 
