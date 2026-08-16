@@ -1,0 +1,40 @@
+name: Meu Espetinho CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/meu-espetinho/**'
+      - '.github/workflows/meu-espetinho-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/meu-espetinho/**'
+      - '.github/workflows/meu-espetinho-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: meu-espetinho-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/meu-espetinho
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Smoke test
+        run: npm run smoke
