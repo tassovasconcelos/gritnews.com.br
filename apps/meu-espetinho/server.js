@@ -19,7 +19,7 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ ok: true, app: 'meu-espetinho' });
 });
 
-app.get('*', (_req, res) => {
+app.use((_req, res) => {
   res.sendFile(path.join(dist, 'index.html'));
 });
 
