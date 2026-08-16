@@ -4,6 +4,8 @@ import Landing from './Landing';
 import Signup from './Signup';
 import Admin from './Admin';
 import AppGate from './AppGate';
+import MarketingConsent from './MarketingConsent';
+import { trackMarketing } from './lib/analytics';
 import './styles.css';
 
 function Router() {
@@ -11,12 +13,13 @@ function Router() {
   useEffect(() => {
     const sync = () => setPath(window.location.pathname);
     window.addEventListener('popstate', sync);
+    trackMarketing({ name: path === '/' ? 'view_landing' : 'page_view', params: { path } });
     return () => window.removeEventListener('popstate', sync);
-  }, []);
-  if (path.startsWith('/admin')) return <Admin />;
-  if (path.startsWith('/cadastro')) return <Signup />;
-  if (path.startsWith('/app')) return <AppGate />;
-  return <Landing />;
+  }, [path]);
+  if (path.startsWith('/admin')) return <><Admin /><MarketingConsent /></>;
+  if (path.startsWith('/cadastro')) return <><Signup /><MarketingConsent /></>;
+  if (path.startsWith('/app')) return <><AppGate /><MarketingConsent /></>;
+  return <><Landing /><MarketingConsent /></>;
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
