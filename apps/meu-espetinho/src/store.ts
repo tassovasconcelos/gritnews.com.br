@@ -1,6 +1,17 @@
 export type Product = { id: string; name: string; price: number; category: string; active: boolean };
 export type OrderItem = { productId: string; name: string; qty: number; unitPrice: number };
-export type Order = { id: string; label: string; customer?: string; openedAt: string; items: OrderItem[]; status: 'open' | 'paid' };
+export type OrderSource = 'table' | 'customer' | 'free';
+export type Order = {
+  id: string;
+  label: string;
+  customer?: string;
+  customerId?: string;
+  customerPhone?: string;
+  source?: OrderSource;
+  openedAt: string;
+  items: OrderItem[];
+  status: 'open' | 'paid';
+};
 export type Settings = { businessName: string; address: string; whatsapp: string; logoUrl?: string };
 
 const KEY = 'meu-espetinho-v1';
