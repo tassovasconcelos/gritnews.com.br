@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
 import Landing from './Landing';
+import Signup from './Signup';
+import Admin from './Admin';
+import AppGate from './AppGate';
 import './styles.css';
 
 function Router() {
@@ -11,7 +13,10 @@ function Router() {
     window.addEventListener('popstate', sync);
     return () => window.removeEventListener('popstate', sync);
   }, []);
-  return path.startsWith('/app') ? <App /> : <Landing />;
+  if (path.startsWith('/admin')) return <Admin />;
+  if (path.startsWith('/cadastro')) return <Signup />;
+  if (path.startsWith('/app')) return <AppGate />;
+  return <Landing />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
