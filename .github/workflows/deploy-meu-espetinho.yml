@@ -1,0 +1,79 @@
+name: Deploy Meu Espetinho
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/meu-espetinho/**'
+      - '.github/workflows/deploy-meu-espetinho.yml'
+
+concurrency:
+  group: deploy-meu-espetinho-production
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production-meu-espetinho
+    env:
+      FTP_SERVER: ${{ secrets.MEU_ESPETINHO_FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.MEU_ESPETINHO_FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.MEU_ESPETINHO_FTP_PASSWORD }}
+      FTP_SERVER_DIR: ${{ secrets.MEU_ESPETINHO_FTP_SERVER_DIR }}
+
+    defaults:
+      run:
+        working-directory: apps/meu-espetinho
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: https://pcrwtoddavpvkaxwtstc.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS
+        run: npm run build
+
+      - name: Validate build
+        run: test -f dist/index.html
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: meu-espetinho-production
+          path: apps/meu-espetinho/dist/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Deploy to Hostinger via FTPS
+        if: ${{ env.FTP_SERVER != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' && env.FTP_SERVER_DIR != '' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ env.FTP_SERVER }}
+          username: ${{ env.FTP_USERNAME }}
+          password: ${{ env.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: apps/meu-espetinho/dist/
+          server-dir: ${{ env.FTP_SERVER_DIR }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+
+      - name: Hostinger credentials status
+        if: ${{ env.FTP_SERVER == '' || env.FTP_USERNAME == '' || env.FTP_PASSWORD == '' || env.FTP_SERVER_DIR == '' }}
+        run: echo "Build validado e salvo como artifact. Deploy Hostinger será habilitado automaticamente quando os 4 secrets FTP forem cadastrados no ambiente production-meu-espetinho."

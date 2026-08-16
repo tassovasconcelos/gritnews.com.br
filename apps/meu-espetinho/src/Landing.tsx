@@ -1,0 +1,41 @@
+import { ArrowRight, BarChart3, Check, Clock3, Flame, Menu, ReceiptText, ShieldCheck, ShoppingCart, Smartphone, Sparkles, Store, TrendingUp, Users, WalletCards, X } from 'lucide-react';
+import { useState } from 'react';
+import { Brand } from './Brand';
+import './landing.css';
+
+const benefits = [
+  { icon: ShoppingCart, title: 'Venda sem enrolação', text: 'Abra comandas, lance espetinhos, bebidas e acompanhamentos em poucos toques.' },
+  { icon: ReceiptText, title: 'Controle das comandas', text: 'Saiba o que está aberto, o que foi vendido e quanto cada cliente consumiu.' },
+  { icon: BarChart3, title: 'Relatórios que ajudam', text: 'Faturamento, ticket médio, produtos vendidos e movimento do negócio em uma visão simples.' },
+  { icon: Smartphone, title: 'Feito para o celular', text: 'Use no balcão, na mesa ou no caixa. Interface rápida e responsiva para a rotina real.' },
+  { icon: Users, title: 'Clientes organizados', text: 'Construa histórico de consumo e relacionamento para vender mais e atender melhor.' },
+  { icon: ShieldCheck, title: 'Informação protegida', text: 'Estrutura em nuvem preparada para separar os dados de cada estabelecimento com segurança.' },
+];
+
+const planItems = ['Comandas e vendas ilimitadas', 'Cadastro de produtos', 'Dashboard gerencial', 'Relatórios de vendas', 'Cadastro de clientes', 'Acesso pelo celular e computador', 'Atualizações do sistema', 'Suporte de implantação'];
+
+function goApp() { window.history.pushState({}, '', '/app'); window.dispatchEvent(new PopStateEvent('popstate')); }
+
+export default function Landing() {
+  const [menu, setMenu] = useState(false);
+  return <div className="landing">
+    <header className="lp-header"><a href="#inicio" className="lp-logo"><Brand/></a><nav className={menu ? 'lp-nav open' : 'lp-nav'}><a href="#beneficios">Benefícios</a><a href="#como-funciona">Como funciona</a><a href="#plano">Plano</a><button className="lp-login" onClick={goApp}>Entrar</button><a className="lp-cta small" href="#plano">Quero o Meu Espetinho</a></nav><button className="lp-menu" onClick={() => setMenu(!menu)}>{menu ? <X/> : <Menu/>}</button></header>
+
+    <main className="lp-main">
+      <section className="lp-hero" id="inicio"><div className="hero-copy"><span className="lp-kicker"><Sparkles size={15}/> Gestão simples para quem faz acontecer</span><h1>Seu espetinho vende.<br/><em>O Meu Espetinho organiza.</em></h1><p>Controle vendas, comandas, produtos, clientes e resultados em um sistema criado para deixar a operação mais rápida e o seu negócio mais lucrativo.</p><div className="hero-actions"><a className="lp-cta" href="#plano">Começar agora <ArrowRight size={18}/></a><button className="lp-secondary" onClick={goApp}>Ver o sistema</button></div><div className="hero-trust"><span><Check/> Fácil de usar</span><span><Check/> Sem planilhas</span><span><Check/> Acesso online</span></div></div>
+        <div className="hero-visual"><div className="glow"/><div className="app-window"><div className="window-top"><Brand light/><span>● ● ●</span></div><div className="mock-body"><aside><span className="active">Visão geral</span><span>Nova venda</span><span>Comandas</span><span>Produtos</span><span>Gerencial</span></aside><div className="mock-content"><div className="mock-title"><small>HOJE NO SEU NEGÓCIO</small><strong>Visão geral</strong></div><div className="mock-metrics"><div><small>Vendas</small><b>R$ 2.840</b><i>+18% hoje</i></div><div><small>Ticket médio</small><b>R$ 42,70</b><i>66 contas</i></div><div><small>Em aberto</small><b>12</b><i>R$ 486,00</i></div></div><div className="mock-chart"><div className="chart-head"><span>Movimento de vendas</span><b>Hoje</b></div><div className="bars"><i/><i/><i/><i/><i/><i/><i/><i/></div></div></div></div></div><div className="floating-card fc-one"><TrendingUp/><span><b>Mais controle</b><small>decisões com dados</small></span></div><div className="floating-card fc-two"><Clock3/><span><b>Mais agilidade</b><small>menos tempo no caixa</small></span></div></div>
+      </section>
+
+      <section className="proof-strip"><span>Feito para</span><b><Flame/> Espetinhos</b><b><Store/> Quiosques</b><b><WalletCards/> Bares</b><b><ShoppingCart/> Pequenos negócios</b></section>
+
+      <section className="lp-section" id="beneficios"><div className="section-heading"><span className="lp-kicker">MENOS IMPROVISO. MAIS GESTÃO.</span><h2>Tudo que você precisa para <em>dominar a operação.</em></h2><p>O Meu Espetinho transforma a rotina corrida em uma operação organizada, visual e fácil de acompanhar.</p></div><div className="benefit-grid">{benefits.map(({icon: Icon,title,text}) => <article key={title}><span className="benefit-icon"><Icon/></span><h3>{title}</h3><p>{text}</p><a href="#plano">Conhecer <ArrowRight size={15}/></a></article>)}</div></section>
+
+      <section className="dark-section" id="como-funciona"><div className="dark-copy"><span className="lp-kicker">DA BRASA AO RESULTADO</span><h2>Vender bem é ótimo.<br/><em>Saber como você vende é melhor ainda.</em></h2><p>Em poucos passos, sua venda vira informação para você tomar decisões melhores.</p><div className="steps"><div><b>01</b><span><strong>Abra a comanda</strong><small>Mesa, cliente ou número da conta.</small></span></div><div><b>02</b><span><strong>Lance os produtos</strong><small>Toques rápidos e total automático.</small></span></div><div><b>03</b><span><strong>Receba e finalize</strong><small>Feche a conta sem perder informação.</small></span></div><div><b>04</b><span><strong>Acompanhe os números</strong><small>Veja o desempenho do seu negócio.</small></span></div></div></div><div className="phone-mock"><div className="phone-notch"/><Brand light/><small>NOVA VENDA</small><h3>Comanda #24</h3><div className="phone-products"><span>Carne <b>R$ 10,00</b></span><span>Frango <b>R$ 9,00</b></span><span>Coração <b>R$ 12,00</b></span><span>Refrigerante <b>R$ 6,00</b></span></div><div className="phone-total"><span>Total</span><b>R$ 46,00</b></div><button>Receber e finalizar</button></div></section>
+
+      <section className="lp-section pricing-section" id="plano"><div className="section-heading"><span className="lp-kicker">PLANO SIMPLES. SEM SURPRESA.</span><h2>Gestão profissional por <em>menos de R$ 3 por dia.</em></h2><p>Uma licença completa para colocar controle e inteligência no seu espetinho.</p></div><div className="pricing-wrap"><div className="price-card"><span className="popular">PLANO MEU ESPETINHO</span><div className="price"><small>R$</small><strong>89</strong><span>,00<br/><i>/mês</i></span></div><div className="activation"><span>Ativação e implantação</span><b>R$ 199,00</b><small>pagamento único</small></div><ul>{planItems.map(item => <li key={item}><Check/>{item}</li>)}</ul><a className="lp-cta full" href="mailto:gritsolucoes@gmail.com?subject=Quero%20o%20Meu%20Espetinho">Quero contratar <ArrowRight size={18}/></a><p className="price-note">Comece com estrutura profissional sem investir em sistemas complicados.</p></div><div className="value-copy"><span className="lp-kicker">O QUE MUDA NA PRÁTICA?</span><h3>Você deixa de <em>achar</em> e começa a <em>saber.</em></h3><div className="value-list"><div><span>Antes</span><b>“Quanto vendemos hoje?”</b><small>Contas, papel e memória.</small></div><div><span>Com Meu Espetinho</span><b>Seu faturamento na tela.</b><small>Indicadores claros e atualizados.</small></div><div><span>Antes</span><b>“Qual produto vende mais?”</b><small>Decisão no feeling.</small></div><div><span>Com Meu Espetinho</span><b>Dados para comprar e vender melhor.</b><small>Mais visão para proteger sua margem.</small></div></div></div></div></section>
+
+      <section className="final-cta"><Brand light/><h2>Seu negócio merece mais do que uma comanda de papel.</h2><p>Tenha controle, agilidade e informação para crescer com confiança.</p><a className="lp-cta" href="mailto:gritsolucoes@gmail.com?subject=Quero%20contratar%20Meu%20Espetinho">Quero o Meu Espetinho <ArrowRight/></a><small>R$ 89/mês + ativação única de R$ 199</small></section>
+    </main>
+    <footer><Brand/><span>Meu Espetinho • Tecnologia simples para pequenos negócios.</span><small>Uma solução GRIT.</small></footer>
+  </div>;
+}
