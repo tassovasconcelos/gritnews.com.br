@@ -7,6 +7,7 @@ import AppGate from './AppGate';
 import MarketingConsent from './MarketingConsent';
 import { trackMarketing } from './lib/analytics';
 import './styles.css';
+import './brand-v2.css';
 
 function Router() {
   const [path, setPath] = useState(window.location.pathname);
