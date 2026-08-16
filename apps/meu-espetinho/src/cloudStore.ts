@@ -10,6 +10,20 @@ export type CustomerCredit = {
   balance: number;
 };
 
+export type OperationUser = {
+  userId: string;
+  name: string;
+  role: 'owner' | 'manager' | 'attendant';
+  active: boolean;
+};
+
+export type SeatSummary = {
+  activeUsers: number;
+  includedUsers: number;
+  extraUsers: number;
+  extraMonthlyAmount: number;
+};
+
 const DEFAULT_PRODUCTS = [
   { name: 'Carne', price: 10, category: 'Espetinhos' },
   { name: 'Frango', price: 8, category: 'Espetinhos' },
@@ -40,6 +54,12 @@ async function ensureSeedProducts(tenantId: string) {
   })));
 }
 
+async function profileMapFor(ids: string[]) {
+  if (!supabase || !ids.length) return new Map<string,string>();
+  const { data } = await supabase.from('profiles').select('id,full_name').in('id', [...new Set(ids)]);
+  return new Map((data || []).map((p:any)=>[p.id,p.full_name || 'Usuário']));
+}
+
 export async function hydrateCloudState(tenantId: string): Promise<AppState | null> {
   if (!supabase) return null;
   await ensureSeedProducts(tenantId);
@@ -47,13 +67,15 @@ export async function hydrateCloudState(tenantId: string): Promise<AppState | nu
     supabase.from('tenants').select('name,address,phone,logo_url').eq('id', tenantId).single(),
     supabase.from('categories').select('id,name').eq('tenant_id', tenantId),
     supabase.from('products').select('id,category_id,name,price,active').eq('tenant_id', tenantId).order('created_at'),
-    supabase.from('orders').select('id,label,status,opened_at,customer_id').eq('tenant_id', tenantId).order('opened_at', { ascending: false }),
+    supabase.from('orders').select('id,label,status,opened_at,customer_id,assigned_to,opened_by,closed_by').eq('tenant_id', tenantId).order('opened_at', { ascending: false }),
     supabase.from('order_items').select('order_id,product_id,product_name,unit_price,quantity').eq('tenant_id', tenantId),
     supabase.from('customers').select('id,name,phone').eq('tenant_id', tenantId),
   ]);
   if (tenantRes.error || productsRes.error || ordersRes.error || itemsRes.error) return null;
   const categoryMap = new Map((categoriesRes.data || []).map((c: any) => [c.id, c.name]));
   const customerMap = new Map((customersRes.data || []).map((c: any) => [c.id, c]));
+  const userIds=(ordersRes.data||[]).flatMap((o:any)=>[o.assigned_to,o.opened_by,o.closed_by]).filter(Boolean) as string[];
+  const names=await profileMapFor(userIds);
   const products: Product[] = (productsRes.data || []).map((p: any) => ({
     id: p.id, name: p.name, price: Number(p.price), category: categoryMap.get(p.category_id) || 'Outros', active: Boolean(p.active),
   }));
@@ -67,6 +89,12 @@ export async function hydrateCloudState(tenantId: string): Promise<AppState | nu
       customerId: customer?.id,
       customerPhone: customer?.phone || undefined,
       source: customer ? 'customer' : o.label.toLowerCase().startsWith('mesa ') ? 'table' : 'free',
+      assignedTo: o.assigned_to || undefined,
+      assignedName: o.assigned_to ? names.get(o.assigned_to) : undefined,
+      openedBy: o.opened_by || undefined,
+      openedByName: o.opened_by ? names.get(o.opened_by) : undefined,
+      closedBy: o.closed_by || undefined,
+      closedByName: o.closed_by ? names.get(o.closed_by) : undefined,
       openedAt: o.opened_at,
       status: o.status === 'closed' ? 'paid' : 'open',
       items: items.filter((i: any) => i.order_id === o.id).map((i: any) => ({ productId: i.product_id || `legacy-${o.id}-${i.product_name}`, name: i.product_name, qty: Number(i.quantity), unitPrice: Number(i.unit_price) })),
@@ -79,6 +107,43 @@ export async function hydrateCloudState(tenantId: string): Promise<AppState | nu
     products,
     orders,
   };
+}
+
+export async function loadOperationUsers(tenantId:string):Promise<{users:OperationUser[];summary:SeatSummary}> {
+  if(!supabase) return {users:[],summary:{activeUsers:0,includedUsers:3,extraUsers:0,extraMonthlyAmount:0}};
+  const [tenantRes,membersRes]=await Promise.all([
+    supabase.from('tenants').select('owner_user_id').eq('id',tenantId).single(),
+    supabase.from('tenant_users').select('user_id,role,active').eq('tenant_id',tenantId)
+  ]);
+  const ownerId=(tenantRes.data as any)?.owner_user_id as string|undefined;
+  const ids=[...(ownerId?[ownerId]:[]),...(membersRes.data||[]).map((m:any)=>m.user_id)];
+  const names=await profileMapFor(ids);
+  const users:OperationUser[]=[];
+  if(ownerId) users.push({userId:ownerId,name:names.get(ownerId)||'Proprietário',role:'owner',active:true});
+  for(const m of membersRes.data||[]) users.push({userId:(m as any).user_id,name:names.get((m as any).user_id)||'Usuário',role:(m as any).role==='manager'?'manager':'attendant',active:Boolean((m as any).active)});
+  const activeUsers=users.filter(u=>u.active).length;
+  return {users,summary:{activeUsers,includedUsers:3,extraUsers:Math.max(activeUsers-3,0),extraMonthlyAmount:Math.max(activeUsers-3,0)*39}};
+}
+
+export async function inviteOperationUser(tenantId:string,fullName:string,email:string,role:'manager'|'attendant') {
+  if(!supabase) return {ok:false,error:'offline'};
+  const {data,error}=await supabase.functions.invoke('invite-tenant-user',{body:{tenant_id:tenantId,full_name:fullName,email,role}});
+  if(error) return {ok:false,error:error.message};
+  if(data?.error) return {ok:false,error:data.error};
+  return {ok:true,...data};
+}
+
+export async function assignOrder(tenantId:string,orderId:string,userId:string) {
+  if(!supabase) return false;
+  const {error}=await supabase.from('orders').update({assigned_to:userId}).eq('tenant_id',tenantId).eq('id',orderId);
+  return !error;
+}
+
+export async function listOrderActivity(tenantId:string,orderId:string) {
+  if(!supabase) return [];
+  const {data}=await supabase.from('order_activity_logs').select('id,user_id,action,details,created_at').eq('tenant_id',tenantId).eq('order_id',orderId).order('created_at',{ascending:true});
+  const names=await profileMapFor((data||[]).map((x:any)=>x.user_id).filter(Boolean));
+  return (data||[]).map((x:any)=>({...x,userName:x.user_id?names.get(x.user_id)||'Usuário':'Sistema'}));
 }
 
 export async function listCustomersWithCredit(tenantId: string): Promise<CustomerCredit[]> {
@@ -127,7 +192,7 @@ export async function receiveCustomerCredit(tenantId: string, userId: string, cu
 
 export async function cloudCreateOrder(tenantId: string, userId: string, order: Order) {
   if (!supabase) return;
-  await supabase.from('orders').insert({ id: order.id, tenant_id: tenantId, customer_id: order.customerId || null, label: order.label, status: 'open', subtotal: 0, total: 0, opened_by: userId, opened_at: order.openedAt });
+  await supabase.from('orders').insert({ id: order.id, tenant_id: tenantId, customer_id: order.customerId || null, label: order.label, status: 'open', subtotal: 0, total: 0, opened_by: userId, assigned_to:order.assignedTo||userId, opened_at: order.openedAt });
 }
 
 export async function cloudSyncItem(tenantId: string, orderId: string, item: OrderItem | null, productId: string, orderTotal: number, userId: string) {
@@ -140,7 +205,8 @@ export async function cloudSyncItem(tenantId: string, orderId: string, item: Ord
 export async function cloudCloseOrder(tenantId: string, userId: string, order: Order, amount: number, method: string) {
   if (!supabase) return false;
   const now = new Date().toISOString();
-  const closed = await supabase.from('orders').update({ status: 'closed', subtotal: amount, total: amount, closed_by: userId, closed_at: now }).eq('tenant_id', tenantId).eq('id', order.id);
+  const settlement=method==='fiado'?'credit':'paid';
+  const closed = await supabase.from('orders').update({ status: 'closed', settlement_status:settlement, subtotal: amount, total: amount, closed_by: userId, closed_at: now }).eq('tenant_id', tenantId).eq('id', order.id);
   if (closed.error) return false;
   if (method === 'fiado') {
     if (!order.customerId) return false;
