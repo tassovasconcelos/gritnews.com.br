@@ -1,4 +1,5 @@
 import { BarChart3, CheckCircle2, Headphones, Package, Receipt, ShieldCheck, ShoppingCart, Store, Users, WalletCards, Zap } from 'lucide-react';
+import './marketing-refinement.css';
 
 const features = [
   [Zap, 'PDV rápido', 'Venda em segundos com poucos toques.'],
