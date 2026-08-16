@@ -1,8 +1,34 @@
 import React, { useState } from 'react';
-import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope, Building2, Flame, BarChart3, ShieldCheck, Feather } from 'lucide-react';
+import { 
+  Search, 
+  Tag, 
+  Bookmark, 
+  Menu, 
+  X, 
+  LayoutDashboard, 
+  Sparkles, 
+  TrendingUp, 
+  HeartPulse, 
+  PawPrint, 
+  Cpu, 
+  Globe, 
+  Smile, 
+  Lightbulb, 
+  ShoppingBag, 
+  Building2, 
+  BarChart3, 
+  ShieldCheck, 
+  Feather,
+  ChevronRight,
+  TrendingDown,
+  Calendar,
+  Layers,
+  ArrowUpRight
+} from 'lucide-react';
 import { Category } from '../../types';
 import { GritNewsLogo } from '../ui/GritNewsLogo';
-import { TenPetsLogo } from '../ui/TenPetsLogo';
+import { LiveRadarNewsEngine } from '../ui/LiveRadarNewsEngine';
+import { useEconomicRadar } from '../../hooks/useEconomicRadar';
 
 interface NavbarProps {
   categories: Category[];
@@ -29,7 +55,6 @@ const ICON_MAP: Record<string, React.ElementType> = {
   HeartPulse,
   PawPrint,
   Cpu,
-  Truck,
   Globe,
   TrendingUp,
   Smile,
@@ -60,6 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { summary: radarSummary, syncStatus } = useEconomicRadar();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,127 +95,180 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
+  // Format today's date in Portuguese (e.g. Domingo, 16 de Agosto de 2026)
+  const todayFormatted = new Intl.DateTimeFormat('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date());
+
+  const capitalizedDate = todayFormatted.charAt(0).toUpperCase() + todayFormatted.slice(1);
+
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-[#E2E8F0] shadow-xs">
-      {/* Top Bar / Ticker */}
-      <div className="bg-[#0D182A] text-white text-xs py-1.5 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-            <span className="bg-[#FF8A00] text-white font-bold px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-wider">
-              Destaque
-            </span>
-            <p className="text-[#F1F5F9] font-medium truncate text-xs">
-              M&A no setor de saúde cresce 34% em 2026 • IA Generativa já otimiza 80% dos chamados B2B
-            </p>
+    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
+      {/* 1. TOP UTILITY BAR: Date, Financial Pulse Ticker & Quick Services */}
+      <div className="bg-[#0B132B] text-slate-300 text-xs border-b border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between gap-4">
+          
+          {/* Left: Live Date & Automated Real-time News Radar with Source Attribution */}
+          <div className="flex items-center gap-3 overflow-hidden flex-1 max-w-3xl">
+            <div className="hidden sm:flex items-center gap-1.5 text-slate-400 font-medium text-[11px] pr-3 border-r border-slate-700/80 shrink-0">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <span>{capitalizedDate}</span>
+            </div>
+
+            <div className="flex-1 overflow-hidden">
+              <LiveRadarNewsEngine 
+                variant="topbar" 
+                onNavigateRadar={onNavigateRadar}
+              />
+            </div>
           </div>
-          <div className="hidden md:flex items-center gap-4 shrink-0 text-xs text-gray-300">
-            {onNavigateCheckout && (
+
+          {/* Right: Financial Market Pulse & Essential Utility Links */}
+          <div className="hidden lg:flex items-center gap-4 shrink-0 text-xs">
+            {/* Quick Market Mini-Indicators */}
+            <div 
+              onClick={onNavigateRadar}
+              className="flex items-center gap-2.5 text-[11px] font-mono bg-slate-900/90 px-3 py-1 rounded-md border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors"
+              title="Abrir Radar Econômico & Painel de Mercados (Fonte: UOL Economia Câmbio & BCB)"
+            >
+              <span className="text-slate-400">USD COM <strong className="text-slate-200">{radarSummary.dolarComercial}</strong></span>
+              <span className="text-slate-600">|</span>
+              <span className="text-slate-400">TUR <strong className="text-slate-200">{radarSummary.dolarTurismo}</strong></span>
+              <span className="text-slate-600">|</span>
+              <span className="text-slate-400">EUR <strong className="text-slate-200">{radarSummary.euroComercial}</strong></span>
+              <span className="text-slate-600">|</span>
+              <span className="text-slate-400">IBOV <strong className={`font-semibold ${radarSummary.ibovespaPositivo ? 'text-emerald-400' : 'text-rose-400'}`}>{radarSummary.ibovespaVariacao}</strong></span>
+              <span className="text-slate-600">|</span>
+              <span className="text-slate-400">SELIC <strong className="text-slate-200">{radarSummary.selicMeta}</strong></span>
+              <span className={`w-1.5 h-1.5 rounded-full ${syncStatus === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-blue-400'} ml-0.5`} title={syncStatus === 'live' ? 'Cotações ao vivo' : 'Sincronizado'} />
+            </div>
+
+            {/* Quick Utility Links */}
+            {onNavigateFato && (
               <button
-                onClick={() => onNavigateCheckout()}
-                className="text-emerald-400 hover:text-emerald-300 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+                onClick={onNavigateFato}
+                className="text-slate-300 hover:text-emerald-300 font-medium text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
               >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span>Checkout Oficial Mercado Pago</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>GRIT Fato</span>
               </button>
             )}
+
+            {onNavigateOpiniao && (
+              <button
+                onClick={onNavigateOpiniao}
+                className="text-slate-300 hover:text-purple-300 font-medium text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <Feather className="w-3.5 h-3.5 text-purple-400" />
+                <span>Colunistas</span>
+              </button>
+            )}
+
             {onOpenContactModal && (
               <button
                 onClick={onOpenContactModal}
-                className="hover:text-amber-300 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+                className="text-slate-300 hover:text-amber-300 font-medium text-[11px] transition-colors cursor-pointer"
               >
-                <span>Anuncie / Parcerias & Pautas</span>
+                Anuncie / Pautas
               </button>
             )}
-            <span className="text-[11px] font-mono text-gray-400">gritnews.com.br</span>
+
+            <button
+              onClick={onNavigateBookmarks}
+              className="text-slate-300 hover:text-white font-medium text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+              title="Artigos Salvos"
+            >
+              <Bookmark className="w-3.5 h-3.5 text-slate-400" />
+              <span>Salvos</span>
+              {bookmarksCount > 0 && (
+                <span className="bg-[#146EF5] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                  {bookmarksCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={onNavigateAdmin}
+              className="text-slate-400 hover:text-amber-300 font-medium text-[11px] transition-colors flex items-center gap-1 cursor-pointer pl-2 border-l border-slate-700"
+              title="Painel Administrativo CMS"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
+              <span>Admin</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Main Brand & Search Bar */}
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        {/* Brand Logo */}
-        <GritNewsLogo onClick={onNavigateHome} size="md" showSlogan={true} />
+      {/* 2. MAIN EDITORIAL BRANDING & SEARCH BAR */}
+      <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between gap-6">
+        {/* Brand Masthead */}
+        <div className="shrink-0 flex items-center gap-3">
+          <GritNewsLogo onClick={onNavigateHome} size="md" showSlogan={true} />
+        </div>
 
-        {/* Desktop Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-6">
+        {/* Integrated Clean Search Box */}
+        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl mx-auto">
           <div className="relative w-full">
             <input
               type="text"
-              placeholder="Buscar notícias, mercado de saúde, pet, tecnologia, inteligência artificial..."
+              placeholder="Buscar inteligência de mercado, tecnologia, saúde, causa animal, negócios..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-sm text-[#0D182A] focus:outline-none focus:ring-2 focus:ring-[#146EF5] focus:bg-white transition-all placeholder-gray-400 font-medium"
+              className="w-full pl-10 pr-12 py-2 bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder-slate-400 font-normal"
             />
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <kbd className="hidden sm:inline-block absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-400 bg-white border border-slate-200 rounded shadow-2xs">
+              Enter
+            </kbd>
           </div>
         </form>
 
-        {/* Action Buttons */}
-        <div className="hidden lg:flex items-center gap-2">
-          {onNavigateCheckout && (
-            <button
-              onClick={() => onNavigateCheckout()}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-black px-3.5 py-2 rounded-xl text-xs shadow-sm hover:scale-102 transition-all cursor-pointer border border-emerald-500/30"
-              title="Central de Compras e Checkout Mercado Pago"
-            >
-              <ShoppingBag className="w-3.5 h-3.5 text-emerald-200" />
-              <span>Checkout MP</span>
-            </button>
-          )}
+        {/* Right Refined Action Bar */}
+        <div className="hidden lg:flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={onNavigateOffers}
+            className="inline-flex items-center gap-1.5 text-slate-700 hover:text-slate-950 font-semibold px-3 py-1.5 rounded-lg text-xs border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all cursor-pointer"
+          >
+            <Tag className="w-3.5 h-3.5 text-amber-500" />
+            <span>Central de Ofertas</span>
+          </button>
 
           <a
             href="https://meli.la/1kXwMJQ"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-black px-3 py-2 rounded-xl text-xs border border-yellow-500/40 shadow-xs hover:scale-102 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-slate-700 hover:text-slate-950 font-semibold px-3 py-1.5 rounded-lg text-xs border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5 fill-current text-slate-900" />
-            <span>Lista ML</span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>Achados ML</span>
           </a>
 
-          <button
-            onClick={onNavigateOffers}
-            className="flex items-center gap-1.5 bg-[#FF8A00] hover:bg-[#e07900] text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-md hover:scale-102 transition-all cursor-pointer"
-          >
-            <Tag className="w-3.5 h-3.5" />
-            <span>Ofertas</span>
-          </button>
-
-          <button
-            onClick={onNavigateBookmarks}
-            className="flex items-center gap-1.5 bg-[#F1F5F9] hover:bg-[#EAF3FF] text-[#0D182A] font-bold px-3.5 py-2 rounded-xl text-xs border border-[#E2E8F0] hover:border-[#146EF5] transition-all relative cursor-pointer"
-          >
-            <Bookmark className="w-3.5 h-3.5 text-[#146EF5]" />
-            <span>Salvos</span>
-            {bookmarksCount > 0 && (
-              <span className="bg-[#146EF5] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                {bookmarksCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={onNavigateAdmin}
-            className="flex items-center gap-1.5 bg-slate-900 hover:bg-blue-900 text-amber-300 hover:text-white font-black px-3.5 py-2 rounded-xl text-xs border border-amber-400/40 shadow-xs hover:scale-102 transition-all cursor-pointer"
-            title="Acessar Painel Gerencial & CMS"
-          >
-            <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
-            <span>Admin CMS</span>
-          </button>
+          {onNavigateCheckout && (
+            <button
+              onClick={() => onNavigateCheckout()}
+              className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-xs transition-all cursor-pointer"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Checkout Oficial</span>
+            </button>
+          )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Nav Actions */}
         <div className="flex md:hidden items-center gap-2">
           <button
             onClick={onNavigateOffers}
-            className="bg-[#FF8500] text-white font-bold p-2 rounded-xl text-xs"
+            className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg text-xs"
             title="Ofertas"
           >
-            <Tag className="w-4 h-4" />
+            <Tag className="w-5 h-5 text-amber-500" />
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-[#0B2343] hover:bg-gray-100 rounded-xl"
+            className="p-2 text-slate-900 hover:bg-slate-100 rounded-lg"
             aria-label="Abrir Menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -197,94 +276,22 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Category Navigation Bar */}
-      <div className="bg-[#F1F5F9] border-t border-[#E2E8F0] overflow-x-auto scrollbar-none">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 whitespace-nowrap py-1">
+      {/* 3. PRIMARY EDITORIAL SECTION NAVIGATION (Clean, Single-line, No Rainbow Clutter) */}
+      <nav className="bg-white border-t border-slate-200 overflow-x-auto scrollbar-none">
+        <div className="max-w-7xl mx-auto px-4 flex items-center gap-0.5 whitespace-nowrap py-1">
+          {/* Todas as Notícias */}
           <button
             onClick={() => onSelectCategory(undefined)}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
               !activeCategorySlug
-                ? 'bg-[#0D182A] text-white shadow-xs'
-                : 'text-[#687280] hover:text-[#0D182A] hover:bg-white'
+                ? 'bg-slate-900 text-white'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
             Todas as Notícias
           </button>
 
-          {/* Radar Mercados Button */}
-          {onNavigateRadar && (
-            <button
-              onClick={onNavigateRadar}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-blue-950/80 hover:bg-blue-900 text-blue-300 hover:text-white shadow-xs hover:scale-105 transition-all border border-blue-600/40"
-            >
-              <BarChart3 className="w-3.5 h-3.5 text-blue-400" />
-              <span>Radar Mercados</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            </button>
-          )}
-
-          {/* GRIT Fato Fact-Checking Button */}
-          {onNavigateFato && (
-            <button
-              onClick={onNavigateFato}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 hover:text-white shadow-xs hover:scale-105 transition-all border border-emerald-600/40"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>GRIT Fato</span>
-            </button>
-          )}
-
-          {/* Colunas & Opinião Button */}
-          {onNavigateOpiniao && (
-            <button
-              onClick={onNavigateOpiniao}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white shadow-xs hover:scale-105 transition-all border border-purple-600/40"
-            >
-              <Feather className="w-3.5 h-3.5 text-purple-400" />
-              <span>Colunas & Opinião</span>
-            </button>
-          )}
-
-          {/* Imóveis Eusébio Hub Navigation Button */}
-          {onNavigateImoveis && (
-            <button
-              onClick={onNavigateImoveis}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-[#0D182A] hover:bg-[#1E293B] text-white shadow-xs hover:scale-105 transition-all border border-amber-500/50"
-            >
-              <Building2 className="w-3.5 h-3.5 text-[#FF8A00]" />
-              <span>Imóveis Eusébio</span>
-              <span className="bg-[#FF8A00] text-slate-950 text-[9px] px-1.5 py-0.2 rounded font-black uppercase tracking-wider">
-                Novo
-              </span>
-            </button>
-          )}
-
-          {/* Playbook Emagrecimento Button */}
-          {onNavigatePlaybook && (
-            <button
-              onClick={onNavigatePlaybook}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-gradient-to-r from-rose-900 to-[#1C1427] hover:from-rose-800 hover:to-[#2B1B3D] text-white shadow-xs hover:scale-105 transition-all border border-rose-500/40"
-            >
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
-              <span>Playbook Saúde</span>
-              <span className="bg-amber-400 text-slate-950 text-[9px] px-1.5 py-0.2 rounded font-black">
-                R$ 29,90
-              </span>
-            </button>
-          )}
-
-          {/* TenPets Subdomain Portal Button */}
-          <button
-            onClick={onNavigateTenPets}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-extrabold bg-[#587837] hover:bg-[#48632c] text-white shadow-xs hover:scale-105 transition-all border border-[#769b4e]"
-          >
-            <TenPetsLogo variant="dark" size="sm" />
-            <span>(Resgates & Ciência)</span>
-            <span className="bg-black/20 text-emerald-200 text-[9px] px-1.5 py-0.2 rounded font-mono">
-              .gritnews
-            </span>
-          </button>
-
+          {/* Standard Categories */}
           {categories.map(cat => {
             const isActive = activeCategorySlug === cat.slug;
             const IconComp = ICON_MAP[cat.iconName] || Tag;
@@ -293,38 +300,141 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={cat.id}
                 onClick={() => onSelectCategory(cat.slug)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#146EF5] text-white shadow-xs'
-                    : 'text-[#687280] hover:text-[#0D182A] hover:bg-white'
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <IconComp className="w-3.5 h-3.5" style={{ color: isActive ? '#FFFFFF' : cat.color }} />
+                <IconComp className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                 <span>{cat.name}</span>
               </button>
             );
           })}
-        </div>
-      </div>
 
-      {/* Mobile Drawer */}
+          <span className="h-4 w-px bg-slate-200 mx-1 shrink-0" />
+
+          {/* Special Verticals (Styled Elegantly, Unified) */}
+          <button
+            onClick={onNavigateTenPets}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold text-emerald-800 hover:text-emerald-900 hover:bg-emerald-50 transition-all cursor-pointer"
+          >
+            <PawPrint className="w-3.5 h-3.5 text-emerald-600" />
+            <span>TenPets (Causa Animal)</span>
+          </button>
+
+          {onNavigateImoveis && (
+            <button
+              onClick={onNavigateImoveis}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold text-amber-800 hover:text-amber-900 hover:bg-amber-50 transition-all cursor-pointer"
+            >
+              <Building2 className="w-3.5 h-3.5 text-amber-600" />
+              <span>Imóveis Eusébio</span>
+            </button>
+          )}
+
+          {onNavigatePlaybook && (
+            <button
+              onClick={onNavigatePlaybook}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold text-rose-800 hover:text-rose-900 hover:bg-rose-50 transition-all cursor-pointer"
+            >
+              <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
+              <span>Playbook Saúde</span>
+            </button>
+          )}
+
+          {onNavigateRadar && (
+            <button
+              onClick={onNavigateRadar}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold text-blue-800 hover:text-blue-900 hover:bg-blue-50 transition-all cursor-pointer"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Radar Mercados</span>
+            </button>
+          )}
+        </div>
+      </nav>
+
+      {/* 4. MOBILE DRAWER NAVIGATION */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-[#E2E8F0] p-4 shadow-xl animate-slideDown">
+        <div className="md:hidden bg-white border-b border-slate-200 p-4 shadow-xl max-h-[85vh] overflow-y-auto">
           <form onSubmit={handleSearchSubmit} className="mb-4">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Buscar notícias ou assuntos..."
+                placeholder="Buscar notícias, artigos ou temas..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-sm"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm"
               />
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
           </form>
 
+          {/* Quick Hubs */}
+          <div className="grid grid-cols-2 gap-2 mb-4 pb-3 border-b border-slate-100">
+            <button
+              onClick={() => {
+                if (onNavigateRadar) onNavigateRadar();
+                setMobileMenuOpen(false);
+              }}
+              className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-left text-xs font-bold text-slate-800 flex items-center gap-2"
+            >
+              <BarChart3 className="w-4 h-4 text-blue-600" />
+              <span>Radar Mercados</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (onNavigateFato) onNavigateFato();
+                setMobileMenuOpen(false);
+              }}
+              className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-left text-xs font-bold text-slate-800 flex items-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>GRIT Fato</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onNavigateTenPets();
+                setMobileMenuOpen(false);
+              }}
+              className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-left text-xs font-bold text-slate-800 flex items-center gap-2"
+            >
+              <PawPrint className="w-4 h-4 text-emerald-600" />
+              <span>Portal TenPets</span>
+            </button>
+
+            {onNavigateImoveis && (
+              <button
+                onClick={() => {
+                  onNavigateImoveis();
+                  setMobileMenuOpen(false);
+                }}
+                className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-left text-xs font-bold text-slate-800 flex items-center gap-2"
+              >
+                <Building2 className="w-4 h-4 text-amber-600" />
+                <span>Imóveis Eusébio</span>
+              </button>
+            )}
+          </div>
+
           <div className="space-y-1 mb-4">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Categorias</p>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Seções & Editorias</p>
+            <button
+              onClick={() => {
+                onSelectCategory(undefined);
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold flex items-center justify-between ${
+                !activeCategorySlug ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <span>Todas as Notícias</span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+
             {categories.map(cat => (
               <button
                 key={cat.id}
@@ -333,54 +443,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                 }}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold flex items-center justify-between ${
-                  activeCategorySlug === cat.slug ? 'bg-[#EAF3FF] text-[#145EDB]' : 'text-[#10233F]'
+                  activeCategorySlug === cat.slug ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <span>{cat.name}</span>
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
             ))}
           </div>
 
-          <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
-            {onNavigateRadar && (
-              <button
-                onClick={() => {
-                  onNavigateRadar();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-blue-950 text-blue-200 hover:text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-blue-700/50 shadow-xs"
-              >
-                <BarChart3 className="w-4 h-4 text-blue-400" />
-                <span>Radar Econômico & Mercados (Cotações ao Vivo)</span>
-              </button>
-            )}
-
-            {onNavigateFato && (
-              <button
-                onClick={() => {
-                  onNavigateFato();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-emerald-950 text-emerald-200 hover:text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-emerald-700/50 shadow-xs"
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>GRIT Fato (Agência de Fact-Checking)</span>
-              </button>
-            )}
-
-            {onNavigateOpiniao && (
-              <button
-                onClick={() => {
-                  onNavigateOpiniao();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-purple-950 text-purple-200 hover:text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-purple-700/50 shadow-xs"
-              >
-                <Feather className="w-4 h-4 text-purple-400" />
-                <span>Colunas & Opinião dos Especialistas</span>
-              </button>
-            )}
+          <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
+            <button
+              onClick={() => {
+                onNavigateOffers();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold py-2.5 rounded-lg text-xs text-center flex items-center justify-center gap-2"
+            >
+              <Tag className="w-4 h-4 text-amber-600" />
+              <span>Central de Ofertas B2B</span>
+            </button>
 
             {onNavigateCheckout && (
               <button
@@ -388,79 +470,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onNavigateCheckout();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 shadow-sm"
+                className="w-full bg-slate-900 text-white font-bold py-2.5 rounded-lg text-xs text-center flex items-center justify-center gap-2"
               >
-                <ShoppingBag className="w-4 h-4 text-emerald-200" />
-                <span>Checkout Oficial Mercado Pago & PIX</span>
+                <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                <span>Checkout Oficial Mercado Pago</span>
               </button>
             )}
-
-            {onNavigateImoveis && (
-              <button
-                onClick={() => {
-                  onNavigateImoveis();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-[#0D182A] text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-amber-500/50"
-              >
-                <Building2 className="w-4 h-4 text-[#FF8A00]" />
-                <span>Hub de Imóveis no Eusébio (Novo)</span>
-              </button>
-            )}
-
-            {onNavigatePlaybook && (
-              <button
-                onClick={() => {
-                  onNavigatePlaybook();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-gradient-to-r from-rose-950 to-[#1C1427] text-white font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-rose-500/50"
-              >
-                <Flame className="w-4 h-4 text-amber-400" />
-                <span>Playbook Emagrecimento Saudável (R$ 29,90)</span>
-              </button>
-            )}
-
-            <a
-              href="https://meli.la/1kXwMJQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-yellow-500/40"
-            >
-              <Sparkles className="w-4 h-4 text-slate-900 fill-current" />
-              <span>Lista de Achados no Mercado Livre</span>
-            </a>
-
-            <a
-              href="https://www.amazon.com.br/shop/tassovasconcelos"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full bg-slate-100 text-slate-700 font-bold py-2 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-slate-200"
-            >
-              <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
-              <span>Loja Amazon (Tasso Vasconcelos)</span>
-            </a>
-
-            <button
-              onClick={() => {
-                onNavigateOffers();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full bg-[#FF8500] text-white font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Tag className="w-4 h-4" />
-              <span>Central de Ofertas</span>
-            </button>
 
             <button
               onClick={() => {
                 onNavigateAdmin();
                 setMobileMenuOpen(false);
               }}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-amber-300 font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-amber-400/40 cursor-pointer"
+              className="w-full bg-slate-800 text-amber-300 font-bold py-2.5 rounded-lg text-xs text-center flex items-center justify-center gap-2"
             >
               <LayoutDashboard className="w-4 h-4 text-amber-400" />
-              <span>Acessar Painel Gerencial (Admin CMS)</span>
+              <span>Acessar Painel CMS (Admin)</span>
             </button>
           </div>
         </div>

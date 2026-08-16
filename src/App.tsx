@@ -558,6 +558,10 @@ export default function App() {
               setCurrentView('playbook');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
+            onNavigateRadar={handleNavigateRadar}
+            onNavigateTenPets={handleNavigateTenPets}
+            onNavigateOpiniao={handleNavigateOpiniao}
+            onNavigateFato={handleNavigateFato}
             onOpenLeadModal={setLeadModalOffer}
             onShowToast={showToast}
           />

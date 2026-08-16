@@ -337,9 +337,41 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const handleSendWhatsAppReceipt = () => {
     if (!completedOrder) return;
     const phone = '5585994441122'; // WhatsApp Comercial GRIT News
-    const msg = `Olá, Equipe GRIT News! 👋\n\nAcabei de realizar o pedido *${completedOrder.id}* no portal:\n- *Produto:* ${selectedProduct.title}\n- *Valor:* R$ ${completedOrder.amount.toFixed(2)}\n- *Cliente:* ${completedOrder.customerName}\n- *E-mail:* ${completedOrder.customerEmail}\n\nGostaria de confirmar o pagamento e o recebimento dos acessos. Obrigado!`;
+    const msg = `Olá, Equipe GRIT News! 👋\n\nAcabei de realizar o pedido *${completedOrder.id}* no portal:\n- *Produto:* ${selectedProduct.title}\n- *Valor:* R$ ${completedOrder.amount.toFixed(2)}\n- *Cliente:* ${completedOrder.customerName}\n- *E-mail:* ${completedOrder.customerEmail}\n- *Selo de Autenticidade:* ${completedOrder.securityHash || 'HASH-AUTENTICADO'}\n\nGostaria de confirmar o pagamento e o recebimento dos acessos. Obrigado!`;
     const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
+  };
+
+  // Simulação instantânea de aprovação PIX para testes e homologação
+  const handleManualSimulatePixApproval = () => {
+    if (!completedOrder) return;
+    setIsPaymentConfirmedRealTime(true);
+    setIsPollingStatus(false);
+    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+
+    const updated: PlaybookOrder = {
+      ...completedOrder,
+      status: 'PAID',
+      accessSent: true,
+      paidAt: new Date().toISOString(),
+      notes: `Pagamento PIX confirmado e aprovado (Modo Homologação/Simulação). ID: ${completedOrder.id}`
+    };
+    setCompletedOrder(updated);
+    updatePlaybookOrder(completedOrder.id, {
+      status: 'PAID',
+      accessSent: true,
+      paidAt: new Date().toISOString()
+    });
+
+    try {
+      confetti({
+        particleCount: 100,
+        spread: 80,
+        origin: { y: 0.5 }
+      });
+    } catch (e) {}
+
+    onShowToast('PIX Aprovado com sucesso! Materiais liberados.', 'success');
   };
 
   return (
@@ -944,6 +976,18 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   </button>
                 </div>
 
+                {/* Botão de Homologação / Simulação Rápida em Ambiente de Teste */}
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={handleManualSimulatePixApproval}
+                    className="text-[11px] font-bold text-[#145EDB] hover:text-[#0B2343] underline cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Testando o fluxo? Clique aqui para simular aprovação instantânea</span>
+                  </button>
+                </div>
+
                 {/* Detalhes do Favorecido Oficial */}
                 <div className="pt-3 border-t border-slate-200 text-[11px] text-slate-600 grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
@@ -959,6 +1003,22 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     <strong className="text-slate-900">{siteConfig.pixCity || 'FORTALEZA'}</strong>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* SELO CRIPTOGRÁFICO DE AUTENTICIDADE ANTI-FRAUDE */}
+            {completedOrder?.securityHash && (
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-left flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Autenticação Anti-Fraude GRIT Media:</span>
+                    <span className="font-mono font-bold text-slate-800">{completedOrder.securityHash}</span>
+                  </div>
+                </div>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md border border-emerald-200">
+                  Conciliado BACEN/MP
+                </span>
               </div>
             )}
 

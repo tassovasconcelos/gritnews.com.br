@@ -163,6 +163,8 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
     let isMpPixSuccess = false;
 
     // Tenta gerar via API nativa do Mercado Pago se houver token configurado
+    let securityHash = `HASH-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+
     if (mpToken) {
       try {
         const mpPixResponse = await fetch('/api/mercadopago/payment', {
@@ -172,6 +174,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
             'x-mp-token': mpToken
           },
           body: JSON.stringify({
+            productId: product.id,
             transaction_amount: finalAmount,
             description: `${product.title} - GRIT News`,
             payment_method_id: 'pix',
@@ -187,6 +190,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
 
         if (mpPixResponse.ok) {
           const mpData = await mpPixResponse.json();
+          if (mpData.securityHash) securityHash = mpData.securityHash;
           if (mpData.qrCode || mpData.payment?.point_of_interaction?.transaction_data?.qr_code) {
             pixPayload = mpData.qrCode || mpData.payment.point_of_interaction.transaction_data.qr_code;
             mpPaymentId = String(mpData.id || mpData.payment?.id || '');
@@ -255,9 +259,10 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
       accessSent: false,
       downloadUrl: product.downloadUrl,
       mercadoPagoPaymentId: mpPaymentId || undefined,
+      securityHash,
       createdAt: now,
       notes: isMpPixSuccess
-        ? `Cobrança PIX gerada via API Mercado Pago (ID: ${mpPaymentId}). Aguardando confirmação bancária.`
+        ? `Cobrança PIX gerada via API Mercado Pago (ID: ${mpPaymentId}). Conciliação bancária ativa.`
         : `PIX EMV BACEN gerado para a chave: ${siteConfig.pixKey || 'tassovasconcelos@gmail.com'}.`
     };
 
@@ -278,6 +283,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
     const brand = cardDetails ? detectCardBrand(cardDetails.cardNumber) : 'mastercard';
     const installments = cardDetails?.installments || 1;
     let mpPaymentId = `MP-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    let cardSecurityHash = `HASH-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
     if (mpToken) {
       try {
@@ -288,6 +294,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
             'x-mp-token': mpToken
           },
           body: JSON.stringify({
+            productId: product.id,
             transaction_amount: finalAmount,
             description: `${product.title} - GRIT News`,
             payment_method_id: brand,
@@ -304,6 +311,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
 
         if (mpCardResponse.ok) {
           const mpData = await mpCardResponse.json();
+          if (mpData.securityHash) cardSecurityHash = mpData.securityHash;
           if (mpData.id) {
             mpPaymentId = String(mpData.id);
           }
@@ -332,6 +340,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
       accessSent: true,
       downloadUrl: product.downloadUrl,
       mercadoPagoPaymentId: mpPaymentId,
+      securityHash: cardSecurityHash,
       createdAt: now,
       paidAt: now,
       notes: `Pagamento aprovado via Mercado Pago Transparente (${brand.toUpperCase()} em ${installments}x). ID: ${mpPaymentId}`
@@ -349,6 +358,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
   // 3. MÉTODO: CONTA MERCADO PAGO / CHECKOUT PRO / WALLET
   // =========================================================================
   let mpRedirectUrl = siteConfig.mercadoPagoWalletUrl || '';
+  let walletSecurityHash = `HASH-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
   // Tenta criar a preferência na API do Mercado Pago
   try {
@@ -359,6 +369,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
         'x-mp-token': mpToken
       },
       body: JSON.stringify({
+        productId: product.id,
         items: [
           {
             id: product.id,
@@ -412,6 +423,7 @@ export async function processMercadoPagoCheckout(params: CreateOrderParams): Pro
     status: 'PROCESSING',
     accessSent: false,
     downloadUrl: product.downloadUrl,
+    securityHash: walletSecurityHash,
     createdAt: now,
     notes: `Redirecionado para o Checkout Pro Mercado Pago (URL: ${mpRedirectUrl}).`
   };

@@ -7,27 +7,14 @@ on:
     branches-ignore: [ main, master ]
 
 jobs:
-  meu-espetinho:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install --no-audit --no-fund
-      - name: Build Meu Espetinho
-        run: npm run build --workspace=meu-espetinho
-      - name: Validate artifact
-        run: test -f apps/meu-espetinho/dist/index.html
-
-  legacy-root:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm install --no-audit --no-fund
+          cache: 'npm'
+      - run: npm ci || npm install
       - run: npm run lint
       - run: npm run build

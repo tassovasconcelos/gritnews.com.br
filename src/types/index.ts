@@ -419,6 +419,7 @@ export type PlaybookOrder = {
   accessSent: boolean;
   downloadUrl?: string;
   mercadoPagoPaymentId?: string;
+  securityHash?: string;
   createdAt: string;
   paidAt?: string;
   notes?: string;

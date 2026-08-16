@@ -405,6 +405,197 @@ export const INITIAL_AD_CAMPAIGNS: AdCampaign[] = [
 
 export const INITIAL_ARTICLES: Article[] = [
   {
+    id: 'art-socio-quer-sair-direito-empresarial',
+    title: 'Meu sócio quer sair da empresa: o que fazer? Guia jurídico e prático de Direito Societário',
+    slug: 'meu-socio-quer-sair-da-empresa-o-que-fazer-guia-juridico-direito-empresarial',
+    subtitle: 'Direito de retirada, apuração de haveres, cessão de quotas, alteração contratual e cláusula de não concorrência: o passo a passo para blindar o negócio e evitar litígios.',
+    summary: 'Artigo Jurídico de Direito Empresarial e Societário. Entenda o direito de retirada voluntária (Art. 1.029 do Código Civil), como calcular a apuração de haveres pelo balanço especial de determinação (Art. 1.031 do CC e Arts. 599-609 do CPC), prazos de pagamento, responsabilidade por dívidas anteriores por até 2 anos e cláusulas protetivas de não concorrência e confidencialidade.',
+    categoryId: 'cat-negocios',
+    tags: [
+      'Direito Empresarial',
+      'Direito Societário',
+      'Dissolução Parcial',
+      'Apuração de Haveres',
+      'Direito de Retirada',
+      'Contrato Social',
+      'Acordo de Sócios',
+      'Cessão de Quotas',
+      'Valuation',
+      'Não Concorrência',
+      'Sociedade Limitada',
+      'Código Civil',
+      'Planejamento Societário'
+    ],
+    authorId: 'author-moacir-rocha',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Direito Societário Aplicado: a saída ordenada e jurídica de um sócio resguarda o fluxo de caixa, formaliza a cessão de quotas e protege a preservação da empresa.',
+    publishedAt: '2026-08-16T08:00:00Z',
+    updatedAt: '2026-08-16T08:00:00Z',
+    readingTimeMinutes: 9,
+    viewsCount: 520,
+    likesCount: 64,
+    sharesCount: 38,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: false,
+    blocks: [
+      {
+        id: 'socio-badge',
+        type: 'callout',
+        content: '⚖️ **ARTIGO TÉCNICO · DIREITO EMPRESARIAL & SOCIETÁRIO**\n*Por Dr. Moacir Rocha — Especialista em Direito Tributário, Societário e Planejamento Corporativo*\n\n**Palavras-Chave:** Direito Empresarial, Direito Societário, Dissolução Parcial de Sociedade, Apuração de Haveres, Direito de Retirada (Art. 1.029 CC), Cessão de Quotas Sociais, Contrato Social, Acordo de Sócios, Balanço Especial de Determinação, Cláusula de Não Concorrência (Non-Compete), Responsabilidade Solidária por Dívidas (Art. 1.003 e 1.032 CC).'
+      },
+      {
+        id: 'socio-intro-quote',
+        type: 'quote',
+        content: '“A saída de um sócio não precisa ser o fim da empresa. Quando conduzida sob a ótica correta do Direito Societário, a dissolução parcial protege o caixa operacional, formaliza os haveres devidos e garante a preservação do negócio.”'
+      },
+      {
+        id: 'socio-p1',
+        type: 'paragraph',
+        content: 'Quando um sócio manifesta o desejo de se desligar da sociedade — seja por divergência estratégica, desentendimento pessoal, novos projetos de vida ou simples desinteresse na continuidade da atividade empresária —, o sócio remanescente é tomado por dúvidas imediatas: **Quanto devo pagar? Em quantas parcelas? A empresa pode quebrar ao pagar a saída dele? Ele pode levar clientes e abrir uma empresa concorrente no dia seguinte? Ele continua responsável pelas dívidas fiscais e trabalhistas?**'
+      },
+      {
+        id: 'socio-p2',
+        type: 'paragraph',
+        content: 'No ordenamento jurídico brasileiro, a relação entre sócios em uma **Sociedade Limitada (LTDA)** é regida pelo Código Civil (Lei nº 10.406/2002), pelo Código de Processo Civil (CPC/2015, arts. 599 a 609), pelas disposições do **Contrato Social** e, quando existente, pelo **Acordo de Sócios (ou Acordo de Quotistas)**. A seguir, apresentamos o roteiro jurídico e prático fundamental para agir com segurança e resguardar a sua empresa.'
+      },
+      {
+        id: 'socio-h2-passo1',
+        type: 'heading2',
+        content: '1. O Primeiro Passo: Analisar o Contrato Social e o Acordo de Sócios'
+      },
+      {
+        id: 'socio-p3',
+        type: 'paragraph',
+        content: 'Antes de qualquer negociação verbal ou transferência de valores, o documento soberano a ser examinado é o **Contrato Social Consolidado** da empresa arquivado na Junta Comercial e eventual **Acordo de Sócios parassocial**.'
+      },
+      {
+        id: 'socio-callout-1',
+        type: 'callout',
+        content: '📌 **O que verificar imediatamente no Contrato Social:**\n\n1. **Critério de Apuração de Haveres:** Existe cláusula estipulando metodologia de cálculo (ex: Balanço Especial de Determinação, Patrimônio Líquido Contábil ou Fluxo de Caixa Descontado/Valuation)?\n2. **Prazo e Forma de Pagamento:** Quantas parcelas estão previstas? Há carência inicial? Qual a taxa de juros e índice de correção monetária?\n3. **Direito de Preferência:** Os sócios remanescentes têm prioridade para adquirir as quotas antes de terceiros estranhos à sociedade?\n4. **Cláusula de Não Concorrência (Non-Compete):** Há proibição expressa de o sócio retirante atuar no mesmo segmento ou aliciar clientes e colaboradores?'
+      },
+      {
+        id: 'socio-h2-passo2',
+        type: 'heading2',
+        content: '2. As Três Formas Jurídicas de Saída do Sócio'
+      },
+      {
+        id: 'socio-p4',
+        type: 'paragraph',
+        content: 'A saída de um sócio pode se materializar juridicamente por três caminhos principais:'
+      },
+      {
+        id: 'socio-p5',
+        type: 'paragraph',
+        content: '• **A) Cessão e Transferência de Quotas para o Sócio Remanescente (ou Novo Sócio):** É o caminho mais simples e amigável. O sócio que fica adquire as quotas do sócio retirante por um valor livremente negociado (preço acordado). Não há descapitalização direta do caixa da pessoa jurídica; a transação ocorre entre as pessoas físicas dos sócios.\n\n• **B) Direito de Retirada Voluntária (Art. 1.029 do Código Civil):** Em sociedades de prazo indeterminado, qualquer sócio tem o direito potestativo de se retirar, mediante **notificação prévia por escrito com antecedência mínima de 60 (sessenta) dias** aos demais sócios. Ninguém é obrigado a permanecer associado (princípio constitucional da liberdade de associação, Art. 5º, XX da CF/88).\n\n• **C) Dissolução Parcial de Sociedade (Consensual ou Judicial - Arts. 599 a 609 do CPC):** Quando não há acordo sobre o valor das quotas ou sobre a forma de pagamento, a sociedade é dissolvida parcialmente com relação ao sócio retirante, cabendo ao Poder Judiciário ou à arbitragem apurar o valor patrimonial real das quotas.'
+      },
+      {
+        id: 'socio-h2-passo3',
+        type: 'heading2',
+        content: '3. Como Calcular a Parte do Sócio: A Apuração de Haveres'
+      },
+      {
+        id: 'socio-p6',
+        type: 'paragraph',
+        content: 'Um dos maiores focos de conflito societário é a confusão entre o *Faturamento Bruto*, o *Capital Social Nominal* e o *Valor Patrimonial Real da Quota*. O sócio que sai não tem direito automático ao percentual sobre o faturamento nem pode simplesmente exigir um valuation inflacionado de mercado se isso não estiver pactuado.'
+      },
+      {
+        id: 'socio-callout-2',
+        type: 'callout',
+        content: '📊 **A Regra Geral do Código Civil (Artigo 1.031):**\n\nSalvo disposição contratual em contrário, a quota do sócio que se desliga será liquidada com base na **situação patrimonial da sociedade à data da resolução**, apurada em **Balanço Especial de Determinação**.\n\nNesse balanço, avaliam-se os bens materiais, imateriais (marca, carteira), estoques, contas a receber e passivos exigíveis (dívidas bancárias, fiscais, trabalhistas e cíveis) como se a sociedade estivesse sendo liquidada naquele exato dia.'
+      },
+      {
+        id: 'socio-h2-passo4',
+        type: 'heading2',
+        content: '4. Prazo e Forma de Pagamento dos Haveres'
+      },
+      {
+        id: 'socio-p7',
+        type: 'paragraph',
+        content: 'Se o Contrato Social for **omisso**, aplica-se a regra supletiva do Código Civil (§ 2º do Art. 1.031):'
+      },
+      {
+        id: 'socio-p8',
+        type: 'paragraph',
+        content: '• A quota liquidada deve ser paga em **dinheiro**, no prazo de **90 (noventa) dias**, a contar da liquidação.\n\n*Atenção estratégica:* Como pagar à vista em 90 dias pode estrangular o capital de giro da empresa, contratos sociais bem elaborados por advogados societaristas costumam estipular pagamentos em **24, 36 ou até 60 parcelas mensais e sucessivas**, com carência inicial de 3 a 6 meses, corrigidas por índice oficial (como IPCA ou Selic), resguardando o fluxo de caixa.'
+      },
+      {
+        id: 'socio-h2-passo5',
+        type: 'heading2',
+        content: '5. Responsabilidade por Dívidas: A Regra dos 2 Anos (Arts. 1.003 e 1.032 do CC)'
+      },
+      {
+        id: 'socio-p9',
+        type: 'paragraph',
+        content: 'Muitos empresários desconhecem que o sócio retirante não se livra instantaneamente de todas as obrigações da empresa ao assinar a alteração contratual.'
+      },
+      {
+        id: 'socio-callout-3',
+        type: 'callout',
+        content: '🛡️ **Segurança Jurídica sobre Passivos Anteriores:**\n\n• **Dívidas Cíveis e Comerciais:** Pelo Art. 1.003, parágrafo único, e Art. 1.032 do Código Civil, o sócio retirante responde solidariamente com o cessionário perante a sociedade e terceiros pelas **obrigações contraídas até a data da averbação da alteração contratual na Junta Comercial**, pelo prazo decadencial de **até 2 (dois) anos**.\n\n• **Dívidas Trabalhistas (Art. 10-A da CLT):** O sócio retirante responde subsidiariamente pelas obrigações trabalhistas relativas ao período em que figurou como sócio, em ações ajuizadas até 2 anos após a averbação da saída.\n\n• **Dívidas Tributárias:** Se houve dissolução irregular ou ato com excesso de poderes/infração à lei na época da gestão do sócio retirante, ele pode ser redirecionado na execução fiscal (Art. 135 do Código Tributário Nacional).'
+      },
+      {
+        id: 'socio-h2-passo6',
+        type: 'heading2',
+        content: '6. Cláusula de Não Concorrência (Non-Compete) e Proteção da Clientela'
+      },
+      {
+        id: 'socio-p10',
+        type: 'paragraph',
+        content: 'Um dos maiores riscos para a empresa remanescente é o sócio sair levando a lista de clientes, fornecedores e segredos comerciais. Para evitar concorrência desleal:'
+      },
+      {
+        id: 'socio-p11',
+        type: 'paragraph',
+        content: '1. Deve-se incluir no **Distrato Social / Instrumento de Cessão de Quotas** uma **Cláusula de Não Concorrência expressa e delimitada** (com limitação temporal de 2 a 5 anos, limitação geográfica e delimitação do nicho específico de atuação, sob pena de multa não compensatória).\n2. Exigir assinatura de **Termo de Confidencialidade e Não Divulgação (NDA)** sobre métodos, código-fonte, tabelas de preço e estratégias.\n3. Bloquear imediatamente acessos a e-mails corporativos, contas bancárias, ERPs, CRM e certificados digitais da pessoa jurídica assim que a notificação de saída for formalizada.'
+      },
+      {
+        id: 'socio-h2-checklist',
+        type: 'heading2',
+        content: '7. Checklist Prático: O Passo a Passo Jurídico para o Sócio Remanescente'
+      },
+      {
+        id: 'socio-callout-4',
+        type: 'callout',
+        content: '📋 **CHECKLIST DE EXECUÇÃO SOCIETÁRIA:**\n\n✅ **1. Formalização da Notificação:** Exija ou emita notificação por escrito com aviso de recebimento (AR) ou notificação extrajudicial em Cartório de Títulos e Documentos.\n✅ **2. Auditoria Contábil e Levantamento de Passivos:** Faça um balanço patrimonial detalhado levantando todos os ativos e passivos da empresa na data-base do desligamento.\n✅ **3. Redação do Instrumento Particular de Cessão de Quotas / Distrato:** Inclua cláusulas de quitação recíproca integral, previsão de parcelamento dos haveres, renúncia expressa a futuras indenizações e pacto de não concorrência.\n✅ **4. Alteração Contratual na Junta Comercial:** Registre a saída do sócio perante a Junta Comercial do Estado no prazo de até 30 dias para iniciar a contagem do prazo de 2 anos de responsabilidade.\n✅ **5. Atualização perante Órgãos e Bancos:** Atualize o quadro de sócios e administradores (QSA) na Receita Federal (CNPJ), Prefeitura, Secretaria da Fazenda e remova a assinatura bancária do sócio que saiu.\n✅ **6. Sociedade Unipessoal Temporária:** Pela legislação atual (Art. 1.052, §§ 1º e 2º do Código Civil), a sociedade limitada pode ser mantida com apenas **um único sócio** (Sociedade Limitada Unipessoal - SLU), sem necessidade de admitir outro sócio às pressas.'
+      },
+      {
+        id: 'socio-h2-conclusao',
+        type: 'heading2',
+        content: 'Conclusão: Busque Apoio Jurídico Especializado Antes de Assinar'
+      },
+      {
+        id: 'socio-p12',
+        type: 'paragraph',
+        content: 'A saída de um sócio é uma das operações societárias mais delicadas do Direito Empresarial. Fazer acordos informais "no fio do bigode" ou assinar minutas genéricas da internet frequentemente resulta em execuções judiciais de haveres penhorando contas da empresa, desvio de clientela ou responsabilização indevida por dívidas.'
+      },
+      {
+        id: 'socio-p13',
+        type: 'paragraph',
+        content: 'Consulte sempre uma assessoria jurídica especializada em Direito Societário e Planejamento Tributário para auditar o contrato social, redigir os instrumentos de cessão e garantir a continuidade próspera do seu negócio.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Meu sócio quer sair da empresa: o que fazer? Guia de Direito Societário | GRIT NEWS',
+      metaDescription: 'Guia jurídico completo de Direito Empresarial sobre saída de sócio: direito de retirada, apuração de haveres, alteração de contrato social e cláusula de não concorrência.',
+      keywords: [
+        'meu sócio quer sair da empresa o que fazer',
+        'direito de retirada sócio',
+        'apuração de haveres sociedade limitada',
+        'direito empresarial saída de sócio',
+        'direito societário',
+        'dissolução parcial de sociedade',
+        'balanço especial de determinação',
+        'cessão de quotas sociais',
+        'cláusula de não concorrência contrato social',
+        'responsabilidade de sócio por dívidas anteriores',
+        'Dr Moacir Rocha Advocacia',
+        'Grit News Negócios'
+      ]
+    }
+  },
+  {
     id: 'art-vida-da-vida',
     title: 'A Vida da Vida: Ela foi deixada para morrer entre sacos de lixo. Hoje é a princesa da casa.',
     slug: 'a-vida-da-vida-quando-o-silencio-da-dor-encontra-o-eco-do-cuidado',
@@ -1884,6 +2075,114 @@ export const INITIAL_ARTICLES: Article[] = [
       metaTitle: 'Cibersegurança e Agentes Autônomos de IA | GRIT NEWS',
       metaDescription: 'Estratégias avançadas de cibersegurança Zero Trust para proteger empresas contra ataques automatizados e vazamento de dados confidenciais.',
       keywords: ['cibersegurança', 'agentes de IA', 'zero trust', 'segurança da informação', 'SOC', 'LGPD', 'renato silva']
+    }
+  },
+  {
+    id: 'art-emagrecimento-saudavel-metabolismo-definitivo-2026',
+    title: 'O Fim das Dietas Restritivas: Como a Ciência da Crononutrição e Ativação Metabólica Desacelera a Gordura Visceral',
+    slug: 'emagrecimento-saudavel-crononutricao-ativacao-metabolica-queima-gordura-definitiva',
+    subtitle: 'Especialistas em medicina preventiva e nutrição funcional revelam o passo a passo para secar, regular a insulina e eliminar a inflamação celular sem passar fome.',
+    summary: 'Reportagem Investigativa GRIT Saúde. O guia definitivo com evidências clínicas, janelas nutricionais, papel do cortisol na gordura abdominal e o lançamento oficial do Playbook de Emagrecimento Saudável 2026.',
+    categoryId: 'cat-saude',
+    tags: [
+      'Emagrecimento Saudável',
+      'Saúde e Bem-estar',
+      'Playbook GRIT',
+      'Nutrição Funcional',
+      'Crononutrição',
+      'Queima de Gordura',
+      'Metabolismo',
+      'Dra. Camila Torres'
+    ],
+    authorId: 'author-camila',
+    status: 'PUBLISHED',
+    featuredImage: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=1200',
+    imageCaption: 'Nutrição baseada em alimentos naturais ricos em antioxidantes, fibras e micronutrientes para ativação metabólica duradoura.',
+    publishedAt: '2026-08-16T08:00:00Z',
+    updatedAt: '2026-08-16T08:30:00Z',
+    readingTimeMinutes: 8,
+    viewsCount: 3840,
+    likesCount: 342,
+    sharesCount: 189,
+    isSponsored: false,
+    isEvergreen: true,
+    isUrgent: false,
+    blocks: [
+      {
+        id: 'emag-badge',
+        type: 'callout',
+        content: '🧬 **GUIA ESPECIAL GRIT SAÚDE & BEM-ESTAR**\n*CIÊNCIA DO METABOLISMO — PROTOCOLO 2026*\n\n“Emagrecer de forma definitiva não é sobre comer menos: é sobre ensinar suas células a queimar gordura como fonte primária de energia.”'
+      },
+      {
+        id: 'emag-p1',
+        type: 'paragraph',
+        content: 'Por décadas, a indústria das dietas vendeu a ilusão de que o emagrecimento dependia exclusivamente de um cálculo matemático simplista: calorias ingeridas versus calorias gastas. Contudo, dados clínicos consolidados em 2026 comprovam que **o ambiente hormonal e inflamatório dita 80% do sucesso na perda de gordura sustentável**.'
+      },
+      {
+        id: 'emag-p2',
+        type: 'paragraph',
+        content: 'Quando o organismo é submetido a déficits calóricos agressivos e cortes drásticos de carboidratos, o cérebro interpreta o cenário como uma ameaça de sobrevivência. O resultado imediato é a desaceleração da taxa metabólica basal (TMB), elevação crônica do cortisol e aumento da grelina — o hormônio que dispara a compulsão por alimentos calóricos.'
+      },
+      {
+        id: 'emag-h2-1',
+        type: 'heading2',
+        content: '1. O Papel da Crononutrição e Sensibilidade à Insulina'
+      },
+      {
+        id: 'emag-p3',
+        type: 'paragraph',
+        content: 'A crononutrição estuda como o relógio biológico humano (ritmo circadiano) processa os nutrientes ao longo do dia. Pela manhã e no início da tarde, a sensibilidade insulínica e a termogênese alimentar atingem seu ápice. À noite, a tolerância à glicose diminui consideravelmente, tornando refeições pesadas em carboidratos refinados um gatilho direto para o acúmulo de gordura no tecido adiposo visceral.'
+      },
+      {
+        id: 'emag-quote-1',
+        type: 'quote',
+        content: '“O maior erro de quem deseja secar é pular refeições durante o dia e devorar a despensa à noite. A distribuição estratégica dos macronutrientes alinha os hormônios da saciedade com a recuperação celular noturna.” — **Dra. Camila Torres**, Médica e Colunista de Saúde do GRIT NEWS.'
+      },
+      {
+        id: 'emag-h2-2',
+        type: 'heading2',
+        content: '2. Desinflamação Intestinal e o Eixo Intestino-Cérebro'
+      },
+      {
+        id: 'emag-p4',
+        type: 'paragraph',
+        content: 'Uma microbiota intestinal desequilibrada (disbiose) produz toxinas que atravessam a barreira epitelial, gerando uma inflamação sistêmica de baixo grau. Essa inflamação bloqueia os receptores de leptina no hipotálamo, impedindo que o cérebro registre a sensação de saciedade real.'
+      },
+      {
+        id: 'emag-callout-1',
+        type: 'callout',
+        content: '🥗 **Os 4 Pilares da Ativação Metabólica GRIT:**\n1. **Aporte Proteico Adequado**: 1.6g a 2.0g/kg para preservar massa muscular e acelerar o gasto calórico.\n2. **Fibras Prebióticas**: Aveia, sementes de chia/linhaça e vegetais crucíferos para alimentar bactérias benéficas.\n3. **Hidratação Termogênica**: Ingestão hídrica fracionada e chás ricos em catequinas e compostos bioativos.\n4. **Higienização do Sono**: Mínimo de 7h em ambiente escuro para regular a produção de melatonina e hormônio do crescimento (GH).'
+      },
+      {
+        id: 'emag-h2-3',
+        type: 'heading2',
+        content: '3. O Lançamento Oficial: Playbook de Emagrecimento Saudável 2026'
+      },
+      {
+        id: 'emag-p5',
+        type: 'paragraph',
+        content: 'Para transformar esses pilares científicos em um plano de ação prático e executável para qualquer pessoa, o **Grupo GRIT** desenvolveu o *Playbook de Emagrecimento Saudável Definitivo*. O infoproduto reúne mais de 120 páginas com cardápios de 28 dias, tabelas visuais de substituições, guia de compras econômico e receitas de 15 minutos.'
+      },
+      {
+        id: 'emag-p6',
+        type: 'paragraph',
+        content: 'Disponível na plataforma por um valor simbólico de lançamento, o material visa democratizar a informação de alta qualidade médica e combater os perigos de fórmulas químicas clandestinas e dietas restritivas predatórias.'
+      }
+    ],
+    seo: {
+      metaTitle: 'Emagrecimento Saudável e Crononutrição 2026 | GRIT NEWS',
+      metaDescription: 'Descubra como a ciência da crononutrição e ativação metabólica permite perder gordura de forma definitiva sem dietas radicais nem efeito sanfona.',
+      keywords: [
+        'emagrecimento saudavel',
+        'como emagrecer com saude',
+        'crononutricao',
+        'queima de gordura visceral',
+        'playbook emagrecimento',
+        'nutricao funcional',
+        'dra camila torres',
+        'grit saude',
+        'reeducacao alimentar'
+      ]
     }
   }
 ];
