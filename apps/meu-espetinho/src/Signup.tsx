@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { ArrowLeft, Check, Flame } from 'lucide-react';
 import { supabase, supabaseConfigured } from './lib/supabase';
+import { trackMarketing } from './lib/analytics';
 import './auth.css';
 
 export default function Signup() {
@@ -31,18 +32,22 @@ export default function Signup() {
     const full_name = String(f.get('name') || '');
     const business_name = String(f.get('business') || '');
     const phone = String(f.get('phone') || '');
+    trackMarketing({name:'start_trial',params:{business_name}});
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name, business_name, phone },
-        emailRedirectTo: 'https://app.meuespetinho.gritnews.com.br/app',
+        emailRedirectTo: 'https://meuespetinho.gritnews.com.br/app',
       },
     });
 
     if (error) setMsg(error.message);
-    else if (data.session) location.href = '/app';
-    else setMsg('Cadastro criado. Confirme o e-mail para entrar e iniciar seu teste.');
+    else {
+      trackMarketing({name:'sign_up',params:{method:'email'}});
+      if (data.session) location.href = '/app';
+      else setMsg('Cadastro criado. Confirme o e-mail para entrar e iniciar seu teste.');
+    }
     setBusy(false);
   }
 
