@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { BarChart3, CreditCard, Flame, LogOut, RefreshCw, Search, ShieldCheck } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './admin.css';
+import './payment-admin.css';
 
 type Lead={id:string;name:string;whatsapp?:string;email?:string;business_name?:string;city?:string;source:string;campaign?:string;status:string;created_at:string};
 type Tenant={id:string;name:string;subscription_status:string;trial_ends_at:string;created_at:string};
