@@ -416,6 +416,10 @@ export function saveArticle(article: Article): Article {
   return article;
 }
 
+export function saveArticles(articles: Article[]): void {
+  saveItem(KEYS.ARTICLES, articles);
+}
+
 export function deleteArticle(id: string): void {
   const articles = getArticles().filter(a => a.id !== id);
   saveItem(KEYS.ARTICLES, articles);
@@ -466,6 +470,10 @@ export function saveCategory(category: Category): Category {
   return category;
 }
 
+export function saveCategories(categories: Category[]): void {
+  saveItem(KEYS.CATEGORIES, categories);
+}
+
 export function deleteCategory(id: string): void {
   const cats = getCategories().filter(c => c.id !== id);
   saveItem(KEYS.CATEGORIES, cats);
@@ -487,6 +495,10 @@ export function saveAuthor(author: AuthorProfile): AuthorProfile {
   }
   saveItem(KEYS.AUTHORS, authors);
   return author;
+}
+
+export function saveAuthors(authors: AuthorProfile[]): void {
+  saveItem(KEYS.AUTHORS, authors);
 }
 
 // Partners
@@ -525,6 +537,10 @@ export function saveOffer(offer: Offer): Offer {
   return offer;
 }
 
+export function saveOffers(offers: Offer[]): void {
+  saveItem(KEYS.OFFERS, offers);
+}
+
 export function incrementOfferClicks(id: string): void {
   const offers = getOffers();
   const offer = offers.find(o => o.id === id);
@@ -550,6 +566,10 @@ export function saveAd(ad: AdCampaign): AdCampaign {
   }
   saveItem(KEYS.ADS, ads);
   return ad;
+}
+
+export function saveAds(ads: AdCampaign[]): void {
+  saveItem(KEYS.ADS, ads);
 }
 
 export function recordAdImpression(id: string): void {
@@ -866,10 +886,15 @@ export function addPlaybookOrder(order: PlaybookOrder): void {
   savePlaybookOrders([order, ...current]);
 }
 
-export function updatePlaybookOrder(order: PlaybookOrder): void {
+export function updatePlaybookOrder(idOrOrder: string | PlaybookOrder, partial?: Partial<PlaybookOrder>): void {
   const current = getPlaybookOrders();
-  const updated = current.map(item => item.id === order.id ? order : item);
-  savePlaybookOrders(updated);
+  if (typeof idOrOrder === 'string') {
+    const updated = current.map(item => item.id === idOrOrder ? { ...item, ...partial } : item);
+    savePlaybookOrders(updated);
+  } else {
+    const updated = current.map(item => item.id === idOrOrder.id ? idOrOrder : item);
+    savePlaybookOrders(updated);
+  }
 }
 
 export function deletePlaybookOrder(id: string): void {

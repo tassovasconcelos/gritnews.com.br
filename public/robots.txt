@@ -1,0 +1,40 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Explicit Bot Directives for Search Engines & Social Meta Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /images/
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Sitemap Index
+Sitemap: https://www.gritnews.com.br/sitemap.xml
+Sitemap: https://tenpets.gritnews.com.br/sitemap.xml

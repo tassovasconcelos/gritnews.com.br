@@ -168,9 +168,39 @@ export const Footer: React.FC<FooterProps> = ({
                 </a>
               </li>
               <li>
-                <a href="/api/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-[#FF8A00] inline-flex items-center gap-1">
+                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-[#FF8A00] inline-flex items-center gap-1">
                   <Rss className="w-3 h-3 text-[#FF8A00]" />
-                  <span>Sitemap XML</span>
+                  <span>Sitemap XML (Google Index)</span>
+                </a>
+              </li>
+              <li>
+                <a href="/a-vida-da-vida-historia-husky-resgate.html" target="_blank" rel="noopener" className="text-amber-300 hover:text-amber-200 font-semibold inline-flex items-center gap-1">
+                  <span>A Vida da Vida (História Husky Resgate)</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </a>
+              </li>
+              <li>
+                <a href="/deepweb-deepfakes-eleicoes-2026-ciberseguranca.html" target="_blank" rel="noopener" className="text-blue-300 hover:text-white font-semibold inline-flex items-center gap-1">
+                  <span>Deepfakes Eleições 2026 (Investigação)</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </a>
+              </li>
+              <li>
+                <a href="/reforma-tributaria-dr-moacir-rocha-guia-empresas.html" target="_blank" rel="noopener" className="text-purple-300 hover:text-white font-semibold inline-flex items-center gap-1">
+                  <span>Reforma Tributária (Dr. Moacir Rocha)</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </a>
+              </li>
+              <li>
+                <a href="/playbook-emagrecimento-definitivo-landing.html" target="_blank" rel="noopener" className="text-emerald-300 hover:text-white font-semibold inline-flex items-center gap-1">
+                  <span>Playbook Emagrecimento (Landing Page)</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </a>
+              </li>
+              <li>
+                <a href="/imoveis-eusebio-ceara-guia-investimento.html" target="_blank" rel="noopener" className="text-amber-400 hover:text-white font-semibold inline-flex items-center gap-1">
+                  <span>Imóveis no Eusébio (Guia de Investimento)</span>
+                  <ArrowUpRight className="w-3 h-3" />
                 </a>
               </li>
             </ul>

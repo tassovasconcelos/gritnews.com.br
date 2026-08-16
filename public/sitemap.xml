@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Home & Core Verticals -->
+  <url>
+    <loc>https://www.gritnews.com.br/</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/tenpets</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/imoveis</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/playbook</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/radar</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/fato</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Pre-Rendered Static Articles & High-Ranking Landing Pages -->
+  <url>
+    <loc>https://www.gritnews.com.br/a-vida-da-vida-historia-husky-resgate.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&amp;fit=crop&amp;q=80&amp;w=1200</image:loc>
+      <image:title>A Vida da Vida - Resgate e Reabilitação por Letícia Karla</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/artigo-vida-especial.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/deepweb-deepfakes-eleicoes-2026-ciberseguranca.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&amp;fit=crop&amp;q=80&amp;w=1200</image:loc>
+      <image:title>Deep Web e Deepfakes na Política em 2026 - Investigação Especial GRIT NEWS</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/reforma-tributaria-dr-moacir-rocha-guia-empresas.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/playbook-emagrecimento-definitivo-landing.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/imoveis-eusebio-ceara-guia-investimento.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/tenpets-portal-protecao-animal-veterinaria.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/cartoes-black-sem-anuidade-salas-vip-guia.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/data-centers-ia-nordeste-energia-limpa.html</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Categories -->
+  <url>
+    <loc>https://www.gritnews.com.br/?categoria=tecnologia-e-ia</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/?categoria=mercado-pet</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/?categoria=mercado-de-saude</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/?categoria=negocios</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/?categoria=curiosidades</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.gritnews.com.br/?categoria=automacao-e-logistica</loc>
+    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>
