@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import Landing from './Landing';
+import Marketing from './Marketing';
+import Contact from './Contact';
 import Signup from './Signup';
 import Admin from './Admin';
 import AppGate from './AppGate';
@@ -22,7 +23,8 @@ function Router() {
   if (path.startsWith('/admin')) return <><Admin /><MarketingConsent /></>;
   if (path.startsWith('/cadastro')) return <><Signup /><MarketingConsent /></>;
   if (path.startsWith('/app')) return <><AppGate /><MarketingConsent /></>;
-  return <><Landing /><MarketingConsent /></>;
+  if (path.startsWith('/contato')) return <><Contact /><MarketingConsent /></>;
+  return <><Marketing /><MarketingConsent /></>;
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
