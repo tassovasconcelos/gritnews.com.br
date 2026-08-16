@@ -22,7 +22,11 @@ export default function AppGate() {
       setSession(data.session || null);
       if (data.session) await loadTenant();
     });
-    const listener = supabase?.auth.onAuthStateChange((_event, nextSession) => setSession(nextSession));
+    const listener = supabase?.auth.onAuthStateChange(async (_event, nextSession) => {
+      setSession(nextSession);
+      if (nextSession) await loadTenant();
+      else setTenant(null);
+    });
     return () => listener?.data.subscription.unsubscribe();
   }, []);
 
@@ -96,14 +100,14 @@ export default function AppGate() {
     );
   }
 
-  const days = tenant
-    ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / 86400000))
-    : 0;
+  if (!tenant) return <div className="admin-loading">Preparando seu estabelecimento...</div>;
+
+  const days = Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / 86400000));
 
   return (
     <>
-      <App />
-      {tenant && tenant.subscription_status !== 'active' && (
+      <App tenantId={tenant.id} userId={session.user.id} />
+      {tenant.subscription_status !== 'active' && (
         <div className="billing-banner">
           <strong>{tenant.subscription_status === 'trialing' ? `Seu teste termina em ${days} dia(s)` : 'Ative o Meu Espetinho'}</strong>
           <small>Mensalidade R$ 89 + ativação única de R$ 199.</small>
