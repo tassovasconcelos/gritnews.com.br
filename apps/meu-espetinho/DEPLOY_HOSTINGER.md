@@ -1,65 +1,68 @@
-# Deploy automático — Meu Espetinho
+# Deploy — Meu Espetinho
 
-Domínio de produção: `https://app.meuespetinho.gritnews.com.br`
+Domínio de produção: `https://meuespetinho.gritnews.com.br`
 
-O deploy é realizado pelo GitHub Actions através do workflow:
+## Modelo atual
 
-`.github/workflows/deploy-meu-espetinho.yml`
+A produção usa a integração nativa da Hostinger com o GitHub. O GitHub é a fonte única da verdade; não usar ZIP, upload manual ou edição direta no servidor.
 
-## Fluxo
+Configuração do site na Hostinger:
 
-1. Alteração é integrada na branch `main`.
-2. O GitHub Actions detecta mudanças em `apps/meu-espetinho/**`.
-3. O app é compilado com Node 20.
-4. As variáveis públicas do Supabase são injetadas durante o build.
-5. O conteúdo de `apps/meu-espetinho/dist/` é publicado via FTPS no diretório do subdomínio na Hostinger.
-6. O `.htaccess` incluído em `public/` é copiado para o build e mantém o roteamento SPA.
+- Repositório: `tassovasconcelos/gritnews.com.br`
+- Branch: `main`
+- Diretório raiz: `apps/meu-espetinho`
+- Node: `22.x`
+- Preset: Node.js / Express
+- Arquivo de entrada: `server.js`
+- Instalação: `npm install`
+- Build: `npm run build`
 
-Também é possível executar manualmente em GitHub > Actions > Deploy Meu Espetinho > Run workflow.
+O `server.js` serve o build Vite em `dist/` e mantém fallback SPA para `/`, `/cadastro`, `/app` e `/admin`.
 
-## Environment recomendado
+## Health check
 
-Criar no GitHub:
+`https://meuespetinho.gritnews.com.br/health`
 
-`production-meu-espetinho`
+Resposta esperada:
 
-## Secrets necessários
+```json
+{"ok":true,"app":"meu-espetinho","node":"v22.x","dist":true}
+```
 
-No repositório GitHub, cadastrar no environment `production-meu-espetinho`:
+## Variáveis públicas do frontend
 
-- `MEU_ESPETINHO_SUPABASE_URL`
-- `MEU_ESPETINHO_SUPABASE_PUBLISHABLE_KEY`
-- `MEU_ESPETINHO_FTP_SERVER`
-- `MEU_ESPETINHO_FTP_USERNAME`
-- `MEU_ESPETINHO_FTP_PASSWORD`
-- `MEU_ESPETINHO_FTP_SERVER_DIR`
+As variáveis abaixo podem ser cadastradas em Hostinger > Variáveis de ambiente. IDs de marketing são opcionais e só carregam depois do consentimento do visitante.
 
-### Supabase
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `VITE_GTM_ID`
+- `VITE_GA4_ID`
+- `VITE_GOOGLE_ADS_ID`
+- `VITE_META_PIXEL_ID`
+- `VITE_ADSENSE_CLIENT_ID`
 
-`MEU_ESPETINHO_SUPABASE_URL` deve usar a URL do projeto Supabase `gritnews`.
+Nunca colocar `service_role`, Access Token do Mercado Pago ou qualquer segredo privado no frontend.
 
-A chave usada em `MEU_ESPETINHO_SUPABASE_PUBLISHABLE_KEY` deve ser somente a chave publicável. Nunca usar `service_role` no frontend ou no GitHub workflow de build.
+## Mercado Pago
 
-### Hostinger
+Credenciais privadas são configuradas no Super Admin e armazenadas criptografadas no Supabase Vault. O frontend nunca recebe o Access Token.
 
-Os dados FTP/FTPS devem vir do painel da Hostinger.
+Webhook:
 
-`MEU_ESPETINHO_FTP_SERVER_DIR` deve ser o diretório raiz configurado para o subdomínio `app.meuespetinho.gritnews.com.br`.
+`https://pcrwtoddavpvkaxwtstc.supabase.co/functions/v1/mercadopago-webhook`
 
-Exemplo ilustrativo (não copiar sem confirmar no painel):
+## Fluxo de publicação
 
-`/domains/gritnews.com.br/public_html/app.meuespetinho/`
-
-O caminho real deve ser confirmado na Hostinger.
+1. Alteração entra na `main`.
+2. Hostinger detecta o push.
+3. O projeto em `apps/meu-espetinho` é instalado e compilado.
+4. O processo Node inicia `server.js`.
+5. Executar `/health` e os smoke tests de `/`, `/cadastro`, `/app` e `/admin`.
 
 ## Segurança
 
-- Nenhuma senha FTP fica armazenada no código.
-- Nenhuma chave privada do Supabase fica no repositório.
-- Deploys concorrentes são cancelados para evitar publicação simultânea.
-- O workflow possui apenas permissão de leitura sobre o conteúdo do repositório.
-- O deploy não utiliza `dangerous-clean-slate`, reduzindo risco de exclusão acidental de arquivos do servidor.
-
-## Publicação
-
-Depois que os secrets e o subdomínio estiverem configurados, integrar o PR do Meu Espetinho à `main` dispara automaticamente o primeiro deploy.
+- GitHub é a fonte única do código.
+- Sem credenciais privadas versionadas.
+- Supabase usa RLS para separar estabelecimentos.
+- Mercado Pago fica no backend/Vault.
+- Tracking de Google/Meta é condicionado a consentimento.
