@@ -9,6 +9,7 @@ import { trackMarketing } from './lib/analytics';
 import './styles.css';
 import './app-v2.css';
 import './brand-v2.css';
+import './pdv-v4.css';
 
 function Router() {
   const [path, setPath] = useState(window.location.pathname);
