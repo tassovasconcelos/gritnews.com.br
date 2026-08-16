@@ -46,10 +46,11 @@ export function initMarketing() {
     const primary = cfg.ga4 || cfg.googleAds!;
     appendScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(primary)}`, 'meu-gtag');
     window.dataLayer = window.dataLayer || [];
-    window.gtag = (...args: unknown[]) => { window.dataLayer!.push(args); };
-    window.gtag('js', new Date());
-    if (cfg.ga4) window.gtag('config', cfg.ga4, { anonymize_ip: true });
-    if (cfg.googleAds) window.gtag('config', cfg.googleAds);
+    const gtag = (...args: unknown[]) => { window.dataLayer!.push(args); };
+    window.gtag = gtag;
+    gtag('js', new Date());
+    if (cfg.ga4) gtag('config', cfg.ga4, { anonymize_ip: true });
+    if (cfg.googleAds) gtag('config', cfg.googleAds);
   }
 
   if (cfg.metaPixel) {
@@ -59,8 +60,8 @@ export function initMarketing() {
     fbq.push = fbq; fbq.loaded = true; fbq.version = '2.0'; fbq.queue = [];
     window.fbq = fbq;
     appendScript('https://connect.facebook.net/pt_BR/fbevents.js', 'meu-meta-pixel');
-    window.fbq('init', cfg.metaPixel);
-    window.fbq('track', 'PageView');
+    fbq('init', cfg.metaPixel);
+    fbq('track', 'PageView');
   }
 
   if (cfg.adsense) {
@@ -81,7 +82,8 @@ export function trackMarketing({ name, params = {} }: MarketingEvent) {
     activation_paid: 'Purchase',
     subscription_started: 'Subscribe',
   };
-  if (window.fbq && metaMap[name]) window.fbq('track', metaMap[name], params);
+  const eventName = metaMap[name];
+  if (eventName) window.fbq?.('track', eventName, params);
 }
 
 export function marketingConfigured() {
