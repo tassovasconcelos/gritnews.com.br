@@ -8,6 +8,12 @@ export type Order = {
   customerId?: string;
   customerPhone?: string;
   source?: OrderSource;
+  assignedTo?: string;
+  assignedName?: string;
+  openedBy?: string;
+  openedByName?: string;
+  closedBy?: string;
+  closedByName?: string;
   openedAt: string;
   items: OrderItem[];
   status: 'open' | 'paid';
