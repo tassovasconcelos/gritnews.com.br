@@ -38,8 +38,8 @@ jobs:
 
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.MEU_ESPETINHO_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.MEU_ESPETINHO_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL: https://pcrwtoddavpvkaxwtstc.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS
         run: npm run build
 
       - name: Validate build
