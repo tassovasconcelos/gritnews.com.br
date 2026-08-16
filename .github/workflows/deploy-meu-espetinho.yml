@@ -19,6 +19,11 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: production-meu-espetinho
+    env:
+      FTP_SERVER: ${{ secrets.MEU_ESPETINHO_FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.MEU_ESPETINHO_FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.MEU_ESPETINHO_FTP_PASSWORD }}
+      FTP_SERVER_DIR: ${{ secrets.MEU_ESPETINHO_FTP_SERVER_DIR }}
 
     defaults:
       run:
@@ -45,17 +50,30 @@ jobs:
       - name: Validate build
         run: test -f dist/index.html
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: meu-espetinho-production
+          path: apps/meu-espetinho/dist/
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Deploy to Hostinger via FTPS
+        if: ${{ env.FTP_SERVER != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' && env.FTP_SERVER_DIR != '' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.MEU_ESPETINHO_FTP_SERVER }}
-          username: ${{ secrets.MEU_ESPETINHO_FTP_USERNAME }}
-          password: ${{ secrets.MEU_ESPETINHO_FTP_PASSWORD }}
+          server: ${{ env.FTP_SERVER }}
+          username: ${{ env.FTP_USERNAME }}
+          password: ${{ env.FTP_PASSWORD }}
           protocol: ftps
           local-dir: apps/meu-espetinho/dist/
-          server-dir: ${{ secrets.MEU_ESPETINHO_FTP_SERVER_DIR }}
+          server-dir: ${{ env.FTP_SERVER_DIR }}
           dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
+
+      - name: Hostinger credentials status
+        if: ${{ env.FTP_SERVER == '' || env.FTP_USERNAME == '' || env.FTP_PASSWORD == '' || env.FTP_SERVER_DIR == '' }}
+        run: echo "Build validado e salvo como artifact. Deploy Hostinger será habilitado automaticamente quando os 4 secrets FTP forem cadastrados no ambiente production-meu-espetinho."
