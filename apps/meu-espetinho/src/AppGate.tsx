@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import App from './App';
 import { supabase } from './lib/supabase';
+import { trackMarketing } from './lib/analytics';
 import './auth.css';
 
 type Tenant = {
@@ -57,6 +58,7 @@ export default function AppGate() {
     if (!supabase || !tenant) return;
     setBusy(true);
     setMsg('');
+    trackMarketing({name:'begin_checkout',params:{kind,value:kind==='activation'?199:89,currency:'BRL'}});
     const fn = kind === 'activation' ? 'create-activation-checkout' : 'create-subscription';
     const { data, error } = await supabase.functions.invoke(fn, { body: { tenant_id: tenant.id } });
     if (error || !data?.checkout_url) {
