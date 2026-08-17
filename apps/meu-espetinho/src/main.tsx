@@ -7,6 +7,7 @@ import Admin from './Admin';
 import AppGate from './AppGate';
 import MarketingConsent from './MarketingConsent';
 import { trackMarketing } from './lib/analytics';
+import './brand-tokens.css';
 import './styles.css';
 import './app-v2.css';
 import './brand-v2.css';
