@@ -204,20 +204,19 @@ export async function cloudSyncItem(tenantId: string, orderId: string, item: Ord
 
 export async function cloudCloseOrder(tenantId: string, userId: string, order: Order, amount: number, method: string) {
   if (!supabase) return false;
-  const now = new Date().toISOString();
-  const settlement=method==='fiado'?'credit':'paid';
-  const closed = await supabase.from('orders').update({ status: 'closed', settlement_status:settlement, subtotal: amount, total: amount, closed_by: userId, closed_at: now }).eq('tenant_id', tenantId).eq('id', order.id);
-  if (closed.error) return false;
-  if (method === 'fiado') {
-    if (!order.customerId) return false;
-    const { error } = await supabase.from('customer_credit_entries').insert({ tenant_id: tenantId, customer_id: order.customerId, order_id: order.id, entry_type: 'charge', amount, description: `Venda fiada - ${order.label}`, created_by: userId });
-    return !error;
+  const { data, error } = await supabase.rpc('close_order_atomic', {
+    p_tenant_id: tenantId,
+    p_order_id: order.id,
+    p_user_id: userId,
+    p_amount: amount,
+    p_method: method,
+    p_customer_id: order.customerId || null,
+  });
+  if (error) {
+    console.error('Falha no fechamento atômico da conta', error);
+    return false;
   }
-  if (amount > 0) {
-    const { error } = await supabase.from('payments_received').insert({ tenant_id: tenantId, order_id: order.id, method, amount, created_by: userId });
-    return !error;
-  }
-  return true;
+  return Boolean((data as any)?.ok);
 }
 
 export async function cloudAddProduct(tenantId: string, product: Omit<Product, 'id'>): Promise<Product | null> {
