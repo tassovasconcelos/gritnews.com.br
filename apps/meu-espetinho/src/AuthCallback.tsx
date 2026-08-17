@@ -4,6 +4,11 @@ import { Brand } from './Brand';
 import { supabase, supabaseConfigured } from './lib/supabase';
 import './auth.css';
 
+function safeNext(value:string|null){
+  if(!value||!value.startsWith('/')||value.startsWith('//')) return '/app';
+  return value;
+}
+
 export default function AuthCallback(){
   const [status,setStatus]=useState<'loading'|'success'|'error'>('loading');
   const [message,setMessage]=useState('Confirmando seu e-mail com segurança...');
@@ -12,17 +17,19 @@ export default function AuthCallback(){
     const client=supabase;
     const hash=new URLSearchParams(window.location.hash.replace(/^#/,''));
     const query=new URLSearchParams(window.location.search);
+    const next=safeNext(query.get('next'));
     const authError=hash.get('error_description')||query.get('error_description');
     if(authError){setStatus('error');setMessage(decodeURIComponent(authError));return;}
     let done=false;
+    const complete=()=>{done=true;setStatus('success');setMessage('E-mail confirmado! Seu acesso está pronto.');setTimeout(()=>location.replace(next),1200);};
     const finish=async()=>{
       const {data,error}=await client.auth.getSession();
       if(done)return;
       if(error){setStatus('error');setMessage('O link não pôde ser validado. Solicite uma nova confirmação.');return;}
-      if(data.session){done=true;setStatus('success');setMessage('E-mail confirmado! Seu acesso está pronto.');setTimeout(()=>location.replace('/app'),1200);}
+      if(data.session) complete();
     };
     finish();
-    const {data:listener}=client.auth.onAuthStateChange((_event,session)=>{if(session&&!done){done=true;setStatus('success');setMessage('E-mail confirmado! Seu acesso está pronto.');setTimeout(()=>location.replace('/app'),1200);}});
+    const {data:listener}=client.auth.onAuthStateChange((_event,session)=>{if(session&&!done)complete();});
     const timeout=setTimeout(()=>{if(!done){setStatus('error');setMessage('Este link expirou ou não é mais válido. Volte ao cadastro para entrar ou solicitar um novo acesso.');}},8000);
     return()=>{clearTimeout(timeout);listener.subscription.unsubscribe();};
   },[]);
