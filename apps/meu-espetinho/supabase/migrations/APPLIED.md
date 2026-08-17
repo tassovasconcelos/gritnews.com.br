@@ -1,16 +1,24 @@
-# Estado de aplicação
+# Migrations aplicadas — Meu Espetinho
 
-Projeto Supabase: `gritnews` (`pcrwtoddavpvkaxwtstc`).
+Projeto Supabase: `gritnews` (`pcrwtoddavpvkaxwtstc`)
 
-Aplicadas em 2026-08-17:
+Aplicadas em produção controlada durante a Fase 1:
 
 - `meu_espetinho_foundation_hardening`
+  - estruturas de crédito e atividade versionadas;
+  - RPC `current_user_tenants()`;
+  - RPC `close_order_atomic()`;
+  - índices básicos de apoio.
 - `meu_espetinho_security_policy_cleanup`
+  - remoção de policies duplicadas;
+  - view de assentos ajustada para `security_invoker`.
+- `meu_espetinho_advisor_followup`
+  - índices adicionais indicados pelos Advisors.
 
-Após as alterações, os advisors foram executados. O erro de view `security definer` foi tratado configurando `tenant_user_seat_summary` como `security_invoker`.
+Frontend da branch `feat/meu-espetinho-fase-1-foundation` já conectado a:
 
-Pendências operacionais que não devem ser automatizadas sem validação do ambiente:
+- `current_user_tenants()` para resolução explícita do ambiente autenticado;
+- `close_order_atomic()` para fechamento financeiro transacional;
+- cache local isolado por `tenant_id`, sem reaproveitar a chave legada compartilhada.
 
-- habilitar proteção contra senhas vazadas no Supabase Auth;
-- confirmar secrets do environment de produção no GitHub;
-- conectar o frontend às novas RPCs em PR separado ou continuação desta branch com testes específicos.
+A aplicação continua usando o Supabase como fonte oficial e o cache local apenas como contingência de interface.
