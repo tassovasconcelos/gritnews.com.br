@@ -53,7 +53,7 @@ Deno.serve(async request => {
   const kind = payload.kind?.trim()
   const subject = payload.subject?.trim()
   const message = payload.message?.trim()
-  if (!tenantId || !kind || !['birthday','promotion','offer','custom'].includes(kind) || !subject || subject.length > 120 || !message || message.length > 3000) return json({ ok: false, message: 'Preencha assunto e mensagem corretamente.' }, 400, origin)
+  if (!tenantId || !kind || !['birthday','promotion','offer','inactivity','custom'].includes(kind) || !subject || subject.length > 120 || !message || message.length > 3000) return json({ ok: false, message: 'Preencha assunto e mensagem corretamente.' }, 400, origin)
 
   const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
   const { count } = await admin.from('admin_customer_emails').select('id', { count: 'exact', head: true }).eq('sent_by', user.id).gte('created_at', oneHourAgo)
