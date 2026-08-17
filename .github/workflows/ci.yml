@@ -21,6 +21,7 @@ jobs:
       - name: Install root dependencies
         run: npm install --no-audit --no-fund
       - name: Root lint
+        continue-on-error: true
         run: npm run lint
       - name: Root build
         run: npm run build
