@@ -1,0 +1,83 @@
+name: Deploy Meu Espetinho
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/meu-espetinho/**'
+      - '.github/workflows/deploy-meu-espetinho.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-meu-espetinho-production
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production-meu-espetinho
+    defaults:
+      run:
+        working-directory: apps/meu-espetinho
+    env:
+      FTP_SERVER: ${{ secrets.MEU_ESPETINHO_FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.MEU_ESPETINHO_FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.MEU_ESPETINHO_FTP_PASSWORD }}
+      FTP_SERVER_DIR: ${{ secrets.MEU_ESPETINHO_FTP_SERVER_DIR }}
+      VITE_SUPABASE_URL: ${{ secrets.MEU_ESPETINHO_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.MEU_ESPETINHO_SUPABASE_PUBLISHABLE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$VITE_SUPABASE_URL" || (echo 'MEU_ESPETINHO_SUPABASE_URL ausente' && exit 1)
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || (echo 'MEU_ESPETINHO_SUPABASE_PUBLISHABLE_KEY ausente' && exit 1)
+          test -n "$FTP_SERVER" || (echo 'MEU_ESPETINHO_FTP_SERVER ausente' && exit 1)
+          test -n "$FTP_USERNAME" || (echo 'MEU_ESPETINHO_FTP_USERNAME ausente' && exit 1)
+          test -n "$FTP_PASSWORD" || (echo 'MEU_ESPETINHO_FTP_PASSWORD ausente' && exit 1)
+          test -n "$FTP_SERVER_DIR" || (echo 'MEU_ESPETINHO_FTP_SERVER_DIR ausente' && exit 1)
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Smoke test
+        run: npm run smoke
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: meu-espetinho-production-${{ github.sha }}
+          path: apps/meu-espetinho/dist/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Deploy via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ env.FTP_SERVER }}
+          username: ${{ env.FTP_USERNAME }}
+          password: ${{ env.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: apps/meu-espetinho/dist/
+          server-dir: ${{ env.FTP_SERVER_DIR }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
