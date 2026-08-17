@@ -11,6 +11,7 @@ import './brand-tokens.css';
 import './styles.css';
 import './app-v2.css';
 import './brand-v2.css';
+import './admin-brand.css';
 import './pdv-v4.css';
 
 function Router() {
