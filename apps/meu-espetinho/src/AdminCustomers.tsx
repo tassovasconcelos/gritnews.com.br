@@ -4,6 +4,7 @@ import {
   CalendarPlus,
   CheckCircle2,
   ChevronRight,
+  ExternalLink,
   Mail,
   MessageCircle,
   RefreshCw,
@@ -309,6 +310,16 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
     await onRefresh();
     await loadUsage();
     setBusy(null);
+  }
+  async function openSupport(t: AdminTenant) {
+    if (!supabase) return;
+    const reason = prompt("Motivo do acesso temporário:", "Suporte, treinamento ou configuração da loja");
+    if (!reason) return;
+    setBusy(`support-${t.id}`);
+    const { data, error } = await supabase.rpc("admin_start_support_access", { p_tenant_id: t.id, p_reason: reason });
+    setBusy(null);
+    if (error || !data?.ok) return alert("Não foi possível iniciar a sessão de suporte.");
+    window.open(`/app?support_tenant=${encodeURIComponent(t.id)}`, "_blank", "noopener,noreferrer");
   }
   const emailTemplates: Record<
     EmailKind,
@@ -641,6 +652,9 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
                 </small>
               </div>
               <div className="detail-actions">
+                <button disabled={busy === `support-${current.t.id}`} onClick={() => openSupport(current.t)}>
+                  <ExternalLink /> Abrir operação e configurar
+                </button>
                 <button onClick={() => openEmail("birthday")}>
                   <Mail /> Enviar e-mail
                 </button>
