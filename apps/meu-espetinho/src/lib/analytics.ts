@@ -124,6 +124,17 @@ function fireGoogleAdsConversion(name: string, params: Record<string, string | n
   });
 }
 
+function normalizeMarketingEvent(event: MarketingEvent): MarketingEvent {
+  const params = event.params || {};
+  if (event.name === 'start_trial' && params.trial_days === undefined) {
+    return { name: 'trial_cta_click', params };
+  }
+  if (event.name === 'begin_checkout' && params.kind === undefined) {
+    return { name: 'pricing_cta_click', params };
+  }
+  return event;
+}
+
 function sendEvent({ name, params = {} }: MarketingEvent) {
   const attribution = readAttribution();
   const enriched = { ...attribution, ...params };
@@ -193,18 +204,19 @@ export function initMarketing() {
     );
   }
 
-  pending.splice(0).forEach(sendEvent);
+  pending.splice(0).forEach((event) => sendEvent(normalizeMarketingEvent(event)));
 }
 
 export function trackMarketing(event: MarketingEvent) {
   captureAttribution();
+  const normalized = normalizeMarketingEvent(event);
   if (!initialized) {
-    pending.push(event);
+    pending.push(normalized);
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: event.name, ...readAttribution(), ...(event.params || {}) });
+    window.dataLayer.push({ event: normalized.name, ...readAttribution(), ...(normalized.params || {}) });
     return;
   }
-  sendEvent(event);
+  sendEvent(normalized);
 }
 
 export function marketingConfigured() {
