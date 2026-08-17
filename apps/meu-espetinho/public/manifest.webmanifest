@@ -5,16 +5,16 @@
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0a0c0f",
-  "theme_color": "#0a0c0f",
+  "background_color": "#0D1323",
+  "theme_color": "#0D1323",
   "lang": "pt-BR",
   "categories": ["business", "food", "productivity"],
   "icons": [
     {
-      "src": "/logo-meu-espetinho.svg",
+      "src": "/brand-icon-v3.svg?v=3",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
