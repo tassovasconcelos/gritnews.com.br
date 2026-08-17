@@ -17,7 +17,7 @@ export default function Signup() {
   const [msg, setMsg] = useState('');
 
   function update<K extends keyof Draft>(key:K,value:Draft[K]){setDraft(current=>({...current,[key]:value}));}
-  function next(){if(!draft.name.trim()||!draft.business.trim()||!draft.phone.trim()){setMsg('Preencha nome, negócio e WhatsApp para continuar.');return;}setMsg('');setStep(2);trackMarketing({name:'signup_step',params:{step:1,business_name:draft.business}});}
+  function next(){if(!draft.name.trim()||!draft.business.trim()||!draft.phone.trim()){setMsg('Preencha nome, negócio e WhatsApp para continuar.');return;}setMsg('');setStep(2);trackMarketing({name:'signup_step',params:{step:1}});}
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,7 +28,6 @@ export default function Signup() {
       if (error) setMsg(error.message); else location.href = '/app';
       setBusy(false); return;
     }
-    trackMarketing({name:'start_trial',params:{business_name:draft.business,trial_days:3}});
     const { data, error } = await supabase.auth.signUp({
       email:draft.email,
       password:draft.password,
@@ -37,6 +36,7 @@ export default function Signup() {
     if (error) setMsg(error.message);
     else {
       trackMarketing({name:'sign_up',params:{method:'email',trial_days:3}});
+      trackMarketing({name:'start_trial',params:{trial_days:3,value:0,currency:'BRL'}});
       if (data.session) location.href = '/app';
       else setMsg('Cadastro criado. Enviamos um e-mail do Meu Espetinho para você confirmar seu acesso e iniciar seu teste de 3 dias.');
     }
