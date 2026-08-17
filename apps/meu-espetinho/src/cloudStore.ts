@@ -68,7 +68,7 @@ export async function hydrateCloudState(tenantId: string): Promise<AppState | nu
     supabase.from('categories').select('id,name').eq('tenant_id', tenantId),
     supabase.from('products').select('id,category_id,name,price,active').eq('tenant_id', tenantId).order('created_at'),
     supabase.from('orders').select('id,label,status,opened_at,customer_id,assigned_to,opened_by,closed_by').eq('tenant_id', tenantId).order('opened_at', { ascending: false }),
-    supabase.from('order_items').select('order_id,product_id,product_name,unit_price,quantity').eq('tenant_id', tenantId),
+    supabase.from('order_items').select('order_id,product_id,product_name,unit_price,quantity,created_at').eq('tenant_id', tenantId),
     supabase.from('customers').select('id,name,phone').eq('tenant_id', tenantId),
   ]);
   if (tenantRes.error || productsRes.error || ordersRes.error || itemsRes.error) return null;
@@ -97,7 +97,7 @@ export async function hydrateCloudState(tenantId: string): Promise<AppState | nu
       closedByName: o.closed_by ? names.get(o.closed_by) : undefined,
       openedAt: o.opened_at,
       status: o.status === 'closed' ? 'paid' : 'open',
-      items: items.filter((i: any) => i.order_id === o.id).map((i: any) => ({ productId: i.product_id || `legacy-${o.id}-${i.product_name}`, name: i.product_name, qty: Number(i.quantity), unitPrice: Number(i.unit_price) })),
+      items: items.filter((i: any) => i.order_id === o.id).map((i: any) => ({ productId: i.product_id || `legacy-${o.id}-${i.product_name}`, name: i.product_name, qty: Number(i.quantity), unitPrice: Number(i.unit_price), createdAt: i.created_at || o.opened_at })),
     } as Order;
   });
   const tenant = tenantRes.data as any;
@@ -131,6 +131,12 @@ export async function inviteOperationUser(tenantId:string,fullName:string,email:
   if(error) return {ok:false,error:error.message};
   if(data?.error) return {ok:false,error:data.error};
   return {ok:true,...data};
+}
+
+export async function setOperationUserActive(tenantId:string,targetUserId:string,active:boolean) {
+  if(!supabase) return false;
+  const {data,error}=await supabase.rpc('manage_tenant_user_status',{p_tenant_id:tenantId,p_user_id:targetUserId,p_active:active});
+  return !error&&Boolean((data as any)?.ok);
 }
 
 export async function assignOrder(tenantId:string,orderId:string,userId:string) {

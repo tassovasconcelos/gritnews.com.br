@@ -47,6 +47,8 @@ type Usage = {
   openOrders: number;
   creditBalance: number;
   lowStock: number;
+  lastAccess?: string;
+  inactiveDays: number;
 };
 type OverviewRow = {
   tenant_id: string;
@@ -68,6 +70,8 @@ type OverviewRow = {
   open_orders: number;
   credit_balance: number;
   low_stock_products: number;
+  last_access_at?: string;
+  inactive_days: number;
 };
 type Segment =
   | "all"
@@ -76,7 +80,7 @@ type Segment =
   | "healthy"
   | "excellent"
   | "inactive";
-type EmailKind = "birthday" | "promotion" | "offer" | "custom";
+type EmailKind = "birthday" | "promotion" | "offer" | "inactivity" | "custom";
 type Props = {
   tenants: AdminTenant[];
   subs: AdminSubscription[];
@@ -171,6 +175,8 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
           openOrders: Number(row.open_orders || 0),
           creditBalance: Number(row.credit_balance || 0),
           lowStock: Number(row.low_stock_products || 0),
+          lastAccess: row.last_access_at || undefined,
+          inactiveDays: Number(row.inactive_days || 0),
         };
         o[row.tenant_id] = row;
       }
@@ -217,6 +223,7 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
             openOrders: 0,
             creditBalance: 0,
             lowStock: 0,
+            inactiveDays: 0,
           };
           const score = health(merged, sub, use);
           const label = healthLabel(score);
@@ -225,7 +232,7 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
               ? 89
               : 0) +
             Math.max(use.activeUsers - 3, 0) * 39;
-          const stale = daysSince(use.lastActivity) > 14;
+          const stale = use.inactiveDays >= 45;
           return { t: merged, sub, use, score, label, mrr, stale };
         })
         .sort((a, b) => a.score - b.score),
@@ -340,6 +347,11 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
       message:
         "Identificamos uma oportunidade que pode ajudar seu negócio a ganhar mais agilidade e controle. Fale com nossa equipe para saber mais.",
     },
+    inactivity: {
+      subject: "Aviso importante sobre seu acesso ao Meu Espetinho",
+      message:
+        "Identificamos que sua equipe está há mais de 45 dias sem acessar o Meu Espetinho. Para proteger seus dados, o acesso poderá ser bloqueado e a conta programada para exclusão conforme nossa política de retenção. Entre no sistema ou responda este e-mail para manter sua operação ativa. Nenhum dado será excluído sem a etapa administrativa de confirmação.",
+    },
     custom: { subject: "Uma mensagem da equipe Meu Espetinho", message: "" },
   };
   function openEmail(kind: EmailKind = "birthday") {
@@ -436,7 +448,7 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
           <b>{counts.healthy + counts.excellent}</b>
         </article>
         <article>
-          <span>Sem movimento +14d</span>
+          <span>Sem acesso +45d</span>
           <b>{counts.inactive}</b>
         </article>
       </div>
@@ -503,7 +515,7 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
                 <b>{use.orders} pedidos</b>
                 <small className={stale ? "stale-note" : ""}>
                   {stale
-                    ? "Sem movimento recente"
+                    ? `${use.inactiveDays} dias sem acesso`
                     : `${money(use.revenue)} processados`}
                 </small>
               </span>
@@ -525,6 +537,10 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
           ) : (
             <>
               <div className="detail-title">
+                <div>
+                  <span>Último acesso</span>
+                  <b>{current.use.lastAccess ? new Date(current.use.lastAccess).toLocaleString("pt-BR") : "Nunca acessou"}</b>
+                </div>
                 <div>
                   <small>CLIENTE 360º</small>
                   <h3>{current.t.name}</h3>
@@ -658,6 +674,7 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
                 <button onClick={() => openEmail("birthday")}>
                   <Mail /> Enviar e-mail
                 </button>
+                {current.stale && <button className="danger-admin" onClick={() => openEmail("inactivity")}><Mail /> Alertar inatividade</button>}
                 <button
                   onClick={() =>
                     openWhatsapp(
@@ -690,7 +707,7 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
                     disabled={busy === current.t.id}
                     onClick={() => changeAccess(current.t, "suspend")}
                   >
-                    <Ban /> Suspender operação
+                    <Ban /> {current.stale ? "Bloquear por inatividade" : "Suspender operação"}
                   </button>
                 )}
               </div>
@@ -732,6 +749,7 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
                 <option value="birthday">Aniversário</option>
                 <option value="promotion">Promoção</option>
                 <option value="offer">Oferta</option>
+                <option value="inactivity">Alerta de inatividade</option>
                 <option value="custom">Mensagem personalizada</option>
               </select>
             </label>

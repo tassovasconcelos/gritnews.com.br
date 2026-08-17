@@ -1,5 +1,5 @@
 export type Product = { id: string; name: string; price: number; category: string; active: boolean; stockQty?: number };
-export type OrderItem = { productId: string; name: string; qty: number; unitPrice: number };
+export type OrderItem = { productId: string; name: string; qty: number; unitPrice: number; createdAt?: string };
 export type OrderSource = 'table' | 'customer' | 'free';
 export type Order = {
   id: string;
