@@ -8,6 +8,8 @@ import './signup-v2.css';
 
 type Draft={name:string;business:string;phone:string;email:string;password:string};
 const CONFIRM_URL='https://meuespetinho.gritnews.com.br/auth/callback?next=%2Fapp';
+const ATTR_KEY='meu-espetinho-attribution';
+function attribution(){try{const a=JSON.parse(localStorage.getItem(ATTR_KEY)||'{}');return {utm_source:a.utm_source||'',utm_medium:a.utm_medium||'',utm_campaign:a.utm_campaign||'',utm_content:a.utm_content||'',utm_term:a.utm_term||'',gclid:a.gclid||'',fbclid:a.fbclid||'',landing_path:a.landing_path||location.pathname,attribution_first_seen:a.first_seen||''};}catch{return {landing_path:location.pathname};}}
 
 export default function Signup() {
   const [mode, setMode] = useState<'signup' | 'login'>('signup');
@@ -28,10 +30,11 @@ export default function Signup() {
       if (error) setMsg(error.message); else location.href = '/app';
       setBusy(false); return;
     }
+    const attr=attribution();
     const { data, error } = await supabase.auth.signUp({
       email:draft.email,
       password:draft.password,
-      options: { data: { full_name:draft.name, business_name:draft.business, phone:draft.phone, product:'meu-espetinho' }, emailRedirectTo: CONFIRM_URL },
+      options: { data: { full_name:draft.name, business_name:draft.business, phone:draft.phone, product:'meu-espetinho', ...attr }, emailRedirectTo: CONFIRM_URL },
     });
     if (error) setMsg(error.message);
     else {
