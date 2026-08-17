@@ -1,4 +1,14 @@
-export type Product = { id: string; name: string; price: number; category: string; active: boolean; stockQty?: number };
+export type Product = {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  active: boolean;
+  stockQty?: number;
+  cost?: number;
+  description?: string;
+  imageUrl?: string;
+};
 export type OrderItem = { productId: string; name: string; qty: number; unitPrice: number; createdAt?: string };
 export type OrderSource = 'table' | 'customer' | 'free';
 export type Order = {
