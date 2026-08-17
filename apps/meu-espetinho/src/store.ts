@@ -20,7 +20,8 @@ export type Order = {
 };
 export type Settings = { businessName: string; address: string; whatsapp: string; logoUrl?: string };
 
-const KEY = 'meu-espetinho-v1';
+const LEGACY_KEY = 'meu-espetinho-v1';
+const ACTIVE_TENANT_KEY = 'meu-espetinho-active-tenant';
 
 export type AppState = {
   onboarded: boolean;
@@ -42,9 +43,20 @@ const initial: AppState = {
   orders: [],
 };
 
+function storageKey() {
+  try {
+    const tenantId = sessionStorage.getItem(ACTIVE_TENANT_KEY);
+    return tenantId ? `${LEGACY_KEY}:${tenantId}` : null;
+  } catch {
+    return null;
+  }
+}
+
 export function loadState(): AppState {
   try {
-    const raw = localStorage.getItem(KEY);
+    const key = storageKey();
+    if (!key) return initial;
+    const raw = localStorage.getItem(key);
     return raw ? { ...initial, ...JSON.parse(raw) } : initial;
   } catch {
     return initial;
@@ -52,5 +64,11 @@ export function loadState(): AppState {
 }
 
 export function saveState(state: AppState) {
-  localStorage.setItem(KEY, JSON.stringify(state));
+  try {
+    const key = storageKey();
+    if (!key) return;
+    localStorage.setItem(key, JSON.stringify(state));
+  } catch {
+    // Cache local é apenas contingência; a nuvem continua sendo a fonte oficial.
+  }
 }
