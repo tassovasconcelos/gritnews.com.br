@@ -9,19 +9,20 @@ export default function AuthCallback(){
   const [message,setMessage]=useState('Confirmando seu e-mail com segurança...');
   useEffect(()=>{
     if(!supabase||!supabaseConfigured){setStatus('error');setMessage('Não foi possível conectar ao serviço de autenticação.');return;}
+    const client=supabase;
     const hash=new URLSearchParams(window.location.hash.replace(/^#/,''));
     const query=new URLSearchParams(window.location.search);
     const authError=hash.get('error_description')||query.get('error_description');
     if(authError){setStatus('error');setMessage(decodeURIComponent(authError));return;}
     let done=false;
     const finish=async()=>{
-      const {data,error}=await supabase.auth.getSession();
+      const {data,error}=await client.auth.getSession();
       if(done)return;
       if(error){setStatus('error');setMessage('O link não pôde ser validado. Solicite uma nova confirmação.');return;}
       if(data.session){done=true;setStatus('success');setMessage('E-mail confirmado! Seu acesso está pronto.');setTimeout(()=>location.replace('/app'),1200);}
     };
     finish();
-    const {data:listener}=supabase.auth.onAuthStateChange((_event,session)=>{if(session&&!done){done=true;setStatus('success');setMessage('E-mail confirmado! Seu acesso está pronto.');setTimeout(()=>location.replace('/app'),1200);}});
+    const {data:listener}=client.auth.onAuthStateChange((_event,session)=>{if(session&&!done){done=true;setStatus('success');setMessage('E-mail confirmado! Seu acesso está pronto.');setTimeout(()=>location.replace('/app'),1200);}});
     const timeout=setTimeout(()=>{if(!done){setStatus('error');setMessage('Este link expirou ou não é mais válido. Volte ao cadastro para entrar ou solicitar um novo acesso.');}},8000);
     return()=>{clearTimeout(timeout);listener.subscription.unsubscribe();};
   },[]);
