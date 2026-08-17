@@ -1,0 +1,5 @@
+-- Follow-up de advisors
+-- Mantido separado para facilitar auditoria e rollback lógico.
+-- A proteção contra senhas vazadas deve ser habilitada no Supabase Auth Dashboard.
+-- A tabela billing_webhook_events permanece com RLS sem policy pública por ser destinada a processamento interno/service role.
+-- Policies antigas com auth.uid() direto serão revisadas em migration específica antes de escala de volume.
