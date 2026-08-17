@@ -1,4 +1,4 @@
-export type Product = { id: string; name: string; price: number; category: string; active: boolean };
+export type Product = { id: string; name: string; price: number; category: string; active: boolean; stockQty?: number };
 export type OrderItem = { productId: string; name: string; qty: number; unitPrice: number };
 export type OrderSource = 'table' | 'customer' | 'free';
 export type Order = {
@@ -34,11 +34,11 @@ const initial: AppState = {
   onboarded: false,
   settings: { businessName: 'Meu Espetinho', address: '', whatsapp: '' },
   products: [
-    { id: 'carne', name: 'Carne', price: 10, category: 'Espetinhos', active: true },
-    { id: 'frango', name: 'Frango', price: 8, category: 'Espetinhos', active: true },
-    { id: 'linguica', name: 'Linguiça', price: 8, category: 'Espetinhos', active: true },
-    { id: 'cerveja', name: 'Cerveja', price: 8, category: 'Bebidas', active: true },
-    { id: 'refrigerante', name: 'Refrigerante', price: 6, category: 'Bebidas', active: true },
+    { id: 'carne', name: 'Carne', price: 10, category: 'Espetinhos', active: true, stockQty: 0 },
+    { id: 'frango', name: 'Frango', price: 8, category: 'Espetinhos', active: true, stockQty: 0 },
+    { id: 'linguica', name: 'Linguiça', price: 8, category: 'Espetinhos', active: true, stockQty: 0 },
+    { id: 'cerveja', name: 'Cerveja', price: 8, category: 'Bebidas', active: true, stockQty: 0 },
+    { id: 'refrigerante', name: 'Refrigerante', price: 6, category: 'Bebidas', active: true, stockQty: 0 },
   ],
   orders: [],
 };
