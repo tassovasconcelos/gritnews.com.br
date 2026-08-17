@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import Marketing from './Marketing';
+import IntentLanding, { getIntentFromPath } from './IntentLanding';
 import Contact from './Contact';
 import Signup from './Signup';
 import Admin from './Admin';
@@ -16,11 +17,21 @@ import './admin-brand.css';
 import './pdv-v4.css';
 
 const BASE='https://meuespetinho.gritnews.com.br';
+const seoPages:Record<string,{title:string;description:string}>={
+  '/sistema-para-espetinho':{title:'Sistema para Espetinho | Comanda, Caixa e Fiado | Meu Espetinho',description:'Sistema simples para espetinho: vendas, comandas, caixa, clientes, fiado, comprovante e lista de compras pelo celular.'},
+  '/sistema-para-churrasquinho':{title:'Sistema para Churrasquinho | PDV e Comanda | Meu Espetinho',description:'Organize vendas, mesas, bebidas, caixa e fiado no churrasquinho com um sistema simples para celular, tablet ou computador.'},
+  '/comanda-digital-para-espetinho':{title:'Comanda Digital para Espetinho e Bar | Meu Espetinho',description:'Comanda digital por mesa ou cliente, fechamento rápido e comprovante para imprimir ou compartilhar. Feito para pequenos negócios.'},
+  '/controle-de-fiado':{title:'Controle de Fiado para Espetinho e Bar | Meu Espetinho',description:'Controle clientes, valores fiados, pagamentos e saldo a receber sem depender de caderno ou memória. Consulte tudo pelo celular.'},
+  '/sistema-para-bar-pequeno':{title:'Sistema Simples para Bar Pequeno e Boteco | Meu Espetinho',description:'PDV, comandas, caixa, clientes, fiado e lista de compras para bares pequenos, botecos, trailers e operações enxutas.'},
+};
 function setMeta(name:string,content:string){let el=document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement|null;if(!el){el=document.createElement('meta');el.name=name;document.head.appendChild(el)}el.content=content}
 function syncSeo(path:string){
+  const clean=path.replace(/\/$/,'')||'/';
   const canonical=document.querySelector('link[rel="canonical"]') as HTMLLinkElement|null;
   if(path.startsWith('/admin')||path.startsWith('/app')||path.startsWith('/auth/')){setMeta('robots','noindex,nofollow,noarchive');document.title=path.startsWith('/admin')?'Meu Espetinho | Administração':path.startsWith('/auth/')?'Confirmando acesso | Meu Espetinho':'Meu Espetinho | Operação';if(canonical)canonical.href=BASE+'/';return}
   if(path.startsWith('/cadastro')){setMeta('robots','index,follow');setMeta('description','Crie sua conta no Meu Espetinho e organize vendas, comandas, clientes, fiado e caixa em um sistema simples para pequenos negócios.');document.title='Criar conta | Meu Espetinho';if(canonical)canonical.href=BASE+'/cadastro';return}
+  const page=seoPages[clean];
+  if(page){setMeta('robots','index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');setMeta('description',page.description);document.title=page.title;if(canonical)canonical.href=BASE+clean;return}
   setMeta('robots','index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');setMeta('description','Sistema simples para espetinho, churrasquinho, bar, trailer e food truck. Controle vendas, comandas, clientes, fiado, equipe, caixa e lista de compras pelo celular.');document.title='Meu Espetinho | Sistema para Espetinho, Comanda Digital e PDV';if(canonical)canonical.href=BASE+'/';
 }
 
@@ -39,6 +50,8 @@ function Router() {
   if (path.startsWith('/cadastro')) return <><Signup /><MarketingConsent /></>;
   if (path.startsWith('/app')) return <><AppGate /><MarketingConsent /></>;
   if (path.startsWith('/contato')) return <><Contact /><MarketingConsent /></>;
+  const intent=getIntentFromPath(path);
+  if(intent) return <><IntentLanding intent={intent}/><MarketingConsent /></>;
   return <><Marketing /><MarketingConsent /></>;
 }
 
