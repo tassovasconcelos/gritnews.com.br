@@ -6,6 +6,8 @@ Micro-SaaS da GRIT para controle simples de espetinhos, churrasquinhos, trailers
 
 Criar uma operação extremamente simples para venda por cliente, mesa ou comanda, com visão gerencial profissional para o proprietário e modelo recorrente de assinatura.
 
+Princípio de produto: recursos mais avançados devem ser opcionais e apresentados em linguagem simples. O PME deve conseguir operar sem conhecer termos técnicos, controles contábeis ou rotinas complexas.
+
 ## Base técnica
 
 - React + TypeScript
@@ -15,7 +17,7 @@ Criar uma operação extremamente simples para venda por cliente, mesa ou comand
 - Arquitetura multi-tenant
 - cache local apenas como contingência, isolado por `tenant_id`
 - fechamento financeiro transacional via RPC
-- deploy automatizado GitHub → Hostinger
+- integração nativa GitHub → Hostinger para produção
 
 ## Módulos
 
@@ -26,14 +28,15 @@ Criar uma operação extremamente simples para venda por cliente, mesa ou comand
 5. Clientes
 6. Venda rápida
 7. Contas/comandas abertas
-8. Fechamento e divisão de conta
+8. Fechamento de conta + comprovante térmico/imagem
 9. Caixa
 10. Dashboard gerencial
-11. Assinaturas e trial
-12. Mercado Pago
-13. Controle de dispositivos
-14. Super Admin GRIT
-15. Auditoria
+11. Lista de compras da semana (modo simples ou com estoque)
+12. Assinaturas e trial
+13. Mercado Pago
+14. Controle de dispositivos
+15. Super Admin GRIT
+16. Auditoria
 
 ## Fundação técnica
 
@@ -53,13 +56,20 @@ Mudanças de DDL devem ser registradas nesse diretório e aplicadas pelo fluxo c
 
 ## Deploy
 
-A aplicação é publicada pelo GitHub Actions. Evitar upload ou substituição manual de arquivos no servidor de produção.
+A produção usa a integração nativa Hostinger ↔ GitHub apontando para a branch `main` e a raiz `apps/meu-espetinho`.
 
-O workflow de produção deve validar build e smoke test antes de enviar os artefatos para a Hostinger.
+Configuração esperada na Hostinger:
 
-## Próximas evoluções
+- Node.js 22.x
+- instalação: `npm install`
+- build: `npm run build`
+- entrada: `server.js`
 
-- ampliar testes de fluxo autenticado e financeiro;
-- consolidar Design System com o manual oficial da marca;
-- evoluir Super Admin para Cliente 360, billing, health score e ações de Customer Success;
-- aprimorar onboarding, aquisição, analytics e conversão.
+Os GitHub Actions de CI validam build e smoke test antes do merge. Depois do merge em `main`, a Hostinger deve detectar o novo commit e publicar automaticamente. Evitar upload ou substituição manual de arquivos em produção.
+
+## Direção das próximas evoluções
+
+- manter a operação simples e progressiva para PMEs;
+- ampliar testes de fluxo autenticado, fechamento e comprovante;
+- evoluir estoque somente como recurso opcional, sem obrigar o cliente a adotar rotinas complexas;
+- continuar Super Admin, Customer Success, aquisição, analytics e conversão.
