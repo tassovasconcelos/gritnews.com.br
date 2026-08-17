@@ -12,10 +12,12 @@ Criar uma operação extremamente simples para venda por cliente, mesa ou comand
 - Vite
 - Supabase Auth + PostgreSQL + RLS
 - Mercado Pago para assinatura recorrente
-- PWA/mobile-first na próxima etapa
 - Arquitetura multi-tenant
+- cache local apenas como contingência, isolado por `tenant_id`
+- fechamento financeiro transacional via RPC
+- deploy automatizado GitHub → Hostinger
 
-## Módulos previstos
+## Módulos
 
 1. Cadastro e onboarding do estabelecimento
 2. Login e recuperação de senha
@@ -27,81 +29,37 @@ Criar uma operação extremamente simples para venda por cliente, mesa ou comand
 8. Fechamento e divisão de conta
 9. Caixa
 10. Dashboard gerencial
-11. Assinaturas e trial de 3 dias
+11. Assinaturas e trial
 12. Mercado Pago
 13. Controle de dispositivos
 14. Super Admin GRIT
 15. Auditoria
 
-## Estrutura inicial
+## Fundação técnica
 
-```text
-apps/meu-espetinho/
-├── src/
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── styles.css
-├── supabase/
-│   └── schema.sql
-├── .env.example
-├── index.html
-├── package.json
-├── tsconfig.json
-└── vite.config.ts
-```
+O tenant autenticado é resolvido explicitamente pela RPC `current_user_tenants()`. O frontend não deve selecionar ambientes com consultas genéricas e `limit(1)`.
 
-## Variáveis de ambiente
+O fechamento de uma venda usa `close_order_atomic()`, mantendo atualização do pedido e registro financeiro/fiado na mesma transação PostgreSQL.
 
-Copie `.env.example` para `.env.local` e configure:
-
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_APP_URL`
-- `VITE_MERCADOPAGO_PUBLIC_KEY`
-- `MERCADOPAGO_ACCESS_TOKEN`
-- `MERCADOPAGO_WEBHOOK_SECRET`
-
-Nunca versionar credenciais reais no GitHub.
+O Supabase é a fonte oficial dos dados. O `localStorage` existe somente como contingência de interface e usa chave separada por tenant, evitando reaproveitamento de dados entre estabelecimentos no mesmo navegador.
 
 ## Banco de dados
 
-O arquivo `supabase/schema.sql` cria a primeira estrutura multiempresa com:
+A estrutura é multiempresa e utiliza RLS. As migrations versionadas ficam em:
 
-- tenants
-- profiles
-- tenant_users
-- categories
-- products
-- customers
-- orders
-- order_items
-- payments_received
-- cash_registers
-- cash_movements
-- subscriptions
-- devices
-- audit_logs
+`apps/meu-espetinho/supabase/migrations/`
 
-Todas as entidades operacionais são vinculadas por `tenant_id`. RLS está habilitado para impedir acesso entre estabelecimentos.
+Mudanças de DDL devem ser registradas nesse diretório e aplicadas pelo fluxo controlado do Supabase.
 
-## Trial
+## Deploy
 
-Cada novo tenant nasce com:
+A aplicação é publicada pelo GitHub Actions. Evitar upload ou substituição manual de arquivos no servidor de produção.
 
-- `subscription_status = trialing`
-- `trial_started_at = now()`
-- `trial_ends_at = now() + 3 dias`
+O workflow de produção deve validar build e smoke test antes de enviar os artefatos para a Hostinger.
 
-A próxima etapa deve adicionar a validação de acesso no backend e a transição automática de status via Webhook do Mercado Pago.
+## Próximas evoluções
 
-## Deploy pretendido
-
-Aplicação preparada para ser publicada em:
-
-`https://app.gritnews.com.br`
-
-O deploy deve continuar saindo do GitHub. Evitar upload ou substituição manual de arquivos no servidor de produção.
-
-## Próxima etapa recomendada
-
-Implementar autenticação real, onboarding, CRUD de produtos, nova conta/comanda, fechamento, caixa e conexão ao Supabase antes de liberar qualquer assinatura paga.
+- ampliar testes de fluxo autenticado e financeiro;
+- consolidar Design System com o manual oficial da marca;
+- evoluir Super Admin para Cliente 360, billing, health score e ações de Customer Success;
+- aprimorar onboarding, aquisição, analytics e conversão.
