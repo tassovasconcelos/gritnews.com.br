@@ -1,13 +1,39 @@
+<IfModule mod_mime.c>
+  AddType application/xml .xml
+  AddType text/plain .txt
+  AddType text/html .html
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # SEO e verificações devem ser servidos como arquivos físicos, nunca pelo fallback da SPA.
+  RewriteRule ^sitemap\.xml$ - [L]
+  RewriteRule ^sitemap-index\.xml$ - [L]
+  RewriteRule ^robots\.txt$ - [L]
+  RewriteRule ^google9d7335142d214cd8\.html$ - [L]
   RewriteRule ^index\.html$ - [L]
+
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 </IfModule>
 
 <IfModule mod_headers.c>
+  <FilesMatch "^(sitemap\.xml|sitemap-index\.xml)$">
+    Header set Content-Type "application/xml; charset=UTF-8"
+    Header set Cache-Control "public, max-age=300"
+  </FilesMatch>
+  <Files "robots.txt">
+    Header set Content-Type "text/plain; charset=UTF-8"
+    Header set Cache-Control "public, max-age=300"
+  </Files>
+  <Files "google9d7335142d214cd8.html">
+    Header set Content-Type "text/html; charset=UTF-8"
+    Header set Cache-Control "public, max-age=300"
+  </Files>
+
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
