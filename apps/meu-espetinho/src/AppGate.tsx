@@ -1,9 +1,10 @@
-import { FormEvent, useEffect, useState } from 'react';
-import { CheckCircle2, Clock3, CreditCard, ShieldCheck } from 'lucide-react';
+import {FormEvent,useEffect,useState} from 'react';
+import {CheckCircle2,Clock3,CreditCard,ShieldCheck} from 'lucide-react';
 import App from './App';
-import { Brand } from './Brand';
-import { supabase } from './lib/supabase';
-import { trackMarketing } from './lib/analytics';
+import BillingAccount from './BillingAccount';
+import {Brand} from './Brand';
+import {supabase} from './lib/supabase';
+import {trackMarketing} from './lib/analytics';
 import './auth.css';
 
 type Tenant={id:string;name:string;subscription_status:string;trial_ends_at:string;setup_status:'awaiting_payment'|'pending_setup'|'approved'|'suspended';courtesy_type?:'tasting'|'barter'|null;courtesy_ends_at?:string|null};
@@ -29,5 +30,5 @@ export default function AppGate(){
  const accessEnd=courtesyActive?tenant.courtesy_ends_at:tenant.trial_ends_at;const days=Math.max(0,Math.ceil((new Date(accessEnd||'').getTime()-Date.now())/86400000));const trialActive=new Date(tenant.trial_ends_at).getTime()>Date.now();
  if(!supportMode&&tenant.subscription_status!=='active'&&!courtesyActive&&!trialActive)return <div className="setup-gate"><div className="setup-card"><Clock3 size={42}/><span className="auth-kicker">PERÍODO ENCERRADO</span><h1>Seu acesso assistido terminou.</h1><p>Assine o Meu Espetinho para continuar usando seu ambiente e manter seus dados disponíveis.</p><button className="setup-primary" disabled={busy} onClick={()=>checkout('subscription')}>{busy?'Abrindo pagamento...':'Assinar por R$ 89/mês'}</button>{msg&&<p className="auth-message">{msg}</p>}<a className="setup-secondary" href="/contato?assunto=suporte">Falar com suporte</a></div></div>;
  const accessLabel=courtesyActive?(tenant.courtesy_type==='barter'?'Permuta':'Degustação'):'Teste assistido';
- return <><App tenantId={tenant.id} userId={session.user.id}/>{supportMode?<div className="billing-banner"><strong><ShieldCheck size={16}/> Modo suporte • {tenant.name}</strong><small>Acesso administrativo auditado. Bloqueios comerciais de pagamento, trial e suspensão não impedem a análise do Super Admin.</small><div className="billing-actions"><a href="/admin">Voltar ao Super Admin</a></div></div>:tenant.subscription_status!=='active'&&<div className="billing-banner"><strong><CheckCircle2 size={16}/> {accessLabel} liberada • {days} dia(s) restante(s)</strong><small>Mensalidade R$ 89 com até 3 usuários • usuários adicionais + R$ 39/mês cada.</small><div className="billing-actions"><button disabled={busy} onClick={()=>checkout('subscription')}>Assinar R$ 89/mês</button></div>{msg&&<small>{msg}</small>}</div>}</>;
+ return <><App tenantId={tenant.id} userId={session.user.id}/>{!supportMode&&<BillingAccount tenantId={tenant.id}/>} {supportMode?<div className="billing-banner"><strong><ShieldCheck size={16}/> Modo suporte • {tenant.name}</strong><small>Acesso administrativo auditado. Bloqueios comerciais de pagamento, trial e suspensão não impedem a análise do Super Admin.</small><div className="billing-actions"><a href="/admin">Voltar ao Super Admin</a></div></div>:tenant.subscription_status!=='active'&&<div className="billing-banner"><strong><CheckCircle2 size={16}/> {accessLabel} liberada • {days} dia(s) restante(s)</strong><small>Mensalidade R$ 89 com até 3 usuários • usuários adicionais + R$ 39/mês cada.</small><div className="billing-actions"><button disabled={busy} onClick={()=>checkout('subscription')}>Assinar R$ 89/mês</button></div>{msg&&<small>{msg}</small>}</div>}</>;
 }
