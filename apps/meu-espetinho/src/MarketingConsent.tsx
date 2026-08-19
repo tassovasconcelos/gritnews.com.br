@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 import { bootstrapMarketingConsent, initMarketing, updateMarketingConsent } from './lib/analytics';
+import { initRuntimeMarketing } from './lib/runtimeMarketing';
 
 const KEY = 'meu-espetinho-marketing-consent';
+
+async function activateMarketing(){
+  updateMarketingConsent(true);
+  await initRuntimeMarketing();
+  initMarketing();
+}
 
 export default function MarketingConsent() {
   const [visible, setVisible] = useState(false);
@@ -10,8 +17,7 @@ export default function MarketingConsent() {
     bootstrapMarketingConsent();
     const value = localStorage.getItem(KEY);
     if (value === 'accepted') {
-      updateMarketingConsent(true);
-      initMarketing();
+      void activateMarketing();
       return;
     }
     if (value === 'essential') {
@@ -45,8 +51,7 @@ export default function MarketingConsent() {
         <button
           onClick={() => {
             localStorage.setItem(KEY, 'accepted');
-            updateMarketingConsent(true);
-            initMarketing();
+            void activateMarketing();
             setVisible(false);
           }}
         >
