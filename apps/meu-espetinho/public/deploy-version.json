@@ -1,0 +1,11 @@
+{
+  "app": "meu-espetinho",
+  "release": "2026-08-18T21:30:00-03:00",
+  "features": [
+    "seo-growth-robot-v2",
+    "competitive-radar",
+    "term-radar",
+    "marketing-runtime-config",
+    "google-meta-automation"
+  ]
+}
