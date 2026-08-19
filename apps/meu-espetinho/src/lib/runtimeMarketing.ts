@@ -1,10 +1,18 @@
 import { supabase } from './supabase';
 
+type MetaPixelFn = ((...args: unknown[]) => void) & {
+ callMethod?: (...args: unknown[]) => void;
+ queue?: unknown[][];
+ push?: MetaPixelFn;
+ loaded?: boolean;
+ version?: string;
+};
+
 declare global {
  interface Window {
   dataLayer?: unknown[];
   gtag?: (...args: unknown[])=>void;
-  fbq?: any;
+  fbq?: MetaPixelFn;
   __meuMarketing?: Record<string,string|undefined>;
   __meuGtagWrapped?: boolean;
  }
@@ -62,7 +70,7 @@ export async function initRuntimeMarketing(){
  const cfg=await loadRuntimeMarketing();
  if(cfg.gtm){window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':Date.now(),event:'gtm.js'});addScript(`https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(cfg.gtm)}`,'meu-runtime-gtm')}
  if(cfg.ga4||cfg.googleAds){const primary=cfg.ga4||cfg.googleAds!;googleQueue();addScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(primary)}`,'meu-runtime-gtag');window.gtag?.('js',new Date());if(cfg.ga4)window.gtag?.('config',cfg.ga4,{send_page_view:true});if(cfg.googleAds)window.gtag?.('config',cfg.googleAds);wrapRuntimeConversions(cfg)}
- if(cfg.metaPixel&&!window.fbq){const fbq:any=function(...args:unknown[]){fbq.callMethod?fbq.callMethod.apply(fbq,args):fbq.queue.push(args)};fbq.push=fbq;fbq.loaded=true;fbq.version='2.0';fbq.queue=[];window.fbq=fbq;addScript('https://connect.facebook.net/pt_BR/fbevents.js','meu-runtime-meta');fbq('init',cfg.metaPixel);fbq('track','PageView')}
+ if(cfg.metaPixel&&!window.fbq){const fbq:MetaPixelFn=function(...args:unknown[]){if(fbq.callMethod){fbq.callMethod(...args)}else{(fbq.queue??=[]).push(args)}} as MetaPixelFn;fbq.push=fbq;fbq.loaded=true;fbq.version='2.0';fbq.queue=[];window.fbq=fbq;addScript('https://connect.facebook.net/pt_BR/fbevents.js','meu-runtime-meta');fbq('init',cfg.metaPixel);fbq('track','PageView')}
  if(cfg.adsense)addScript(`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(cfg.adsense)}`,'meu-runtime-adsense');
  return cfg;
 }
