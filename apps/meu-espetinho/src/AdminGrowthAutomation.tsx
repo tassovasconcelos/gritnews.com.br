@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Bot, Gauge, PlayCircle, RefreshCw, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import AdminSeoRobot from './AdminSeoRobot';
 import './growth-automation.css';
 
 type Campaign={id:string;name:string;platform:string;status:string;daily_budget:number;target_cpa?:number|null;auto_optimize?:boolean;max_daily_budget?:number|null};
@@ -27,5 +28,6 @@ export default function AdminGrowthAutomation(){
  <div className="growth-layout"><div><h3>Recomendações abertas</h3><div className="growth-recs">{!recs.length?<p className="growth-empty">Nenhuma recomendação pendente.</p>:recs.map(r=>{const c=campaigns.find(x=>x.id===r.campaign_id);return <article className={`growth-rec ${r.severity}`} key={r.id}><small>{c?.name||'Campanha'}</small><strong>{r.title}</strong><p>{r.reason}</p>{r.suggested_daily_budget!=null&&<em>Sugestão: {money(Number(r.suggested_daily_budget))}/dia</em>}</article>})}</div></div>
  <div><h3>Automação por campanha</h3><div className="growth-campaigns">{campaigns.filter(c=>['active','paused','ready'].includes(c.status)).map(c=><article key={c.id}><div><strong>{c.name}</strong><small>{c.status} • {money(Number(c.daily_budget||0))}/dia{c.target_cpa?` • CPA alvo ${money(Number(c.target_cpa))}`:''}</small></div><button className={c.auto_optimize?'auto-on':'auto-off'} onClick={()=>toggleAuto(c)}>{c.auto_optimize?'Automação ON':'Automação OFF'}</button></article>)}</div></div></div>
  <form className="growth-metric-form" onSubmit={addMetric}><div><small>ENTRADA DE DADOS</small><h3>Atualizar desempenho da campanha</h3><p>Use esta etapa enquanto as APIs do Google/Meta ainda não estiverem conectadas. Depois a coleta passa a ser automática.</p></div><label>Campanha<select name="campaign_id" required><option value="">Selecione</option>{campaigns.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Data<input name="metric_date" type="date" defaultValue={new Date().toISOString().slice(0,10)} required/></label><label>Investimento<input name="spend" type="number" min="0" step="0.01" defaultValue="0"/></label><label>Impressões<input name="impressions" type="number" min="0" defaultValue="0"/></label><label>Cliques<input name="clicks" type="number" min="0" defaultValue="0"/></label><label>Testes<input name="trial_starts" type="number" min="0" defaultValue="0"/></label><label>Checkouts<input name="checkouts" type="number" min="0" defaultValue="0"/></label><label>Assinaturas<input name="subscriptions" type="number" min="0" defaultValue="0"/></label><label>Receita<input name="revenue" type="number" min="0" step="0.01" defaultValue="0"/></label><button>Salvar métricas</button></form>{msg&&<p className="growth-message">{msg}</p>}
+ <AdminSeoRobot/>
  </section>;
 }
