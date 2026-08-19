@@ -7,7 +7,6 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
-    fbq?: (...args: unknown[]) => void;
     _fbq?: unknown;
   }
 }
@@ -182,10 +181,11 @@ export function initMarketing() {
     if (cfg.googleAds) window.gtag?.('config', cfg.googleAds);
   }
 
-  if (cfg.metaPixel) {
+  if (cfg.metaPixel && !window.fbq) {
     const fbq = function (...args: unknown[]) {
-      (fbq as any).callMethod ? (fbq as any).callMethod.apply(fbq, args) : (fbq as any).queue.push(args);
-    } as any;
+      if (fbq.callMethod) fbq.callMethod(...args);
+      else (fbq.queue ??= []).push(args);
+    } as NonNullable<Window['fbq']>;
     fbq.push = fbq;
     fbq.loaded = true;
     fbq.version = '2.0';
