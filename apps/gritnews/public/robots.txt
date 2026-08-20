@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /login/
+Disallow: /checkout/
+Disallow: /api/
+
+Sitemap: https://gritnews.com.br/sitemap.xml
