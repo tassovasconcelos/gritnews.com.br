@@ -1,40 +1,6 @@
-import React, { useState } from 'react';
-import { 
-  TrendingUp, 
-  Sparkles, 
-  Clock, 
-  Eye, 
-  HeartPulse, 
-  PawPrint, 
-  Cpu, 
-  Globe, 
-  Smile, 
-  Lightbulb, 
-  Tag, 
-  ArrowRight, 
-  ShieldCheck, 
-  Flame, 
-  BarChart3, 
-  Calendar, 
-  ArrowUpRight, 
-  Building2, 
-  Feather, 
-  CheckCircle2, 
-  TrendingDown,
-  Share2
-} from 'lucide-react';
+import React from 'react';
+import { ArrowRight, BarChart3, Bot, BrainCircuit, CheckCircle2, ChevronRight, Database, LineChart, Rocket, ShieldCheck, Sparkles, Target, Users } from 'lucide-react';
 import { Article, Category, Partner, Offer, AuthorProfile } from '../../types';
-import { Badge } from '../ui/Badge';
-import { AdBanner } from '../ui/AdBanner';
-import { NewsletterBlock } from '../ui/NewsletterBlock';
-import { OfferCard } from '../ui/OfferCard';
-import { PartnerCard } from '../ui/PartnerCard';
-import { AmazonShopSection } from '../ui/AmazonShopSection';
-import { ArticleShareActions } from '../ui/ArticleShareActions';
-import { EusebioImoveisWidget } from '../home/EusebioImoveisWidget';
-import { PlaybookPromoBanner } from '../home/PlaybookPromoBanner';
-import { LiveRadarNewsEngine } from '../ui/LiveRadarNewsEngine';
-import { useEconomicRadar } from '../../hooks/useEconomicRadar';
 
 interface HomeViewProps {
   articles: Article[];
@@ -57,607 +23,74 @@ interface HomeViewProps {
   onShowToast: (msg: string, type?: 'success' | 'info') => void;
 }
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  HeartPulse,
-  PawPrint,
-  Cpu,
-  Globe,
-  TrendingUp,
-  Smile,
-  Lightbulb,
-  Tag,
-  Sparkles
-};
+const solutions = [
+  { icon: Target, kicker: 'GROWTH', title: 'Inteligência Comercial', text: 'Prospecção, qualificação, CRM, cadências, WhatsApp, indicadores e organização do funil comercial.', href: '/solucoes/inteligencia-comercial/' },
+  { icon: LineChart, kicker: 'REVENUE OPS', title: 'Vendas & Oportunidades', text: 'Pipeline, próxima ação, produtividade, territórios, forecast e gestão de oportunidades com mais visibilidade.', href: '/solucoes/vendas-revenue-operations/' },
+  { icon: Users, kicker: 'CUSTOMER', title: 'Atendimento & Pós-venda', text: 'SLA, protocolos, SAC, assistência técnica, qualidade, satisfação, retenção e inteligência de atendimento.', href: '/solucoes/atendimento-pos-venda/' },
+  { icon: Bot, kicker: 'AUTOMAÇÃO', title: 'Automação & IA', text: 'Automação do repetitivo, organização de informação e IA aplicada para apoiar decisões e produtividade.', href: '/solucoes/automacao-ia/' },
+  { icon: Database, kicker: 'DATA', title: 'Dados, BI & Performance', text: 'Dashboards, integrações, análise de dados e indicadores conectando atividade operacional a decisão gerencial.', href: '/solucoes/dados-bi/' },
+  { icon: Rocket, kicker: 'SAAS', title: 'Produtos GRIT', text: 'Soluções recorrentes nascidas de dores reais e preparadas para evoluir por segmento, maturidade e uso.', href: '/produtos/' }
+];
 
-export const HomeView: React.FC<HomeViewProps> = ({
-  articles,
-  categories,
-  partners,
-  offers,
-  authors = [],
-  onSelectArticle,
-  onSelectCategory,
-  onSelectPartner,
-  onSelectAuthor,
-  onNavigateOffers,
-  onNavigateImoveis,
-  onNavigatePlaybook,
-  onNavigateRadar,
-  onNavigateTenPets,
-  onNavigateOpiniao,
-  onNavigateFato,
-  onOpenLeadModal,
-  onShowToast
-}) => {
-  const [trendingPeriod, setTrendingPeriod] = useState<'24h' | '7d' | '30d'>('7d');
-  const { summary: radarSummary, syncStatus } = useEconomicRadar();
+const products = [
+  { name: 'OportunidadesPro', category: 'Revenue Operations', description: 'Gestão de oportunidades, performance de marketing e acompanhamento comercial orientado por dados.', href: 'https://oportunidadespro.gritnews.com.br' },
+  { name: 'GRIT SAC 4.0', category: 'Atendimento & Pós-venda', description: 'SAC, qualidade, assistência técnica, protocolos, acompanhamento e visão gerencial em um fluxo rastreável.', href: 'https://apps.sacproh.gritnews.com.br' },
+  { name: 'Meu Espetinho', category: 'SaaS para pequenos negócios', description: 'Gestão simples para pedidos, mesas, caixa, clientes e resultados na realidade de pequenos negócios de alimentação.', href: 'https://meuespetinho.gritnews.com.br' }
+];
 
-  // Featured Lead Story + Side Stories
-  const featuredHero = articles[0] || articles[0];
-  const sideHeadlines = articles.slice(1, 4);
-  const secondaryHeadlines = articles.slice(4, 7);
-  const trendingArticles = articles.slice().sort((a, b) => b.viewsCount - a.viewsCount);
-  const featuredOffers = offers.slice(0, 3);
+const method = [
+  ['01', 'Diagnóstico', 'Entendemos processo, gargalos, maturidade e objetivos antes de indicar tecnologia.'],
+  ['02', 'Desenho', 'Estruturamos fluxo futuro, prioridades, papéis, dados e ferramentas necessárias.'],
+  ['03', 'Implantação', 'Configuramos integrações, regras, automações e o ambiente da operação.'],
+  ['04', 'Ativação', 'Treinamos o time e transformamos a solução em rotina real.'],
+  ['05', 'Evolução', 'Medimos, aprendemos e priorizamos novos ganhos de produtividade e receita.']
+];
 
-  // Curated category buckets
-  const techArticles = articles.filter(a => a.categoryId === 'cat-tecnologia-ia' || a.tags.includes('IA'));
-  const businessArticles = articles.filter(a => a.categoryId === 'cat-negocios' || a.categoryId === 'cat-mercados');
-  const petArticles = articles.filter(a => a.categoryId === 'cat-pet' || a.tags.includes('TenPets'));
-  const curiosityArticles = articles.filter(a => a.categoryId === 'cat-curiosidades' || a.tags.includes('Viagens'));
+export const HomeView: React.FC<HomeViewProps> = ({ articles, categories, onSelectArticle, onSelectCategory, onShowToast }) => {
+  const featuredArticles = articles.slice(0, 3);
+  const goToDiagnostic = () => document.getElementById('diagnostico')?.scrollIntoView({ behavior: 'smooth' });
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen text-slate-900 space-y-10 pb-16">
-      
-      {/* 1. LEAD EDITORIAL HERO SECTION (World-Class Broadsheet Grid) */}
-      {featuredHero && (
-        <section className="bg-white border-b border-slate-200 pt-6 pb-10">
-          <div className="max-w-7xl mx-auto px-4">
-            
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              
-              {/* MAIN LEAD STORY (Cols 1 to 8): Clean high-contrast typography & 16:9 imagery */}
-              <article 
-                onClick={() => onSelectArticle(featuredHero)}
-                className="lg:col-span-8 group cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  {/* Category Kicker & Meta Tag */}
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <span className="text-xs font-bold text-[#FF8A00] tracking-wider uppercase">
-                      {categories.find(c => c.id === featuredHero.categoryId)?.name || 'Cibersegurança & IA'}
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-xs font-medium text-slate-500">
-                      Investigação Especial
-                    </span>
-                    {featuredHero.isEvergreen && (
-                      <>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                          Guia Evergreen
-                        </span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Master Headline */}
-                  <h1 className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-slate-900 leading-[1.18] tracking-tight group-hover:text-[#146EF5] transition-colors mb-3">
-                    {featuredHero.title}
-                  </h1>
-
-                  {/* Subheadline (Deck) */}
-                  <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal mb-4">
-                    {featuredHero.subtitle || featuredHero.summary}
-                  </p>
-
-                  {/* Byline & Read Metrics */}
-                  <div className="flex items-center justify-between gap-4 py-2.5 border-y border-slate-100 mb-5 text-xs text-slate-500">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-800">Redação GRIT NEWS</span>
-                      <span>•</span>
-                      <span>16 de Agosto de 2026</span>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 font-medium">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
-                        {featuredHero.readingTimeMinutes} min de leitura
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-3.5 h-3.5 text-slate-400" />
-                        {featuredHero.viewsCount} visualizações
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Main Featured Photo (16:9 aspect ratio, crisp presentation) */}
-                <div className="relative rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 aspect-[16/9] shadow-xs">
-                  <img
-                    src={featuredHero.featuredImage}
-                    alt={featuredHero.title}
-                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=1200';
-                    }}
-                  />
-                  <div className="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1 rounded-md">
-                    Foto: GRIT Imagens / Divulgação
-                  </div>
-                </div>
-
-                {/* Read more indicator & Share actions */}
-                <div className="mt-4 pt-3 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#146EF5] group-hover:underline">
-                    <span>Ler reportagem completa</span>
-                    <ArrowRight className="w-4 h-4 text-[#FF8A00] group-hover:translate-x-1 transition-transform" />
-                  </span>
-                  <ArticleShareActions article={featuredHero} onShowToast={onShowToast} variant="card" />
-                </div>
-              </article>
-
-              {/* SIDE COLUMN: "Em Destaque Agora" (Cols 9 to 12) */}
-              <aside className="lg:col-span-4 flex flex-col space-y-6 lg:pl-4 lg:border-l lg:border-slate-200">
-                
-                {/* Header */}
-                <div className="flex items-center justify-between pb-2.5 border-b border-slate-900">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#FF8A00] animate-pulse" />
-                    <h2 className="text-sm font-black uppercase tracking-wider text-slate-900">
-                      Em Destaque Agora
-                    </h2>
-                  </div>
-                  <span className="text-[11px] font-mono font-semibold text-slate-500">
-                    Tempo Real
-                  </span>
-                </div>
-
-                {/* Curated Side Stories with Hairline Rules */}
-                <div className="divide-y divide-slate-200">
-                  {sideHeadlines.map((art, idx) => (
-                    <div
-                      key={art.id}
-                      onClick={() => onSelectArticle(art)}
-                      className="group cursor-pointer py-4 first:pt-0 last:pb-0"
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#146EF5]">
-                          {categories.find(c => c.id === art.categoryId)?.name || 'Análise'}
-                        </span>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-[11px] text-slate-500 font-medium">
-                          {art.readingTimeMinutes} min
-                        </span>
-                      </div>
-
-                      <h3 className="text-sm font-bold text-slate-900 group-hover:text-[#146EF5] transition-colors leading-snug line-clamp-2">
-                        {art.title}
-                      </h3>
-
-                      <p className="text-xs text-slate-600 mt-1 line-clamp-2 font-normal leading-relaxed">
-                        {art.summary}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Editorial Trust & E-E-A-T Guarantee Seal */}
-                <div className="p-4 bg-slate-900 text-white rounded-xl border border-slate-800 shadow-xs">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span className="text-xs font-bold text-slate-100 uppercase tracking-wider">
-                      Compromisso Editorial GRIT
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Jornalismo técnico com checagem rigorosa de fontes, análise de dados e total independência editorial em conformidade com as diretrizes E-E-A-T.
-                  </p>
-                </div>
-
-                {/* Quick Shortcuts to Hubs */}
-                <div className="space-y-2 pt-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Canais Especializados
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={onNavigateTenPets}
-                      className="p-2.5 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-lg text-left transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-800">
-                          TenPets
-                        </span>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" />
-                      </div>
-                      <p className="text-[10px] text-slate-500 mt-0.5">Resgates & Veterinária</p>
-                    </button>
-
-                    {onNavigateImoveis && (
-                      <button
-                        onClick={onNavigateImoveis}
-                        className="p-2.5 bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 rounded-lg text-left transition-all cursor-pointer group"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-900 group-hover:text-amber-800">
-                            Eusébio Imóveis
-                          </span>
-                          <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600" />
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-0.5">Alto Padrão & Lotes</p>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-              </aside>
-
-            </div>
-
-          </div>
-        </section>
-      )}
-
-      {/* 2. MARKET PULSE / RADAR ECONÔMICO BAR (Interactive Summary) */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
-                <BarChart3 className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">
-                  Radar Econômico & Mercados
-                </h3>
-                <p className="text-xs text-slate-500">Indicadores financeiros e inteligência de negócios</p>
-              </div>
-            </div>
-
-            {onNavigateRadar && (
-              <button
-                onClick={onNavigateRadar}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#146EF5] hover:text-[#0D182A] transition-colors cursor-pointer"
-              >
-                <span>Ver cotações completas e gráficos</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 pt-3">
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-500">Dólar Comercial</span>
-                <span className="text-[9px] font-mono text-slate-400">PTAX / UOL</span>
-              </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-lg font-black text-slate-900">{radarSummary.dolarComercial}</span>
-                <span className={`text-xs font-bold ${radarSummary.dolarPositivo ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {radarSummary.dolarVariacao}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-500">Dólar Turismo</span>
-                <span className="text-[9px] font-mono text-slate-400">Varejo / UOL</span>
-              </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-lg font-black text-slate-900">{radarSummary.dolarTurismo}</span>
-                <span className="text-xs font-bold text-emerald-600">
-                  {radarSummary.dolarTurismoVariacao}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-500">Euro Comercial</span>
-                <span className="text-[9px] font-mono text-slate-400">BCE / UOL</span>
-              </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-lg font-black text-slate-900">{radarSummary.euroComercial}</span>
-                <span className="text-xs font-bold text-emerald-600">
-                  {radarSummary.euroVariacao}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-500">Ibovespa</span>
-                <span className="text-[9px] font-mono text-slate-400">B3 S.A.</span>
-              </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-lg font-black text-slate-900">{radarSummary.ibovespa}</span>
-                <span className={`text-xs font-bold ${radarSummary.ibovespaPositivo ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {radarSummary.ibovespaVariacao}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors col-span-2 lg:col-span-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-500">Taxa Selic Meta</span>
-                <span className="text-[9px] font-mono text-slate-400">Copom / BCB</span>
-              </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-lg font-black text-slate-900">{radarSummary.selicMeta}</span>
-                <span className="text-xs font-bold text-blue-600">CDI {radarSummary.cdiOver}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 2.5 LIVE RADAR AUTOMATED WIRE (Continuous News Feed with Source Attribution) */}
-      <section className="max-w-7xl mx-auto px-4">
-        <LiveRadarNewsEngine 
-          variant="widget" 
-          onNavigateRadar={onNavigateRadar}
-        />
-      </section>
-
-      {/* 3. TRENDING & MOST READ ARTICLES (Clean 3-Column Editorial Grid with Numbering) */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-3 border-b border-slate-200">
+    <div className="bg-white text-[#071A2A]">
+      <section className="relative overflow-hidden bg-[#061C2D] text-white">
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_75%_25%,rgba(255,106,0,.28),transparent_32%),radial-gradient(circle_at_70%_80%,rgba(20,94,219,.22),transparent_34%)]" />
+        <div className="relative max-w-7xl mx-auto px-4 py-20 lg:py-28 grid lg:grid-cols-[1.05fr_.95fr] gap-14 items-center">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#146EF5]" />
-              Mais Lidas & Em Alta na Semana
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              O que os tomadores de decisão e leitores estratégicos estão acompanhando
-            </p>
-          </div>
-
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 self-start sm:self-auto">
-            {(['24h', '7d', '30d'] as const).map(period => (
-              <button
-                key={period}
-                onClick={() => setTrendingPeriod(period)}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                  trendingPeriod === period
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {period === '24h' && '24 Horas'}
-                {period === '7d' && 'Esta Semana'}
-                {period === '30d' && 'Este Mês'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trendingArticles.slice(0, 6).map((art, idx) => (
-            <article
-              key={art.id}
-              onClick={() => onSelectArticle(art)}
-              className="group cursor-pointer bg-white border border-slate-200 hover:border-slate-400 rounded-2xl overflow-hidden hover:shadow-md transition-all flex flex-col justify-between"
-            >
-              <div>
-                {/* Thumbnail Image */}
-                <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                  <img
-                    src={art.featuredImage}
-                    alt={art.title}
-                    className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
-                    }}
-                  />
-                  <div className="absolute top-3 left-3 bg-slate-900 text-white text-xs font-black w-6 h-6 rounded-md flex items-center justify-center shadow-xs">
-                    {idx + 1}
-                  </div>
-                  {art.isSponsored && (
-                    <div className="absolute top-3 right-3">
-                      <span className="bg-amber-500 text-slate-950 font-bold px-2 py-0.5 rounded text-[10px] uppercase">
-                        Patrocinado
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Content */}
-                <div className="p-4 sm:p-5">
-                  <div className="flex items-center gap-2 mb-2 text-xs text-slate-500">
-                    <span className="font-bold text-[#146EF5]">
-                      {categories.find(c => c.id === art.categoryId)?.name || 'Grit News'}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-400" />
-                      {art.readingTimeMinutes} min
-                    </span>
-                  </div>
-
-                  <h3 className="text-base font-bold text-slate-900 group-hover:text-[#146EF5] transition-colors leading-snug line-clamp-2 mb-2">
-                    {art.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                    {art.summary}
-                  </p>
-                </div>
-              </div>
-
-              {/* Card Footer */}
-              <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#146EF5]">
-                <span className="group-hover:underline inline-flex items-center gap-1">
-                  Continuar lendo <ArrowRight className="w-3 h-3" />
-                </span>
-                <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* 4. SECTIONS SHOWCASE (Curiosidades & Guias de Aviação / Cartões Black) */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-200">
-          <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-purple-700 mb-1">
-              <Lightbulb className="w-3.5 h-3.5" />
-              <span>Especiais do Consumidor</span>
+            <div className="inline-flex items-center gap-2 text-[#FF7A18] text-xs font-black uppercase tracking-[0.18em] mb-6"><Sparkles className="w-4 h-4" /> Inteligência comercial • tecnologia • execução</div>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.05em] leading-[0.95] mb-7">Transformamos complexidade em <span className="text-[#FF6A00]">movimento.</span></h1>
+            <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-2xl mb-8">A GRIT transforma gargalos comerciais e operacionais em processos claros, tecnologia útil e indicadores que orientam a próxima decisão.</p>
+            <div className="flex flex-col sm:flex-row gap-3 mb-10">
+              <button onClick={goToDiagnostic} className="bg-[#FF6A00] hover:bg-[#e65f00] text-white font-extrabold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all">Conte seu desafio <ArrowRight className="w-4 h-4" /></button>
+              <a href="#solucoes" className="border border-white/25 hover:bg-white/10 text-white font-bold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all">Explorar soluções <ChevronRight className="w-4 h-4" /></a>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900">
-              Curiosidades, Cartões Black & Aviação
-            </h2>
-          </div>
-          <button
-            onClick={() => onSelectCategory('cat-curiosidades')}
-            className="text-xs font-bold text-[#146EF5] hover:text-slate-900 flex items-center gap-1 cursor-pointer"
-          >
-            <span>Ver todos</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {articles.filter(a => a.categoryId === 'cat-curiosidades').slice(0, 2).map(art => (
-            <article
-              key={art.id}
-              onClick={() => onSelectArticle(art)}
-              className="group cursor-pointer bg-white border border-slate-200 hover:border-purple-400 rounded-2xl overflow-hidden hover:shadow-md transition-all flex flex-col sm:flex-row"
-            >
-              <div className="sm:w-2/5 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-100 shrink-0">
-                <img
-                  src={art.featuredImage}
-                  alt={art.title}
-                  className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=800';
-                  }}
-                />
-              </div>
-
-              <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 mb-1.5">
-                    <span className="font-bold text-purple-700">{art.readingTimeMinutes} min de leitura</span>
-                    <span>•</span>
-                    <span>{art.viewsCount} leituras</span>
-                  </div>
-
-                  <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-700 transition-colors leading-snug line-clamp-2 mb-2">
-                    {art.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                    {art.summary}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 mt-3 flex items-center justify-between text-xs font-bold text-purple-700">
-                  <span className="group-hover:underline inline-flex items-center gap-1">
-                    Ler artigo <ArrowRight className="w-3 h-3" />
-                  </span>
-                  <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. INFOPRODUTO EDITORIAL: PLAYBOOK DE EMAGRECIMENTO */}
-      {onNavigatePlaybook && (
-        <section className="max-w-7xl mx-auto px-4">
-          <PlaybookPromoBanner onNavigatePlaybook={onNavigatePlaybook} />
-        </section>
-      )}
-
-      {/* 6. RADAR IMOBILIÁRIO EUSÉBIO & ALPHAVILLE */}
-      {onNavigateImoveis && (
-        <section className="max-w-7xl mx-auto px-4">
-          <EusebioImoveisWidget 
-            onNavigateImoveis={onNavigateImoveis} 
-            onShowToast={onShowToast} 
-          />
-        </section>
-      )}
-
-      {/* 7. AMAZON & MERCADO LIVRE CURATED SHOPPING */}
-      <section className="max-w-7xl mx-auto px-4">
-        <AmazonShopSection onShowToast={onShowToast} />
-      </section>
-
-      {/* 8. CENTRAL DE OFERTAS B2B */}
-      <section className="bg-slate-100 py-10 border-y border-slate-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 mb-1">
-                <Tag className="w-3.5 h-3.5" />
-                <span>Oportunidades & Cupons</span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900">
-                Central de Ofertas & Soluções B2B
-              </h2>
+            <div className="grid sm:grid-cols-3 gap-3 text-xs text-slate-300">
+              <div className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0"/>Diagnóstico antes da ferramenta.</div>
+              <div className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0"/>Implantação antes da promessa.</div>
+              <div className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0"/>Evolução orientada por dados.</div>
             </div>
-
-            {onNavigateOffers && (
-              <button
-                onClick={onNavigateOffers}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-lg text-xs transition-all shadow-xs inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-              >
-                <span>Ver Todas as Ofertas</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            )}
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {featuredOffers.map(offer => (
-              <OfferCard
-                key={offer.id}
-                offer={offer}
-                onOpenLeadModal={onOpenLeadModal}
-                onShowToast={onShowToast}
-              />
-            ))}
+          <div className="rounded-[2rem] border border-white/10 bg-[#0A263B]/80 backdrop-blur p-5 shadow-2xl">
+            <div className="flex items-center justify-between mb-5"><div><p className="text-xs text-slate-400 uppercase tracking-widest font-bold">GRIT Intelligence</p><h3 className="text-xl font-black mt-1">Visão integrada do crescimento</h3></div><div className="w-10 h-10 rounded-xl bg-[#FF6A00]/15 flex items-center justify-center"><BrainCircuit className="w-5 h-5 text-[#FF6A00]"/></div></div>
+            <div className="grid grid-cols-2 gap-3 mb-3">{['Aquisição','Oportunidades','Conversão','Recorrência'].map((label,idx)=><div key={label} className="rounded-2xl bg-[#071A2A] border border-white/5 p-4"><p className="text-[11px] text-slate-400 mb-3">{label}</p><div className="h-2 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-[#FF6A00]" style={{width:`${48+idx*12}%`}}/></div><p className="text-[10px] text-slate-500 mt-2">Dados reais após integração</p></div>)}</div>
+            <div className="rounded-2xl bg-white p-5 text-[#071A2A] flex items-center justify-between"><div><p className="text-xs text-[#6B7780]">Princípio GRIT</p><p className="font-black text-lg mt-1">Medimos antes de prometer.</p></div><BarChart3 className="w-8 h-8 text-[#FF6A00]"/></div>
           </div>
         </div>
       </section>
 
-      {/* 9. PARCEIROS ESTRATÉGICOS GRIT */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-200">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900">
-              Parceiros & Empresas Apoiadoras
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Marcas líderes que impulsionam o ecossistema de conteúdo e tecnologia
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {partners.map(partner => (
-            <PartnerCard
-              key={partner.id}
-              partner={partner}
-              onSelectPartner={onSelectPartner}
-            />
-          ))}
-        </div>
+      <section id="solucoes" className="max-w-7xl mx-auto px-4 py-20 lg:py-24">
+        <div className="grid lg:grid-cols-[.8fr_1.2fr] gap-10 items-end mb-10"><div><p className="text-[#FF6A00] text-xs font-black uppercase tracking-[0.18em] mb-3">Soluções GRIT</p><h2 className="text-4xl md:text-5xl font-black tracking-[-0.04em] leading-tight">Do primeiro sinal à receita.</h2></div><p className="text-[#5C6B7A] text-lg leading-relaxed">Começamos pelo problema. A solução pode combinar consultoria, processo, CRM, dados, automação, IA, SaaS e acompanhamento conforme a maturidade da operação.</p></div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">{solutions.map(item=>{const Icon=item.icon;return <a href={item.href} key={item.title} className="group rounded-3xl border border-[#E2E8F0] bg-white p-7 hover:border-[#FF6A00]/50 hover:shadow-xl transition-all"><div className="w-12 h-12 rounded-2xl bg-[#061C2D] flex items-center justify-center mb-7 group-hover:bg-[#FF6A00]"><Icon className="w-5 h-5 text-white"/></div><p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-2">{item.kicker}</p><h3 className="text-xl font-black mb-3">{item.title}</h3><p className="text-sm text-[#5C6B7A] leading-relaxed">{item.text}</p></a>})}</div>
       </section>
 
-      {/* 10. NEWSLETTER CAPTURE */}
-      <section className="max-w-7xl mx-auto px-4">
-        <NewsletterBlock sourcePage="Home" onSuccessToast={onShowToast} />
-      </section>
+      <section className="bg-[#F5F7F9] border-y border-[#E2E8F0] py-20"><div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-5"><div className="rounded-[2rem] bg-[#061C2D] text-white p-8 lg:p-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-4">O QUE ENCONTRAMOS</p><h2 className="text-3xl md:text-4xl font-black mb-5">Operação ocupada. Gestão sem visibilidade.</h2><p className="text-slate-300">Leads dispersos, vendas manuais, atendimento sem rastreio, decisões em planilhas e equipes enxutas sobrecarregadas.</p></div><div className="rounded-[2rem] bg-white border border-[#E2E8F0] p-8 lg:p-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-4">O QUE CONSTRUÍMOS</p><h2 className="text-3xl md:text-4xl font-black mb-5">Processo claro. Tecnologia útil. Próxima ação visível.</h2><p className="text-[#5C6B7A]">A GRIT organiza o fluxo, conecta ferramentas e cria indicadores para transformar atividade em gestão e gestão em evolução.</p></div></div></section>
 
+      <section id="metodo" className="bg-[#061C2D] text-white py-20 lg:py-24"><div className="max-w-7xl mx-auto px-4"><div className="max-w-3xl mb-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">MÉTODO GRIT</p><h2 className="text-4xl md:text-5xl font-black mb-5">Perguntamos antes de automatizar.</h2><p className="text-slate-300 text-lg">Mapeamos antes de integrar. Implantamos antes de celebrar. Medimos antes de prometer.</p></div><div className="grid md:grid-cols-2 lg:grid-cols-5 gap-3">{method.map(([num,title,text])=><article key={num} className="rounded-2xl bg-[#0A2A42] border border-white/10 p-6"><span className="text-3xl font-black text-[#FF6A00]">{num}</span><h3 className="text-lg font-black mt-6 mb-3">{title}</h3><p className="text-sm text-slate-300">{text}</p></article>)}</div></div></section>
+
+      <section id="produtos" className="max-w-7xl mx-auto px-4 py-20 lg:py-24"><div className="grid lg:grid-cols-[.8fr_1.2fr] gap-10 items-end mb-10"><div><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">ECOSSISTEMA DE APLICATIVOS</p><h2 className="text-4xl md:text-5xl font-black">Dores repetidas podem virar produtos.</h2></div><p className="text-[#5C6B7A] text-lg">Preservamos os ativos existentes e os conectamos a uma arquitetura de inteligência, aquisição e recorrência.</p></div><div className="grid lg:grid-cols-3 gap-4">{products.map(product=><article key={product.name} className="rounded-3xl border border-[#E2E8F0] overflow-hidden bg-white flex flex-col"><div className="h-2 bg-[#FF6A00]"/><div className="p-7 flex-1 flex flex-col"><p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-3">{product.category.toUpperCase()}</p><h3 className="text-2xl font-black mb-4">{product.name}</h3><p className="text-sm text-[#5C6B7A] mb-7">{product.description}</p><a href={product.href} target="_blank" rel="noreferrer" className="mt-auto font-black text-[#061C2D] hover:text-[#FF6A00] inline-flex gap-2 items-center">Conhecer solução <ArrowRight className="w-4 h-4"/></a></div></article>)}</div></section>
+
+      <section id="insights" className="bg-[#F5F7F9] border-y border-[#E2E8F0] py-20"><div className="max-w-7xl mx-auto px-4"><div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10"><div><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">GRIT INSIGHTS</p><h2 className="text-4xl md:text-5xl font-black">Conteúdo que gera contexto e oportunidade.</h2></div><a href="/insights/" className="font-black inline-flex gap-2 items-center">Explorar Insights <ArrowRight className="w-4 h-4"/></a></div>{featuredArticles.length>0?<div className="grid lg:grid-cols-3 gap-4">{featuredArticles.map(article=><article key={article.id} onClick={()=>onSelectArticle(article)} className="cursor-pointer rounded-3xl bg-white border border-[#E2E8F0] overflow-hidden hover:shadow-xl transition-all"><div className="h-48 bg-[#0A2A42] overflow-hidden">{article.featuredImage&&<img src={article.featuredImage} alt="" className="w-full h-full object-cover"/>}</div><div className="p-6"><p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-3">INSIGHT</p><h3 className="font-black text-lg mb-3 line-clamp-2">{article.title}</h3><p className="text-sm text-[#5C6B7A] line-clamp-2">{article.summary||article.subtitle}</p></div></article>)}</div>:<p className="text-[#5C6B7A]">Hub editorial preparado para conteúdo conectado às soluções GRIT.</p>}</div></section>
+
+      <section id="diagnostico" className="max-w-7xl mx-auto px-4 py-20"><div className="rounded-[2rem] bg-gradient-to-br from-[#FF6A00] to-[#FF8128] p-8 md:p-12 lg:p-14 grid lg:grid-cols-[1.1fr_.9fr] gap-10 items-center"><div><p className="text-[#061C2D] text-xs font-black tracking-widest mb-3">DIAGNÓSTICO GRIT</p><h2 className="text-4xl md:text-5xl text-[#061C2D] font-black mb-5">Conte onde a operação trava.</h2><p className="text-[#5A2A0B] text-lg">Uma conversa objetiva para organizar o problema, identificar prioridades e desenhar um próximo passo executável.</p></div><div className="rounded-3xl bg-white p-7 shadow-xl"><div className="flex items-start gap-3 mb-5"><ShieldCheck className="w-6 h-6 text-[#FF6A00]"/><div><p className="font-black">Sem promessa genérica.</p><p className="text-sm text-[#5C6B7A] mt-1">Começamos pelo processo real e pelo resultado que precisa ser melhorado.</p></div></div><a href="mailto:gritsolucoes@gmail.com?subject=Diagnóstico%20GRIT" onClick={()=>onShowToast('Abrindo seu e-mail para iniciar o diagnóstico GRIT.','info')} className="w-full bg-[#061C2D] text-white font-black px-6 py-4 rounded-xl flex items-center justify-center gap-2">Solicitar diagnóstico <ArrowRight className="w-4 h-4"/></a></div></div></section>
     </div>
   );
 };
