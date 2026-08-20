@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Tag, Bookmark, ShieldAlert, Menu, X, LayoutDashboard, Sparkles, TrendingUp, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, ShoppingBag, Stethoscope } from 'lucide-react';
+import { Bookmark, LayoutDashboard, Menu, Search, X } from 'lucide-react';
 import { Category } from '../../types';
-import { GritNewsLogo } from '../ui/GritNewsLogo';
-import { TenPetsLogo } from '../ui/TenPetsLogo';
 
 interface NavbarProps {
   categories: Category[];
@@ -19,271 +17,60 @@ interface NavbarProps {
   bookmarksCount: number;
 }
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  HeartPulse,
-  PawPrint,
-  Cpu,
-  Truck,
-  Globe,
-  TrendingUp,
-  Smile,
-  Lightbulb,
-  Tag,
-  Sparkles
-};
-
 export const Navbar: React.FC<NavbarProps> = ({
-  categories,
-  activeCategorySlug,
-  onSelectCategory,
-  onNavigateOffers,
   onNavigateBookmarks,
   onNavigateAdmin,
-  onNavigateTenPets,
   onSearch,
   onNavigateHome,
-  onOpenDocs,
-  onOpenContactModal,
   bookmarksCount
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      onSearch(searchQuery.trim());
-      setMobileMenuOpen(false);
-    }
+    if (!query.trim()) return;
+    onSearch(query.trim());
+    setSearchOpen(false);
+    setMobileOpen(false);
+  };
+
+  const scrollTo = (id: string) => {
+    if (window.location.pathname !== '/' || window.location.search) onNavigateHome();
+    window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 80);
+    setMobileOpen(false);
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-[#E2E8F0] shadow-xs">
-      {/* Top Bar / Ticker */}
-      <div className="bg-[#0D182A] text-white text-xs py-1.5 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-            <span className="bg-[#FF8A00] text-white font-bold px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-wider">
-              Destaque
-            </span>
-            <p className="text-[#F1F5F9] font-medium truncate text-xs">
-              M&A no setor de saúde cresce 34% em 2026 • IA Generativa já otimiza 80% dos chamados B2B
-            </p>
-          </div>
-          <div className="hidden md:flex items-center gap-4 shrink-0 text-xs text-gray-300">
-            {onOpenContactModal && (
-              <button
-                onClick={onOpenContactModal}
-                className="hover:text-amber-300 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <span>Anuncie / Parcerias & Pautas</span>
-              </button>
-            )}
-            <span className="text-[11px] font-mono text-gray-400">gritnews.com.br</span>
-          </div>
+    <header className="sticky top-0 z-50 bg-[#061C2D]/95 backdrop-blur-xl border-b border-white/10 text-white">
+      <div className="max-w-7xl mx-auto px-4 h-[76px] flex items-center justify-between gap-5">
+        <button onClick={onNavigateHome} className="flex items-center gap-3 shrink-0">
+          <span className="w-10 h-10 rounded-xl border-2 border-white flex items-center justify-center text-[#FF6A00] font-black text-xl">↗</span>
+          <span className="text-left"><strong className="block text-2xl leading-none tracking-[-0.04em]">grit</strong><small className="block text-[9px] tracking-[0.16em] text-slate-300 mt-1">SOLUÇÕES E NEGÓCIOS</small></span>
+        </button>
+
+        <nav className="hidden lg:flex items-center gap-7 text-sm font-bold text-slate-200">
+          <button onClick={onNavigateHome} className="hover:text-[#FF6A00]">Início</button>
+          <button onClick={() => scrollTo('solucoes')} className="hover:text-[#FF6A00]">Soluções</button>
+          <button onClick={() => scrollTo('produtos')} className="hover:text-[#FF6A00]">Aplicativos</button>
+          <button onClick={() => scrollTo('insights')} className="hover:text-[#FF6A00]">Insights</button>
+          <button onClick={() => scrollTo('metodo')} className="hover:text-[#FF6A00]">Método</button>
+        </nav>
+
+        <div className="hidden md:flex items-center gap-2">
+          <button onClick={() => setSearchOpen(v => !v)} className="w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" aria-label="Buscar"><Search className="w-4 h-4"/></button>
+          <button onClick={onNavigateBookmarks} className="relative w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" aria-label="Salvos"><Bookmark className="w-4 h-4"/>{bookmarksCount > 0 && <span className="absolute -right-1 -top-1 w-4 h-4 rounded-full bg-[#FF6A00] text-[9px] grid place-items-center">{bookmarksCount}</span>}</button>
+          <button onClick={() => scrollTo('diagnostico')} className="bg-[#FF6A00] hover:bg-[#e65f00] px-4 py-2.5 rounded-xl font-black text-sm">Diagnóstico GRIT</button>
+          <button onClick={onNavigateAdmin} className="w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" title="Acesso gerencial"><LayoutDashboard className="w-4 h-4"/></button>
         </div>
+
+        <button onClick={() => setMobileOpen(v => !v)} className="lg:hidden w-10 h-10 rounded-xl border border-white/15 flex items-center justify-center">{mobileOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}</button>
       </div>
 
-      {/* Main Brand & Search Bar */}
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        {/* Brand Logo */}
-        <GritNewsLogo onClick={onNavigateHome} size="md" showSlogan={true} />
+      {searchOpen && <div className="border-t border-white/10 bg-[#071A2A]"><form onSubmit={submitSearch} className="max-w-7xl mx-auto px-4 py-3 flex gap-2"><input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar artigos, inteligência comercial, vendas, IA..." className="flex-1 bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FF6A00]"/><button className="bg-[#FF6A00] px-5 rounded-xl font-black text-sm">Buscar</button></form></div>}
 
-        {/* Desktop Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-6">
-          <div className="relative w-full">
-            <input
-              type="text"
-              placeholder="Buscar notícias, mercado de saúde, pet, tecnologia, inteligência artificial..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-sm text-[#0D182A] focus:outline-none focus:ring-2 focus:ring-[#146EF5] focus:bg-white transition-all placeholder-gray-400 font-medium"
-            />
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          </div>
-        </form>
-
-        {/* Action Buttons */}
-        <div className="hidden lg:flex items-center gap-2">
-          <a
-            href="https://meli.la/1kXwMJQ"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-black px-3 py-2 rounded-xl text-xs border border-yellow-500/40 shadow-xs hover:scale-102 transition-all cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 fill-current text-slate-900" />
-            <span>Lista Mercado Livre</span>
-          </a>
-
-          <a
-            href="https://www.amazon.com.br/shop/tassovasconcelos"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-2 rounded-xl text-xs border border-slate-200 transition-all cursor-pointer"
-            title="Loja Amazon de Tasso Vasconcelos"
-          >
-            <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
-            <span>Amazon</span>
-          </a>
-
-          <button
-            onClick={onNavigateOffers}
-            className="flex items-center gap-1.5 bg-[#FF8A00] hover:bg-[#e07900] text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-md hover:scale-102 transition-all cursor-pointer"
-          >
-            <Tag className="w-3.5 h-3.5" />
-            <span>Ofertas</span>
-          </button>
-
-          <button
-            onClick={onNavigateBookmarks}
-            className="flex items-center gap-1.5 bg-[#F1F5F9] hover:bg-[#EAF3FF] text-[#0D182A] font-bold px-3.5 py-2 rounded-xl text-xs border border-[#E2E8F0] hover:border-[#146EF5] transition-all relative"
-          >
-            <Bookmark className="w-3.5 h-3.5 text-[#146EF5]" />
-            <span>Salvos</span>
-            {bookmarksCount > 0 && (
-              <span className="bg-[#146EF5] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                {bookmarksCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <div className="flex md:hidden items-center gap-2">
-          <button
-            onClick={onNavigateOffers}
-            className="bg-[#FF8500] text-white font-bold p-2 rounded-xl text-xs"
-            title="Ofertas"
-          >
-            <Tag className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-[#0B2343] hover:bg-gray-100 rounded-xl"
-            aria-label="Abrir Menu"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Category Navigation Bar */}
-      <div className="bg-[#F1F5F9] border-t border-[#E2E8F0] overflow-x-auto scrollbar-none">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 whitespace-nowrap py-1">
-          <button
-            onClick={() => onSelectCategory(undefined)}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-              !activeCategorySlug
-                ? 'bg-[#0D182A] text-white shadow-xs'
-                : 'text-[#687280] hover:text-[#0D182A] hover:bg-white'
-            }`}
-          >
-            Todas as Notícias
-          </button>
-
-          {/* TenPets Subdomain Portal Button */}
-          <button
-            onClick={onNavigateTenPets}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-extrabold bg-[#587837] hover:bg-[#48632c] text-white shadow-xs hover:scale-105 transition-all border border-[#769b4e]"
-          >
-            <TenPetsLogo variant="dark" size="sm" />
-            <span>(Resgates & Ciência)</span>
-            <span className="bg-black/20 text-emerald-200 text-[9px] px-1.5 py-0.2 rounded font-mono">
-              .gritnews
-            </span>
-          </button>
-
-          {categories.map(cat => {
-            const isActive = activeCategorySlug === cat.slug;
-            const IconComp = ICON_MAP[cat.iconName] || Tag;
-
-            return (
-              <button
-                key={cat.id}
-                onClick={() => onSelectCategory(cat.slug)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-[#146EF5] text-white shadow-xs'
-                    : 'text-[#687280] hover:text-[#0D182A] hover:bg-white'
-                }`}
-              >
-                <IconComp className="w-3.5 h-3.5" style={{ color: isActive ? '#FFFFFF' : cat.color }} />
-                <span>{cat.name}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-[#E2E8F0] p-4 shadow-xl animate-slideDown">
-          <form onSubmit={handleSearchSubmit} className="mb-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Buscar notícias ou assuntos..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-sm"
-              />
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            </div>
-          </form>
-
-          <div className="space-y-1 mb-4">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Categorias</p>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  onSelectCategory(cat.slug);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold flex items-center justify-between ${
-                  activeCategorySlug === cat.slug ? 'bg-[#EAF3FF] text-[#145EDB]' : 'text-[#10233F]'
-                }`}
-              >
-                <span>{cat.name}</span>
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
-              </button>
-            ))}
-          </div>
-
-          <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
-            <a
-              href="https://meli.la/1kXwMJQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-yellow-500/40"
-            >
-              <Sparkles className="w-4 h-4 text-slate-900 fill-current" />
-              <span>Lista de Achados no Mercado Livre</span>
-            </a>
-
-            <a
-              href="https://www.amazon.com.br/shop/tassovasconcelos"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full bg-slate-100 text-slate-700 font-bold py-2 rounded-xl text-xs text-center flex items-center justify-center gap-2 border border-slate-200"
-            >
-              <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
-              <span>Loja Amazon (Tasso Vasconcelos)</span>
-            </a>
-
-            <button
-              onClick={() => {
-                onNavigateOffers();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full bg-[#FF8500] text-white font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-2"
-            >
-              <Tag className="w-4 h-4" />
-              <span>Central de Ofertas</span>
-            </button>
-          </div>
-        </div>
-      )}
+      {mobileOpen && <div className="lg:hidden border-t border-white/10 bg-[#071A2A] px-4 py-4 space-y-2 text-sm font-bold"><button onClick={onNavigateHome} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Início</button><button onClick={() => scrollTo('solucoes')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Soluções</button><button onClick={() => scrollTo('produtos')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Aplicativos</button><button onClick={() => scrollTo('insights')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Insights</button><button onClick={() => scrollTo('metodo')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Método</button><button onClick={() => scrollTo('diagnostico')} className="block w-full text-left px-3 py-3 rounded-xl bg-[#FF6A00] text-white">Diagnóstico GRIT</button></div>}
     </header>
   );
 };
