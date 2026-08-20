@@ -1,6 +1,23 @@
 import React from 'react';
-import { ArrowRight, BarChart3, Bot, BrainCircuit, CheckCircle2, ChevronRight, Database, LineChart, Rocket, ShieldCheck, Sparkles, Target, Users } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  BrainCircuit,
+  CheckCircle2,
+  Code2,
+  Database,
+  Headphones,
+  LineChart,
+  Search,
+  ShieldCheck,
+  Target,
+  Users,
+  Zap,
+  Boxes,
+  Flame,
+} from 'lucide-react';
 import { Article, Category, Partner, Offer, AuthorProfile } from '../../types';
+import { GritBrandLogo } from '../ui/GritBrandLogo';
 
 interface HomeViewProps {
   articles: Article[];
@@ -23,74 +40,212 @@ interface HomeViewProps {
   onShowToast: (msg: string, type?: 'success' | 'info') => void;
 }
 
-const solutions = [
-  { icon: Target, kicker: 'GROWTH', title: 'Inteligência Comercial', text: 'Prospecção, qualificação, CRM, cadências, WhatsApp, indicadores e organização do funil comercial.', href: '/solucoes/inteligencia-comercial/' },
-  { icon: LineChart, kicker: 'REVENUE OPS', title: 'Vendas & Oportunidades', text: 'Pipeline, próxima ação, produtividade, territórios, forecast e gestão de oportunidades com mais visibilidade.', href: '/solucoes/vendas-revenue-operations/' },
-  { icon: Users, kicker: 'CUSTOMER', title: 'Atendimento & Pós-venda', text: 'SLA, protocolos, SAC, assistência técnica, qualidade, satisfação, retenção e inteligência de atendimento.', href: '/solucoes/atendimento-pos-venda/' },
-  { icon: Bot, kicker: 'AUTOMAÇÃO', title: 'Automação & IA', text: 'Automação do repetitivo, organização de informação e IA aplicada para apoiar decisões e produtividade.', href: '/solucoes/automacao-ia/' },
-  { icon: Database, kicker: 'DATA', title: 'Dados, BI & Performance', text: 'Dashboards, integrações, análise de dados e indicadores conectando atividade operacional a decisão gerencial.', href: '/solucoes/dados-bi/' },
-  { icon: Rocket, kicker: 'SAAS', title: 'Produtos GRIT', text: 'Soluções recorrentes nascidas de dores reais e preparadas para evoluir por segmento, maturidade e uso.', href: '/produtos/' }
+const solutionCards = [
+  {
+    icon: Target,
+    title: 'Inteligência Comercial',
+    text: 'Prospecção, leads, mercado e oportunidades reais.',
+    href: '/solucoes/inteligencia-comercial/',
+  },
+  {
+    icon: Users,
+    title: 'Revenue Operations',
+    text: 'CRM, pipeline, funil, equipe e performance comercial.',
+    href: '/solucoes/vendas-revenue-operations/',
+  },
+  {
+    icon: Headphones,
+    title: 'Atendimento & Pós-venda',
+    text: 'SAC, SLA, qualidade, assistência e experiência.',
+    href: '/solucoes/atendimento-pos-venda/',
+  },
+  {
+    icon: BrainCircuit,
+    title: 'Automação & IA',
+    text: 'Processos, RPA, agentes e inteligência aplicada.',
+    href: '/solucoes/automacao-ia/',
+  },
+  {
+    icon: LineChart,
+    title: 'Dados, BI & Performance',
+    text: 'Dashboards, análise, relatórios e indicadores.',
+    href: '/solucoes/dados-bi/',
+  },
+  {
+    icon: Boxes,
+    title: 'Produtos SaaS GRIT',
+    text: 'Soluções prontas para você crescer mais rápido.',
+    href: '/produtos/',
+  },
 ];
 
 const products = [
-  { name: 'OportunidadesPro', category: 'Revenue Operations', description: 'Gestão de oportunidades, performance de marketing e acompanhamento comercial orientado por dados.', href: 'https://oportunidadespro.gritnews.com.br' },
-  { name: 'GRIT SAC 4.0', category: 'Atendimento & Pós-venda', description: 'SAC, qualidade, assistência técnica, protocolos, acompanhamento e visão gerencial em um fluxo rastreável.', href: 'https://apps.sacproh.gritnews.com.br' },
-  { name: 'Meu Espetinho', category: 'SaaS para pequenos negócios', description: 'Gestão simples para pedidos, mesas, caixa, clientes e resultados na realidade de pequenos negócios de alimentação.', href: 'https://meuespetinho.gritnews.com.br' }
+  {
+    name: 'OportunidadesPro',
+    subtitle: 'by GRIT',
+    icon: Boxes,
+    description: 'Inteligência comercial e Revenue Operations para transformar dados em oportunidades acompanháveis.',
+    bullets: ['Gestão de leads e oportunidades', 'Pipeline e forecast de vendas', 'Dashboards e indicadores'],
+    href: 'https://oportunidadespro.gritnews.com.br',
+  },
+  {
+    name: 'GRIT SAC 4.0',
+    subtitle: 'Atendimento, qualidade e pós-venda',
+    icon: Headphones,
+    description: 'Centralize atendimentos, reclamações e assistência com rastreabilidade e inteligência.',
+    bullets: ['Gestão de SAC e SLA', 'Qualidade, NPS e pesquisas', 'Assistência técnica e CAPA'],
+    href: 'https://apps.sacproh.gritnews.com.br',
+  },
+  {
+    name: 'Meu Espetinho',
+    subtitle: 'Seu negócio no controle.',
+    icon: Flame,
+    description: 'Gestão completa para donos de espetinho que querem mais controle e lucro.',
+    bullets: ['Estoque e cardápio digital', 'Financeiro e vendas', 'Relatórios e indicadores'],
+    href: 'https://meuespetinho.gritnews.com.br',
+  },
 ];
 
-const method = [
-  ['01', 'Diagnóstico', 'Entendemos processo, gargalos, maturidade e objetivos antes de indicar tecnologia.'],
-  ['02', 'Desenho', 'Estruturamos fluxo futuro, prioridades, papéis, dados e ferramentas necessárias.'],
-  ['03', 'Implantação', 'Configuramos integrações, regras, automações e o ambiente da operação.'],
-  ['04', 'Ativação', 'Treinamos o time e transformamos a solução em rotina real.'],
-  ['05', 'Evolução', 'Medimos, aprendemos e priorizamos novos ganhos de produtividade e receita.']
+const articleFallbacks = [
+  { category: 'INTELIGÊNCIA COMERCIAL', title: 'Como transformar leads em oportunidades reais', icon: Target },
+  { category: 'VENDAS', title: 'Pipeline saudável: práticas para previsibilidade', icon: LineChart },
+  { category: 'AUTOMAÇÃO', title: 'Automação comercial: por onde começar', icon: Code2 },
+  { category: 'ATENDIMENTO', title: 'SLA de atendimento: mais eficiência e satisfação', icon: Headphones },
+  { category: 'DADOS E BI', title: 'Dashboards que contam a história do seu negócio', icon: Database },
 ];
 
-export const HomeView: React.FC<HomeViewProps> = ({ articles, categories, onSelectArticle, onSelectCategory, onShowToast }) => {
-  const featuredArticles = articles.slice(0, 3);
+const BrandSeal: React.FC = () => (
+  <div className="relative w-32 h-32 md:w-36 md:h-36 rounded-full border-2 border-white/75 grid place-items-center bg-[#061C2D]/90 shadow-[0_0_40px_rgba(255,106,0,.24)]">
+    <div className="absolute inset-2 rounded-full border border-white/50" />
+    <div className="absolute inset-0 grid place-items-center text-[8px] md:text-[9px] font-black tracking-[0.14em] text-white/90 [transform:rotate(-10deg)]">
+      GRIT SOLUÇÕES E NEGÓCIOS
+    </div>
+    <div className="relative z-10 flex flex-col items-center mt-4">
+      <GritBrandLogo variant="icon" size="sm" />
+      <span className="text-2xl font-black tracking-[-0.05em] mt-1">grit</span>
+      <span className="text-[7px] font-bold tracking-[0.14em] text-white/70">SOLUÇÕES E NEGÓCIOS</span>
+    </div>
+  </div>
+);
+
+export const HomeView: React.FC<HomeViewProps> = ({
+  articles,
+  onSelectArticle,
+}) => {
+  const featuredArticles = articles.slice(0, 5);
   const goToDiagnostic = () => document.getElementById('diagnostico')?.scrollIntoView({ behavior: 'smooth' });
 
   return (
-    <div className="bg-white text-[#071A2A]">
-      <section className="relative overflow-hidden bg-[#061C2D] text-white">
-        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_75%_25%,rgba(255,106,0,.28),transparent_32%),radial-gradient(circle_at_70%_80%,rgba(20,94,219,.22),transparent_34%)]" />
-        <div className="relative max-w-7xl mx-auto px-4 py-20 lg:py-28 grid lg:grid-cols-[1.05fr_.95fr] gap-14 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 text-[#FF7A18] text-xs font-black uppercase tracking-[0.18em] mb-6"><Sparkles className="w-4 h-4" /> Inteligência comercial • tecnologia • execução</div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.05em] leading-[0.95] mb-7">Transformamos complexidade em <span className="text-[#FF6A00]">movimento.</span></h1>
-            <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-2xl mb-8">A GRIT transforma gargalos comerciais e operacionais em processos claros, tecnologia útil e indicadores que orientam a próxima decisão.</p>
-            <div className="flex flex-col sm:flex-row gap-3 mb-10">
-              <button onClick={goToDiagnostic} className="bg-[#FF6A00] hover:bg-[#e65f00] text-white font-extrabold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all">Conte seu desafio <ArrowRight className="w-4 h-4" /></button>
-              <a href="#solucoes" className="border border-white/25 hover:bg-white/10 text-white font-bold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all">Explorar soluções <ChevronRight className="w-4 h-4" /></a>
+    <div className="bg-[#F7F7F5] text-[#071A2A]">
+      <section className="relative overflow-hidden bg-[#061C2D] text-white border-b border-white/10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_48%,rgba(255,106,0,.24),transparent_30%),linear-gradient(115deg,#061C2D_0%,#061C2D_48%,#071A2A_100%)]" />
+        <div className="absolute inset-y-0 right-0 w-[58%] opacity-70 hidden lg:block">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_0%,rgba(255,106,0,.07)_50%,transparent_78%)]" />
+          <div className="absolute left-[16%] top-[54%] w-[70%] h-1 bg-gradient-to-r from-transparent via-[#FF6A00] to-[#FFB15F] rotate-[-24deg] shadow-[0_0_24px_#FF6A00]" />
+          <div className="absolute left-[28%] top-[46%] w-14 h-14 rounded-full border border-[#FF7A18] bg-[#0A1F31] grid place-items-center shadow-[0_0_30px_rgba(255,106,0,.3)]"><Search className="w-7 h-7 text-white" /></div>
+          <div className="absolute left-[48%] top-[37%] w-14 h-14 rounded-full border border-[#FF7A18] bg-[#0A1F31] grid place-items-center shadow-[0_0_30px_rgba(255,106,0,.3)]"><Code2 className="w-7 h-7 text-white" /></div>
+          <div className="absolute left-[67%] top-[25%] w-14 h-14 rounded-full border border-[#FF7A18] bg-[#0A1F31] grid place-items-center shadow-[0_0_30px_rgba(255,106,0,.3)]"><BarChart3 className="w-7 h-7 text-white" /></div>
+          <div className="absolute right-[8%] top-[15%] text-[12rem] font-black text-[#FF6A00] leading-none rotate-[-10deg] drop-shadow-[0_0_18px_rgba(255,106,0,.5)]">↗</div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 pt-16 pb-10 lg:pt-20 lg:pb-12 min-h-[560px] flex items-center">
+          <div className="w-full lg:w-[55%]">
+            <p className="text-[#FF6A00] text-xs md:text-sm font-black uppercase tracking-[0.18em] mb-5">Inteligência • Tecnologia • Execução • Resultados</p>
+            <h1 className="text-5xl md:text-6xl lg:text-[72px] font-black tracking-[-0.055em] leading-[0.97] max-w-3xl">
+              Seu processo pode ser mais <span className="text-[#FF6A00]">inteligente.</span>
+            </h1>
+            <p className="mt-6 text-lg md:text-xl text-slate-300 leading-relaxed max-w-xl">
+              Transformamos desafios comerciais e operacionais em processos claros, tecnologia útil e indicadores que orientam a próxima decisão.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <button onClick={goToDiagnostic} className="bg-[#FF6A00] hover:bg-[#e95f00] text-white font-extrabold px-7 py-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                Conte seu desafio <ArrowRight className="w-4 h-4" />
+              </button>
+              <a href="#solucoes" className="border border-white/45 hover:bg-white/10 text-white font-bold px-7 py-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                Explorar soluções <ArrowRight className="w-4 h-4" />
+              </a>
             </div>
-            <div className="grid sm:grid-cols-3 gap-3 text-xs text-slate-300">
-              <div className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0"/>Diagnóstico antes da ferramenta.</div>
-              <div className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0"/>Implantação antes da promessa.</div>
-              <div className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0"/>Evolução orientada por dados.</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-9 max-w-2xl text-xs text-slate-300">
+              <div><CheckCircle2 className="w-5 h-5 text-[#FF6A00] mb-2" /><b className="text-white block">Diagnóstico</b><span>antes da ferramenta</span></div>
+              <div><Zap className="w-5 h-5 text-[#FF6A00] mb-2" /><b className="text-white block">Execução</b><span>com método</span></div>
+              <div><LineChart className="w-5 h-5 text-[#FF6A00] mb-2" /><b className="text-white block">Tecnologia</b><span>com propósito</span></div>
+              <div><ShieldCheck className="w-5 h-5 text-[#FF6A00] mb-2" /><b className="text-white block">Resultado</b><span>como compromisso</span></div>
             </div>
           </div>
-          <div className="rounded-[2rem] border border-white/10 bg-[#0A263B]/80 backdrop-blur p-5 shadow-2xl">
-            <div className="flex items-center justify-between mb-5"><div><p className="text-xs text-slate-400 uppercase tracking-widest font-bold">GRIT Intelligence</p><h3 className="text-xl font-black mt-1">Visão integrada do crescimento</h3></div><div className="w-10 h-10 rounded-xl bg-[#FF6A00]/15 flex items-center justify-center"><BrainCircuit className="w-5 h-5 text-[#FF6A00]"/></div></div>
-            <div className="grid grid-cols-2 gap-3 mb-3">{['Aquisição','Oportunidades','Conversão','Recorrência'].map((label,idx)=><div key={label} className="rounded-2xl bg-[#071A2A] border border-white/5 p-4"><p className="text-[11px] text-slate-400 mb-3">{label}</p><div className="h-2 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-[#FF6A00]" style={{width:`${48+idx*12}%`}}/></div><p className="text-[10px] text-slate-500 mt-2">Dados reais após integração</p></div>)}</div>
-            <div className="rounded-2xl bg-white p-5 text-[#071A2A] flex items-center justify-between"><div><p className="text-xs text-[#6B7780]">Princípio GRIT</p><p className="font-black text-lg mt-1">Medimos antes de prometer.</p></div><BarChart3 className="w-8 h-8 text-[#FF6A00]"/></div>
-          </div>
+          <div className="hidden lg:block absolute right-8 bottom-8"><BrandSeal /></div>
         </div>
       </section>
 
-      <section id="solucoes" className="max-w-7xl mx-auto px-4 py-20 lg:py-24">
-        <div className="grid lg:grid-cols-[.8fr_1.2fr] gap-10 items-end mb-10"><div><p className="text-[#FF6A00] text-xs font-black uppercase tracking-[0.18em] mb-3">Soluções GRIT</p><h2 className="text-4xl md:text-5xl font-black tracking-[-0.04em] leading-tight">Do primeiro sinal à receita.</h2></div><p className="text-[#5C6B7A] text-lg leading-relaxed">Começamos pelo problema. A solução pode combinar consultoria, processo, CRM, dados, automação, IA, SaaS e acompanhamento conforme a maturidade da operação.</p></div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">{solutions.map(item=>{const Icon=item.icon;return <a href={item.href} key={item.title} className="group rounded-3xl border border-[#E2E8F0] bg-white p-7 hover:border-[#FF6A00]/50 hover:shadow-xl transition-all"><div className="w-12 h-12 rounded-2xl bg-[#061C2D] flex items-center justify-center mb-7 group-hover:bg-[#FF6A00]"><Icon className="w-5 h-5 text-white"/></div><p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-2">{item.kicker}</p><h3 className="text-xl font-black mb-3">{item.title}</h3><p className="text-sm text-[#5C6B7A] leading-relaxed">{item.text}</p></a>})}</div>
+      <section id="solucoes" className="bg-white border-b border-[#E3E7EA]">
+        <div className="max-w-7xl mx-auto grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          {solutionCards.map(({ icon: Icon, title, text, href }, index) => (
+            <a href={href} key={title} className={`group px-5 py-8 text-center hover:bg-[#FFF8F2] transition-colors ${index > 0 ? 'lg:border-l border-[#E3E7EA]' : ''}`}>
+              <div className="w-14 h-14 mx-auto rounded-2xl grid place-items-center text-[#071B2C] mb-4 group-hover:scale-105 transition-transform">
+                <Icon className="w-10 h-10 stroke-[2.2]" />
+              </div>
+              <h2 className="font-black text-[17px] leading-tight min-h-[42px]">{title}</h2>
+              <p className="mt-3 text-xs text-[#5D6873] leading-relaxed min-h-[48px]">{text}</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-xs font-extrabold text-[#FF6A00]">Saiba mais <ArrowRight className="w-3.5 h-3.5" /></span>
+            </a>
+          ))}
+        </div>
       </section>
 
-      <section className="bg-[#F5F7F9] border-y border-[#E2E8F0] py-20"><div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-5"><div className="rounded-[2rem] bg-[#061C2D] text-white p-8 lg:p-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-4">O QUE ENCONTRAMOS</p><h2 className="text-3xl md:text-4xl font-black mb-5">Operação ocupada. Gestão sem visibilidade.</h2><p className="text-slate-300">Leads dispersos, vendas manuais, atendimento sem rastreio, decisões em planilhas e equipes enxutas sobrecarregadas.</p></div><div className="rounded-[2rem] bg-white border border-[#E2E8F0] p-8 lg:p-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-4">O QUE CONSTRUÍMOS</p><h2 className="text-3xl md:text-4xl font-black mb-5">Processo claro. Tecnologia útil. Próxima ação visível.</h2><p className="text-[#5C6B7A]">A GRIT organiza o fluxo, conecta ferramentas e cria indicadores para transformar atividade em gestão e gestão em evolução.</p></div></div></section>
+      <section id="produtos" className="max-w-7xl mx-auto px-4 py-8 md:py-10">
+        <div className="rounded-xl bg-[#061C2D] border border-[#0C2A40] p-5 md:p-7 shadow-xl">
+          <div className="flex items-center justify-center gap-4 mb-5">
+            <span className="h-px w-10 bg-[#FF6A00]" />
+            <p className="text-white text-sm font-black tracking-[0.12em]">NOSSOS PRODUTOS SAAS</p>
+            <span className="h-px w-10 bg-[#FF6A00]" />
+          </div>
+          <div className="grid lg:grid-cols-3 gap-4">
+            {products.map(({ name, subtitle, icon: Icon, description, bullets, href }) => (
+              <article key={name} className="rounded-xl border border-white/10 bg-[#0A1F31] p-6 text-white flex flex-col min-h-[280px]">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl border border-white/10 bg-[#071A2A] grid place-items-center"><Icon className="w-7 h-7 text-[#FF6A00]" /></div>
+                  <div><h3 className="text-xl font-black">{name}</h3><p className="text-sm text-slate-300">{subtitle}</p></div>
+                </div>
+                <p className="text-sm text-slate-200 leading-relaxed mb-4">{description}</p>
+                <ul className="space-y-2 text-sm text-slate-200 mb-5">{bullets.map(item => <li key={item}>• {item}</li>)}</ul>
+                <a href={href} target="_blank" rel="noreferrer" className="mt-auto inline-flex items-center gap-2 text-[#FF6A00] font-extrabold text-sm">Conheça {name} <ArrowRight className="w-4 h-4" /></a>
+              </article>
+            ))}
+          </div>
+          <div className="flex justify-center mt-4"><a href="/produtos/" className="min-w-[280px] text-center border border-[#FF6A00] text-[#FF6A00] px-5 py-3 rounded-md font-extrabold text-sm hover:bg-[#FF6A00] hover:text-white transition-colors">Ver todos os produtos →</a></div>
+        </div>
+      </section>
 
-      <section id="metodo" className="bg-[#061C2D] text-white py-20 lg:py-24"><div className="max-w-7xl mx-auto px-4"><div className="max-w-3xl mb-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">MÉTODO GRIT</p><h2 className="text-4xl md:text-5xl font-black mb-5">Perguntamos antes de automatizar.</h2><p className="text-slate-300 text-lg">Mapeamos antes de integrar. Implantamos antes de celebrar. Medimos antes de prometer.</p></div><div className="grid md:grid-cols-2 lg:grid-cols-5 gap-3">{method.map(([num,title,text])=><article key={num} className="rounded-2xl bg-[#0A2A42] border border-white/10 p-6"><span className="text-3xl font-black text-[#FF6A00]">{num}</span><h3 className="text-lg font-black mt-6 mb-3">{title}</h3><p className="text-sm text-slate-300">{text}</p></article>)}</div></div></section>
+      <section id="insights" className="max-w-7xl mx-auto px-4 pb-10">
+        <div className="flex items-end justify-between gap-4 mb-6">
+          <div><p className="text-[#FF6A00] text-xs font-black tracking-widest">GRIT INSIGHTS</p><h2 className="text-2xl md:text-3xl font-black tracking-[-0.03em]">Conteúdo que gera inteligência e impulsiona resultados.</h2></div>
+          <a href="/insights/" className="hidden sm:inline-flex items-center gap-2 text-[#FF6A00] font-extrabold text-sm">Ver todos os artigos <ArrowRight className="w-4 h-4" /></a>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {(featuredArticles.length ? featuredArticles : articleFallbacks).slice(0, 5).map((item: any, index) => {
+            const article = featuredArticles[index];
+            const FallbackIcon = articleFallbacks[index]?.icon || Target;
+            return (
+              <button key={article?.id || item.title} onClick={() => article && onSelectArticle(article)} className="text-left bg-white border border-[#E3E7EA] rounded-lg overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all">
+                <div className="h-28 bg-gradient-to-br from-[#E8EDF0] to-[#C8D0D7] grid place-items-center"><FallbackIcon className="w-10 h-10 text-[#071B2C]/70" /></div>
+                <div className="p-4">
+                  <p className="text-[9px] text-[#FF6A00] font-black tracking-wide mb-2">{article?.category?.name?.toUpperCase?.() || articleFallbacks[index]?.category}</p>
+                  <h3 className="font-black leading-snug line-clamp-3">{article?.title || articleFallbacks[index]?.title}</h3>
+                  <p className="mt-4 text-xs text-[#6A7480]">Leitura estratégica • GRIT Insights</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
-      <section id="produtos" className="max-w-7xl mx-auto px-4 py-20 lg:py-24"><div className="grid lg:grid-cols-[.8fr_1.2fr] gap-10 items-end mb-10"><div><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">ECOSSISTEMA DE APLICATIVOS</p><h2 className="text-4xl md:text-5xl font-black">Dores repetidas podem virar produtos.</h2></div><p className="text-[#5C6B7A] text-lg">Preservamos os ativos existentes e os conectamos a uma arquitetura de inteligência, aquisição e recorrência.</p></div><div className="grid lg:grid-cols-3 gap-4">{products.map(product=><article key={product.name} className="rounded-3xl border border-[#E2E8F0] overflow-hidden bg-white flex flex-col"><div className="h-2 bg-[#FF6A00]"/><div className="p-7 flex-1 flex flex-col"><p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-3">{product.category.toUpperCase()}</p><h3 className="text-2xl font-black mb-4">{product.name}</h3><p className="text-sm text-[#5C6B7A] mb-7">{product.description}</p><a href={product.href} target="_blank" rel="noreferrer" className="mt-auto font-black text-[#061C2D] hover:text-[#FF6A00] inline-flex gap-2 items-center">Conhecer solução <ArrowRight className="w-4 h-4"/></a></div></article>)}</div></section>
-
-      <section id="insights" className="bg-[#F5F7F9] border-y border-[#E2E8F0] py-20"><div className="max-w-7xl mx-auto px-4"><div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10"><div><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">GRIT INSIGHTS</p><h2 className="text-4xl md:text-5xl font-black">Conteúdo que gera contexto e oportunidade.</h2></div><a href="/insights/" className="font-black inline-flex gap-2 items-center">Explorar Insights <ArrowRight className="w-4 h-4"/></a></div>{featuredArticles.length>0?<div className="grid lg:grid-cols-3 gap-4">{featuredArticles.map(article=><article key={article.id} onClick={()=>onSelectArticle(article)} className="cursor-pointer rounded-3xl bg-white border border-[#E2E8F0] overflow-hidden hover:shadow-xl transition-all"><div className="h-48 bg-[#0A2A42] overflow-hidden">{article.featuredImage&&<img src={article.featuredImage} alt="" className="w-full h-full object-cover"/>}</div><div className="p-6"><p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-3">INSIGHT</p><h3 className="font-black text-lg mb-3 line-clamp-2">{article.title}</h3><p className="text-sm text-[#5C6B7A] line-clamp-2">{article.summary||article.subtitle}</p></div></article>)}</div>:<p className="text-[#5C6B7A]">Hub editorial preparado para conteúdo conectado às soluções GRIT.</p>}</div></section>
-
-      <section id="diagnostico" className="max-w-7xl mx-auto px-4 py-20"><div className="rounded-[2rem] bg-gradient-to-br from-[#FF6A00] to-[#FF8128] p-8 md:p-12 lg:p-14 grid lg:grid-cols-[1.1fr_.9fr] gap-10 items-center"><div><p className="text-[#061C2D] text-xs font-black tracking-widest mb-3">DIAGNÓSTICO GRIT</p><h2 className="text-4xl md:text-5xl text-[#061C2D] font-black mb-5">Conte onde a operação trava.</h2><p className="text-[#5A2A0B] text-lg">Uma conversa objetiva para organizar o problema, identificar prioridades e desenhar um próximo passo executável.</p></div><div className="rounded-3xl bg-white p-7 shadow-xl"><div className="flex items-start gap-3 mb-5"><ShieldCheck className="w-6 h-6 text-[#FF6A00]"/><div><p className="font-black">Sem promessa genérica.</p><p className="text-sm text-[#5C6B7A] mt-1">Começamos pelo processo real e pelo resultado que precisa ser melhorado.</p></div></div><a href="mailto:gritsolucoes@gmail.com?subject=Diagnóstico%20GRIT" onClick={()=>onShowToast('Abrindo seu e-mail para iniciar o diagnóstico GRIT.','info')} className="w-full bg-[#061C2D] text-white font-black px-6 py-4 rounded-xl flex items-center justify-center gap-2">Solicitar diagnóstico <ArrowRight className="w-4 h-4"/></a></div></div></section>
+      <section id="diagnostico" className="bg-[#071A2A] text-white border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-4 gap-5">
+          <div className="flex gap-3"><Target className="w-6 h-6 text-[#FF6A00] shrink-0"/><div><b className="block">Metodologia própria GRIT</b><span className="text-sm text-slate-400">Diagnóstico que revela o que realmente importa.</span></div></div>
+          <div className="flex gap-3"><Boxes className="w-6 h-6 text-[#FF6A00] shrink-0"/><div><b className="block">Soluções para PMEs e grandes empresas</b><span className="text-sm text-slate-400">Do tamanho do seu desafio.</span></div></div>
+          <div className="flex gap-3"><BrainCircuit className="w-6 h-6 text-[#FF6A00] shrink-0"/><div><b className="block">Tecnologia com propósito e resultado</b><span className="text-sm text-slate-400">Ferramentas que geram valor real.</span></div></div>
+          <div className="flex gap-3"><ShieldCheck className="w-6 h-6 text-[#FF6A00] shrink-0"/><div><b className="block">Segurança e governança de dados</b><span className="text-sm text-slate-400">Proteção, conformidade e confiança.</span></div></div>
+        </div>
+      </section>
     </div>
   );
 };
