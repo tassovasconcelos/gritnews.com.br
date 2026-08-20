@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { TrendingUp, Sparkles, Clock, Eye, HeartPulse, PawPrint, Cpu, Truck, Globe, Smile, Lightbulb, Tag, ArrowRight, ShieldCheck, Flame } from 'lucide-react';
+import React from 'react';
+import {
+  ArrowRight,
+  BarChart3,
+  Bot,
+  BrainCircuit,
+  CheckCircle2,
+  ChevronRight,
+  Database,
+  LineChart,
+  Rocket,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Users,
+  Workflow
+} from 'lucide-react';
 import { Article, Category, Partner, Offer, AuthorProfile } from '../../types';
-import { Badge } from '../ui/Badge';
-import { AdBanner } from '../ui/AdBanner';
-import { NewsletterBlock } from '../ui/NewsletterBlock';
-import { OfferCard } from '../ui/OfferCard';
-import { PartnerCard } from '../ui/PartnerCard';
-import { AmazonShopSection } from '../ui/AmazonShopSection';
-import { ArticleShareActions } from '../ui/ArticleShareActions';
 
 interface HomeViewProps {
   articles: Article[];
@@ -24,420 +33,189 @@ interface HomeViewProps {
   onShowToast: (msg: string, type?: 'success' | 'info') => void;
 }
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  HeartPulse,
-  PawPrint,
-  Cpu,
-  Truck,
-  Globe,
-  TrendingUp,
-  Smile,
-  Lightbulb,
-  Tag,
-  Sparkles
-};
+const solutions = [
+  {
+    icon: Target,
+    kicker: 'GROWTH',
+    title: 'Inteligência Comercial',
+    text: 'Prospecção, qualificação, CRM, cadências, WhatsApp, indicadores e organização do funil comercial.'
+  },
+  {
+    icon: LineChart,
+    kicker: 'REVENUE OPS',
+    title: 'Vendas & Oportunidades',
+    text: 'Pipeline, próxima ação, produtividade, territórios, forecast e gestão de oportunidades com mais visibilidade.'
+  },
+  {
+    icon: Users,
+    kicker: 'CUSTOMER',
+    title: 'Atendimento & Pós-venda',
+    text: 'SLA, protocolos, SAC, assistência técnica, qualidade, satisfação, retenção e inteligência sobre a experiência do cliente.'
+  },
+  {
+    icon: Bot,
+    kicker: 'AUTOMAÇÃO',
+    title: 'Automação & IA',
+    text: 'Automatizamos o repetitivo, organizamos informação e usamos IA para apoiar decisões sem retirar a responsabilidade humana.'
+  },
+  {
+    icon: Database,
+    kicker: 'DATA',
+    title: 'Dados, BI & Performance',
+    text: 'Dashboards, integrações, análise de dados e indicadores que conectam atividade operacional a decisão gerencial.'
+  },
+  {
+    icon: Rocket,
+    kicker: 'SAAS',
+    title: 'Produtos GRIT',
+    text: 'Soluções recorrentes nascidas de dores reais e preparadas para evoluir por segmento, maturidade e uso.'
+  }
+];
+
+const products = [
+  {
+    name: 'OportunidadesPro',
+    category: 'Revenue Operations',
+    description: 'Gestão de oportunidades, performance de marketing e acompanhamento comercial em uma operação orientada por dados.',
+    href: 'https://oportunidadespro.gritnews.com.br',
+    cta: 'Conhecer OportunidadesPro'
+  },
+  {
+    name: 'GRIT SAC 4.0',
+    category: 'Atendimento & Pós-venda',
+    description: 'SAC, qualidade, assistência técnica, protocolos, acompanhamento e visão gerencial em um fluxo rastreável.',
+    href: 'https://apps.sacproh.gritnews.com.br',
+    cta: 'Conhecer SAC 4.0'
+  },
+  {
+    name: 'Meu Espetinho',
+    category: 'SaaS para pequenos negócios',
+    description: 'Gestão simples para pedidos, mesas, caixa, clientes e resultados, criada para a realidade de pequenos negócios de alimentação.',
+    href: 'https://meuespetinho.gritnews.com.br',
+    cta: 'Conhecer Meu Espetinho'
+  }
+];
+
+const method = [
+  ['01', 'Diagnóstico', 'Entendemos processo, gargalos, maturidade, objetivo e indicadores antes de indicar tecnologia.'],
+  ['02', 'Desenho', 'Estruturamos fluxo futuro, prioridades, papéis, dados e ferramentas necessárias.'],
+  ['03', 'Implantação', 'Configuramos integrações, regras, automações e o ambiente necessário para a operação.'],
+  ['04', 'Ativação', 'Treinamos o time, acompanhamos adoção e transformamos a solução em rotina real.'],
+  ['05', 'Evolução', 'Medimos, aprendemos e priorizamos novos ganhos de produtividade, inteligência e receita.']
+];
 
 export const HomeView: React.FC<HomeViewProps> = ({
   articles,
   categories,
-  partners,
-  offers,
-  authors,
   onSelectArticle,
   onSelectCategory,
-  onSelectPartner,
-  onSelectAuthor,
-  onNavigateOffers,
-  onOpenLeadModal,
   onShowToast
 }) => {
-  const [trendingPeriod, setTrendingPeriod] = useState<'24h' | '7d' | '30d'>('7d');
+  const featuredArticles = articles.slice(0, 3);
 
-  const featuredHero = articles[0] || articles[0];
-  const sideHeadlines = articles.slice(1, 4);
-  const trendingArticles = articles.slice().sort((a, b) => b.viewsCount - a.viewsCount);
-  const featuredOffers = offers.slice(0, 3);
+  const goToDiagnostic = () => {
+    document.getElementById('diagnostico')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
-    <div className="space-y-12 pb-12">
-      {/* Hero Section */}
-      {featuredHero && (
-        <section className="bg-white border-b border-[#E2E8F0] pt-6 pb-10">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              {/* Main Featured Article */}
-              <div
-                onClick={() => onSelectArticle(featuredHero)}
-                className="lg:col-span-8 group cursor-pointer bg-white rounded-3xl overflow-hidden border border-[#E2E8F0] hover:border-[#145EDB] hover:shadow-2xl transition-all duration-300 flex flex-col"
-              >
-                <div className="relative h-72 md:h-96 overflow-hidden bg-gray-100">
-                  <img
-                    src={featuredHero.featuredImage}
-                    alt=""
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=1200';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B2343]/90 via-[#0B2343]/30 to-transparent" />
-                  <div className="absolute top-4 left-4 flex gap-2">
-                    <Badge variant="orange" size="lg">
-                      DESTAQUE PRINCIPAL
-                    </Badge>
-                    {featuredHero.isEvergreen && (
-                      <Badge variant="navy" size="lg">
-                        EVERGREEN
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="absolute bottom-6 left-6 right-6 text-white">
-                    <div className="flex items-center gap-3 text-xs text-[#EAF3FF] mb-2 font-medium">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {featuredHero.readingTimeMinutes} min de leitura
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-3.5 h-3.5" />
-                        {featuredHero.viewsCount} acessos
-                      </span>
-                    </div>
-                    <h1 className="text-2xl md:text-4xl font-extrabold leading-tight text-white group-hover:text-[#EAF3FF] transition-colors mb-2">
-                      {featuredHero.title}
-                    </h1>
-                  </div>
-                </div>
+    <div className="bg-white text-[#071A2A]">
+      <section className="relative overflow-hidden bg-[#061C2D] text-white">
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_75%_25%,rgba(255,106,0,.28),transparent_32%),radial-gradient(circle_at_70%_80%,rgba(20,94,219,.22),transparent_34%)]" />
+        <div className="relative max-w-7xl mx-auto px-4 py-20 lg:py-28 grid lg:grid-cols-[1.05fr_.95fr] gap-14 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 text-[#FF7A18] text-xs font-black uppercase tracking-[0.18em] mb-6">
+              <Sparkles className="w-4 h-4" />
+              Inteligência comercial • tecnologia • execução
+            </div>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.05em] leading-[0.95] mb-7">
+              Transformamos complexidade em <span className="text-[#FF6A00]">movimento.</span>
+            </h1>
+            <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-2xl mb-8">
+              A GRIT transforma gargalos comerciais e operacionais em processos claros, tecnologia útil e indicadores que orientam a próxima decisão.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 mb-10">
+              <button onClick={goToDiagnostic} className="bg-[#FF6A00] hover:bg-[#e65f00] text-white font-extrabold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-950/20">
+                Conte seu desafio <ArrowRight className="w-4 h-4" />
+              </button>
+              <a href="#solucoes" className="border border-white/25 hover:bg-white/10 text-white font-bold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all">
+                Explorar soluções <ChevronRight className="w-4 h-4" />
+              </a>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-3 text-xs text-slate-300">
+              <div className="flex gap-2 items-start"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0" /><span>Diagnóstico antes da ferramenta.</span></div>
+              <div className="flex gap-2 items-start"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0" /><span>Implantação antes da promessa.</span></div>
+              <div className="flex gap-2 items-start"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0" /><span>Evolução orientada por dados.</span></div>
+            </div>
+          </div>
 
-                <div className="p-6 bg-white flex-1 flex flex-col justify-between">
-                  <div>
-                    <p className="text-[#5C6B7A] text-base leading-relaxed mb-4">
-                      {featuredHero.subtitle}
-                    </p>
-                    <div className="flex items-center justify-between text-xs font-bold text-[#145EDB] mb-4">
-                      <span>Ler matéria completa com dados de mercado</span>
-                      <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                  <ArticleShareActions article={featuredHero} onShowToast={onShowToast} variant="card" />
-                </div>
+          <div className="relative">
+            <div className="rounded-[2rem] border border-white/10 bg-[#0A263B]/80 backdrop-blur p-5 shadow-2xl">
+              <div className="flex items-center justify-between mb-5">
+                <div><p className="text-xs text-slate-400 uppercase tracking-widest font-bold">GRIT Intelligence</p><h3 className="text-xl font-black mt-1">Visão integrada do crescimento</h3></div>
+                <div className="w-10 h-10 rounded-xl bg-[#FF6A00]/15 flex items-center justify-center"><BrainCircuit className="w-5 h-5 text-[#FF6A00]" /></div>
               </div>
-
-              {/* Side Breaking Headlines */}
-              <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
-                  <div className="flex items-center gap-2">
-                    <Flame className="w-5 h-5 text-[#FF8500]" />
-                    <h3 className="text-lg font-bold text-[#0B2343]">Em Destaque Agora</h3>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                {['Aquisição', 'Oportunidades', 'Conversão', 'Recorrência'].map((label, idx) => (
+                  <div key={label} className="rounded-2xl bg-[#071A2A] border border-white/5 p-4">
+                    <p className="text-[11px] text-slate-400 mb-3">{label}</p>
+                    <div className="h-2 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-[#FF6A00]" style={{ width: `${48 + idx * 12}%` }} /></div>
+                    <p className="text-[10px] text-slate-500 mt-2">Dados reais após integração</p>
                   </div>
-                  <span className="text-xs text-[#5C6B7A] font-semibold">Mercados Vivos</span>
-                </div>
-
-                <div className="space-y-4 flex-1">
-                  {sideHeadlines.map(art => (
-                    <div
-                      key={art.id}
-                      onClick={() => onSelectArticle(art)}
-                      className="group cursor-pointer p-4 bg-[#F7F9FC] hover:bg-[#EAF3FF] rounded-2xl border border-[#E2E8F0] hover:border-[#145EDB] transition-all"
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="primary" size="sm">
-                          {categories.find(c => c.id === art.categoryId)?.name || 'Grit News'}
-                        </Badge>
-                        <span className="text-[11px] text-[#5C6B7A]">
-                          {art.readingTimeMinutes} min
-                        </span>
-                      </div>
-                      <h4 className="text-sm font-bold text-[#10233F] group-hover:text-[#145EDB] transition-colors line-clamp-2 leading-snug">
-                        {art.title}
-                      </h4>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Trust Seal Card */}
-                <div className="p-4 bg-gradient-to-r from-[#0B2343] to-[#145EDB] text-white rounded-2xl">
-                  <div className="flex items-center gap-2 mb-1">
-                    <ShieldCheck className="w-4 h-4 text-[#22A06B]" />
-                    <span className="text-xs font-bold text-[#EAF3FF]">Garantia Editorial GRIT NEWS</span>
-                  </div>
-                  <p className="text-xs text-gray-200">
-                    Artigos revisados por especialistas de mercado, fontes verificadas e conformidade com as diretrizes E-E-A-T do Google.
-                  </p>
-                </div>
+                ))}
+              </div>
+              <div className="rounded-2xl bg-white p-5 text-[#071A2A]">
+                <div className="flex items-center justify-between gap-4"><div><p className="text-xs text-[#6B7780]">Princípio GRIT</p><p className="font-black text-lg mt-1">Medimos antes de prometer.</p></div><BarChart3 className="w-8 h-8 text-[#FF6A00]" /></div>
               </div>
             </div>
           </div>
-        </section>
-      )}
-
-      {/* Categories Grid Bar */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-[#0B2343]">Categorias Estratégicas</h2>
-            <p className="text-sm text-[#5C6B7A]">Explore inteligência de mercado setor por setor</p>
-          </div>
         </div>
+      </section>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          {categories.map(cat => {
-            const IconComp = ICON_MAP[cat.iconName] || Tag;
-            return (
-              <div
-                key={cat.id}
-                onClick={() => onSelectCategory(cat.slug)}
-                className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-[#145EDB] rounded-2xl p-4 hover:shadow-md transition-all text-center flex flex-col items-center justify-between"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
-                  style={{ backgroundColor: `${cat.color}15` }}
-                >
-                  <IconComp className="w-6 h-6" style={{ color: cat.color }} />
-                </div>
-                <h4 className="text-sm font-bold text-[#10233F] group-hover:text-[#145EDB] transition-colors mb-1 line-clamp-1">
-                  {cat.name}
-                </h4>
-                <p className="text-[11px] text-[#5C6B7A] line-clamp-1">{cat.description}</p>
-              </div>
-            );
+      <section id="solucoes" className="max-w-7xl mx-auto px-4 py-20 lg:py-24">
+        <div className="grid lg:grid-cols-[.8fr_1.2fr] gap-10 items-end mb-10">
+          <div><p className="text-[#FF6A00] text-xs font-black uppercase tracking-[0.18em] mb-3">Soluções GRIT</p><h2 className="text-4xl md:text-5xl font-black tracking-[-0.04em] leading-tight">Do primeiro sinal à receita.</h2></div>
+          <p className="text-[#5C6B7A] text-lg leading-relaxed">Começamos pelo problema. A solução pode combinar consultoria, processo, CRM, dados, automação, IA, SaaS e acompanhamento conforme a maturidade da operação.</p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {solutions.map(item => {
+            const Icon = item.icon;
+            return <article key={item.title} className="group rounded-3xl border border-[#E2E8F0] bg-white p-7 hover:border-[#FF6A00]/50 hover:shadow-xl transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-[#061C2D] flex items-center justify-center mb-7 group-hover:bg-[#FF6A00] transition-colors"><Icon className="w-5 h-5 text-white" /></div>
+              <p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-2">{item.kicker}</p><h3 className="text-xl font-black mb-3">{item.title}</h3><p className="text-sm text-[#5C6B7A] leading-relaxed">{item.text}</p>
+            </article>;
           })}
         </div>
       </section>
 
-      {/* Ad Placement Top */}
-      <section className="max-w-7xl mx-auto px-4">
-        <AdBanner location="HOME_BETWEEN_BLOCKS" />
-      </section>
-
-      {/* Trending & Period Filters Section */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#E2E8F0]">
-          <div>
-            <h2 className="text-2xl font-bold text-[#0B2343] flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-[#145EDB]" />
-              Notícias Mais Lidas & Análises em Alta
-            </h2>
-            <p className="text-sm text-[#5C6B7A]">
-              O que os tomadores de decisão estão lendo agora
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 bg-[#F7F9FC] p-1 rounded-xl border border-[#E2E8F0]">
-            {(['24h', '7d', '30d'] as const).map(period => (
-              <button
-                key={period}
-                onClick={() => setTrendingPeriod(period)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  trendingPeriod === period
-                    ? 'bg-[#145EDB] text-white shadow-xs'
-                    : 'text-[#5C6B7A] hover:text-[#0B2343]'
-                }`}
-              >
-                {period === '24h' && 'Últimas 24h'}
-                {period === '7d' && 'Esta Semana'}
-                {period === '30d' && 'Este Mês'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trendingArticles.slice(0, 6).map((art, idx) => (
-            <div
-              key={art.id}
-              onClick={() => onSelectArticle(art)}
-              className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-[#145EDB] rounded-2xl overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between"
-            >
-              <div className="relative h-48 overflow-hidden bg-gray-100">
-                <img
-                  src={art.featuredImage}
-                  alt=""
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
-                  }}
-                />
-                <div className="absolute top-3 left-3 bg-[#0B2343] text-white text-xs font-extrabold w-7 h-7 rounded-full flex items-center justify-center border border-white/30">
-                  #{idx + 1}
-                </div>
-                {art.isSponsored && (
-                  <div className="absolute top-3 right-3">
-                    <Badge variant="orange" size="sm">
-                      PATROCINADO
-                    </Badge>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-2 text-xs text-[#5C6B7A]">
-                    <span className="font-semibold text-[#145EDB]">{art.readingTimeMinutes} min</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" />
-                      {art.viewsCount} leituras
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-[#10233F] group-hover:text-[#145EDB] transition-colors mb-2 line-clamp-2">
-                    {art.title}
-                  </h3>
-                  <p className="text-xs text-[#5C6B7A] line-clamp-2 mb-4">
-                    {art.summary}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#145EDB]">
-                    <span>Continuar lendo</span>
-                    <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
-                  </div>
-                  <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
-                </div>
-              </div>
-            </div>
-          ))}
+      <section className="bg-[#F5F7F9] border-y border-[#E2E8F0] py-20 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-5">
+          <div className="rounded-[2rem] bg-[#061C2D] text-white p-8 lg:p-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-4">O QUE ENCONTRAMOS</p><h2 className="text-3xl md:text-4xl font-black tracking-[-0.04em] mb-5">Operação ocupada. Gestão sem visibilidade.</h2><p className="text-slate-300 leading-relaxed">Leads dispersos, vendas manuais, atendimento sem rastreio, decisões em planilhas e equipes enxutas sobrecarregadas.</p></div>
+          <div className="rounded-[2rem] bg-white border border-[#E2E8F0] p-8 lg:p-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-4">O QUE CONSTRUÍMOS</p><h2 className="text-3xl md:text-4xl font-black tracking-[-0.04em] mb-5">Processo claro. Tecnologia útil. Próxima ação visível.</h2><p className="text-[#5C6B7A] leading-relaxed">A GRIT organiza o fluxo, conecta ferramentas e cria indicadores para transformar atividade em gestão e gestão em evolução.</p></div>
         </div>
       </section>
 
-      {/* Curiosidades & Tendências Section */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6 pb-3 border-b border-[#E2E8F0]">
-          <div>
-            <div className="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 font-extrabold px-3 py-1 rounded-full text-xs mb-2">
-              <Lightbulb className="w-3.5 h-3.5" />
-              <span>Seção Curiosidades & Viagens</span>
-            </div>
-            <h2 className="text-2xl font-bold text-[#0B2343]">Curiosidades, Cartões Black & Aviação</h2>
-            <p className="text-sm text-[#5C6B7A]">Guias práticos, bastidores do setor aéreo e estratégias para voar melhor</p>
-          </div>
-          <button
-            onClick={() => onSelectCategory('curiosidades')}
-            className="text-xs font-bold text-[#145EDB] hover:text-[#0B2343] flex items-center gap-1 cursor-pointer"
-          >
-            <span>Ver tudo em Curiosidades</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {articles.filter(a => a.categoryId === 'cat-curiosidades').map(art => (
-            <div
-              key={art.id}
-              onClick={() => onSelectArticle(art)}
-              className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-purple-500 rounded-3xl overflow-hidden hover:shadow-xl transition-all flex flex-col md:flex-row"
-            >
-              <div className="relative md:w-2/5 h-48 md:h-auto overflow-hidden bg-gray-100 shrink-0">
-                <img
-                  src={art.featuredImage}
-                  alt=""
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&q=80&w=800';
-                  }}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-3 left-3">
-                  <Badge variant="navy" size="sm">
-                    CURIOSIDADES
-                  </Badge>
-                </div>
-              </div>
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                    <span className="font-bold text-purple-600">{art.readingTimeMinutes} min de leitura</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" />
-                      {art.viewsCount} acessos
-                    </span>
-                  </div>
-                  <h3 className="text-base font-extrabold text-[#0B2343] group-hover:text-purple-700 transition-colors mb-2 line-clamp-2 leading-snug">
-                    {art.title}
-                  </h3>
-                  <p className="text-xs text-[#5C6B7A] line-clamp-2 mb-4">
-                    {art.summary}
-                  </p>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-purple-600 mb-2">
-                    <span>Ler artigo completo</span>
-                    <ArrowRight className="w-4 h-4 text-[#FF8500] group-hover:translate-x-1 transition-transform" />
-                  </div>
-                  <ArticleShareActions article={art} onShowToast={onShowToast} variant="compact" />
-                </div>
-              </div>
-            </div>
-          ))}
+      <section id="metodo" className="bg-[#061C2D] text-white py-20 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4"><div className="max-w-3xl mb-10"><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">MÉTODO GRIT</p><h2 className="text-4xl md:text-5xl font-black tracking-[-0.04em] mb-5">Perguntamos antes de automatizar.</h2><p className="text-slate-300 text-lg">Mapeamos antes de integrar. Implantamos antes de celebrar. Medimos antes de prometer.</p></div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-3">{method.map(([num, title, text]) => <article key={num} className="rounded-2xl bg-[#0A2A42] border border-white/10 p-6"><span className="text-3xl font-black text-[#FF6A00]">{num}</span><h3 className="text-lg font-black mt-6 mb-3">{title}</h3><p className="text-sm text-slate-300 leading-relaxed">{text}</p></article>)}</div>
         </div>
       </section>
 
-      {/* Amazon Products Showcase Section - Tasso Vasconcelos */}
-      <div className="max-w-7xl mx-auto px-4">
-        <AmazonShopSection onShowToast={onShowToast} />
-      </div>
+      <section id="produtos" className="max-w-7xl mx-auto px-4 py-20 lg:py-24">
+        <div className="grid lg:grid-cols-[.8fr_1.2fr] gap-10 items-end mb-10"><div><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">ECOSSISTEMA DE APLICATIVOS</p><h2 className="text-4xl md:text-5xl font-black tracking-[-0.04em]">Dores repetidas podem virar produtos.</h2></div><p className="text-[#5C6B7A] text-lg">Preservamos os ativos existentes e os conectamos a uma arquitetura de inteligência, aquisição e recorrência.</p></div>
+        <div className="grid lg:grid-cols-3 gap-4">{products.map(product => <article key={product.name} className="rounded-3xl border border-[#E2E8F0] overflow-hidden bg-white flex flex-col"><div className="h-2 bg-[#FF6A00]"/><div className="p-7 flex-1 flex flex-col"><p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-3">{product.category.toUpperCase()}</p><h3 className="text-2xl font-black mb-4">{product.name}</h3><p className="text-sm text-[#5C6B7A] leading-relaxed mb-7">{product.description}</p><a href={product.href} target="_blank" rel="noreferrer" className="mt-auto inline-flex items-center gap-2 font-black text-[#061C2D] hover:text-[#FF6A00] transition-colors">{product.cta}<ArrowRight className="w-4 h-4"/></a></div></article>)}</div>
+      </section>
 
-      {/* Featured B2B Offers Section */}
-      <section className="bg-[#F7F9FC] py-12 border-y border-[#E2E8F0]">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <div>
-              <div className="inline-flex items-center gap-1.5 bg-[#FF8500]/10 text-[#FF8500] font-bold px-3 py-1 rounded-full text-xs mb-2">
-                <Tag className="w-3.5 h-3.5" />
-                <span>Oportunidades & Vantagens Exclusivas</span>
-              </div>
-              <h2 className="text-2xl font-bold text-[#0B2343]">Central de Ofertas B2B GRIT NEWS</h2>
-              <p className="text-sm text-[#5C6B7A]">Softwares, treinamentos e consultorias com cupons e condições especiais</p>
-            </div>
-
-            <button
-              onClick={onNavigateOffers}
-              className="bg-[#145EDB] hover:bg-[#0f4eb8] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md flex items-center gap-2 self-start md:self-auto cursor-pointer"
-            >
-              <span>Ver Todas as Ofertas</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {featuredOffers.map(offer => (
-              <OfferCard
-                key={offer.id}
-                offer={offer}
-                onOpenLeadModal={onOpenLeadModal}
-                onShowToast={onShowToast}
-              />
-            ))}
-          </div>
+      <section id="insights" className="bg-[#F5F7F9] border-y border-[#E2E8F0] py-20 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4"><div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10"><div><p className="text-[#FF6A00] text-xs font-black tracking-widest mb-3">GRIT INSIGHTS</p><h2 className="text-4xl md:text-5xl font-black tracking-[-0.04em]">Conteúdo que gera contexto e oportunidade.</h2></div><button onClick={() => categories[0] && onSelectCategory(categories[0].slug)} className="text-sm font-black text-[#061C2D] inline-flex items-center gap-2">Explorar inteligência <ArrowRight className="w-4 h-4"/></button></div>
+          {featuredArticles.length > 0 ? <div className="grid lg:grid-cols-3 gap-4">{featuredArticles.map(article => <article key={article.id} onClick={() => onSelectArticle(article)} className="cursor-pointer rounded-3xl bg-white border border-[#E2E8F0] overflow-hidden hover:shadow-xl transition-all group"><div className="h-48 bg-[#0A2A42] overflow-hidden">{article.featuredImage && <img src={article.featuredImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>}</div><div className="p-6"><p className="text-[11px] text-[#FF6A00] font-black tracking-widest mb-3">INSIGHT</p><h3 className="font-black text-lg leading-snug mb-3 line-clamp-2">{article.title}</h3><p className="text-sm text-[#5C6B7A] line-clamp-2">{article.summary || article.subtitle}</p></div></article>)}</div> : <div className="rounded-3xl bg-white border border-[#E2E8F0] p-8"><p className="text-[#5C6B7A]">O hub editorial está preparado para receber artigos conectados aos clusters de inteligência comercial, vendas, atendimento, SaaS, automação, IA, dados e gestão PME.</p></div>}
         </div>
       </section>
 
-      {/* Strategic Partners Section */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-[#0B2343]">Parceiros Estratégicos GRIT</h2>
-            <p className="text-sm text-[#5C6B7A]">Empresas líderes que impulsionam o ecossistema de inovação</p>
-          </div>
+      <section id="diagnostico" className="max-w-7xl mx-auto px-4 py-20 lg:py-24">
+        <div className="rounded-[2rem] bg-gradient-to-br from-[#FF6A00] to-[#FF8128] p-8 md:p-12 lg:p-14 grid lg:grid-cols-[1.1fr_.9fr] gap-10 items-center">
+          <div><p className="text-[#061C2D] text-xs font-black tracking-widest mb-3">DIAGNÓSTICO GRIT</p><h2 className="text-4xl md:text-5xl text-[#061C2D] font-black tracking-[-0.04em] mb-5">Conte onde a operação trava.</h2><p className="text-[#5A2A0B] text-lg leading-relaxed">Uma conversa objetiva para organizar o problema, identificar prioridades e desenhar um próximo passo executável.</p></div>
+          <div className="rounded-3xl bg-white p-7 shadow-xl"><div className="flex items-start gap-3 mb-5"><ShieldCheck className="w-6 h-6 text-[#FF6A00] shrink-0"/><div><p className="font-black">Sem promessa genérica.</p><p className="text-sm text-[#5C6B7A] mt-1">Começamos pelo processo real e pelo resultado que precisa ser melhorado.</p></div></div><a href="mailto:gritsolucoes@gmail.com?subject=Diagnóstico%20GRIT" onClick={() => onShowToast('Abrindo seu e-mail para iniciar o diagnóstico GRIT.', 'info')} className="w-full bg-[#061C2D] hover:bg-[#0A2A42] text-white font-black px-6 py-4 rounded-xl flex items-center justify-center gap-2">Solicitar diagnóstico <ArrowRight className="w-4 h-4"/></a></div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {partners.map(partner => (
-            <PartnerCard
-              key={partner.id}
-              partner={partner}
-              onSelectPartner={onSelectPartner}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Newsletter Capture Section */}
-      <section className="max-w-7xl mx-auto px-4">
-        <NewsletterBlock sourcePage="Home" onSuccessToast={onShowToast} />
       </section>
     </div>
   );
