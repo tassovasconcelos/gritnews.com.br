@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldCheck, ArrowUpRight, Lock, FileText, Mail, Heart, Rss } from 'lucide-react';
 import { Category } from '../../types';
-import { GritNewsLogo } from '../ui/GritNewsLogo';
+import { GritBrandLogo } from '../ui/GritBrandLogo';
 
 interface FooterProps {
   categories: Category[];
@@ -35,17 +35,17 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenContactModal
 }) => {
   return (
-    <footer className="bg-[#0D182A] text-white pt-12 pb-8 border-t border-[#146EF5]/30">
+    <footer className="bg-[#0A1930] text-white pt-12 pb-8 border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-white/10">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <GritNewsLogo variant="footer" size="lg" showSlogan={true} />
+            <GritBrandLogo variant="light" size="lg" />
             <p className="text-sm text-[#F1F5F9] opacity-80 leading-relaxed max-w-sm">
-              Plataforma de inteligência de mercado que conecta notícias, análises estratégicas, ofertas exclusivas e oportunidades de negócios no ecossistema GRIT.
+              Inteligência comercial, tecnologia e execução prática para transformar desafios em processos claros e resultados mensuráveis.
             </p>
             <div className="flex items-center gap-2 text-xs text-[#F1F5F9] font-medium pt-1">
-              <ShieldCheck className="w-4 h-4 text-[#146EF5]" />
+              <ShieldCheck className="w-4 h-4 text-[#FB7A18]" />
               <span>Domínio oficial: <strong>gritnews.com.br</strong></span>
             </div>
           </div>
@@ -214,11 +214,12 @@ export const Footer: React.FC<FooterProps> = ({
             </p>
             <button
               onClick={onOpenContactModal || onNavigateOffers}
-              className="bg-[#FF8A00] hover:bg-[#e07900] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+              className="bg-[#FB7A18] hover:bg-[#e66b0b] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <span>Seja Parceiro / Patrocinador</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
+            <img src="/brand/grit/seal/grit-carimbo-oficial.svg" alt="Selo oficial GRIT" className="w-28 h-28 mt-6 object-contain" />
           </div>
         </div>
 

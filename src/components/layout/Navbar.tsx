@@ -46,12 +46,12 @@ export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, 
   const goInsights = () => goSection('insights');
 
   return (
-    <header className="sticky top-0 z-50 bg-[#061C2D] text-white border-b border-white/10 shadow-xl">
-      <div className="border-b border-white/10 bg-[#041522]">
+    <header className="sticky top-0 z-50 bg-[#0A1930] text-white border-b border-white/10 shadow-xl">
+      <div className="border-b border-white/10 bg-[#071426]">
         <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between gap-4 text-[11px]">
-          <button onClick={goInsights} className="flex items-center gap-2 font-bold tracking-wide hover:text-[#FF6A00] transition-colors">
-            <Newspaper className="w-3.5 h-3.5 text-[#FF6A00]" />
-            <span className="text-[#FF6A00]">GRIT INSIGHTS</span>
+          <button onClick={goInsights} className="flex items-center gap-2 font-bold tracking-wide hover:text-[#FB7A18] transition-colors">
+            <Newspaper className="w-3.5 h-3.5 text-[#FB7A18]" />
+            <span className="text-[#FB7A18]">GRIT INSIGHTS</span>
             <span className="hidden sm:inline text-slate-400 font-medium">Inteligência que gera oportunidades</span>
           </button>
           <div className="hidden md:flex items-center gap-4 text-slate-400">
@@ -65,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, 
         <GritBrandLogo variant="light" size="md" onClick={onNavigateHome} />
 
         <nav className="hidden lg:flex items-center gap-1 text-sm font-bold text-slate-200">
-          <button onClick={onNavigateHome} className="px-3 py-2 rounded-lg text-[#FF6A00]">Início</button>
+          <button onClick={onNavigateHome} className="px-3 py-2 rounded-lg text-[#FB7A18]">Início</button>
           <button onClick={() => goSection('solucoes')} className="px-3 py-2 rounded-lg hover:text-[#FF6A00] hover:bg-white/5">Soluções</button>
           <button onClick={() => goSection('metodo')} className="px-3 py-2 rounded-lg hover:text-[#FF6A00] hover:bg-white/5">Método</button>
           <button onClick={() => goSection('produtos')} className="px-3 py-2 rounded-lg hover:text-[#FF6A00] hover:bg-white/5">Produtos</button>
@@ -95,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, 
             <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscar Insights..." className="w-48 pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/15 text-xs text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-[#FF6A00]/30" />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           </form>
-          <button onClick={() => goSection('diagnostico')} className="bg-[#FF6A00] hover:bg-[#E95F00] text-white font-extrabold text-sm px-5 py-3 rounded-xl transition-colors shadow-[0_8px_30px_rgba(255,106,0,.25)]">Diagnóstico GRIT</button>
+          <button onClick={() => goSection('diagnostico')} className="bg-[#FB7A18] hover:bg-[#e66b0b] text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors">Diagnóstico GRIT</button>
         </div>
 
         <button onClick={() => setMobileMenuOpen(v => !v)} className="lg:hidden w-11 h-11 rounded-xl border border-white/20 grid place-items-center" aria-label="Abrir menu">{mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}</button>
