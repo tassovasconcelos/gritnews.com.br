@@ -207,7 +207,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <button key={article?.id || item.title} onClick={() => article && onSelectArticle(article)} className="text-left bg-white border border-[#E3E7EA] rounded-lg overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all">
                 <div className="h-28 bg-gradient-to-br from-[#F7F5F3] to-[#E8EDF0] grid place-items-center"><img src={`/brand/grit/icons/grit-icon-${fallbackIcon}.svg`} alt="" className="w-12 h-12" /></div>
                 <div className="p-4">
-                  <p className="text-[9px] text-[#FF6A00] font-black tracking-wide mb-2">{article?.category?.name?.toUpperCase?.() || articleFallbacks[index]?.category}</p>
+                  <p className="text-[9px] text-[#FF6A00] font-black tracking-wide mb-2">{articleFallbacks[index]?.category || 'INSIGHTS'}</p>
                   <h3 className="font-black leading-snug line-clamp-3">{article?.title || articleFallbacks[index]?.title}</h3>
                   <p className="mt-4 text-xs text-[#6A7480]">Leitura estratégica • GRIT Insights</p>
                 </div>
@@ -225,3 +225,4 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
+
