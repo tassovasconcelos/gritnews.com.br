@@ -27,8 +27,18 @@ export type Order = {
   openedAt: string;
   items: OrderItem[];
   status: 'open' | 'paid';
+  chargedTotal?: number;
+  serviceFee?: number;
+  servicePercent?: number;
 };
-export type Settings = { businessName: string; address: string; whatsapp: string; logoUrl?: string };
+export type Settings = {
+  businessName: string;
+  address: string;
+  whatsapp: string;
+  logoUrl?: string;
+  serviceChargeEnabled: boolean;
+  serviceChargePercent: number;
+};
 
 const LEGACY_KEY = 'meu-espetinho-v1';
 const ACTIVE_TENANT_KEY = 'meu-espetinho-active-tenant';
@@ -42,7 +52,7 @@ export type AppState = {
 
 const initial: AppState = {
   onboarded: false,
-  settings: { businessName: 'Meu Espetinho', address: '', whatsapp: '' },
+  settings: { businessName: 'Meu Espetinho', address: '', whatsapp: '', serviceChargeEnabled: false, serviceChargePercent: 10 },
   products: [
     { id: 'carne', name: 'Carne', price: 10, category: 'Espetinhos', active: true, stockQty: 0 },
     { id: 'frango', name: 'Frango', price: 8, category: 'Espetinhos', active: true, stockQty: 0 },
@@ -67,7 +77,13 @@ export function loadState(): AppState {
     const key = storageKey();
     if (!key) return initial;
     const raw = localStorage.getItem(key);
-    return raw ? { ...initial, ...JSON.parse(raw) } : initial;
+    if (!raw) return initial;
+    const parsed = JSON.parse(raw);
+    return {
+      ...initial,
+      ...parsed,
+      settings: { ...initial.settings, ...(parsed.settings || {}) },
+    };
   } catch {
     return initial;
   }
