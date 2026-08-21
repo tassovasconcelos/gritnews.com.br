@@ -36,8 +36,8 @@ export type Settings = {
   address: string;
   whatsapp: string;
   logoUrl?: string;
-  serviceChargeEnabled: boolean;
-  serviceChargePercent: number;
+  serviceChargeEnabled?: boolean;
+  serviceChargePercent?: number;
 };
 
 const LEGACY_KEY = 'meu-espetinho-v1';
