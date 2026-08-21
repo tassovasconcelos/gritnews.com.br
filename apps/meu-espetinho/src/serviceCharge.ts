@@ -1,8 +1,8 @@
 import { supabase } from './lib/supabase';
 
-export type ServiceChargeConfig={enabled:boolean;percent:number};
+export type ServiceChargeConfig={enabled?:boolean;percent?:number};
 
-export async function loadServiceCharge(tenantId:string):Promise<ServiceChargeConfig>{
+export async function loadServiceCharge(tenantId:string):Promise<{enabled:boolean;percent:number}>{
  if(!supabase)return{enabled:false,percent:10};
  const{data,error}=await supabase.from('tenants').select('service_charge_enabled,service_charge_percent').eq('id',tenantId).single();
  if(error||!data)return{enabled:false,percent:10};
@@ -12,7 +12,7 @@ export async function loadServiceCharge(tenantId:string):Promise<ServiceChargeCo
 export async function saveServiceCharge(tenantId:string,config:ServiceChargeConfig){
  if(!supabase)return false;
  const percent=Math.min(30,Math.max(0,Number(config.percent)||0));
- const{error}=await supabase.from('tenants').update({service_charge_enabled:config.enabled,service_charge_percent:percent}).eq('id',tenantId);
+ const{error}=await supabase.from('tenants').update({service_charge_enabled:Boolean(config.enabled),service_charge_percent:percent}).eq('id',tenantId);
  return !error;
 }
 
