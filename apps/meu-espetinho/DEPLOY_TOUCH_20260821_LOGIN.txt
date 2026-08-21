@@ -1,0 +1,3 @@
+Meu Espetinho production login hotfix marker.
+Purpose: force Hostinger native GitHub deployment after the client/admin login isolation fix.
+Date: 2026-08-21
