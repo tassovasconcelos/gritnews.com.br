@@ -4,6 +4,13 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '17 */6 * * *'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ops/sites.json'
+      - 'apps/gritnews/public/**'
+      - 'apps/meu-espetinho/public/**'
+      - '.github/workflows/site-governance.yml'
   push:
     branches: [main]
     paths:
