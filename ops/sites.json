@@ -1,0 +1,23 @@
+[
+  {
+    "name": "GRIT News",
+    "url": "https://gritnews.com.br",
+    "sitemap": "https://gritnews.com.br/sitemap.xml",
+    "robots": "https://gritnews.com.br/robots.txt",
+    "public_index": true,
+    "search_console_property": "sc-domain:gritnews.com.br"
+  },
+  {
+    "name": "Meu Espetinho",
+    "url": "https://meuespetinho.gritnews.com.br",
+    "sitemap": "https://meuespetinho.gritnews.com.br/sitemap.xml",
+    "robots": "https://meuespetinho.gritnews.com.br/robots.txt",
+    "public_index": true,
+    "search_console_property": "sc-domain:gritnews.com.br"
+  },
+  {
+    "name": "SAC ProH",
+    "url": "https://apps.sacproh.gritnews.com.br",
+    "public_index": false
+  }
+]

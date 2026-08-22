@@ -1,0 +1,131 @@
+name: Site Governance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ops/sites.json'
+      - 'ops/search_console.py'
+      - 'apps/gritnews/public/**'
+      - 'apps/meu-espetinho/public/**'
+      - '.github/workflows/site-governance.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ops/sites.json'
+      - 'ops/search_console.py'
+      - 'apps/gritnews/public/**'
+      - 'apps/meu-espetinho/public/**'
+      - '.github/workflows/site-governance.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  health-and-seo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check site availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -c '.[]' ops/sites.json | while read -r site; do
+            name=$(jq -r '.name' <<<"$site")
+            url=$(jq -r '.url' <<<"$site")
+            echo "Checking $name -> $url"
+
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' \
+              --retry 2 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 20 --max-time 45 "$url") || {
+                echo "::error title=Site connection failure::$name could not be reached after retries ($url)"
+                exit 1
+              }
+
+            if [[ "$code" -lt 200 || "$code" -ge 400 ]]; then
+              echo "::error title=Site unavailable::$name returned HTTP $code ($url)"
+              exit 1
+            fi
+          done
+
+      - name: Validate robots and sitemaps for public sites
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -c '.[] | select(.public_index == true)' ops/sites.json | while read -r site; do
+            name=$(jq -r '.name' <<<"$site")
+            robots=$(jq -r '.robots' <<<"$site")
+            sitemap=$(jq -r '.sitemap' <<<"$site")
+
+            echo "Validating SEO discovery for $name"
+            robots_body=$(curl -L -fsS \
+              --retry 2 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 20 --max-time 45 "$robots")
+            sitemap_body=$(curl -L -fsS \
+              --retry 2 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 20 --max-time 45 "$sitemap")
+
+            grep -qi '^User-agent:' <<<"$robots_body" || {
+              echo "::error title=Invalid robots.txt::$robots has no User-agent directive"; exit 1;
+            }
+            grep -Fqi "$sitemap" <<<"$robots_body" || {
+              echo "::warning title=Sitemap not declared::$robots does not reference $sitemap";
+            }
+            grep -Eq '<(urlset|sitemapindex)([ >])' <<<"$sitemap_body" || {
+              echo "::error title=Invalid sitemap::$sitemap is not a valid sitemap document"; exit 1;
+            }
+          done
+
+      - name: Report security headers
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -c '.[]' ops/sites.json | while read -r site; do
+            name=$(jq -r '.name' <<<"$site")
+            url=$(jq -r '.url' <<<"$site")
+            headers=$(curl -L -sSI \
+              --retry 2 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 20 --max-time 45 "$url" | tr -d '\r') || {
+                echo "::warning title=Security header check failed::$name headers could not be read"
+                continue
+              }
+            echo "--- $name ---"
+            for header in x-content-type-options referrer-policy content-security-policy strict-transport-security permissions-policy; do
+              if grep -qi "^${header}:" <<<"$headers"; then
+                grep -i "^${header}:" <<<"$headers" | tail -1
+              else
+                echo "::warning title=Security header missing::$name does not expose $header"
+              fi
+            done
+          done
+
+      - name: Authenticate to Google Cloud with GitHub OIDC
+        if: github.event_name != 'pull_request'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/785282249475/locations/global/workloadIdentityPools/github-grit/providers/github-grit
+          service_account: grit-search-console@gen-lang-client-0354992661.iam.gserviceaccount.com
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Prepare Search Console client
+        if: github.event_name != 'pull_request'
+        run: python -m pip install --disable-pip-version-check google-auth requests
+
+      - name: Submit sitemaps to Google Search Console
+        if: github.event_name != 'pull_request'
+        run: python ops/search_console.py
+
+      - name: Summary
+        run: |
+          echo '### Site Governance' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Availability checked with automatic retries for all inventoried sites.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- robots.txt and sitemap validated for public/indexable sites.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Security headers inspected and missing headers reported as warnings.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Google Search Console uses GitHub OIDC + Workload Identity Federation; no long-lived JSON key is required.' >> "$GITHUB_STEP_SUMMARY"
