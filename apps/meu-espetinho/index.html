@@ -31,8 +31,21 @@
     <meta name="twitter:title" content="Meu Espetinho | Sistema simples para vender e controlar" />
     <meta name="twitter:description" content="PDV, comandas, clientes, fiado, equipe, caixa e lista de compras para espetinhos, churrasquinhos, trailers e pequenos negócios." />
     <meta name="twitter:image" content="https://meuespetinho.gritnews.com.br/logo-meu-espetinho-v3.svg" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Meu Espetinho","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://meuespetinho.gritnews.com.br/","publisher":{"@type":"Organization","name":"GRIT"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Meu Espetinho","applicationCategory":"BusinessApplication","operatingSystem":"Web, Android, iOS","url":"https://meuespetinho.gritnews.com.br/","publisher":{"@type":"Organization","name":"GRIT"}}</script>
     <title>Meu Espetinho | Sistema para Espetinho, Comanda Digital e PDV</title>
   </head>
-  <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>
+  <body>
+    <div id="root"></div>
+    <script>
+      (function(){
+        try{
+          var c=window.Capacitor;
+          if(c&&typeof c.isNativePlatform==='function'&&c.isNativePlatform()&&(location.pathname==='/'||location.pathname==='')){
+            history.replaceState({},'', '/app');
+          }
+        }catch(e){}
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
