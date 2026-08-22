@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'ops/sites.json'
+      - 'ops/search_console.py'
       - 'apps/gritnews/public/**'
       - 'apps/meu-espetinho/public/**'
       - '.github/workflows/site-governance.yml'
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - 'ops/sites.json'
+      - 'ops/search_console.py'
       - 'apps/gritnews/public/**'
       - 'apps/meu-espetinho/public/**'
       - '.github/workflows/site-governance.yml'
@@ -86,10 +88,26 @@ jobs:
             done
           done
 
+      - name: Prepare Search Console client
+        if: github.event_name != 'pull_request' && secrets.GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON != ''
+        run: python -m pip install --disable-pip-version-check google-auth requests
+
+      - name: Submit sitemaps to Google Search Console
+        if: github.event_name != 'pull_request' && secrets.GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON != ''
+        env:
+          GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON }}
+        run: python ops/search_console.py
+
+      - name: Search Console credential status
+        if: github.event_name != 'pull_request' && secrets.GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON == ''
+        run: |
+          echo '::warning title=Search Console not authenticated::Repository secret GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON is not configured.'
+          echo '- ⚠️ Search Console API pending: configure `GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON`.' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Summary
         run: |
           echo '### Site Governance' >> "$GITHUB_STEP_SUMMARY"
           echo '- Availability checked for all inventoried sites.' >> "$GITHUB_STEP_SUMMARY"
           echo '- robots.txt and sitemap validated for public/indexable sites.' >> "$GITHUB_STEP_SUMMARY"
           echo '- Security headers inspected and missing headers reported as warnings.' >> "$GITHUB_STEP_SUMMARY"
-          echo '- Search Console submission should use authenticated Search Console API; Google sitemap ping is deprecated.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Authenticated Search Console submission is enabled when the repository secret is configured.' >> "$GITHUB_STEP_SUMMARY"
