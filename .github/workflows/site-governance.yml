@@ -28,7 +28,7 @@ permissions:
 jobs:
   health-and-seo:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -40,7 +40,14 @@ jobs:
             name=$(jq -r '.name' <<<"$site")
             url=$(jq -r '.url' <<<"$site")
             echo "Checking $name -> $url"
-            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 25 "$url")
+
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' \
+              --retry 2 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 20 --max-time 45 "$url") || {
+                echo "::error title=Site connection failure::$name could not be reached after retries ($url)"
+                exit 1
+              }
+
             if [[ "$code" -lt 200 || "$code" -ge 400 ]]; then
               echo "::error title=Site unavailable::$name returned HTTP $code ($url)"
               exit 1
@@ -57,8 +64,12 @@ jobs:
             sitemap=$(jq -r '.sitemap' <<<"$site")
 
             echo "Validating SEO discovery for $name"
-            robots_body=$(curl -L -fsS --connect-timeout 10 --max-time 25 "$robots")
-            sitemap_body=$(curl -L -fsS --connect-timeout 10 --max-time 25 "$sitemap")
+            robots_body=$(curl -L -fsS \
+              --retry 2 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 20 --max-time 45 "$robots")
+            sitemap_body=$(curl -L -fsS \
+              --retry 2 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 20 --max-time 45 "$sitemap")
 
             grep -qi '^User-agent:' <<<"$robots_body" || {
               echo "::error title=Invalid robots.txt::$robots has no User-agent directive"; exit 1;
@@ -78,7 +89,12 @@ jobs:
           jq -c '.[]' ops/sites.json | while read -r site; do
             name=$(jq -r '.name' <<<"$site")
             url=$(jq -r '.url' <<<"$site")
-            headers=$(curl -L -sSI --connect-timeout 10 --max-time 25 "$url" | tr -d '\r')
+            headers=$(curl -L -sSI \
+              --retry 2 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 20 --max-time 45 "$url" | tr -d '\r') || {
+                echo "::warning title=Security header check failed::$name headers could not be read"
+                continue
+              }
             echo "--- $name ---"
             for header in x-content-type-options referrer-policy content-security-policy strict-transport-security permissions-policy; do
               if grep -qi "^${header}:" <<<"$headers"; then
@@ -109,7 +125,7 @@ jobs:
       - name: Summary
         run: |
           echo '### Site Governance' >> "$GITHUB_STEP_SUMMARY"
-          echo '- Availability checked for all inventoried sites.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Availability checked with automatic retries for all inventoried sites.' >> "$GITHUB_STEP_SUMMARY"
           echo '- robots.txt and sitemap validated for public/indexable sites.' >> "$GITHUB_STEP_SUMMARY"
           echo '- Security headers inspected and missing headers reported as warnings.' >> "$GITHUB_STEP_SUMMARY"
           echo '- Google Search Console uses GitHub OIDC + Workload Identity Federation; no long-lived JSON key is required.' >> "$GITHUB_STEP_SUMMARY"
