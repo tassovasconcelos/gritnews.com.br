@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-08-23T10:02:40Z",
+  "summary": {"healthy": 0, "warning": 3, "down": 0, "domain_pending": 1},
+  "sites": [
+    {"id":"gritnews","name":"GRIT News","status":"warning","http_status":200,"response_ms":335,"ssl_days":null,"issues":["robots.txt sem referência explícita ao sitemap"]},
+    {"id":"meu-espetinho","name":"Meu Espetinho","status":"warning","http_status":200,"response_ms":1192,"ssl_days":null,"issues":["Headers de segurança precisam ser reforçados"]},
+    {"id":"sac-proh","name":"SAC ProH","status":"warning","http_status":200,"response_ms":187,"ssl_days":null,"issues":["Headers de segurança precisam ser revisados no edge"]},
+    {"id":"moacir-rocha","name":"Moacir Rocha Advocacia","status":"warning","http_status":200,"response_ms":1182,"ssl_days":null,"issues":["Headers de segurança precisam ser revisados no edge"]},
+    {"id":"oportunidades-procirurgica","name":"Oportunidades Procirúrgica","status":"domain_pending","http_status":null,"response_ms":null,"ssl_days":null,"issues":["Domínio de produção pendente de confirmação"]}
+  ]
+}
