@@ -23,15 +23,46 @@
   </style>
 </head>
 <body>
-<header><div class="wrap nav"><div class="brand">GRIT <span>SOLUÇÕES</span></div><a href="https://www.gritnews.com.br/">GRIT News</a></div></header>
+<header><div class="wrap nav"><div class="brand">GRIT <span>SOLUÇÕES</span></div><a data-track-link href="https://www.gritnews.com.br/">GRIT News</a></div></header>
 <main>
 <section class="hero"><div class="wrap"><h1>Tecnologia prática para impulsionar o crescimento.</h1><p>Soluções GRIT construídas para simplificar a operação comercial, melhorar a gestão e dar mais produtividade a pequenos e médios negócios.</p></div></section>
 <section class="section"><div class="wrap"><h2>Produtos comerciais GRIT</h2><p class="lead">Cada produto resolve uma dor específica, mas todos seguem a mesma lógica: facilidade de uso, visão gerencial e foco em resultado.</p><div class="grid">
-<article class="card"><div class="tag">Food service</div><h3>Meu Espetinho</h3><p>Gestão simples para espetinhos, bares e pequenos negócios de alimentação: vendas, comandas, caixa, estoque, CMV e indicadores.</p><a class="btn" href="https://meuespetinho.gritnews.com.br/">Conhecer o Meu Espetinho</a></article>
-<article class="card"><div class="tag">Varejo</div><h3>Sr. Padeiro</h3><p>Operação leve para padarias e mercadinhos, com PDV, caixa, estoque, fiado e gestão pelo celular.</p><a class="btn" href="https://srpadeiro.gritnews.com.br/">Conhecer o Sr. Padeiro</a></article>
-<article class="card"><div class="tag">Vendas B2B</div><h3>GRIT Propostas</h3><p>Criação de propostas profissionais com acompanhamento da negociação, próxima ação e conversão em oportunidade.</p><a class="btn" href="https://www.gritnews.com.br/produtos/grit-propostas/">Conhecer o GRIT Propostas</a></article>
+<article class="card"><div class="tag">Food service</div><h3>Meu Espetinho</h3><p>Gestão simples para espetinhos, bares e pequenos negócios de alimentação: vendas, comandas, caixa, estoque, CMV e indicadores.</p><a class="btn" data-track-link data-product="meu-espetinho" href="https://meuespetinho.gritnews.com.br/">Conhecer o Meu Espetinho</a></article>
+<article class="card"><div class="tag">Varejo</div><h3>Sr. Padeiro</h3><p>Operação leve para padarias e mercadinhos, com PDV, caixa, estoque, fiado e gestão pelo celular.</p><a class="btn" data-track-link data-product="sr-padeiro" href="https://srpadeiro.gritnews.com.br/">Conhecer o Sr. Padeiro</a></article>
+<article class="card"><div class="tag">Vendas B2B</div><h3>GRIT Propostas</h3><p>Criação de propostas profissionais com acompanhamento da negociação, próxima ação e conversão em oportunidade.</p><a class="btn" data-track-link data-product="grit-propostas" href="https://www.gritnews.com.br/produtos/grit-propostas/">Conhecer o GRIT Propostas</a></article>
 </div></div></section>
-<section class="cta"><div class="wrap"><div class="cta-box"><h2>Precisa de uma solução para sua operação?</h2><p class="lead">A GRIT combina inteligência comercial, tecnologia e execução para estruturar processos com foco em crescimento.</p><a class="btn" href="mailto:contato@gritnews.com.br?subject=Interesse%20comercial%20GRIT">Falar com a GRIT</a></div></div></section>
+<section class="cta"><div class="wrap"><div class="cta-box"><h2>Precisa de uma solução para sua operação?</h2><p class="lead">A GRIT combina inteligência comercial, tecnologia e execução para estruturar processos com foco em crescimento.</p><a class="btn" id="grit-contact" href="mailto:contato@gritnews.com.br?subject=Interesse%20comercial%20GRIT">Falar com a GRIT</a></div></div></section>
 </main>
 <footer class="footer"><div class="wrap">GRIT Soluções e Negócios · Impulsionando o crescimento · contato@gritnews.com.br</div></footer>
+<script>
+(function(){
+  const KEYS=['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'];
+  const params=new URLSearchParams(location.search);
+  const saved={};
+  KEYS.forEach(k=>{
+    const value=params.get(k);
+    if(value) localStorage.setItem('grit_'+k,value);
+    const stored=value||localStorage.getItem('grit_'+k);
+    if(stored) saved[k]=stored;
+  });
+  if(!localStorage.getItem('grit_first_landing')) localStorage.setItem('grit_first_landing',location.href);
+  localStorage.setItem('grit_last_landing',location.href);
+  document.querySelectorAll('[data-track-link]').forEach(link=>{
+    try{
+      const url=new URL(link.href,location.origin);
+      Object.entries(saved).forEach(([k,v])=>url.searchParams.set(k,v));
+      const product=link.dataset.product;
+      if(product) url.searchParams.set('grit_product',product);
+      url.searchParams.set('grit_origin','products-hub');
+      link.href=url.toString();
+    }catch(e){}
+  });
+  const contact=document.getElementById('grit-contact');
+  if(contact){
+    const attribution=Object.entries(saved).map(([k,v])=>k+'='+v).join(' | ');
+    const body='Olá, tenho interesse nas soluções GRIT.'+(attribution?'\n\nOrigem: '+attribution:'')+'\nPágina: '+location.href;
+    contact.href='mailto:contato@gritnews.com.br?subject='+encodeURIComponent('Interesse comercial GRIT')+'&body='+encodeURIComponent(body);
+  }
+})();
+</script>
 </body></html>
