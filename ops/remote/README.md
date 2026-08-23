@@ -1,5 +1,15 @@
 # GRIT Remote Ops Kit
 
+## Preparar o ambiente completo
+
+Com Node.js e pnpm 11 disponíveis no PATH, execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File ops/remote/setup-environment.ps1
+```
+
+O script instala os workspaces, compila o portal GRIT, GRIT News e Meu Espetinho e termina validando os domínios publicados. Credenciais continuam fora do repositório e devem ser fornecidas pelo Vault ou por um `.env` local ignorado pelo Git.
+
 Este kit organiza a operação do ecossistema GRIT a partir de um notebook remoto, sem expor segredos no frontend.
 
 ## Objetivo
