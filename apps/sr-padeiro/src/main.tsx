@@ -4,6 +4,7 @@ import App from './App';
 import { initTracking } from './lib/tracking';
 import './styles.css';
 import './workspace.css';
+import './landing-v2.css';
 
 initTracking();
 
