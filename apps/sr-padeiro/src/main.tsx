@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { initTracking } from './lib/tracking';
 import './styles.css';
+import './workspace.css';
 
 initTracking();
 
