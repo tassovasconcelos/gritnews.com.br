@@ -1,0 +1,7 @@
+{
+  "app": "meu-espetinho",
+  "release": "grit-control-center-v1",
+  "control_center": true,
+  "crm_multi_app": true,
+  "routes": ["/admin", "/admin/apps", "/admin/apps/leads"]
+}
