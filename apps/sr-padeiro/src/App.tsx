@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Auth from './Auth';
 import Landing from './Landing';
+import SeoLanding,{isSeoPath} from './SeoLanding';
 import Admin from './Admin';
 import Onboarding from './Onboarding';
 import Workspace from './Workspace';
@@ -28,6 +29,7 @@ export default function App() {
   }
   useEffect(()=>{supabase.auth.getSession().then(({data})=>hydrate(data.session));const {data}=supabase.auth.onAuthStateChange((_e,s)=>hydrate(s));return()=>data.subscription.unsubscribe()},[]);
   if(path==='/'||path==='/index.html') return <Landing/>;
+  if(isSeoPath(path)) return <SeoLanding path={path}/>;
   if(loading) return <div className="splash"><div className="brand-mark">SP</div><strong>Sr. Padeiro</strong></div>;
   if(!session) return <Auth/>;
   if(path.startsWith('/admin')) return isSuper?<Admin/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p><a className="btn-dark" href="/app">Voltar ao app</a></section></main>;
