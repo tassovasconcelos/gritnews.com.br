@@ -1,0 +1,1 @@
+A observabilidade de deploy foi incorporada à main no PR #87. Esta branch não deve ser usada para novas funcionalidades de produto.
