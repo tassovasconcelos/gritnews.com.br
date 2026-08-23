@@ -30,13 +30,23 @@
     "robots": "https://srpadeiro.gritnews.com.br/robots.txt",
     "public_index": true,
     "search_console_property": "sc-domain:gritnews.com.br",
-    "private_paths": [
-      "/admin",
-      "/app",
-      "/login"
-    ],
+    "private_paths": ["/admin", "/app", "/login"],
     "critical": true,
     "notes": "Produto comercial GRIT. Indexar somente landing e páginas públicas; app, login e administração permanecem fora do índice."
+  },
+  {
+    "id": "meu-orcamento",
+    "name": "Meu Orçamento",
+    "repository": "tassovasconcelos/gritnews.com.br",
+    "url": "https://meuorcamento.gritnews.com.br",
+    "sitemap": "https://meuorcamento.gritnews.com.br/sitemap.xml",
+    "robots": "https://meuorcamento.gritnews.com.br/robots.txt",
+    "public_index": true,
+    "search_console_property": "sc-domain:gritnews.com.br",
+    "private_paths": ["/app", "/login", "/admin"],
+    "critical": true,
+    "status": "domain_pending",
+    "notes": "Novo SaaS GRIT integrado à Central Comercial. Publicar somente landing e páginas de aquisição; app e áreas autenticadas ficam noindex."
   },
   {
     "id": "sacproh",
@@ -57,9 +67,7 @@
     "robots": "https://moacirrocha.adv.br/robots.txt",
     "public_index": true,
     "search_console_property": "sc-domain:moacirrocha.adv.br",
-    "private_paths": [
-      "/gerencial/"
-    ],
+    "private_paths": ["/gerencial/"],
     "critical": true
   },
   {
