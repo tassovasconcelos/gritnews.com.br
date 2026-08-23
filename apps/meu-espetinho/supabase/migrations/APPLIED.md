@@ -14,6 +14,13 @@ Aplicadas em produção controlada durante a Fase 1:
   - view de assentos ajustada para `security_invoker`.
 - `meu_espetinho_advisor_followup`
   - índices adicionais indicados pelos Advisors.
+- `security_rpc_hardening`
+  - execução anônima removida de quatro RPCs privilegiadas;
+  - `search_path` determinístico no trigger de campanhas.
+- `leads_backend_only`
+  - inserção direta anônima/autenticada removida da tabela `leads`;
+  - captura pública restrita à Edge Function validada;
+  - `service_role` mantido exclusivamente no backend.
 
 Frontend da branch `feat/meu-espetinho-fase-1-foundation` já conectado a:
 
