@@ -30,8 +30,14 @@ Decisão recomendada: declarar a raiz como app de produção e migrar o Control 
 
 ## Pendências de sincronização
 
-1. Localizar e incorporar o código-fonte do Sr. Padeiro.
-2. Registrar commit/deploy em `deploy-version.json` para todos os apps.
-3. Confirmar domínio do Oportunidades Procirúrgica.
-4. Transformar GRIT Propostas de especificação em app versionado.
-5. Adicionar Sr. Padeiro ao health check após confirmar `robots.txt` e `sitemap.xml` no host.
+1. Localizar e incorporar o código-fonte do Sr. Padeiro — issue #92.
+2. Consolidar a fonte produtiva do GRIT News — issue #93.
+3. Registrar commit/deploy em `deploy-version.json` para todos os apps.
+4. Confirmar domínio do Oportunidades Procirúrgica.
+5. Transformar GRIT Propostas de especificação em app versionado.
+6. Confirmar `robots.txt` e `sitemap.xml` do Sr. Padeiro no host; o domínio já integra o health check.
+
+## Acompanhamento público
+
+- [Issue #92 — Versionar o código-fonte do Sr. Padeiro](https://github.com/tassovasconcelos/gritnews.com.br/issues/92)
+- [Issue #93 — Consolidar a fonte produtiva do GRIT News](https://github.com/tassovasconcelos/gritnews.com.br/issues/93)
