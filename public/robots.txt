@@ -35,6 +35,8 @@ Allow: /
 User-agent: Applebot
 Allow: /
 
-# Sitemap Index
+# Sitemaps públicos e comerciais
 Sitemap: https://www.gritnews.com.br/sitemap.xml
 Sitemap: https://tenpets.gritnews.com.br/sitemap.xml
+Sitemap: https://meuespetinho.gritnews.com.br/sitemap.xml
+Sitemap: https://srpadeiro.gritnews.com.br/sitemap.xml
