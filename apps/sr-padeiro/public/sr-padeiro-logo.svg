@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" role="img" aria-labelledby="title desc">
+  <title id="title">Sr. Padeiro</title>
+  <desc id="desc">Marca Sr. Padeiro com personagem padeiro e trigo em laranja e marrom.</desc>
+  <rect width="360" height="120" fill="none"/>
+  <g transform="translate(6 8)">
+    <path d="M24 93V47C24 22 42 8 65 8s41 14 41 39v46" fill="#FFF8EE" stroke="#F79D1E" stroke-width="5" stroke-linecap="round"/>
+    <path d="M45 36c-8-1-11-7-9-13 2-6 8-9 15-7 3-8 11-12 19-10 7 1 12 6 14 12 7-2 14 1 17 7 3 7-1 14-9 17" fill="#FFF8EE" stroke="#5A3E2B" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M44 42c5 11 37 11 43 0v22c0 16-10 27-22 27S44 80 44 64V42z" fill="#FFF8EE" stroke="#5A3E2B" stroke-width="4"/>
+    <circle cx="57" cy="58" r="2.6" fill="#5A3E2B"/><circle cx="75" cy="58" r="2.6" fill="#5A3E2B"/>
+    <path d="M52 70c5 1 9-1 13-5 4 4 8 6 13 5-2 7-8 10-13 10s-11-3-13-10z" fill="#5A3E2B"/>
+    <path d="M42 87c6 8 39 8 46 0" fill="none" stroke="#F79D1E" stroke-width="4" stroke-linecap="round"/>
+    <g fill="none" stroke="#F79D1E" stroke-width="4" stroke-linecap="round">
+      <path d="M105 88c11-20 17-39 17-61"/>
+      <path d="M119 38c-8-1-12-6-12-13 7 0 12 4 14 11"/>
+      <path d="M119 52c-9 0-14-5-15-12 8 0 14 4 16 10"/>
+      <path d="M115 66c-8 1-13-2-16-8 8-2 14 1 17 7"/>
+      <path d="M121 31c4-7 9-10 15-9 0 7-4 12-12 14"/>
+      <path d="M119 46c5-7 10-9 16-8-1 7-5 11-13 13"/>
+      <path d="M115 60c5-6 11-8 16-5-2 7-7 10-14 11"/>
+    </g>
+  </g>
+  <g transform="translate(150 35)">
+    <text x="0" y="30" font-family="Poppins,Arial,sans-serif" font-size="34" font-weight="800" fill="#5A3E2B">Sr. Padeiro</text>
+    <text x="2" y="56" font-family="Poppins,Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="1.2" fill="#F79D1E">SEU NEGÓCIO NA PALMA DA MÃO</text>
+  </g>
+</svg>
