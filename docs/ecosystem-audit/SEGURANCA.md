@@ -9,6 +9,7 @@
 - novos leads passam pela Edge Function, com allowlist de origem, honeypot, limites de tamanho e consentimento obrigatório;
 - inserção no banco usa `service_role` somente no backend; a chave nunca é enviada ao navegador;
 - logs do coletor não incluem nome, telefone, e-mail, token ou payload.
+- proteção contra senhas vazadas ativada no Supabase Auth.
 
 ## Exceções revisadas
 
@@ -16,9 +17,9 @@
 
 As tabelas internas com RLS e sem políticas são acessadas apenas pelo backend/service role. O aviso do linter é informativo e não justifica criar políticas públicas.
 
-## Pendência no painel
+## Próxima evolução de autenticação
 
-Ativar a proteção contra senhas vazadas nas configurações do Supabase Auth. Essa opção depende do plano e do painel do projeto e deve ser confirmada após ativação.
+O backend ainda mantém mínimo de seis caracteres para compatibilidade com telas antigas. Antes de elevar o mínimo global para dez caracteres e exigir maior complexidade, atualizar os formulários de cadastro e mensagens de validação de todos os apps publicados.
 
 ## Rotina
 

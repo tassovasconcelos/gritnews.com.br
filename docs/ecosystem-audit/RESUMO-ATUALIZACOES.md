@@ -34,3 +34,10 @@
 - Nenhuma campanha paga, cobrança ou envio em massa foi ativado.
 - Nenhum segredo foi gravado em arquivo versionado.
 - Produção externa não foi sobrescrita sem origem técnica verificável.
+
+## Segurança aplicada
+
+- RPCs privilegiadas sem execução anônima desnecessária.
+- Captura direta na tabela de leads bloqueada; entrada somente pelo backend validado.
+- Proteção contra senhas vazadas ativa no Supabase Auth.
+- Auditoria de dependências de produção sem vulnerabilidades conhecidas.
