@@ -53,7 +53,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         <nav className="hidden lg:flex items-center gap-7 text-sm font-bold text-slate-200">
           <button onClick={onNavigateHome} className="hover:text-[#FF6A00]">Início</button>
           <button onClick={() => scrollTo('solucoes')} className="hover:text-[#FF6A00]">Soluções</button>
-          <button onClick={() => scrollTo('produtos')} className="hover:text-[#FF6A00]">Aplicativos</button>
+          <a href="/produtos/" className="hover:text-[#FF6A00]">Produtos</a>
+          <a href="/produtos/meu-espetinho/" className="hover:text-[#FF6A00]">Meu Espetinho</a>
           <button onClick={() => scrollTo('insights')} className="hover:text-[#FF6A00]">Insights</button>
           <button onClick={() => scrollTo('metodo')} className="hover:text-[#FF6A00]">Método</button>
         </nav>
@@ -61,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="hidden md:flex items-center gap-2">
           <button onClick={() => setSearchOpen(v => !v)} className="w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" aria-label="Buscar"><Search className="w-4 h-4"/></button>
           <button onClick={onNavigateBookmarks} className="relative w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" aria-label="Salvos"><Bookmark className="w-4 h-4"/>{bookmarksCount > 0 && <span className="absolute -right-1 -top-1 w-4 h-4 rounded-full bg-[#FF6A00] text-[9px] grid place-items-center">{bookmarksCount}</span>}</button>
-          <button onClick={() => scrollTo('diagnostico')} className="bg-[#FF6A00] hover:bg-[#e65f00] px-4 py-2.5 rounded-xl font-black text-sm">Diagnóstico GRIT</button>
+          <a href="/produtos/" className="bg-[#FF6A00] hover:bg-[#e65f00] px-4 py-2.5 rounded-xl font-black text-sm">Conhecer produtos</a>
           <button onClick={onNavigateAdmin} className="w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" title="Acesso gerencial"><LayoutDashboard className="w-4 h-4"/></button>
         </div>
 
@@ -70,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {searchOpen && <div className="border-t border-white/10 bg-[#071A2A]"><form onSubmit={submitSearch} className="max-w-7xl mx-auto px-4 py-3 flex gap-2"><input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar artigos, inteligência comercial, vendas, IA..." className="flex-1 bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FF6A00]"/><button className="bg-[#FF6A00] px-5 rounded-xl font-black text-sm">Buscar</button></form></div>}
 
-      {mobileOpen && <div className="lg:hidden border-t border-white/10 bg-[#071A2A] px-4 py-4 space-y-2 text-sm font-bold"><button onClick={onNavigateHome} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Início</button><button onClick={() => scrollTo('solucoes')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Soluções</button><button onClick={() => scrollTo('produtos')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Aplicativos</button><button onClick={() => scrollTo('insights')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Insights</button><button onClick={() => scrollTo('metodo')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Método</button><button onClick={() => scrollTo('diagnostico')} className="block w-full text-left px-3 py-3 rounded-xl bg-[#FF6A00] text-white">Diagnóstico GRIT</button></div>}
+      {mobileOpen && <div className="lg:hidden border-t border-white/10 bg-[#071A2A] px-4 py-4 space-y-2 text-sm font-bold"><button onClick={onNavigateHome} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Início</button><button onClick={() => scrollTo('solucoes')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Soluções</button><a href="/produtos/" className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Produtos GRIT</a><a href="/produtos/meu-espetinho/" className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Meu Espetinho</a><a href="/produtos/grit-propostas/" className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">GRIT Propostas</a><button onClick={() => scrollTo('insights')} className="block w-full text-left px-3 py-3 rounded-xl hover:bg-white/10">Insights</button><button onClick={() => scrollTo('diagnostico')} className="block w-full text-left px-3 py-3 rounded-xl bg-[#FF6A00] text-white">Diagnóstico GRIT</button></div>}
     </header>
   );
 };
