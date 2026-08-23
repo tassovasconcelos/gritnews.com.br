@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GRIT SaaS Product Manifest",
+  "type": "object",
+  "required": ["product_key", "name", "domain", "status", "commercial_email", "modules"],
+  "properties": {
+    "product_key": {"type":"string","pattern":"^[a-z0-9-]+$"},
+    "name": {"type":"string","minLength":2},
+    "domain": {"type":"string","minLength":3},
+    "status": {"enum":["development","staging","production-ready","production","paused"]},
+    "commercial_email": {"type":"string","format":"email"},
+    "default_trial_days": {"type":"integer","minimum":0,"maximum":90,"default":7},
+    "modules": {"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "analytics_namespace": {"type":"string"},
+    "brand": {
+      "type":"object",
+      "properties": {
+        "primary_color":{"type":"string"},
+        "tagline":{"type":"string"}
+      }
+    }
+  },
+  "additionalProperties": true
+}
