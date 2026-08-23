@@ -1,23 +1,59 @@
 [
   {
+    "id": "gritnews",
     "name": "GRIT News",
+    "repository": "tassovasconcelos/gritnews.com.br",
     "url": "https://gritnews.com.br",
     "sitemap": "https://gritnews.com.br/sitemap.xml",
     "robots": "https://gritnews.com.br/robots.txt",
     "public_index": true,
-    "search_console_property": "sc-domain:gritnews.com.br"
+    "search_console_property": "sc-domain:gritnews.com.br",
+    "critical": true
   },
   {
+    "id": "meu-espetinho",
     "name": "Meu Espetinho",
+    "repository": "tassovasconcelos/gritnews.com.br",
     "url": "https://meuespetinho.gritnews.com.br",
     "sitemap": "https://meuespetinho.gritnews.com.br/sitemap.xml",
     "robots": "https://meuespetinho.gritnews.com.br/robots.txt",
     "public_index": true,
-    "search_console_property": "sc-domain:gritnews.com.br"
+    "search_console_property": "sc-domain:gritnews.com.br",
+    "critical": true
   },
   {
+    "id": "sacproh",
     "name": "SAC ProH",
+    "repository": "tassovasconcelos/sacproh",
     "url": "https://apps.sacproh.gritnews.com.br",
-    "public_index": false
+    "public_index": false,
+    "expected_noindex": false,
+    "critical": true,
+    "notes": "Aplicação operacional. Política de indexação por rota será tratada no próprio projeto."
+  },
+  {
+    "id": "moacir-rocha",
+    "name": "Moacir Rocha Advocacia",
+    "repository": "tassovasconcelos/moacirrocha-adv-br",
+    "url": "https://moacirrocha.adv.br",
+    "sitemap": "https://moacirrocha.adv.br/sitemap.xml",
+    "robots": "https://moacirrocha.adv.br/robots.txt",
+    "public_index": true,
+    "search_console_property": "sc-domain:moacirrocha.adv.br",
+    "private_paths": [
+      "/gerencial/"
+    ],
+    "critical": true
+  },
+  {
+    "id": "oportunidades",
+    "name": "Oportunidades Procirúrgica",
+    "repository": "tassovasconcelos/procirurgica-revenue-ops",
+    "url": null,
+    "public_index": false,
+    "expected_noindex": true,
+    "critical": false,
+    "status": "domain_pending",
+    "notes": "Repositório integrado ao inventário; domínio de produção precisa ser confirmado para health check externo."
   }
 ]
