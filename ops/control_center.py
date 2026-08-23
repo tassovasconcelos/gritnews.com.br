@@ -87,7 +87,8 @@ def audit_site(site):
         add_check(result['checks'], 'robots', robots.get('ok'), f"HTTP {robots.get('status', robots.get('error', 'error'))}")
         add_check(result['checks'], 'sitemap', sitemap.get('ok') and '<urlset' in sitemap.get('body', ''), f"HTTP {sitemap.get('status', sitemap.get('error', 'error'))}")
         if site.get('sitemap') and robots.get('body'):
-            add_check(result['checks'], 'robots:sitemap-reference', site['sitemap'] in robots['body'], 'sitemap referenced in robots.txt')
+            declared = site['sitemap'] in robots['body']
+            add_check(result['checks'], 'robots:sitemap-reference', declared, 'sitemap declared in robots.txt' if declared else 'sitemap not declared in robots.txt', 'warning')
 
     if site.get('expected_noindex'):
         xrobots = headers.get('x-robots-tag', '')
