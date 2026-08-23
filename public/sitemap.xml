@@ -6,7 +6,7 @@
   <!-- Home & Core Verticals -->
   <url>
     <loc>https://www.gritnews.com.br/</loc>
-    <lastmod>2026-08-16T04:00:00+00:00</lastmod>
+    <lastmod>2026-08-23T22:15:00+00:00</lastmod>
     <changefreq>hourly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -44,6 +44,14 @@
     <lastmod>2026-08-16T04:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- Commercial Products -->
+  <url>
+    <loc>https://www.gritnews.com.br/produtos/grit-propostas/</loc>
+    <lastmod>2026-08-23T22:15:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
   </url>
 
   <!-- Pre-Rendered Static Articles & High-Ranking Landing Pages -->
