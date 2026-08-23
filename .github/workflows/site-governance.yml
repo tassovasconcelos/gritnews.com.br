@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          jq -c '.[]' ops/sites.json | while read -r site; do
+          jq -c '.[] | select(.url != null and .url != "")' ops/sites.json | while read -r site; do
             name=$(jq -r '.name' <<<"$site")
             url=$(jq -r '.url' <<<"$site")
             echo "Checking $name -> $url"
@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          jq -c '.[] | select(.public_index == true)' ops/sites.json | while read -r site; do
+          jq -c '.[] | select(.public_index == true and .url != null and .url != "")' ops/sites.json | while read -r site; do
             name=$(jq -r '.name' <<<"$site")
             robots=$(jq -r '.robots' <<<"$site")
             sitemap=$(jq -r '.sitemap' <<<"$site")
@@ -86,7 +86,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          jq -c '.[]' ops/sites.json | while read -r site; do
+          jq -c '.[] | select(.url != null and .url != "")' ops/sites.json | while read -r site; do
             name=$(jq -r '.name' <<<"$site")
             url=$(jq -r '.url' <<<"$site")
             headers=$(curl -L -sSI \
@@ -125,7 +125,8 @@ jobs:
       - name: Summary
         run: |
           echo '### Site Governance' >> "$GITHUB_STEP_SUMMARY"
-          echo '- Availability checked with automatic retries for all inventoried sites.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Availability checked with automatic retries for all inventoried sites with confirmed domains.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Pending/unconfirmed domains are skipped instead of producing false outages.' >> "$GITHUB_STEP_SUMMARY"
           echo '- robots.txt and sitemap validated for public/indexable sites.' >> "$GITHUB_STEP_SUMMARY"
           echo '- Security headers inspected and missing headers reported as warnings.' >> "$GITHUB_STEP_SUMMARY"
           echo '- Google Search Console uses GitHub OIDC + Workload Identity Federation; no long-lived JSON key is required.' >> "$GITHUB_STEP_SUMMARY"
