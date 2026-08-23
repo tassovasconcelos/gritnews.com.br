@@ -22,6 +22,19 @@
     "critical": true
   },
   {
+    "id": "sr-padeiro",
+    "name": "Sr. Padeiro",
+    "repository": null,
+    "url": "https://srpadeiro.gritnews.com.br",
+    "sitemap": "https://srpadeiro.gritnews.com.br/sitemap.xml",
+    "robots": "https://srpadeiro.gritnews.com.br/robots.txt",
+    "public_index": true,
+    "search_console_property": "sc-domain:gritnews.com.br",
+    "critical": true,
+    "status": "published_source_pending",
+    "notes": "Aplicação publicada e integrada ao funil central; o repositório-fonte ainda precisa ser incorporado ao monorepo ou referenciado aqui."
+  },
+  {
     "id": "sacproh",
     "name": "SAC ProH",
     "repository": "tassovasconcelos/sacproh",
