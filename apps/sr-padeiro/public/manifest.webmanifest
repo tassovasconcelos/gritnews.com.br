@@ -1,0 +1,10 @@
+{
+  "name": "Sr. Padeiro",
+  "short_name": "Sr. Padeiro",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#FFF8EE",
+  "theme_color": "#F47A20",
+  "description": "Gestão simples para padarias, mercadinhos, mercearias e conveniências.",
+  "categories": ["business", "finance", "productivity"]
+}
