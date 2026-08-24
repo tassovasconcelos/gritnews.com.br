@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import Auth from './Auth';
 import Landing from './Landing';
 import SeoLanding,{isSeoPath} from './SeoLanding';
+import SeoRuntime from './SeoRuntime';
 import LegalPage,{isLegalPath} from './LegalPage';
 import Admin from './Admin';
 import Onboarding from './Onboarding';
@@ -30,7 +31,7 @@ export default function App() {
   }
   useEffect(()=>{supabase.auth.getSession().then(({data})=>hydrate(data.session));const {data}=supabase.auth.onAuthStateChange((_e,s)=>hydrate(s));return()=>data.subscription.unsubscribe()},[]);
   if(path==='/'||path==='/index.html') return <Landing/>;
-  if(isSeoPath(path)) return <SeoLanding path={path}/>;
+  if(isSeoPath(path)) return <><SeoRuntime path={path}/><SeoLanding path={path}/></>;
   if(isLegalPath(path)) return <LegalPage kind={path==='/privacidade'?'privacy':'terms'}/>;
   if(loading) return <div className="splash"><div className="brand-mark">SP</div><strong>Sr. Padeiro</strong></div>;
   if(!session) return <Auth/>;
