@@ -13,27 +13,15 @@ API = "https://www.googleapis.com/webmasters/v3"
 
 
 def load_credentials():
-    """Use Application Default Credentials exported by google-github-actions/auth.
-
-    No long-lived service-account JSON key is required. In GitHub Actions the
-    credential file is generated from Workload Identity Federation/OIDC.
-    """
     creds, _ = google.auth.default(scopes=SCOPES)
     creds.refresh(Request())
     return creds
 
 
 def api_request(method, url, token):
-    r = requests.request(
-        method,
-        url,
-        headers={"Authorization": f"Bearer {token}"},
-        timeout=30,
-    )
+    r = requests.request(method, url, headers={"Authorization": f"Bearer {token}"}, timeout=30)
     if r.status_code >= 400:
-        raise RuntimeError(
-            f"{method} {url} -> HTTP {r.status_code}: {r.text[:500]}"
-        )
+        raise RuntimeError(f"{method} {url} -> HTTP {r.status_code}: {r.text[:500]}")
     if r.content:
         try:
             return r.json()
@@ -48,7 +36,6 @@ def main():
 
     creds = load_credentials()
     token = creds.token
-
     accessible = api_request("GET", f"{API}/sites", token) or {}
     accessible_urls = {x.get("siteUrl") for x in accessible.get("siteEntry", [])}
 
@@ -64,10 +51,12 @@ def main():
             continue
 
         prop = site.get("search_console_property")
-        sitemap = site.get("sitemap")
+        primary = site.get("sitemap")
+        extra = site.get("additional_sitemaps") or []
+        sitemaps = ([primary] if primary else []) + [x for x in extra if x]
         name = site.get("name", "Unnamed site")
 
-        if not prop or not sitemap:
+        if not prop or not sitemaps:
             failures.append(f"{name}: missing search_console_property or sitemap")
             continue
 
@@ -76,10 +65,11 @@ def main():
             continue
 
         prop_q = urllib.parse.quote(prop, safe="")
-        sitemap_q = urllib.parse.quote(sitemap, safe="")
-        api_request("PUT", f"{API}/sites/{prop_q}/sitemaps/{sitemap_q}", token)
-        submitted.append((name, prop, sitemap))
-        print(f"Submitted sitemap: {name} -> {sitemap}")
+        for sitemap in sitemaps:
+            sitemap_q = urllib.parse.quote(sitemap, safe="")
+            api_request("PUT", f"{API}/sites/{prop_q}/sitemaps/{sitemap_q}", token)
+            submitted.append((name, prop, sitemap))
+            print(f"Submitted sitemap: {name} -> {sitemap}")
 
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
