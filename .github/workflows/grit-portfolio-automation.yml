@@ -102,29 +102,29 @@ jobs:
       matrix:
         app:
           - name: GRIT News
-            path: apps/gritnews
-            smoke: false
+            install: npm install --no-audit --no-fund
+            build: npm run build:gritnews
+            smoke: ''
           - name: Meu Espetinho
-            path: apps/meu-espetinho
-            smoke: true
+            install: npm install --no-audit --no-fund --prefix apps/meu-espetinho
+            build: npm run build --prefix apps/meu-espetinho
+            smoke: npm run smoke --prefix apps/meu-espetinho
           - name: Sr. Padeiro
-            path: apps/sr-padeiro
-            smoke: true
-    defaults:
-      run:
-        working-directory: ${{ matrix.app.path }}
+            install: npm install --no-audit --no-fund --prefix apps/sr-padeiro
+            build: npm run build --prefix apps/sr-padeiro
+            smoke: npm run smoke --prefix apps/sr-padeiro
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: ${{ matrix.app.install }}
       - name: Build
-        run: npm run build
+        run: ${{ matrix.app.build }}
       - name: Smoke
-        if: matrix.app.smoke
-        run: npm run smoke
+        if: matrix.app.smoke != ''
+        run: ${{ matrix.app.smoke }}
 
   production-health:
     name: Production health
