@@ -10,11 +10,11 @@ export interface ToastMessage {
 export interface ToastPropsSingle {
   message: string;
   type?: 'success' | 'error' | 'info';
-  isVisible: boolean;
+  isVisible?: boolean;
   onClose: () => void;
 }
 
-export const Toast: React.FC<ToastPropsSingle> = ({ message, type = 'success', isVisible, onClose }) => {
+export const Toast: React.FC<ToastPropsSingle> = ({ message, type = 'success', isVisible = true, onClose }) => {
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
