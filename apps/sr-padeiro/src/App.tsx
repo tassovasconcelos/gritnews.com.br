@@ -9,18 +9,22 @@ import Workspace from './Workspace';
 import { supabase } from './lib/supabase';
 
 type Role='owner'|'manager'|'cashier'|'stockist'|'viewer';
+const GLOBAL_SUPERADMIN_EMAIL='gritsolucoes@gmail.com';
 
 export default function App() {
   const path=window.location.pathname;
   const [session,setSession]=useState<Session|null>(null); const [loading,setLoading]=useState(true); const [orgId,setOrgId]=useState<string|null>(null); const [role,setRole]=useState<Role>('viewer'); const [access,setAccess]=useState<string>('blocked'); const [isSuper,setIsSuper]=useState(false);
   async function hydrate(next:Session|null){
-    setSession(next); setAccess('blocked');
+    setSession(next); setAccess('blocked'); setIsSuper(false);
     if(!next){setOrgId(null);setLoading(false);return}
+    const normalizedEmail=(next.user.email||'').trim().toLowerCase();
     const [{data:admin},{data:member}]=await Promise.all([
       supabase.from('admin_users').select('role,active').eq('user_id',next.user.id).maybeSingle(),
       supabase.from('srp_members').select('organization_id,role').eq('user_id',next.user.id).eq('active',true).limit(1).maybeSingle()
     ]);
-    setIsSuper(Boolean(admin?.active&&admin.role==='superadmin')); setOrgId(member?.organization_id||null); if(member?.role)setRole(member.role as Role);
+    const globalSuper=normalizedEmail===GLOBAL_SUPERADMIN_EMAIL;
+    setIsSuper(globalSuper||Boolean(admin?.active&&String(admin.role||'').toLowerCase()==='superadmin'));
+    setOrgId(member?.organization_id||null); if(member?.role)setRole(member.role as Role);
     if(member?.organization_id){
       const {data:a}=await supabase.from('srp_access_control').select('access_mode,trial_ends_at,barter_until,manual_release').eq('organization_id',member.organization_id).maybeSingle();
       if(a){const now=Date.now();const ok=a.manual_release||a.access_mode==='active'||(a.access_mode==='trial'&&a.trial_ends_at&&new Date(a.trial_ends_at).getTime()>now)||(a.access_mode==='barter'&&(!a.barter_until||new Date(a.barter_until).getTime()>now));setAccess(ok?a.access_mode:'blocked')}
