@@ -46,7 +46,12 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
       { auth: { persistSession: false } },
     );
-    const { error } = await supabase.from('leads').insert({
+    const sourcePlatform = clean(body?.source_platform, 40);
+    const sourceType = clean(body?.source_type, 40) || 'website_form';
+    const requestedChannels = Array.isArray(body?.consent_channels)
+      ? body.consent_channels.filter((value: unknown) => ['whatsapp', 'email', 'instagram', 'facebook'].includes(String(value)))
+      : [];
+    const { data: insertedLead, error } = await supabase.from('leads').insert({
       name,
       email,
       whatsapp,
@@ -62,13 +67,39 @@ Deno.serve(async (req) => {
       gclid: clean(body?.gclid, 300),
       fbclid: clean(body?.fbclid, 300),
       referral_code: clean(body?.referral_code, 100),
+      source_platform: sourcePlatform,
+      source_type: sourceType,
+      source_form_id: clean(body?.source_form_id, 160),
+      source_lead_id: clean(body?.source_lead_id, 200),
+      consent_version: clean(body?.consent_version, 40) || 'grit-leads-v1',
+      privacy_notice_url: clean(body?.privacy_notice_url, 500) || 'https://gritnews.com.br/privacidade',
       consent_lgpd: true,
       consent_at: new Date().toISOString(),
       status: 'new',
       score: 0,
       notes: clean(body?.message, 1200),
-    });
+    }).select('id').single();
     if (error) throw error;
+    if (requestedChannels.length) {
+      const { error: consentError } = await supabase.from('lead_channel_consents').upsert(
+        requestedChannels.map((channel: string) => ({
+          lead_id: insertedLead.id,
+          channel,
+          purpose: 'sales_followup',
+          status: 'granted',
+          legal_basis: 'consent',
+          evidence: {
+            source: sourceType,
+            form_id: clean(body?.source_form_id, 160),
+            consent_version: clean(body?.consent_version, 40) || 'grit-leads-v1',
+            privacy_notice_url: clean(body?.privacy_notice_url, 500) || 'https://gritnews.com.br/privacidade',
+            captured_at: new Date().toISOString(),
+          },
+        })),
+        { onConflict: 'lead_id,channel,purpose' },
+      );
+      if (consentError) throw consentError;
+    }
     return json({ ok: true }, 201);
   } catch (error) {
     console.error('commercial-lead', error instanceof Error ? error.message : 'unknown_error');

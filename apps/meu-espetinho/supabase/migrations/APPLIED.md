@@ -36,6 +36,11 @@ Aplicadas em produção em 24/08/2026 e refletidas na base consolidada:
 
 Efeito confirmado: processamento interno e cadências restritos ao `service_role`; classificação e resolução de mensagens disponíveis apenas a usuários autenticados e ao backend; execução anônima removida das rotinas internas.
 
+Aplicadas em 24/08/2026 para escala multicanal responsável:
+
+- `compliant_multichannel_lead_growth` — atribuição de origem, consentimento por canal, fila protegida, limites de frequência e pausa em resposta;
+- `expand_outreach_queue_guards` — canais Meta e estados operacionais de conformidade.
+
 Frontend da branch `feat/meu-espetinho-fase-1-foundation` já conectado a:
 
 - `current_user_tenants()` para resolução explícita do ambiente autenticado;

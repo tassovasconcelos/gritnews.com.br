@@ -6,7 +6,7 @@ import AdminUnifiedLeads from './AdminUnifiedLeads';
 import './admin.css';
 import './admin-workspace.css';
 
-type Lead={id:string;name?:string;business_name?:string;whatsapp?:string;email?:string;status?:string;source?:string;campaign?:string;product?:string;created_at?:string;owner_email?:string;priority?:string;next_action?:string;next_action_at?:string;potential_value?:number|null;notes?:string;score?:number};
+type Lead={id:string;name?:string;business_name?:string;whatsapp?:string;email?:string;status?:string;source?:string;source_platform?:string;source_type?:string;campaign?:string;product?:string;created_at?:string;owner_email?:string;priority?:string;next_action?:string;next_action_at?:string;potential_value?:number|null;notes?:string;score?:number};
 const COMMERCIAL_EMAIL='contato@gritnews.com.br';
 const COMMERCIAL_WHATSAPP='5585921716546';
 const products=[{key:'meu-espetinho',name:'Meu Espetinho'},{key:'sr-padeiro',name:'Sr. Padeiro'},{key:'sac-4',name:'SAC 4.0'},{key:'oportunidades-pro',name:'OportunidadesPro'}];
