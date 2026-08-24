@@ -1,0 +1,69 @@
+name: GRIT SEO Specialist
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 10 * * *'
+  push:
+    branches: [ main ]
+    paths:
+      - 'public/**'
+      - 'apps/**/public/**'
+      - 'ops/seo/**'
+      - 'scripts/grit-seo-specialist.mjs'
+      - '.github/workflows/grit-seo-specialist.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run specialist audit
+        id: audit
+        continue-on-error: true
+        run: node scripts/grit-seo-specialist.mjs
+      - name: Publish summary
+        if: always()
+        run: cat artifacts/seo/seo-health.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Prepare sanitized Central snapshot
+        if: always() && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p apps/meu-espetinho/public/control-center
+          cp artifacts/seo/seo-health.json apps/meu-espetinho/public/control-center/seo-health.json
+      - name: Persist sanitized Central snapshot
+        if: always() && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'grit-seo-specialist[bot]'
+          git config user.email 'grit-seo-specialist@users.noreply.github.com'
+          git add apps/meu-espetinho/public/control-center/seo-health.json
+          if git diff --cached --quiet; then
+            echo 'No SEO snapshot changes.'
+            exit 0
+          fi
+          git commit -m 'chore(seo): refresh Central health snapshot [skip ci]'
+          git push origin HEAD:main
+      - name: Upload audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grit-seo-health
+          path: artifacts/seo/
+          retention-days: 30
+      - name: Enforce red gate
+        if: steps.audit.outcome == 'failure'
+        run: |
+          echo 'SEO Specialist detectou estado RED em pelo menos um produto publicado.'
+          exit 1
