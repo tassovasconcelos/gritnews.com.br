@@ -6,6 +6,7 @@ Uma única operação comercial para todos os produtos GRIT. Nenhum produto mant
 ## Produtos iniciais
 - `meu-espetinho`
 - `sr-padeiro`
+- `meu-orcamento`
 - `grit-propostas`
 - `grit-solucoes`
 
@@ -85,6 +86,8 @@ Faixas: `HOT >= 70`, `WARM 40–69`, `COLD < 40`.
 A máquina deve suportar 50 leads qualificados/dia sem perder SLA, histórico ou próxima ação. O indicador principal é cliente pago/conversão; volume de leads é indicador intermediário.
 
 ## Arquitetura
-Landing/SEO/Google/Meta/WhatsApp -> captura com atribuição -> `public.leads` -> eventos/interações -> oportunidade -> cliente -> assinatura/receita.
+Landing/SEO/Google/Meta/WhatsApp -> captura com atribuição -> `public.leads` -> `public.lead_events` -> `public.opportunities` -> cliente -> assinatura/receita.
+
+O Meu Orçamento usa exatamente o mesmo CRM central: orçamento enviado/aprovado gera eventos e, quando aplicável, oportunidade comercial sem duplicar cadastro de lead.
 
 A Central de Apps GRIT deve consumir esse modelo para visão executiva única, mantendo os sistemas operacionais de cada produto isolados e seguros.
