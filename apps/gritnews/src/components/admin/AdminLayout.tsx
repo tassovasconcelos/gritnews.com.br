@@ -2,25 +2,24 @@
  * ============================================================================
  * PAINEL ADMINISTRATIVO E GERENCIAL INTEGRADO DA GRIT NEWS & TENPETS
  * ============================================================================
- * 
+ *
  * SEGURANÇA E FLUXO DE AUTENTICAÇÃO:
  * - O acesso a esta interface exige autenticação por Usuário e Senha através do
  *   componente AdminLoginScreen.
  * - A sessão permanece ativa no sessionStorage do navegador enquanto o usuário edita.
  * - Inclui botão de Logout ("Sair do Painel") para encerrar a sessão com segurança.
- * - Inclui o módulo "Guia do Editor" com diretrizes sobre tamanhos de fotos (1200x600, 800x450, 400x400),
- *   embeds de vídeo do YouTube, fontes externas e parametrizador de afiliados.
  */
 
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, FileText, FolderPlus, Megaphone, Tag, Users, MessageSquare,
-  Settings, ArrowLeft, Shield, UserCheck, BookOpen, Image, Sparkles, Globe,
-  Database, PawPrint, LogOut, Lock, HelpCircle, Flame
+  Settings, ArrowLeft, Shield, BookOpen, Image, Sparkles, Globe,
+  Database, PawPrint, LogOut, HelpCircle, Flame, Boxes
 } from 'lucide-react';
 import { ViralPautasWidget } from '../ui/ViralPautasWidget';
 import { UserRole, Article, Category, Lead, NewsletterSubscriber, Offer, AdCampaign, AuthorProfile } from '../../types';
 import { AdminDashboard } from './AdminDashboard';
+import { AdminControlCenter } from './AdminControlCenter';
 import { AdminArticles } from './AdminArticles';
 import { AdminCategories } from './AdminCategories';
 import { AdminAds } from './AdminAds';
@@ -53,6 +52,7 @@ interface AdminLayoutProps {
 
 type AdminTab =
   | 'dashboard'
+  | 'apps'
   | 'guide'
   | 'articles'
   | 'tenpets'
@@ -68,6 +68,13 @@ type AdminTab =
   | 'comments'
   | 'settings';
 
+const getInitialAdminTab = (): AdminTab => {
+  if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('/admin/apps')) {
+    return 'apps';
+  }
+  return 'dashboard';
+};
+
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   articles,
   categories,
@@ -80,7 +87,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   onExitAdmin,
   onShowToast
 }) => {
-  // Estado de Autenticação na Sessão
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('grit_admin_authenticated') === 'true';
   });
@@ -97,18 +103,28 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     };
   });
 
-  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<AdminTab>(getInitialAdminTab);
   const [currentRole, setCurrentRole] = useState<UserRole>(authUser.role);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
 
-  // Sincroniza role ativo se alterar usuário
   useEffect(() => {
     setCurrentRole(authUser.role);
   }, [authUser]);
 
-  /**
-   * Executa a entrada no painel após autenticação bem-sucedida no login
-   */
+  useEffect(() => {
+    const handlePopState = () => setActiveTab(getInitialAdminTab());
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const selectTab = (tab: AdminTab) => {
+    setActiveTab(tab);
+    const targetPath = tab === 'apps' ? '/admin/apps' : '/admin';
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({ adminTab: tab }, '', targetPath);
+    }
+  };
+
   const handleLoginSuccess = (user: { name: string; role: UserRole; email: string }) => {
     sessionStorage.setItem('grit_admin_authenticated', 'true');
     sessionStorage.setItem('grit_admin_user_name', user.name);
@@ -118,12 +134,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     setAuthUser(user);
     setCurrentRole(user.role);
     setIsAuthenticated(true);
+    setActiveTab(getInitialAdminTab());
     onShowToast(`Bem-vindo, ${user.name}! Sessão autenticada.`);
   };
 
-  /**
-   * Encerra a sessão administrativa com segurança
-   */
   const handleLogout = () => {
     sessionStorage.removeItem('grit_admin_authenticated');
     sessionStorage.removeItem('grit_admin_user_name');
@@ -135,7 +149,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     onExitAdmin();
   };
 
-  // Se não estiver autenticado, exige login com Usuário e Senha
   if (!isAuthenticated) {
     return (
       <AdminLoginScreen
@@ -145,9 +158,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     );
   }
 
-  // Itens de Menu do Painel Gerencial
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'COMMERCIAL_MANAGER'] },
+    { id: 'apps', label: 'Central de Apps GRIT', icon: Boxes, roles: ['SUPERADMIN', 'COMMERCIAL_MANAGER'] },
     { id: 'viral', label: 'Estratégia 1M Views (Virais)', icon: Flame, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
     { id: 'guide', label: 'Guia Mídias & Banners', icon: HelpCircle, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR', 'COMMERCIAL_MANAGER'] },
     { id: 'articles', label: 'CMS Artigos & Notícias', icon: FileText, roles: ['SUPERADMIN', 'EDITOR_IN_CHIEF', 'AUTHOR'] },
@@ -168,16 +181,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] flex flex-col md:flex-row">
-      {/* Admin Sidebar */}
       <aside className="w-full md:w-64 bg-[#0B2343] text-white flex-shrink-0 p-4 border-r border-[#0B2343]/30 flex flex-col justify-between space-y-6">
         <div className="space-y-6">
-          {/* Header do Sidebar */}
           <div className="flex items-center justify-between pb-4 border-b border-white/10">
             <div>
               <GritNewsLogo variant="light" size="sm" showSlogan={false} />
               <p className="text-[10px] text-amber-300 font-mono mt-1 uppercase font-bold tracking-wider">Painel de Gestão & Editoria</p>
             </div>
-
             <button
               onClick={onExitAdmin}
               className="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-colors"
@@ -187,7 +197,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </button>
           </div>
 
-          {/* User Info Bar */}
           <div className="bg-white/10 p-3 rounded-2xl border border-white/10 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-extrabold uppercase text-amber-300 tracking-wider">Sessão Autenticada</span>
@@ -197,7 +206,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <p className="text-[10px] text-slate-300 font-mono truncate">{authUser.email}</p>
           </div>
 
-          {/* Role Switcher RBAC */}
           <div className="bg-white/5 p-3 rounded-xl space-y-1.5 border border-white/10">
             <span className="text-[10px] font-bold uppercase text-gray-300 block">Nível de Permissão (RBAC)</span>
             <select
@@ -205,7 +213,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               onChange={e => {
                 const newRole = e.target.value as UserRole;
                 setCurrentRole(newRole);
-                setActiveTab('dashboard');
+                selectTab('dashboard');
                 onShowToast(`Perfil de permissão ajustado para ${newRole}`);
               }}
               className="w-full bg-[#145EDB] text-white text-xs font-bold p-1.5 rounded-lg border border-white/20 focus:outline-none"
@@ -217,7 +225,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </select>
           </div>
 
-          {/* Navigation Menu */}
           <nav className="space-y-1">
             {allowedTabs.map(item => {
               const Icon = item.icon;
@@ -225,7 +232,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id as AdminTab)}
+                  onClick={() => selectTab(item.id as AdminTab)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                     isActive
                       ? 'bg-[#145EDB] text-white shadow-md'
@@ -240,7 +247,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </nav>
         </div>
 
-        {/* Action Buttons at Sidebar Bottom */}
         <div className="space-y-2 pt-4 border-t border-white/10">
           <button
             onClick={() => setIsDocModalOpen(true)}
@@ -260,7 +266,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </div>
       </aside>
 
-      {/* Main Admin Content Area */}
       <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl">
         {activeTab === 'dashboard' && (
           <AdminDashboard
@@ -272,6 +277,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           />
         )}
 
+        {activeTab === 'apps' && <AdminControlCenter />}
+
         {activeTab === 'viral' && (
           <ViralPautasWidget
             onShowToast={onShowToast}
@@ -279,9 +286,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           />
         )}
 
-        {activeTab === 'guide' && (
-          <AdminGuide />
-        )}
+        {activeTab === 'guide' && <AdminGuide />}
 
         {activeTab === 'articles' && (
           <AdminArticles
@@ -293,11 +298,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           />
         )}
 
-        {activeTab === 'tenpets' && (
-          <AdminTenPets
-            onShowToast={onShowToast}
-          />
-        )}
+        {activeTab === 'tenpets' && <AdminTenPets onShowToast={onShowToast} />}
 
         {activeTab === 'trends' && (
           <AdminTrendsAI
@@ -306,23 +307,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           />
         )}
 
-        {activeTab === 'media' && (
-          <AdminMedia
-            onShowToast={onShowToast}
-          />
-        )}
-
-        {activeTab === 'seo' && (
-          <AdminSEO
-            onShowToast={onShowToast}
-          />
-        )}
-
-        {activeTab === 'supabase' && (
-          <AdminSupabase
-            onShowToast={onShowToast}
-          />
-        )}
+        {activeTab === 'media' && <AdminMedia onShowToast={onShowToast} />}
+        {activeTab === 'seo' && <AdminSEO onShowToast={onShowToast} />}
+        {activeTab === 'supabase' && <AdminSupabase onShowToast={onShowToast} />}
 
         {activeTab === 'categories' && (
           <AdminCategories
@@ -357,20 +344,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           />
         )}
 
-        {activeTab === 'comments' && (
-          <AdminComments
-            onShowToast={onShowToast}
-          />
-        )}
-
-        {activeTab === 'settings' && (
-          <AdminSettings
-            onShowToast={onShowToast}
-          />
-        )}
+        {activeTab === 'comments' && <AdminComments onShowToast={onShowToast} />}
+        {activeTab === 'settings' && <AdminSettings onShowToast={onShowToast} />}
       </main>
 
-      {/* Documentation Modal */}
       <DocumentationModal
         isOpen={isDocModalOpen}
         onClose={() => setIsDocModalOpen(false)}

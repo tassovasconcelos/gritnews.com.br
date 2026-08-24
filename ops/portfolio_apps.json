@@ -1,0 +1,57 @@
+[
+  {
+    "id": "gritnews",
+    "name": "GRIT News",
+    "path": "apps/gritnews",
+    "workspace": "@gritnews/gritnews",
+    "build": "npm run build",
+    "smoke": null,
+    "url": "https://gritnews.com.br",
+    "stage": "production",
+    "critical": true
+  },
+  {
+    "id": "meu-espetinho",
+    "name": "Meu Espetinho",
+    "path": "apps/meu-espetinho",
+    "workspace": "meu-espetinho",
+    "build": "npm run build",
+    "smoke": "npm run smoke",
+    "url": "https://meuespetinho.gritnews.com.br",
+    "stage": "production",
+    "critical": true
+  },
+  {
+    "id": "sr-padeiro",
+    "name": "Sr. Padeiro",
+    "path": "apps/sr-padeiro",
+    "workspace": "sr-padeiro",
+    "build": "npm run build",
+    "smoke": "npm run smoke",
+    "url": "https://srpadeiro.gritnews.com.br",
+    "stage": "homologation",
+    "critical": false
+  },
+  {
+    "id": "grit-propostas",
+    "name": "GRIT Propostas",
+    "path": "apps/grit-propostas",
+    "workspace": null,
+    "build": null,
+    "smoke": null,
+    "url": "https://gritnews.com.br/produtos/grit-propostas/",
+    "stage": "development",
+    "critical": false
+  },
+  {
+    "id": "meu-orcamento",
+    "name": "Meu Orçamento",
+    "path": "apps/meu-orcamento",
+    "workspace": null,
+    "build": null,
+    "smoke": null,
+    "url": "https://meuorcamento.gritnews.com.br",
+    "stage": "domain_pending",
+    "critical": false
+  }
+]

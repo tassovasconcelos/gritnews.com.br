@@ -8,12 +8,15 @@ interface AdminLoginScreenProps {
   onExit: () => void;
 }
 
-const mapRole = (role?: string | null): UserRole => {
+const GLOBAL_SUPERADMIN_EMAIL = 'gritsolucoes@gmail.com';
+
+const mapRole = (role?: string | null): UserRole | null => {
   switch ((role || '').toLowerCase()) {
+    case 'superadmin': return 'SUPERADMIN';
     case 'editor_in_chief': return 'EDITOR_IN_CHIEF';
     case 'commercial_manager': return 'COMMERCIAL_MANAGER';
     case 'author': return 'AUTHOR';
-    default: return 'SUPERADMIN';
+    default: return null;
   }
 };
 
@@ -57,8 +60,16 @@ export const AdminLoginScreen: React.FC<AdminLoginScreenProps> = ({ onLoginSucce
       return;
     }
 
+    const mappedRole = normalizedEmail === GLOBAL_SUPERADMIN_EMAIL ? 'SUPERADMIN' : mapRole(admin.role);
+    if (!mappedRole) {
+      await client.auth.signOut();
+      setErrorMsg('Perfil administrativo inválido. Contate o administrador do sistema.');
+      setIsLoading(false);
+      return;
+    }
+
     const displayName = (data.user.user_metadata?.full_name || data.user.user_metadata?.name || normalizedEmail.split('@')[0]) as string;
-    onLoginSuccess({ name: displayName, role: mapRole(admin.role), email: normalizedEmail });
+    onLoginSuccess({ name: displayName, role: mappedRole, email: normalizedEmail });
     setPassword('');
     setIsLoading(false);
   };

@@ -1,0 +1,171 @@
+name: GRIT Portfolio Automation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 */6 * * *'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'ops/portfolio_apps.json'
+      - 'ops/auth_registry.json'
+      - '.github/workflows/grit-portfolio-automation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'ops/portfolio_apps.json'
+      - 'ops/auth_registry.json'
+      - '.github/workflows/grit-portfolio-automation.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grit-portfolio-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  registry:
+    name: Validate portfolio registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON and project references
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e 'type == "array" and length > 0' ops/portfolio_apps.json >/dev/null
+          jq -e 'type == "array" and length > 0' ops/auth_registry.json >/dev/null
+
+          duplicate_ids=$(jq -r '.[].id' ops/portfolio_apps.json | sort | uniq -d)
+          if [ -n "$duplicate_ids" ]; then
+            echo "::error::Duplicate portfolio ids: $duplicate_ids"
+            exit 1
+          fi
+
+          duplicate_auth_ids=$(jq -r '.[].id' ops/auth_registry.json | sort | uniq -d)
+          if [ -n "$duplicate_auth_ids" ]; then
+            echo "::error::Duplicate auth registry ids: $duplicate_auth_ids"
+            exit 1
+          fi
+
+          invalid_superadmins=$(jq -r '.[] | select(.superadmin_email != "gritsolucoes@gmail.com") | .id' ops/auth_registry.json)
+          if [ -n "$invalid_superadmins" ]; then
+            echo "::error::Projects with invalid global superadmin identity: $invalid_superadmins"
+            exit 1
+          fi
+
+          jq -c '.[]' ops/portfolio_apps.json | while read -r app; do
+            id=$(jq -r '.id' <<<"$app")
+            name=$(jq -r '.name' <<<"$app")
+            path=$(jq -r '.path // empty' <<<"$app")
+            stage=$(jq -r '.stage' <<<"$app")
+            echo "Checking registry: $name [$id] stage=$stage"
+
+            if ! jq -e --arg id "$id" '.[] | select(.id == $id)' ops/auth_registry.json >/dev/null; then
+              echo "::error::$name [$id] has no authentication governance entry"
+              exit 1
+            fi
+
+            if [ -n "$path" ] && [ ! -e "$path" ]; then
+              if [ "$stage" = "development" ] || [ "$stage" = "domain_pending" ]; then
+                echo "::warning::$name registry path is not scaffolded yet: $path"
+              else
+                echo "::error::$name registry path does not exist: $path"
+                exit 1
+              fi
+            fi
+          done
+
+          jq -c '.[]' ops/auth_registry.json | while read -r auth; do
+            id=$(jq -r '.id' <<<"$auth")
+            mode=$(jq -r '.auth_mode // empty' <<<"$auth")
+            source=$(jq -r '.source_of_truth // empty' <<<"$auth")
+            status=$(jq -r '.status // empty' <<<"$auth")
+            if [ -z "$mode" ] || [ -z "$source" ] || [ -z "$status" ]; then
+              echo "::error::Incomplete auth governance entry: $id"
+              exit 1
+            fi
+            echo "Auth policy: $id mode=$mode source=$source status=$status"
+          done
+
+  build:
+    name: Build ${{ matrix.app.name }}
+    needs: registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - name: GRIT News
+            path: apps/gritnews
+            smoke: false
+          - name: Meu Espetinho
+            path: apps/meu-espetinho
+            smoke: true
+          - name: Sr. Padeiro
+            path: apps/sr-padeiro
+            smoke: true
+    defaults:
+      run:
+        working-directory: ${{ matrix.app.path }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: Smoke
+        if: matrix.app.smoke
+        run: npm run smoke
+
+  production-health:
+    name: Production health
+    needs: registry
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check production and homologation URLs
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -c '.[] | select((.stage == "production" or .stage == "homologation") and .url != null)' ops/portfolio_apps.json | while read -r app; do
+            name=$(jq -r '.name' <<<"$app")
+            url=$(jq -r '.url' <<<"$app")
+            critical=$(jq -r '.critical' <<<"$app")
+            echo "Checking $name -> $url"
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --retry 2 --retry-delay 2 --connect-timeout 15 --max-time 35 "$url" || echo 000)
+            if [[ "$code" -ge 200 && "$code" -lt 400 ]]; then
+              echo "$name healthy (HTTP $code)"
+            elif [ "$critical" = "true" ]; then
+              echo "::error::$name unhealthy (HTTP $code) - $url"
+              exit 1
+            else
+              echo "::warning::$name unhealthy (HTTP $code) - $url"
+            fi
+          done
+
+  summary:
+    name: Portfolio summary
+    if: always()
+    needs: [registry, build, production-health]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish summary
+        run: |
+          echo '### GRIT Portfolio Automation' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Registry: ${{ needs.registry.result }}' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Authentication governance: enforced (global SUPERADMIN + source of truth).' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Build matrix: ${{ needs.build.result }}' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Production health: ${{ needs.production-health.result }}' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Deploys remain isolated per product; this workflow never performs blind global deploys.' >> "$GITHUB_STEP_SUMMARY"

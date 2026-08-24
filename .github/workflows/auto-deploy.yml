@@ -26,9 +26,6 @@ jobs:
           set -e
           if [ -f package.json ]; then
             npm install --no-audit --no-fund
-            # The repository-wide typecheck currently includes Deno edge
-            # functions and legacy admin modules outside this web deploy.
-            # The production build below validates every published bundle.
             npm run build --if-present
           else
             echo "No root package.json; repository validation skipped."
@@ -38,15 +35,37 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     steps:
+      - name: Validate Hostinger deploy hook
+        env:
+          HOSTINGER_DEPLOY_HOOK: ${{ secrets.HOSTINGER_DEPLOY_HOOK }}
+        shell: bash
+        run: |
+          if [ -z "$HOSTINGER_DEPLOY_HOOK" ]; then
+            echo "::error::HOSTINGER_DEPLOY_HOOK is not configured. Production cannot be updated automatically."
+            exit 1
+          fi
+
       - name: Trigger hosting deploy
         env:
           HOSTINGER_DEPLOY_HOOK: ${{ secrets.HOSTINGER_DEPLOY_HOOK }}
         shell: bash
         run: |
-          if [ -n "$HOSTINGER_DEPLOY_HOOK" ]; then
-            curl --fail --show-error --silent --retry 3 -X POST "$HOSTINGER_DEPLOY_HOOK"
-            echo "Hosting deploy triggered."
-          else
-            echo "HOSTINGER_DEPLOY_HOOK not configured. Validation completed; hosting trigger skipped."
-          fi
+          curl --fail --show-error --silent --retry 3 -X POST "$HOSTINGER_DEPLOY_HOOK"
+          echo "Hosting deploy triggered."
 
+      - name: Verify Meu Espetinho production release
+        shell: bash
+        run: |
+          set -e
+          URL="https://meuespetinho.gritnews.com.br/deploy-health.json"
+          for attempt in $(seq 1 18); do
+            BODY="$(curl --fail --silent --show-error --max-time 10 "$URL" 2>/dev/null || true)"
+            if echo "$BODY" | grep -q '"release": "grit-control-center-v1"'; then
+              echo "Production verified: GRIT Control Center V1 is online."
+              exit 0
+            fi
+            echo "Waiting for production propagation ($attempt/18)..."
+            sleep 10
+          done
+          echo "::error::Hostinger deploy was triggered, but production did not expose the expected release marker."
+          exit 1

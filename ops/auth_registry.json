@@ -1,0 +1,66 @@
+[
+  {
+    "id": "gritnews",
+    "name": "GRIT News",
+    "auth_mode": "grit_supabase",
+    "source_of_truth": "supabase:pcrwtoddavpvkaxwtstc",
+    "superadmin_email": "gritsolucoes@gmail.com",
+    "status": "active"
+  },
+  {
+    "id": "meu-espetinho",
+    "name": "Meu Espetinho",
+    "auth_mode": "grit_supabase",
+    "source_of_truth": "supabase:pcrwtoddavpvkaxwtstc",
+    "superadmin_email": "gritsolucoes@gmail.com",
+    "status": "active"
+  },
+  {
+    "id": "sr-padeiro",
+    "name": "Sr. Padeiro",
+    "auth_mode": "grit_supabase",
+    "source_of_truth": "supabase:pcrwtoddavpvkaxwtstc",
+    "superadmin_email": "gritsolucoes@gmail.com",
+    "status": "active"
+  },
+  {
+    "id": "grit-propostas",
+    "name": "GRIT Propostas",
+    "auth_mode": "grit_supabase_required",
+    "source_of_truth": "supabase:pcrwtoddavpvkaxwtstc",
+    "superadmin_email": "gritsolucoes@gmail.com",
+    "status": "planned"
+  },
+  {
+    "id": "meu-orcamento",
+    "name": "Meu Orçamento",
+    "auth_mode": "grit_supabase_required",
+    "source_of_truth": "supabase:pcrwtoddavpvkaxwtstc",
+    "superadmin_email": "gritsolucoes@gmail.com",
+    "status": "planned"
+  },
+  {
+    "id": "sacproh",
+    "name": "SACPROH",
+    "auth_mode": "isolated_supabase_with_grit_superadmin_sync",
+    "source_of_truth": "supabase:ysfiyonceduhmdjgtghl",
+    "superadmin_email": "gritsolucoes@gmail.com",
+    "status": "active"
+  },
+  {
+    "id": "moacir-rocha",
+    "name": "Moacir Rocha",
+    "auth_mode": "isolated_supabase_with_grit_superadmin_sync",
+    "source_of_truth": "supabase:ypqorgxcghkucqpiwffm",
+    "superadmin_email": "gritsolucoes@gmail.com",
+    "status": "active"
+  },
+  {
+    "id": "oportunidades-procirurgica",
+    "name": "Oportunidades Procirúrgica",
+    "auth_mode": "legacy_bridge_to_grit_supabase",
+    "source_of_truth": "supabase:pcrwtoddavpvkaxwtstc",
+    "superadmin_email": "gritsolucoes@gmail.com",
+    "status": "transition"
+  }
+]

@@ -1,0 +1,32 @@
+-- Sr. Padeiro V1
+-- Banco inicial: projeto Supabase gritnews
+-- Estratégia: tabelas próprias prefixadas com srp_ para evitar colisões com outras verticais.
+-- Estado aplicado: 14 tabelas srp_ com RLS ativo.
+
+-- Tabelas aplicadas:
+-- srp_organizations
+-- srp_members
+-- srp_stores
+-- srp_categories
+-- srp_products
+-- srp_inventory
+-- srp_customers
+-- srp_cash_registers
+-- srp_sales
+-- srp_sale_items
+-- srp_sale_payments
+-- srp_expenses
+-- srp_inventory_movements
+-- srp_credit_transactions
+
+-- Segurança aplicada:
+-- 1. RLS habilitado em todas as tabelas srp_.
+-- 2. Policies limitadas ao role authenticated.
+-- 3. Acesso condicionado à associação ativa do auth.uid() em srp_members.
+-- 4. Nenhuma service_role é necessária no frontend.
+-- 5. Não foram criadas funções SECURITY DEFINER para o Sr. Padeiro.
+
+-- O SQL executável completo foi aplicado diretamente no projeto gritnews
+-- durante a fundação e validado via pg_class/pg_policies.
+-- Antes de migrar para projeto Supabase dedicado, gerar migration formal a partir
+-- deste estado e repetir advisors de segurança e performance.
