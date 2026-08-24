@@ -8,12 +8,20 @@ on:
     branches: [main]
     paths:
       - 'ops/**'
+      - 'public/produtos/**'
+      - 'public/sitemap*.xml'
+      - 'public/robots.txt'
       - 'apps/gritnews/public/control-center/**'
+      - 'apps/gritnews/src/components/admin/AdminControlCenter*.tsx'
       - '.github/workflows/grit-control-center.yml'
   push:
     branches: [main]
     paths:
       - 'ops/**'
+      - 'public/produtos/**'
+      - 'public/sitemap*.xml'
+      - 'public/robots.txt'
+      - 'apps/gritnews/src/components/admin/AdminControlCenter*.tsx'
       - '.github/workflows/grit-control-center.yml'
 
 permissions:
@@ -32,6 +40,20 @@ jobs:
 
       - name: Audit all GRIT projects
         run: python ops/control_center.py
+
+      - name: Validate commercial indexing assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f public/sitemap.xml
+          test -f public/sitemap-commercial.xml
+          test -f public/robots.txt
+          test -f public/produtos/index.html
+          test -f public/produtos/meu-orcamento/index.html
+          test -f public/produtos/grit-propostas/index.html
+          grep -q 'produtos/meu-orcamento' public/sitemap-commercial.xml
+          grep -q 'sitemap-commercial.xml' public/robots.txt
+          echo 'Commercial indexing assets validated.'
 
       - name: Authenticate to Google Cloud with GitHub OIDC
         if: github.event_name != 'pull_request'
