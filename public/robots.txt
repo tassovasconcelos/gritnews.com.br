@@ -1,11 +1,23 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /api/
+Disallow: /login
+Disallow: /auth/
+Disallow: /checkout/
+Disallow: /conta/
+Disallow: /dashboard/
+Disallow: /*?token=
+Disallow: /*?code=
 
-# Explicit Bot Directives for Search Engines & Social Meta Crawlers
 User-agent: Googlebot
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /auth/
+Disallow: /checkout/
 
 User-agent: Googlebot-News
 Allow: /
@@ -16,6 +28,8 @@ Allow: /images/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
 User-agent: Twitterbot
 Allow: /
@@ -35,8 +49,9 @@ Allow: /
 User-agent: Applebot
 Allow: /
 
-# Sitemaps públicos e comerciais
+# Sitemaps editoriais e comerciais GRIT
 Sitemap: https://www.gritnews.com.br/sitemap.xml
+Sitemap: https://www.gritnews.com.br/sitemap-commercial.xml
 Sitemap: https://tenpets.gritnews.com.br/sitemap.xml
 Sitemap: https://meuespetinho.gritnews.com.br/sitemap.xml
 Sitemap: https://srpadeiro.gritnews.com.br/sitemap.xml
