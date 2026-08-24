@@ -115,17 +115,21 @@ jobs:
         working-directory: ${{ matrix.app.path }}
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: pnpm install --frozen-lockfile
       - name: Build
-        run: npm run build
+        run: pnpm run build
       - name: Smoke
         if: matrix.app.smoke
-        run: npm run smoke
+        run: pnpm run smoke
 
   production-health:
     name: Production health
