@@ -39,12 +39,12 @@ export default function Workspace({orgId,userId,role,access,firstName,onSignOut}
     <header className="topbar"><div className="workspace-brand">{brand.logo_url?<img src={brand.logo_url} alt={brand.name}/>:<div className="brand-mark">SP</div>}<div><span className="eyebrow">{brand.name} • {access}</span><h1>Bom dia, {firstName} 👋</h1></div></div><button className="icon-button" onClick={onSignOut} title="Sair"><LogOut size={19}/></button></header>
     {message&&<div className="workspace-message">{message}<button onClick={()=>setMessage('')}><X size={15}/></button></div>}
     <main className="content">
-      {tab==='home'&&<HomeView total={todayTotal} count={todayCount} ticket={ticket} lowStock={lowStock} cash={openCash} onSell={()=>canSell&&setTab('sell')}/>} 
+      {tab==='home'&&<HomeView total={todayTotal} count={todayCount} ticket={ticket} lowStock={lowStock} cash={openCash} onSell={()=>canSell&&setTab('sell')}/>}
       {tab==='sell'&&<SellView orgId={orgId} storeId={storeId} userId={userId} products={products} inventory={inventory} cash={openCash} brand={brand} disabled={!canSell} onDone={(r)=>{setReceipt(r);load();setMessage('Venda concluída com sucesso.')}}/>}
-      {tab==='products'&&<ProductsView orgId={orgId} storeId={storeId} products={products} inventory={inventory} editable={canCatalog} onChange={load} setMessage={setMessage}/>} 
-      {tab==='cash'&&<CashView orgId={orgId} storeId={storeId} userId={userId} cash={openCash} enabled={canCash} onChange={load} setMessage={setMessage}/>} 
-      {tab==='more'&&<MoreView orgId={orgId} role={role} brand={brand} editable={canBrand} onChange={load} setMessage={setMessage}/>} 
-      {receipt&&<ReceiptModal receipt={receipt} onClose={()=>setReceipt(null)}/>} 
+      {tab==='products'&&<ProductsView orgId={orgId} storeId={storeId} products={products} inventory={inventory} editable={canCatalog} onChange={load} setMessage={setMessage}/>}
+      {tab==='cash'&&<CashView orgId={orgId} storeId={storeId} userId={userId} cash={openCash} enabled={canCash} onChange={load} setMessage={setMessage}/>}
+      {tab==='more'&&<MoreView orgId={orgId} role={role} brand={brand} editable={canBrand} onChange={load} setMessage={setMessage}/>}
+      {receipt&&<ReceiptModal receipt={receipt} onClose={()=>setReceipt(null)}/>}
     </main>
     <nav className="bottom-nav" aria-label="Navegação principal"><Nav active={tab==='home'} onClick={()=>setTab('home')} icon={<Home size={20}/>} label="Início"/><Nav active={tab==='sell'} disabled={!canSell} onClick={()=>setTab('sell')} icon={<ShoppingCart size={20}/>} label="Vender"/><Nav active={tab==='products'} onClick={()=>setTab('products')} icon={<Package size={20}/>} label="Produtos"/><Nav active={tab==='cash'} disabled={!['owner','manager','cashier','viewer'].includes(role)} onClick={()=>setTab('cash')} icon={<WalletCards size={20}/>} label="Caixa"/><Nav active={tab==='more'} onClick={()=>setTab('more')} icon={<Menu size={20}/>} label="Mais"/></nav>
   </div>
