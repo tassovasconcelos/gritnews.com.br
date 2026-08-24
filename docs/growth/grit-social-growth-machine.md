@@ -30,6 +30,19 @@ Palavras-chave de entrada: `PADEIRO`, `ESPETINHO`, `SAC` e `SISTEMA`.
 
 Todo contato deve registrar origem, campanha, conteúdo, produto, consentimento por canal e data. Mensagem promocional só entra na fila após consentimento válido. Pedido de descadastro interrompe a sequência imediatamente.
 
+### Automação técnica
+
+1. Meta envia mensagens e comentários assinados ao `meta-lead-webhook`.
+2. O webhook valida a assinatura antes de processar qualquer dado.
+3. `PADEIRO`, `ESPETINHO`, `SAC` e `SISTEMA` classificam o produto de interesse.
+4. Mensagem privada cria permissão temporária de `requested_contact` somente no mesmo canal; comentário público não cria consentimento promocional.
+5. Origem, identificador Meta, campanha e texto ficam vinculados ao lead.
+6. A entrada pausa sequências anteriores, abre atendimento humano e preserva a janela de resposta da Meta.
+7. A fila de saída verifica consentimento, janela, horário, integração e limite de frequência antes de liberar qualquer contato.
+8. Teste, ativação, assinatura e receita voltam ao painel de atribuição por origem e produto.
+
+O webhook permanece inativo até que `META_APP_SECRET` e `META_WEBHOOK_VERIFY_TOKEN` estejam no cofre do Supabase e a assinatura do aplicativo Meta esteja validada.
+
 ## Cadência editorial semanal
 
 - Segunda: dor operacional e diagnóstico.
