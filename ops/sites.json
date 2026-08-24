@@ -5,6 +5,7 @@
     "repository": "tassovasconcelos/gritnews.com.br",
     "url": "https://gritnews.com.br",
     "sitemap": "https://gritnews.com.br/sitemap.xml",
+    "additional_sitemaps": ["https://gritnews.com.br/sitemap-commercial.xml"],
     "robots": "https://gritnews.com.br/robots.txt",
     "public_index": true,
     "search_console_property": "sc-domain:gritnews.com.br",
@@ -39,14 +40,12 @@
     "name": "Meu Orçamento",
     "repository": "tassovasconcelos/gritnews.com.br",
     "url": "https://meuorcamento.gritnews.com.br",
-    "sitemap": "https://meuorcamento.gritnews.com.br/sitemap.xml",
-    "robots": "https://meuorcamento.gritnews.com.br/robots.txt",
-    "public_index": true,
-    "search_console_property": "sc-domain:gritnews.com.br",
+    "public_index": false,
+    "expected_noindex": true,
     "private_paths": ["/app", "/login", "/admin"],
     "critical": true,
     "status": "domain_pending",
-    "notes": "Novo SaaS GRIT integrado à Central Comercial. Publicar somente landing e páginas de aquisição; app e áreas autenticadas ficam noindex."
+    "notes": "Domínio do SaaS ainda pendente. Aquisição e indexação acontecem temporariamente em https://www.gritnews.com.br/produtos/meu-orcamento/. Ativar sitemap do subdomínio somente após DNS/deploy homologados."
   },
   {
     "id": "sacproh",
