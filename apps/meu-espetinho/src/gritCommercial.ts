@@ -1,4 +1,4 @@
-export type ProductKey='meu-espetinho'|'sr-padeiro'|'sac-4'|'oportunidades-pro'|'meu-representante'|'meu-servico'|'meu-personal';
+export type ProductKey='meu-espetinho'|'sr-padeiro'|'sac-4'|'oportunidades-pro'|'meu-representante'|'meu-servico'|'meu-personal'|'minha-clinica';
 export type ProductInfo={key:ProductKey;name:string;domain:string;status:'operational'|'staging'|'planned'};
 
 export const COMMERCIAL_EMAIL='contato@gritnews.com.br';
@@ -12,7 +12,8 @@ export const GRIT_PRODUCTS:ProductInfo[]=[
  {key:'oportunidades-pro',name:'OportunidadesPro',domain:'',status:'planned'},
  {key:'meu-representante',name:'Meu Representante',domain:'',status:'planned'},
  {key:'meu-servico',name:'Meu Serviço',domain:'',status:'planned'},
- {key:'meu-personal',name:'Meu Personal',domain:'',status:'planned'}
+ {key:'meu-personal',name:'Meu Personal',domain:'',status:'planned'},
+ {key:'minha-clinica',name:'Minha Clínica',domain:'',status:'planned'}
 ];
 
 export const STAGES=['new','contacted','qualified','demo','trial','proposal','won','lost'] as const;
@@ -26,6 +27,7 @@ export function inferProduct(product?:string):ProductKey{
  if(p.includes('represent'))return 'meu-representante';
  if(p.includes('servi'))return 'meu-servico';
  if(p.includes('personal')||p.includes('fitness')||p.includes('educador'))return 'meu-personal';
+ if(p.includes('clinica')||p.includes('clínica')||p.includes('coleta'))return 'minha-clinica';
  return 'meu-espetinho';
 }
 export function productLabel(product?:string){return GRIT_PRODUCTS.find(p=>p.key===inferProduct(product))?.name||'GRIT'}
