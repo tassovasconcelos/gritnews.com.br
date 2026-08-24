@@ -53,7 +53,7 @@ def add_check(checks, key, ok, detail, severity='error'):
 
 def audit_site(site):
     result = {'id': site['id'], 'name': site['name'], 'repository': site.get('repository'), 'url': site.get('url'), 'public_index': site.get('public_index', False), 'status': 'pending' if not site.get('url') else 'unknown', 'checks': []}
-    if not site.get('url'):
+    if not site.get('url') or site.get('status') == 'domain_pending':
         result['status'] = site.get('status', 'pending')
         add_check(result['checks'], 'domain', False, site.get('notes', 'Production domain pending'), 'warning')
         return result
@@ -87,7 +87,7 @@ def audit_site(site):
     for private_path in site.get('private_paths', []):
         private = fetch(site['url'].rstrip('/') + private_path, method='HEAD')
         xrobots = private.get('headers', {}).get('x-robots-tag', '')
-        add_check(result['checks'], f'noindex:{private_path}', 'noindex' in xrobots.lower(), xrobots or 'X-Robots-Tag missing')
+        add_check(result['checks'], f'noindex:{private_path}', 'noindex' in xrobots.lower(), xrobots or 'X-Robots-Tag missing', 'warning')
 
     hard = [c for c in result['checks'] if not c['ok'] and c['severity'] == 'error']
     warn = [c for c in result['checks'] if not c['ok'] and c['severity'] == 'warning']

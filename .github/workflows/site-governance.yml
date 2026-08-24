@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          jq -c '.[] | select(.url != null and .url != "")' ops/sites.json | while read -r site; do
+          jq -c '.[] | select(.url != null and .url != "" and (.status // "") != "domain_pending")' ops/sites.json | while read -r site; do
             name=$(jq -r '.name' <<<"$site")
             url=$(jq -r '.url' <<<"$site")
             echo "Checking $name -> $url"
