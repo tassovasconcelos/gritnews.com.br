@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4'
+import nodemailer from 'npm:nodemailer@6.9.16'
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -15,9 +16,38 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, character => ({
 }[character] as string))
 
 async function sendEmail(to: string, subject: string, body: string, idempotencyKey: string) {
+  const smtpHost = Deno.env.get('SMTP_HOST')
+  const smtpPort = Number(Deno.env.get('SMTP_PORT') || '465')
+  const smtpUser = Deno.env.get('SMTP_USER')
+  const smtpPassword = Deno.env.get('SMTP_PASSWORD')
+  const smtpSecure = (Deno.env.get('SMTP_SECURE') || 'true').toLowerCase() === 'true'
+  const from = Deno.env.get('CUSTOMER_EMAIL_FROM') || `GRIT Soluções <${smtpUser}>`
+  const replyTo = Deno.env.get('CUSTOMER_EMAIL_REPLY_TO') || smtpUser
+
+  if (smtpHost && smtpUser && smtpPassword) {
+    const transport = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      auth: { user: smtpUser, pass: smtpPassword },
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
+    })
+    const result = await transport.sendMail({
+      from,
+      to,
+      subject,
+      text: body,
+      html: `<div style="font-family:Arial,sans-serif;line-height:1.6">${escapeHtml(body).replace(/\n/g, '<br>')}</div>`,
+      replyTo,
+      headers: { 'X-GRIT-Idempotency-Key': idempotencyKey },
+    })
+    if (!result.messageId) throw new Error('smtp_message_id_missing')
+    return result.messageId
+  }
+
   const key = Deno.env.get('RESEND_API_KEY')
-  const from = Deno.env.get('CUSTOMER_EMAIL_FROM')
-  const replyTo = Deno.env.get('CUSTOMER_EMAIL_REPLY_TO')
   if (!key || !from) throw new Error('email_provider_not_configured')
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
