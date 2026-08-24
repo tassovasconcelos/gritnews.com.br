@@ -1,6 +1,6 @@
 # GRIT SaaS Factory — Wave 01
 
-Nomes de trabalho até aprovação de branding: **Meu Representante**, **Meu Serviço** e **Meu Personal**.
+Nomes de trabalho até aprovação de branding: **Meu Representante**, **Meu Serviço**, **Meu Personal** e **Minha Clínica**.
 
 ## Núcleo comum obrigatório
 Todos os novos produtos devem reaproveitar o GRIT Control Center e compartilhar os mesmos padrões de autenticação, CRM, segurança e operação, sem duplicar o módulo `leads`.
@@ -119,15 +119,75 @@ Assessoria de corrida, grupos/turmas, integração com wearables quando autoriza
 ### Segmentos iniciais
 `personal_individual`, `assessoria_corrida`, `studio`, `microacademia`, `educador_autonomo`.
 
+## 4. Minha Clínica
+### ICP
+Clínicas, consultórios, postos/unidades de coleta e pequenos serviços de saúde que precisam organizar evidências operacionais, coletas, equipamentos, documentos, prazos e auditorias.
+
+### Proposta de valor
+**Protocolar, rastrear e comprovar a rotina sensível da clínica em um único lugar.** A ferramenta deve facilitar conformidade operacional e preparação para inspeções, sem substituir responsável técnico, assessoria jurídica/regulatória ou os sistemas oficiais dos órgãos públicos.
+
+### MVP regulatório-operacional
+1. **Protocolos e coletas**: número único, paciente/atendimento minimizado, tipo de coleta, solicitante, coletador, data/hora, material, lote/kit quando aplicável, condições de coleta, acondicionamento, destino e status.
+2. **Rastreabilidade da amostra**: etiquetas/identificador, cadeia de custódia, origem/destino, recebimento, rejeição, motivo, armazenamento e transporte.
+3. **Controle de temperatura e condições ambientais**: equipamento/local, faixa esperada, leitura, horário, responsável, desvio e ação corretiva.
+4. **Equipamentos e metrologia**: patrimônio, fabricante/modelo/série, criticidade, manutenção, calibração/verificação, certificado, laboratório executor, rastreabilidade metrológica, vencimento e alerta.
+5. **Documentos regulatórios**: licença/alvará sanitário, CNES quando aplicável, responsável técnico, certificados, contratos, POPs, registros de treinamento e demais documentos definidos por tipo de serviço e jurisdição.
+6. **POP e documentos controlados**: versão, aprovação, vigência, revisão, ciência de usuários e histórico imutável.
+7. **Não conformidades e CAPA**: ocorrência, risco, causa, ação imediata, ação corretiva/preventiva, responsável, prazo, evidência e encerramento.
+8. **Treinamentos e competências**: colaborador, função, treinamento, validade, evidência e reciclagem.
+9. **Resíduos e biossegurança**: registro de rotina/checklists, segregação e evidências; PGRSS e exigências locais devem ser configuráveis, não presumidas pelo sistema.
+10. **Auditoria e inspeção**: checklist por requisito, evidências anexas, pendências, plano de ação, prazo e exportação de dossiê.
+11. **Alertas críticos**: licença/calibração/treinamento/POP vencendo, temperatura fora de faixa, amostra pendente, CAPA atrasada e documento ausente.
+12. **Relatórios**: coletas por período, rejeição de amostras, desvios, CAPAs, equipamentos vencidos, documentos próximos do vencimento e trilha de auditoria.
+
+### Perfis e segregação de função
+- proprietário/direção;
+- responsável técnico;
+- coleta/enfermagem/técnico habilitado;
+- qualidade/regulatório;
+- recepção com dados mínimos;
+- manutenção/metrologia;
+- auditor/consulta com acesso temporário e restrito.
+
+### Compliance by design
+- dados de saúde tratados como **dados pessoais sensíveis**;
+- menor privilégio, RLS por tenant e por função;
+- logs de visualização/alteração para dados críticos;
+- anexos privados, URLs temporárias e controle de download;
+- retenção configurável e trilha de auditoria;
+- campos clínicos mínimos: o produto não deve virar prontuário eletrônico por acidente;
+- criptografia em trânsito e controles de segredo no backend;
+- assinatura/aprovação de registros críticos com identidade e timestamp;
+- nenhuma exclusão física de registro regulatório crítico sem política e trilha apropriadas.
+
+### Base regulatória configurável
+A matriz de requisitos deve ser **versionada por norma, tipo de estabelecimento, atividade, UF e município**. Não codificar uma regra como universal apenas porque vale para um tipo de clínica. Para serviços que executam atividades relacionadas a exames de análises clínicas, considerar a RDC 786/2023 e suas alterações aplicáveis; para equipamentos e medições, manter documentação de calibração/verificação e rastreabilidade metrológica conforme a exigência aplicável; requisitos locais da Vigilância Sanitária devem ser cadastráveis e versionados.
+
+### Roadmap V2
+- QR/barcode para cadeia de custódia;
+- assinatura eletrônica;
+- integração com laboratório parceiro/LIS via API quando disponível;
+- portal seguro para documentos de auditoria;
+- inventário de produtos/insumos com lote, validade e alerta de regularização ANVISA quando aplicável;
+- matriz de risco por processo;
+- checklist offline de inspeção;
+- dashboard executivo de compliance.
+
+### Segmentos iniciais
+`clinica_ambulatorial`, `consultorio`, `posto_coleta`, `clinica_exames`, `saude_ocupacional`, `clinica_estetica` — cada segmento deve habilitar somente módulos/requisitos pertinentes.
+
 ## Arquitetura modular proposta
 `GRIT SaaS Core` → Auth/Tenant → RBAC → Billing → CRM → Notifications → Audit → Analytics
 
-Cada app adiciona somente módulos verticais. O CRM de aquisição permanece central e o dado operacional do cliente fica isolado por tenant/app.
+Cada app adiciona somente módulos verticais. O CRM de aquisição permanece central e o dado operacional do cliente fica isolado por tenant/app. Para Minha Clínica, dados sensíveis e registros regulatórios exigem camada adicional de segregação, auditoria e retenção.
 
 ## Ordem recomendada de construção
 1. **Meu Representante** — maior reaproveitamento do CRM/OportunidadesPro e menor complexidade de domínio.
 2. **Meu Serviço** — grande mercado e excelente aderência a orçamento/agenda/WhatsApp.
-3. **Meu Personal** — forte potencial de recorrência, mas exige cuidado adicional com dados sensíveis e experiência do aluno.
+3. **Meu Personal** — forte potencial de recorrência, com cuidado adicional de dados sensíveis.
+4. **Minha Clínica** — alto valor e aderência à expertise GRIT em saúde, mas exige validação regulatória por escopo e implementação de segurança/auditoria mais rigorosa antes da homologação.
 
 ## Gates de produto
 Nenhum app avança para mídia paga sem: login/recuperação funcionando, RLS, perfis, formulário→CRM, trial/onboarding, billing, páginas legais, tracking, suporte, health check e fluxo comercial testado.
+
+Para **Minha Clínica**, acrescentar gates obrigatórios: modelagem de dados sensíveis aprovada, DPIA/relatório de impacto quando aplicável, matriz regulatória validada pelo responsável técnico/consultoria competente, testes de segregação por perfil, backup/restauração testados, auditoria de acessos e política de retenção definida.
