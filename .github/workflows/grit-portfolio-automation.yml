@@ -9,12 +9,14 @@ on:
     paths:
       - 'apps/**'
       - 'ops/portfolio_apps.json'
+      - 'ops/auth_registry.json'
       - '.github/workflows/grit-portfolio-automation.yml'
   push:
     branches: [main]
     paths:
       - 'apps/**'
       - 'ops/portfolio_apps.json'
+      - 'ops/auth_registry.json'
       - '.github/workflows/grit-portfolio-automation.yml'
 
 permissions:
@@ -36,17 +38,38 @@ jobs:
         run: |
           set -euo pipefail
           jq -e 'type == "array" and length > 0' ops/portfolio_apps.json >/dev/null
+          jq -e 'type == "array" and length > 0' ops/auth_registry.json >/dev/null
+
           duplicate_ids=$(jq -r '.[].id' ops/portfolio_apps.json | sort | uniq -d)
           if [ -n "$duplicate_ids" ]; then
             echo "::error::Duplicate portfolio ids: $duplicate_ids"
             exit 1
           fi
+
+          duplicate_auth_ids=$(jq -r '.[].id' ops/auth_registry.json | sort | uniq -d)
+          if [ -n "$duplicate_auth_ids" ]; then
+            echo "::error::Duplicate auth registry ids: $duplicate_auth_ids"
+            exit 1
+          fi
+
+          invalid_superadmins=$(jq -r '.[] | select(.superadmin_email != "gritsolucoes@gmail.com") | .id' ops/auth_registry.json)
+          if [ -n "$invalid_superadmins" ]; then
+            echo "::error::Projects with invalid global superadmin identity: $invalid_superadmins"
+            exit 1
+          fi
+
           jq -c '.[]' ops/portfolio_apps.json | while read -r app; do
             id=$(jq -r '.id' <<<"$app")
             name=$(jq -r '.name' <<<"$app")
             path=$(jq -r '.path // empty' <<<"$app")
             stage=$(jq -r '.stage' <<<"$app")
             echo "Checking registry: $name [$id] stage=$stage"
+
+            if ! jq -e --arg id "$id" '.[] | select(.id == $id)' ops/auth_registry.json >/dev/null; then
+              echo "::error::$name [$id] has no authentication governance entry"
+              exit 1
+            fi
+
             if [ -n "$path" ] && [ ! -e "$path" ]; then
               if [ "$stage" = "development" ] || [ "$stage" = "domain_pending" ]; then
                 echo "::warning::$name registry path is not scaffolded yet: $path"
@@ -55,6 +78,18 @@ jobs:
                 exit 1
               fi
             fi
+          done
+
+          jq -c '.[]' ops/auth_registry.json | while read -r auth; do
+            id=$(jq -r '.id' <<<"$auth")
+            mode=$(jq -r '.auth_mode // empty' <<<"$auth")
+            source=$(jq -r '.source_of_truth // empty' <<<"$auth")
+            status=$(jq -r '.status // empty' <<<"$auth")
+            if [ -z "$mode" ] || [ -z "$source" ] || [ -z "$status" ]; then
+              echo "::error::Incomplete auth governance entry: $id"
+              exit 1
+            fi
+            echo "Auth policy: $id mode=$mode source=$source status=$status"
           done
 
   build:
@@ -130,6 +165,7 @@ jobs:
         run: |
           echo '### GRIT Portfolio Automation' >> "$GITHUB_STEP_SUMMARY"
           echo '- Registry: ${{ needs.registry.result }}' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Authentication governance: enforced (global SUPERADMIN + source of truth).' >> "$GITHUB_STEP_SUMMARY"
           echo '- Build matrix: ${{ needs.build.result }}' >> "$GITHUB_STEP_SUMMARY"
           echo '- Production health: ${{ needs.production-health.result }}' >> "$GITHUB_STEP_SUMMARY"
           echo '- Deploys remain isolated per product; this workflow never performs blind global deploys.' >> "$GITHUB_STEP_SUMMARY"
