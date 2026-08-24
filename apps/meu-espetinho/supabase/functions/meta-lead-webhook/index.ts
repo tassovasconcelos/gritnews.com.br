@@ -85,10 +85,12 @@ Deno.serve(async request => {
   }
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
 
-  const appSecret = Deno.env.get('META_APP_SECRET')
-  if (!appSecret) return json({ error: 'webhook_not_configured' }, 503)
+  const appSecrets = [Deno.env.get('META_APP_SECRET'), Deno.env.get('INSTAGRAM_APP_SECRET')].filter(Boolean) as string[]
+  if (!appSecrets.length) return json({ error: 'webhook_not_configured' }, 503)
   const rawBody = await request.text()
-  if (!await validSignature(rawBody, request.headers.get('x-hub-signature-256'), appSecret)) {
+  const signature = request.headers.get('x-hub-signature-256')
+  const signatures = await Promise.all(appSecrets.map(secret => validSignature(rawBody, signature, secret)))
+  if (!signatures.some(Boolean)) {
     return json({ error: 'invalid_signature' }, 401)
   }
 
