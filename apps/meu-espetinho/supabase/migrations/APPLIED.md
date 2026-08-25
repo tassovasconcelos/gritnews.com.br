@@ -41,6 +41,12 @@ Aplicadas em 24/08/2026 para escala multicanal responsável:
 - `compliant_multichannel_lead_growth` — atribuição de origem, consentimento por canal, fila protegida, limites de frequência e pausa em resposta;
 - `expand_outreach_queue_guards` — canais Meta e estados operacionais de conformidade.
 
+Aplicada em produção em 25/08/2026:
+
+- `atomic_lead_dispatch_claim` — reserva atômica dos itens da fila, estado `processing`, limite de cinco tentativas, recuperação de reservas travadas após 15 minutos e proteção dos estados finais contra retorno indevido a `ready`.
+
+A Edge Function `lead-dispatch` correspondente foi publicada no projeto `gritnews`. Teste sem `x-dispatch-secret` retornou `401 unauthorized`, confirmando execução ativa e bloqueio de chamadas não autorizadas sem consumir a fila.
+
 Frontend da branch `feat/meu-espetinho-fase-1-foundation` já conectado a:
 
 - `current_user_tenants()` para resolução explícita do ambiente autenticado;

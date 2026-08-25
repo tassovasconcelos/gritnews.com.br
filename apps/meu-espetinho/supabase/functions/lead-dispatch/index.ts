@@ -104,16 +104,25 @@ Deno.serve(async request => {
   const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   if (!url || !key) return json({ error: 'backend_not_configured' }, 503)
   const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
-  const { data: queue, error } = await supabase.from('lead_outreach_queue')
-    .select('id,lead_id,channel,template_key,payload,dedupe_key,attempts,leads!inner(*)')
-    .eq('status', 'ready').eq('compliance_status', 'approved').lte('scheduled_at', new Date().toISOString())
-    .order('scheduled_at').limit(20)
-  if (error) return json({ error: 'queue_read_failed' }, 500)
+  const claimToken = crypto.randomUUID()
+  const { data: queue, error } = await supabase.rpc('grit_claim_outreach_batch', {
+    p_limit: 20,
+    p_claim_token: claimToken,
+  })
+  if (error) return json({ error: 'queue_claim_failed' }, 500)
+
+  const leadIds = [...new Set((queue || []).map(item => item.lead_id).filter(Boolean))]
+  const { data: leads, error: leadsError } = leadIds.length
+    ? await supabase.from('leads').select('*').in('id', leadIds)
+    : { data: [], error: null }
+  if (leadsError) return json({ error: 'claimed_leads_read_failed' }, 500)
+  const leadsById = new Map((leads || []).map(lead => [lead.id, lead]))
 
   const results: Array<Record<string, unknown>> = []
   for (const item of queue || []) {
-    const lead = (Array.isArray(item.leads) ? item.leads[0] : item.leads) as Record<string, unknown>
+    const lead = leadsById.get(item.lead_id) as Record<string, unknown> | undefined
     try {
+      if (!lead) throw new Error('claimed_lead_not_found')
       const { data: template } = await supabase.from('lead_message_templates').select('subject,body')
         .eq('template_key', item.template_key).eq('channel', item.channel).eq('active', true)
         .or(`product_key.eq.${lead.product_key || lead.product},product_key.is.null`).limit(1).maybeSingle()
@@ -128,12 +137,17 @@ Deno.serve(async request => {
         if (!lead.whatsapp) throw new Error('recipient_whatsapp_missing')
         providerMessageId = await sendWhatsApp(String(lead.whatsapp), item.template_key, lead)
       } else throw new Error('channel_requires_inbound_window_or_human_review')
-      await supabase.from('lead_outreach_queue').update({ status: 'sent', sent_at: new Date().toISOString(), provider_message_id: providerMessageId, attempts: (item.attempts || 0) + 1, last_error: null }).eq('id', item.id).eq('status', 'ready')
+      const { data: sent, error: sentError } = await supabase.from('lead_outreach_queue')
+        .update({ status: 'sent', sent_at: new Date().toISOString(), provider_message_id: providerMessageId, last_error: null, claimed_at: null, claim_token: null })
+        .eq('id', item.id).eq('status', 'processing').eq('claim_token', claimToken).select('id').maybeSingle()
+      if (sentError || !sent) throw new Error('dispatch_claim_lost_after_send')
       await supabase.from('lead_events').insert({ lead_id: item.lead_id, event_type: 'message_sent', channel: item.channel, direction: 'outbound', summary: 'Mensagem enviada pela máquina de vendas', metadata: { queue_id: item.id, provider_message_id: providerMessageId } })
       results.push({ id: item.id, ok: true, channel: item.channel })
     } catch (caught) {
       const message = caught instanceof Error ? caught.message.slice(0, 500) : 'dispatch_failed'
-      await supabase.from('lead_outreach_queue').update({ status: 'failed', attempts: (item.attempts || 0) + 1, last_error: message }).eq('id', item.id).eq('status', 'ready')
+      await supabase.from('lead_outreach_queue')
+        .update({ status: 'failed', last_error: message, claimed_at: null, claim_token: null })
+        .eq('id', item.id).eq('status', 'processing').eq('claim_token', claimToken)
       results.push({ id: item.id, ok: false, channel: item.channel, error: message })
     }
   }
