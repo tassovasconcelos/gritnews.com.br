@@ -102,17 +102,14 @@ jobs:
       matrix:
         app:
           - name: GRIT News
-            install: npm install --no-audit --no-fund
-            build: npm run build:gritnews
+            build: pnpm run build:gritnews
             smoke: ''
           - name: Meu Espetinho
-            install: npm install --no-audit --no-fund --prefix apps/meu-espetinho
-            build: npm run build --prefix apps/meu-espetinho
-            smoke: npm run smoke --prefix apps/meu-espetinho
+            build: pnpm --filter meu-espetinho build
+            smoke: pnpm --filter meu-espetinho smoke
           - name: Sr. Padeiro
-            install: npm install --no-audit --no-fund --prefix apps/sr-padeiro
-            build: npm run build --prefix apps/sr-padeiro
-            smoke: npm run smoke --prefix apps/sr-padeiro
+            build: pnpm --filter sr-padeiro build
+            smoke: pnpm --filter sr-padeiro smoke
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -121,8 +118,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install
-        run: ${{ matrix.app.install }}
+        run: pnpm install --frozen-lockfile
       - name: Build
         run: ${{ matrix.app.build }}
       - name: Smoke
