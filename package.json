@@ -3,15 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "dev": "tsx server.ts",
-    "dev:gritnews": "npm run dev --workspace=@gritnews/gritnews",
-    "build": "vite build && npm run build --workspace=meu-espetinho && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "build:gritnews": "npm run build --workspace=@gritnews/gritnews",
+    "dev:gritnews": "pnpm --filter @gritnews/gritnews dev",
+    "build": "vite build && pnpm --filter meu-espetinho build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build:gritnews": "pnpm --filter @gritnews/gritnews build",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
