@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "name": "GRIT 100x2 em 30 dias",
+  "starts_on": "2026-08-26",
+  "ends_on": "2026-09-24",
+  "north_star": "paid_active_subscribers",
+  "products": {
+    "meu-espetinho": {
+      "paid_subscribers_target": 100,
+      "qualified_visits_target": 5054,
+      "consented_leads_target": 758,
+      "trials_target": 303,
+      "daily": { "visits": 169, "leads": 26, "trials": 11, "paid": 3.34 },
+      "trial_days": 3
+    },
+    "sr-padeiro": {
+      "paid_subscribers_target": 100,
+      "qualified_visits_target": 5054,
+      "consented_leads_target": 758,
+      "trials_target": 303,
+      "daily": { "visits": 169, "leads": 26, "trials": 11, "paid": 3.34 },
+      "trial_days": 7
+    }
+  },
+  "funnel_assumptions": {
+    "visit_to_consented_lead": 0.15,
+    "lead_to_trial": 0.40,
+    "trial_to_paid": 0.33
+  },
+  "guardrails": {
+    "target_cac_brl": 120,
+    "maximum_modeled_acquisition_spend_brl": 24000,
+    "spend_requires_human_approval": true,
+    "scale_increment_percent": 20,
+    "scale_only_after_attributed_paid_conversions": 3,
+    "pause_if_trial_to_paid_below": 0.15,
+    "pause_if_cac_above_brl": 180,
+    "consent_required_per_channel": true,
+    "respect_do_not_contact": true,
+    "fake_engagement_forbidden": true
+  },
+  "checkpoints": [
+    { "day": 3, "paid_per_product": 3, "purpose": "validate_capture_and_activation" },
+    { "day": 7, "paid_per_product": 12, "purpose": "validate_first_cac" },
+    { "day": 14, "paid_per_product": 35, "purpose": "scale_only_winners" },
+    { "day": 21, "paid_per_product": 65, "purpose": "retention_and_referrals" },
+    { "day": 30, "paid_per_product": 100, "purpose": "goal" }
+  ]
+}
