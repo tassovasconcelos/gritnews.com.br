@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "sourceOfTruth": "supabase:gritnews",
+  "defaultOwner": "grit-growth",
+  "products": {
+    "meu_espetinho": {
+      "hosts": ["meuespetinho.gritnews.com.br"],
+      "campaignPrefixes": ["controle_sem_caderninho", "google_intencao_sistema", "remarketing_teste_assinatura"],
+      "destination": "whatsapp:meu_espetinho_sales",
+      "primaryConversion": "subscription_started"
+    },
+    "sr_padeiro": {
+      "hosts": ["srpadeiro.gritnews.com.br"],
+      "campaignPrefixes": ["srp_"],
+      "destination": "whatsapp:sr_padeiro_sales",
+      "primaryConversion": "lead_qualified"
+    },
+    "grit_media": {
+      "hosts": ["gritnews.com.br"],
+      "paths": ["/anuncie", "/parcerias", "/produtos"],
+      "destination": "queue:grit_media_sales",
+      "primaryConversion": "proposal_sent"
+    },
+    "sac_proh": {
+      "hosts": ["apps.sacproh.gritnews.com.br"],
+      "destination": "queue:sac_proh",
+      "primaryConversion": "case_resolved"
+    },
+    "moacir_rocha": {
+      "hosts": ["moacirrocha.adv.br"],
+      "destination": "queue:moacir_rocha_legal",
+      "primaryConversion": "consultation_scheduled"
+    },
+    "tenpets": {
+      "hosts": ["tenpets.gritnews.com.br"],
+      "destination": "queue:tenpets_partnerships",
+      "primaryConversion": "partner_qualified"
+    },
+    "eusebio_imoveis": {
+      "hosts": ["gritnews.com.br"],
+      "paths": ["/imoveis", "/eusebio"],
+      "destination": "queue:eusebio_real_estate",
+      "primaryConversion": "visit_scheduled"
+    }
+  },
+  "requiredLeadFields": ["name", "source", "landing_page", "product", "consent_lgpd"],
+  "identityFields": ["whatsapp", "email", "gclid", "fbclid"],
+  "stages": ["new", "contacted", "qualified", "trial", "proposal", "won", "lost"],
+  "automation": {
+    "contactRequiresConsent": true,
+    "bulkSendRequiresApproval": true,
+    "externalCampaignActivationRequiresApproval": true,
+    "dedupeWindowDays": 90
+  }
+}

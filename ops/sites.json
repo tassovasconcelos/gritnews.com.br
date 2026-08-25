@@ -33,6 +33,7 @@
     "search_console_property": "sc-domain:gritnews.com.br",
     "private_paths": ["/admin", "/app", "/login"],
     "critical": true,
+    "status": "published_source_integrated",
     "notes": "Produto comercial GRIT. Indexar somente landing e páginas públicas; app, login e administração permanecem fora do índice."
   },
   {
