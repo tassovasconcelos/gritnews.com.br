@@ -13,8 +13,8 @@ Deno.serve(async(req)=>{try{
   const body=await req.json();const event=String(body.event||"");const checkout=body.checkout||body.payment||{};const providerId=String(checkout.id||"");
   if(!providerId||!event)return json({error:"invalid_payload"},400);
   const eventKey=`asaas:${event}:${providerId}`;
-  const {error:eventError}=await sb.from("billing_webhook_events").insert({provider:"asaas",event_key:eventKey,event_type:event,payload:body});
-  if(eventError?.code==="23505")return json({ok:true,duplicate:true});if(eventError)return json({error:"event_store_failed"},500);
+  const {data:claim,error:eventError}=await sb.from("billing_webhook_events").upsert({event_key:eventKey,event_type:event,provider_id:providerId,payload:body},{onConflict:"event_key",ignoreDuplicates:true}).select("id").maybeSingle();
+  if(eventError)return json({error:"event_store_failed"},500);if(!claim)return json({ok:true,duplicate:true});
   const {data:transaction}=await sb.from("srp_billing_transactions").select("id,organization_id,kind,status,amount,external_reference").eq("provider","asaas").eq("provider_id",providerId).maybeSingle();
   if(!transaction)return json({ok:true,ignored:"unknown_checkout"});
   const paid=event==="CHECKOUT_PAID"||event==="PAYMENT_CONFIRMED"||event==="PAYMENT_RECEIVED";
