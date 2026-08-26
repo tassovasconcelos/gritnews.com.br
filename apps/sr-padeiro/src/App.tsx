@@ -7,6 +7,7 @@ import Admin from './Admin';
 import Onboarding from './Onboarding';
 import Workspace from './Workspace';
 import SubscriptionCard from './SubscriptionCard';
+import GatewayHomologation from './GatewayHomologation';
 import { supabase } from './lib/supabase';
 
 type Role='owner'|'manager'|'cashier'|'stockist'|'viewer';
@@ -37,6 +38,7 @@ export default function App() {
   if(isSeoPath(path)) return <SeoLanding path={path}/>;
   if(loading) return <div className="splash"><div className="brand-mark">SP</div><strong>Sr. Padeiro</strong></div>;
   if(!session) return <Auth/>;
+  if(path==='/homologacao-gateway') return isSuper?<GatewayHomologation/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p></section></main>;
   if(path.startsWith('/admin')) return isSuper?<Admin/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p><a className="btn-dark" href="/app">Voltar ao app</a></section></main>;
   if(!orgId) return <Onboarding user={session.user} onDone={()=>hydrate(session)}/>;
   if(access==='blocked') return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">SP</div><h1>Continue usando o Sr. Padeiro</h1><p className="auth-copy">Seu período de teste terminou. Assine para liberar novamente o ambiente após a confirmação do pagamento.</p><SubscriptionCard orgId={orgId}/><a className="btn-outline" href="/">Voltar ao site</a><button className="auth-logout" onClick={()=>supabase.auth.signOut()}>Sair</button></section></main>;

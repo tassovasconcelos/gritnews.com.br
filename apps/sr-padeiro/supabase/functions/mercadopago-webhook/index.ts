@@ -68,9 +68,16 @@ Deno.serve(async(request)=>{
         if(!tenantId||currency!=="BRL"||!money(amount,89))return json({error:"subscription_validation_failed"},422);
         await sb.from("subscriptions").update({provider_status:data.status,status:mapped,provider_subscription_id:String(data.id),updated_at:new Date().toISOString()}).eq("tenant_id",tenantId).eq("plan_code","meu_espetinho_89");
         await sb.from("tenants").update({subscription_status:mapped}).eq("id",tenantId);
+      }else if(reference.startsWith("grit_homologation:subscription:")){
+        if(currency!=="BRL"||!money(amount,1))return json({error:"homologation_validation_failed"},422);
       }else return json({error:"subscription_reference_invalid"},422);
     }else if(type==="subscription_authorized_payment"){
       const preapproval=String(data.preapproval_id||"");if(data.currency_id!=="BRL")return json({error:"subscription_payment_validation_failed"},422);
+      if(money(data.transaction_amount,1)){
+        const testResponse=await fetch(`https://api.mercadopago.com/preapproval/${preapproval}`,{headers:{Authorization:`Bearer ${accessToken}`}});const testSubscription=await testResponse.json();
+        if(!testResponse.ok||!String(testSubscription.external_reference||"").startsWith("grit_homologation:subscription:"))return json({error:"subscription_payment_validation_failed"},422);
+        return json({ok:true,homologation:true});
+      }
       if(!money(data.transaction_amount,89))return json({error:"subscription_payment_validation_failed"},422);
       const {data:srpSubscription}=await sb.from("srp_subscriptions").select("organization_id").eq("provider_subscription_id",preapproval).eq("plan_code","sr_padeiro_89").maybeSingle();
       if(srpSubscription?.organization_id){
