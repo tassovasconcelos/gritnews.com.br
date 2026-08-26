@@ -2,7 +2,7 @@ node_modules/
 build/
 dist/
 coverage/
-apps/sr-padeiro/supabase/.temp/
+**/supabase/.temp/
 .DS_Store
 *.log
 .env*
