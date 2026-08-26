@@ -40,7 +40,14 @@ Deno.serve(async(request)=>{
     await sb.from("billing_webhook_events").update({payload:data}).eq("id",claim.id);
 
     const reference=String(data.external_reference||"");
-    if(type==="payment"&&reference.startsWith("activation:")){
+    if(type==="payment"&&reference.startsWith("srp_activation:")){
+      const organizationId=reference.split(":")[1];
+      if(data.status!=="approved"||data.currency_id!=="BRL"||!money(data.transaction_amount,199))return json({error:"payment_validation_failed"},422);
+      const {data:transaction}=await sb.from("srp_billing_transactions").select("id,amount").eq("organization_id",organizationId).eq("kind","activation").eq("external_reference",`srp_activation:${organizationId}`).eq("status","pending").order("created_at",{ascending:false}).limit(1).maybeSingle();
+      if(!transaction||!money(transaction.amount,199))return json({error:"payment_validation_failed"},422);
+      await sb.from("srp_billing_transactions").update({status:data.status,provider_id:String(data.id),payload:data,updated_at:new Date().toISOString()}).eq("id",transaction.id);
+      await sb.from("srp_organizations").update({activation_paid_at:new Date().toISOString()}).eq("id",organizationId);
+    }else if(type==="payment"&&reference.startsWith("activation:")){
       const tenantId=reference.split(":")[1];
       if(data.status!=="approved"||data.currency_id!=="BRL"||!money(data.transaction_amount,199))return json({error:"payment_validation_failed"},422);
       const {data:transaction}=await sb.from("billing_transactions").select("id,amount").eq("tenant_id",tenantId).eq("kind","activation").eq("external_reference",`activation:${tenantId}`).maybeSingle();
@@ -54,25 +61,32 @@ Deno.serve(async(request)=>{
       const amount=data.auto_recurring?.transaction_amount;const currency=data.auto_recurring?.currency_id;
       if(reference.startsWith("srp_subscription:")){
         const organizationId=reference.split(":")[1];
-        if(!organizationId||currency!=="BRL"||!money(amount,99))return json({error:"subscription_validation_failed"},422);
-        await sb.from("srp_subscriptions").update({provider_status:data.status,status:mapped,provider_subscription_id:String(data.id),updated_at:new Date().toISOString()}).eq("organization_id",organizationId).eq("plan_code","sr_padeiro_99");
+        if(!organizationId||currency!=="BRL"||!money(amount,89))return json({error:"subscription_validation_failed"},422);
+        await sb.from("srp_subscriptions").update({provider_status:data.status,status:mapped,provider_subscription_id:String(data.id),updated_at:new Date().toISOString()}).eq("organization_id",organizationId).eq("plan_code","sr_padeiro_89");
       }else if(reference.startsWith("subscription:")){
         const tenantId=reference.split(":")[1];
         if(!tenantId||currency!=="BRL"||!money(amount,89))return json({error:"subscription_validation_failed"},422);
         await sb.from("subscriptions").update({provider_status:data.status,status:mapped,provider_subscription_id:String(data.id),updated_at:new Date().toISOString()}).eq("tenant_id",tenantId).eq("plan_code","meu_espetinho_89");
         await sb.from("tenants").update({subscription_status:mapped}).eq("id",tenantId);
+      }else if(reference.startsWith("grit_homologation:subscription:")){
+        if(currency!=="BRL"||!money(amount,1))return json({error:"homologation_validation_failed"},422);
       }else return json({error:"subscription_reference_invalid"},422);
     }else if(type==="subscription_authorized_payment"){
       const preapproval=String(data.preapproval_id||"");if(data.currency_id!=="BRL")return json({error:"subscription_payment_validation_failed"},422);
-      if(money(data.transaction_amount,99)){
-        const {data:subscription}=await sb.from("srp_subscriptions").select("organization_id").eq("provider_subscription_id",preapproval).eq("plan_code","sr_padeiro_99").maybeSingle();
-        if(!subscription?.organization_id)return json({error:"subscription_not_found"},422);
-        await sb.from("srp_billing_transactions").upsert({organization_id:subscription.organization_id,provider_id:String(data.id),provider_subscription_id:preapproval,status:data.status||"approved",amount:99,currency:"BRL",external_reference:`srp_subscription:${subscription.organization_id}`,payload:data,occurred_at:new Date().toISOString()},{onConflict:"provider_id"});
-      }else if(money(data.transaction_amount,89)){
-        const {data:subscription}=await sb.from("subscriptions").select("tenant_id").eq("provider_subscription_id",preapproval).eq("plan_code","meu_espetinho_89").maybeSingle();
-        if(!subscription?.tenant_id)return json({error:"subscription_not_found"},422);
-        await sb.from("billing_transactions").insert({tenant_id:subscription.tenant_id,kind:"subscription",provider_id:String(data.id),status:data.status||"approved",amount:89,external_reference:preapproval,payload:data});
-      }else return json({error:"subscription_payment_validation_failed"},422);
+      if(money(data.transaction_amount,1)){
+        const testResponse=await fetch(`https://api.mercadopago.com/preapproval/${preapproval}`,{headers:{Authorization:`Bearer ${accessToken}`}});const testSubscription=await testResponse.json();
+        if(!testResponse.ok||!String(testSubscription.external_reference||"").startsWith("grit_homologation:subscription:"))return json({error:"subscription_payment_validation_failed"},422);
+        return json({ok:true,homologation:true});
+      }
+      if(!money(data.transaction_amount,89))return json({error:"subscription_payment_validation_failed"},422);
+      const {data:srpSubscription}=await sb.from("srp_subscriptions").select("organization_id").eq("provider_subscription_id",preapproval).eq("plan_code","sr_padeiro_89").maybeSingle();
+      if(srpSubscription?.organization_id){
+        await sb.from("srp_billing_transactions").upsert({organization_id:srpSubscription.organization_id,kind:"subscription",provider_id:String(data.id),provider_subscription_id:preapproval,status:data.status||"approved",amount:89,currency:"BRL",external_reference:`srp_subscription:${srpSubscription.organization_id}`,payload:data,occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:"provider_id"});
+      }else{
+        const {data:meSubscription}=await sb.from("subscriptions").select("tenant_id").eq("provider_subscription_id",preapproval).eq("plan_code","meu_espetinho_89").maybeSingle();
+        if(!meSubscription?.tenant_id)return json({error:"subscription_not_found"},422);
+        await sb.from("billing_transactions").insert({tenant_id:meSubscription.tenant_id,kind:"subscription",provider_id:String(data.id),status:data.status||"approved",amount:89,external_reference:preapproval,payload:data});
+      }
     }
     return json({ok:true});
   }catch(error){console.error(error);return json({error:"internal_error"},500)}

@@ -5,7 +5,7 @@ Micro-SaaS mobile-first da GRIT para padarias, mercadinhos, mercearias e conveni
 Posicionamento: **Simples para quem vende. Poderoso para quem administra.**
 Domínio: `https://srpadeiro.gritnews.com.br`
 Comercial: `contato@gritnews.com.br` | WhatsApp `+55 85 92171-6546`
-Oferta atual: implantação R$ 199 + manutenção R$ 99/mês; trial 7 dias.
+Oferta atual: implantação R$ 199 + manutenção R$ 89/mês; trial 7 dias.
 
 ## Operação V1
 - PDV/vendas

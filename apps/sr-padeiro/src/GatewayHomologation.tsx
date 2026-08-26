@@ -1,0 +1,9 @@
+import { useState } from 'react';
+import { CreditCard,ShieldCheck } from 'lucide-react';
+import { supabase } from './lib/supabase';
+
+export default function GatewayHomologation(){
+  const [email,setEmail]=useState('');const [busy,setBusy]=useState<string|null>(null);const [message,setMessage]=useState('');
+  async function create(kind:'one_time'|'subscription'){setBusy(kind);setMessage('');const {data,error}=await supabase.functions.invoke('create-gateway-homologation',{body:{kind,payer_email:email.trim()}});if(error||!data?.checkout_url){setMessage(data?.error==='invalid_input'?'Informe o e-mail da conta Mercado Pago que fará o pagamento.':'Não foi possível criar o link de homologação.');setBusy(null);return}location.href=data.checkout_url}
+  return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">SP</div><h1>Homologação do gateway</h1><p className="auth-copy">Os dois testes custam R$ 1,00 cada e não liberam implantação ou assinatura comercial.</p><label>E-mail da conta Mercado Pago pagadora<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="seu-email@exemplo.com"/></label><button className="btn-orange" disabled={Boolean(busy)} onClick={()=>create('one_time')}><CreditCard/> {busy==='one_time'?'Gerando...':'Testar pagamento único — R$ 1'}</button><button className="btn-dark" disabled={Boolean(busy)} onClick={()=>create('subscription')}><CreditCard/> {busy==='subscription'?'Gerando...':'Testar recorrência mensal — R$ 1'}</button><small><ShieldCheck/> A recorrência de homologação renova por R$ 1/mês até ser cancelada no Mercado Pago.</small>{message&&<p className="subscription-message">{message}</p>}<a className="btn-outline" href="/admin">Voltar ao painel</a></section></main>
+}
