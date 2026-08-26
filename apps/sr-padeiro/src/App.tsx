@@ -6,6 +6,7 @@ import SeoLanding,{isSeoPath} from './SeoLanding';
 import Admin from './Admin';
 import Onboarding from './Onboarding';
 import Workspace from './Workspace';
+import SubscriptionCard from './SubscriptionCard';
 import { supabase } from './lib/supabase';
 
 type Role='owner'|'manager'|'cashier'|'stockist'|'viewer';
@@ -38,7 +39,7 @@ export default function App() {
   if(!session) return <Auth/>;
   if(path.startsWith('/admin')) return isSuper?<Admin/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p><a className="btn-dark" href="/app">Voltar ao app</a></section></main>;
   if(!orgId) return <Onboarding user={session.user} onDone={()=>hydrate(session)}/>;
-  if(access==='blocked') return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">SP</div><h1>Acesso aguardando liberação</h1><p className="auth-copy">Seu período de uso encerrou ou o acesso está suspenso. Fale com a equipe Sr. Padeiro para continuar.</p><a className="btn-orange" href="/">Voltar ao site</a><button className="auth-logout" onClick={()=>supabase.auth.signOut()}>Sair</button></section></main>;
+  if(access==='blocked') return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">SP</div><h1>Continue usando o Sr. Padeiro</h1><p className="auth-copy">Seu período de teste terminou. Assine para liberar novamente o ambiente após a confirmação do pagamento.</p><SubscriptionCard orgId={orgId}/><a className="btn-outline" href="/">Voltar ao site</a><button className="auth-logout" onClick={()=>supabase.auth.signOut()}>Sair</button></section></main>;
   const firstName=session.user.user_metadata?.full_name?.split(' ')[0]||'empreendedor';
   return <Workspace orgId={orgId} userId={session.user.id} role={role} access={access} firstName={firstName} onSignOut={()=>supabase.auth.signOut()}/>;
 }

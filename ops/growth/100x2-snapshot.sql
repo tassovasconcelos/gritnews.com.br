@@ -33,8 +33,10 @@ paid as (
   where x.created_at>=s.campaign_start and x.created_at<s.campaign_end
     and x.status in ('active','paid')
   union all
-  -- Sr. Padeiro ainda não possui confirmação de cobrança ligada ao produto.
-  select 'sr-padeiro',0::numeric
+  select 'sr-padeiro',count(*)::numeric
+  from public.srp_subscriptions x cross join settings s
+  where x.created_at>=s.campaign_start and x.created_at<s.campaign_end
+    and x.status='active'
 ),
 activation as (
   select 'meu-espetinho'::text product,count(distinct tenant_id)::numeric total
@@ -105,10 +107,7 @@ select jsonb_build_object(
       when trials>0 and paid/trials<0.15 then 'recommend_pause'
       else 'cac_required_before_scale'
     end,
-    'measurement_notes',case when product='sr-padeiro'
-      then jsonb_build_array('qualified_visits_unavailable','paid_billing_not_connected')
-      else jsonb_build_array('qualified_visits_unavailable')
-    end
+    'measurement_notes',jsonb_build_array('qualified_visits_unavailable')
   ) order by product)
 ) as grit_100x2_snapshot
 from funnel;

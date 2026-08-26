@@ -7,6 +7,7 @@ import './styles.css';
 import './workspace.css';
 import './landing-v2.css';
 import './marketing-consent.css';
+import './subscription.css';
 
 initTracking();
 
