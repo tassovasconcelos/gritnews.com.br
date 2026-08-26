@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { LockKeyhole, Mail, UserRound } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import { getAttribution,track } from './lib/tracking';
 
 type Mode = 'login' | 'signup' | 'forgot';
 
@@ -28,12 +29,14 @@ export default function Auth() {
       }
 
       if (mode === 'signup') {
+        const acquisition=getAttribution();
         const { error } = await supabase.auth.signUp({
           email:normalizedEmail,
           password,
-          options: { data: { full_name: name.trim(), product: 'sr-padeiro' } },
+          options: { data: { full_name: name.trim(), product: 'sr-padeiro', acquisition } },
         });
         if (error) throw error;
+        track('sign_up',{product:'sr-padeiro',source:acquisition.source,campaign:acquisition.campaign});
         setMessage('Cadastro realizado. Confira seu e-mail para confirmar o acesso.');
         return;
       }
