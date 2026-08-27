@@ -14,5 +14,11 @@ Deno.serve(async(req)=>{try{
   const {data:{user}}=await sb.auth.getUser(auth.replace("Bearer ",""));if(!user)return json(req,{error:"unauthorized"},401);
   const apiKey=Deno.env.get("ASAAS_API_KEY")||await secret(sb,"ASAAS_API_KEY");
   const mode=(Deno.env.get("ASAAS_MODE")||await secret(sb,"ASAAS_MODE")||"sandbox")==="production"?"production":"sandbox";
-  return json(req,{configured:Boolean(apiKey),mode});
+  if(!apiKey)return json(req,{configured:false,ready:false,mode},503);
+  const base=mode==="production"?"https://api.asaas.com/v3":"https://api-sandbox.asaas.com/v3";
+  const response=await fetch(`${base}/finance/balance`,{headers:{Accept:"application/json",access_token:apiKey,"User-Agent":"GRIT-Hybrid-Gateway/2.1"}});
+  const pixEnabled=(Deno.env.get("ASAAS_PIX_ENABLED")||await secret(sb,"ASAAS_PIX_ENABLED")||"false")==="true";
+  if(!response.ok){console.error("asaas_health_failed",{status:response.status});return json(req,{configured:true,ready:false,mode,pix_enabled:pixEnabled},503)}
+  return json(req,{configured:true,ready:true,mode,pix_enabled:pixEnabled,payment_methods:pixEnabled?["PIX","CREDIT_CARD"]:["CREDIT_CARD"]});
 }catch(e){console.error(e);return json(req,{error:"internal_error"},500)}});
+
