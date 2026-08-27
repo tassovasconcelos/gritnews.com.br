@@ -11,9 +11,10 @@ Deno.serve(async(request)=>{
   if(request.method!=="POST")return json({ok:true});
   try{
     const sb=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const accessToken=Deno.env.get("MERCADO_PAGO_ACCESS_TOKEN")||await secret(sb,"MERCADO_PAGO_ACCESS_TOKEN");
-    const webhookSecret=Deno.env.get("MERCADO_PAGO_WEBHOOK_SECRET")||await secret(sb,"MERCADO_PAGO_WEBHOOK_SECRET");
     const mode=Deno.env.get("MERCADO_PAGO_MODE")||await secret(sb,"MERCADO_PAGO_MODE")||"production";
+    const tokenName=mode==="test"?"MERCADO_PAGO_TEST_ACCESS_TOKEN":"MERCADO_PAGO_ACCESS_TOKEN";
+    const accessToken=Deno.env.get(tokenName)||await secret(sb,tokenName);
+    const webhookSecret=Deno.env.get("MERCADO_PAGO_WEBHOOK_SECRET")||await secret(sb,"MERCADO_PAGO_WEBHOOK_SECRET");
     if(!accessToken||!webhookSecret)return json({error:"not_configured"},503);
 
     const url=new URL(request.url);const signature=request.headers.get("x-signature")||"";const requestId=request.headers.get("x-request-id")||"";
@@ -91,3 +92,4 @@ Deno.serve(async(request)=>{
     return json({ok:true});
   }catch(error){console.error(error);return json({error:"internal_error"},500)}
 });
+
