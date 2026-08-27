@@ -101,8 +101,12 @@ Deno.serve(async (req) => {
     const amount = kind === "activation" ? 199 : 89;
     const endDate = new Date();
     endDate.setFullYear(endDate.getFullYear() + 5);
+    // PIX checkout creation is rejected by Asaas when the account has no PIX
+    // key. Keep card available in every environment and enable PIX explicitly
+    // only after the corresponding Asaas account has been provisioned.
+    const pixEnabled = (Deno.env.get("ASAAS_PIX_ENABLED") || await secret(sb, "ASAAS_PIX_ENABLED") || "false") === "true";
     const payload: Record<string, unknown> = {
-      billingTypes: kind === "activation" ? ["PIX", "CREDIT_CARD"] : ["CREDIT_CARD"],
+      billingTypes: kind === "activation" && pixEnabled ? ["PIX", "CREDIT_CARD"] : ["CREDIT_CARD"],
       chargeTypes: [kind === "activation" ? "DETACHED" : "RECURRENT"],
       minutesToExpire: 60,
       externalReference,
@@ -131,7 +135,7 @@ Deno.serve(async (req) => {
 
     const checkoutId = String(data.id || "");
     if (!checkoutId) return json(req, { error: "asaas_invalid_response", mode }, 502);
-    const checkoutUrl = String(data.link || `${mode === "production" ? "https://asaas.com" : "https://sandbox.asaas.com"}/checkoutSession/show?id=${encodeURIComponent(checkoutId)}`);
+    const checkoutUrl = String(data.link || `${mode === "production" ? "https://asaas.com" : "https://sandbox.asaas.com"}/checkoutSession/show/${encodeURIComponent(checkoutId)}`);
     const { error: insertError } = await sb.from(transactionTable).insert({
       [entityColumn]: entityId, kind, provider: "asaas", provider_id: checkoutId, status: "pending", amount, currency: "BRL",
       external_reference: externalReference, checkout_url: checkoutUrl, payload: { checkout_id: checkoutId, _integration_mode: mode, product },
@@ -140,9 +144,10 @@ Deno.serve(async (req) => {
       console.error("asaas_transaction_store_failed", { product, code: insertError.code });
       return json(req, { error: "transaction_store_failed" }, 500);
     }
-    return json(req, { checkout_url: checkoutUrl, checkout_id: checkoutId, mode, reused: false });
+    return json(req, { checkout_url: checkoutUrl, checkout_id: checkoutId, mode, reused: false, payment_methods: payload.billingTypes });
   } catch (error) {
     console.error("create_asaas_checkout_failed", error);
     return json(req, { error: "internal_error" }, 500);
   }
 });
+
