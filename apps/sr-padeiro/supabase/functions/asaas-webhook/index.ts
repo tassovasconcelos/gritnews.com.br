@@ -18,7 +18,10 @@ Deno.serve(async (req) => {
   try {
     if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const expected = Deno.env.get("ASAAS_WEBHOOK_TOKEN") || await secret(sb, "ASAAS_WEBHOOK_TOKEN");
+    // The Vault is the canonical source configured by the GRIT admin flow.
+    // Falling back to Deno env keeps older deployments compatible, while
+    // preventing a stale project secret from overriding the current token.
+    const expected = await secret(sb, "ASAAS_WEBHOOK_TOKEN") || Deno.env.get("ASAAS_WEBHOOK_TOKEN") || "";
     const received = req.headers.get("asaas-access-token") || "";
     if (!expected || !equal(received, expected)) return json({ error: "invalid_signature" }, 401);
 
@@ -90,3 +93,4 @@ Deno.serve(async (req) => {
     return json({ error: "internal_error" }, 500);
   }
 });
+
