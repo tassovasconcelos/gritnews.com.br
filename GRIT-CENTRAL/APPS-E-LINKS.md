@@ -5,6 +5,7 @@
 | App | Produção | Código/local | Operação |
 |---|---|---|---|
 | GRIT News / Soluções | [Abrir](https://gritnews.com.br) | `src/` e `public/` | [Admin](https://gritnews.com.br/admin) |
+| Meu Cuidador | [Abrir](https://meucuidadorapp.com.br) | origem do frontend/deploy ainda não localizada neste monorepo | backend/CRM no Supabase `gritnews`; domínio legado `meucuidador.gritnews.com.br` não deve ser usado como link público |
 | Meu Espetinho | [Abrir](https://meuespetinho.gritnews.com.br) | `apps/meu-espetinho/` | [Admin](https://meuespetinho.gritnews.com.br/admin) |
 | Sr. Padeiro | [Abrir](https://srpadeiro.gritnews.com.br) | origem pendente, issue #92 | landing, trial e leads |
 | SAC ProH | [Abrir](https://apps.sacproh.gritnews.com.br) | `tassovasconcelos/sacproh` | aplicação operacional |
@@ -20,6 +21,15 @@
 | SAC 4.0 | [Página institucional](https://gritnews.com.br/produtos/sac-4-0/) | catálogo GRIT |
 | Oportunidades Pro | [Página institucional](https://gritnews.com.br/produtos/oportunidadespro/) | catálogo GRIT |
 
+## Meu Cuidador — links canônicos e regras
+
+- Domínio público canônico: `https://meucuidadorapp.com.br`.
+- O domínio `https://meucuidador.gritnews.com.br` é legado/operacional e não deve ser usado em CTAs, campanhas, canonical, sitemap, redes sociais ou materiais públicos.
+- Toda página pública do Meu Cuidador deve apontar canonical para `meucuidadorapp.com.br`.
+- Links de cadastro, login, perfil, busca/matching, conteúdo, termos, privacidade, contato, ILPI e gerencial devem ser validados contra o deploy real antes de publicação em campanha.
+- O frontend/deploy que serve `meucuidadorapp.com.br` ainda precisa ser localizado e versionado no GitHub para permitir auditoria e homologação E2E.
+- Issue operacional central: #131.
+
 ## Dados, automações e código
 
 | Sistema | Link |
@@ -32,6 +42,7 @@
 | Remote Ops Kit | [PR #76](https://github.com/tassovasconcelos/gritnews.com.br/pull/76) |
 | Fonte Sr. Padeiro | [Issue #92](https://github.com/tassovasconcelos/gritnews.com.br/issues/92) |
 | Consolidação GRIT News | [Issue #93](https://github.com/tassovasconcelos/gritnews.com.br/issues/93) |
+| Meu Cuidador E2E | [Issue #131](https://github.com/tassovasconcelos/gritnews.com.br/issues/131) |
 
 ## Google
 
