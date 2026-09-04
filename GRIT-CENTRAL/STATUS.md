@@ -3,7 +3,7 @@
 | Sistema | Publicado | Código localizado | Leads/automação | Próxima ação |
 |---|---:|---:|---:|---|
 | GRIT News | sim | sim | ativo | acompanhar publicação do Centro de Controle V2 |
-| Meu Cuidador | domínio público ativo, origem do frontend não localizada neste monorepo | não | backend/CRM ativo no Supabase; 907 leads e 727 ILPIs vinculadas | localizar/versionar frontend, homologar rotas, corrigir indexação e fechar E2E cadastro→perfil→conversão |
+| Meu Cuidador | sim, `meucuidadorapp.com.br` | sim, repositório privado `tassovasconcelos/meu-cuidador` | backend/CRM ativo no Supabase; 907 leads e 727 ILPIs vinculadas | homologar páginas/links, SEO e fechar E2E cadastro→perfil→conversão |
 | Meu Espetinho | sim | sim | estruturado | concluir credenciais Google/Meta |
 | Sr. Padeiro | sim | sim, integrado ao monorepo | coletor protegido e ativo | validar jornada completa periodicamente |
 | SAC ProH | sim | repositório separado | operação própria | manter integração consentida |
@@ -15,14 +15,19 @@
 ## Meu Cuidador — estado operacional
 
 - domínio canônico público: `https://meucuidadorapp.com.br`;
+- código: repositório privado `tassovasconcelos/meu-cuidador`;
+- stack do frontend: Next.js;
+- publicação Hostinger automatizada por `.github/workflows/deploy-hostinger.yml`;
+- CI valida canonical, TypeScript e build;
+- deploy valida marcador de release exato no domínio oficial;
+- última release comprovada em produção em 04/09/2026: `mc-2026-09-04-process-recovery-v17`;
 - `https://meucuidador.gritnews.com.br` tratado como legado/operacional e não deve ser divulgado publicamente;
-- frontend/deploy ainda não localizado no repositório principal;
 - backend Supabase e CRM estão ativos;
 - ponte cadastro → `mc_profiles` implantada no banco;
 - importador ILPI protegido e deduplicação ativa;
 - Centro-Oeste reconciliado;
 - cargas Nordeste/Sudeste ainda dependem da recuperação das fontes íntegras;
-- indexação pública do domínio precisa de nova homologação após localização do frontend.
+- indexação pública e jornadas devem ser auditadas sobre as rotas reais do repositório.
 
 ## Segurança
 
@@ -35,9 +40,7 @@
 
 ## Monitoramento atual
 
-GRIT News, Meu Espetinho, Sr. Padeiro, SAC ProH e Moacir Rocha integram o health check local.
-
-O Meu Cuidador deve entrar no health check assim que o deploy que serve `meucuidadorapp.com.br` for identificado e versionado.
+O Meu Cuidador já possui verificação própria de produção no workflow de deploy por marcador exato de release. Deve também ser incorporado ao health check consolidado do ecossistema para disponibilidade, rotas públicas, sitemap/robots e jornada de cadastro.
 
 ## Produção conferida
 
