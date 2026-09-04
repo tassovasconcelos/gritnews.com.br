@@ -5,7 +5,7 @@
 | App | Produção | Código/local | Operação |
 |---|---|---|---|
 | GRIT News / Soluções | [Abrir](https://gritnews.com.br) | `src/` e `public/` | [Admin](https://gritnews.com.br/admin) |
-| Meu Cuidador | [Abrir](https://meucuidadorapp.com.br) | origem do frontend/deploy ainda não localizada neste monorepo | backend/CRM no Supabase `gritnews`; domínio legado `meucuidador.gritnews.com.br` não deve ser usado como link público |
+| Meu Cuidador | [Abrir](https://meucuidadorapp.com.br) | `tassovasconcelos/meu-cuidador` (repositório privado) | Next.js + Hostinger; backend/CRM no Supabase `gritnews` |
 | Meu Espetinho | [Abrir](https://meuespetinho.gritnews.com.br) | `apps/meu-espetinho/` | [Admin](https://meuespetinho.gritnews.com.br/admin) |
 | Sr. Padeiro | [Abrir](https://srpadeiro.gritnews.com.br) | origem pendente, issue #92 | landing, trial e leads |
 | SAC ProH | [Abrir](https://apps.sacproh.gritnews.com.br) | `tassovasconcelos/sacproh` | aplicação operacional |
@@ -24,10 +24,12 @@
 ## Meu Cuidador — links canônicos e regras
 
 - Domínio público canônico: `https://meucuidadorapp.com.br`.
+- Código e deploy de produção: repositório privado `tassovasconcelos/meu-cuidador`.
+- Publicação: `.github/workflows/deploy-hostinger.yml`, com validação de canonical, TypeScript, build e comprovação da release exata em produção.
+- Release de produção validada em 04/09/2026: `mc-2026-09-04-process-recovery-v17`.
 - O domínio `https://meucuidador.gritnews.com.br` é legado/operacional e não deve ser usado em CTAs, campanhas, canonical, sitemap, redes sociais ou materiais públicos.
-- Toda página pública do Meu Cuidador deve apontar canonical para `meucuidadorapp.com.br`.
-- Links de cadastro, login, perfil, busca/matching, conteúdo, termos, privacidade, contato, ILPI e gerencial devem ser validados contra o deploy real antes de publicação em campanha.
-- O frontend/deploy que serve `meucuidadorapp.com.br` ainda precisa ser localizado e versionado no GitHub para permitir auditoria e homologação E2E.
+- Toda página pública deve apontar canonical para `meucuidadorapp.com.br`.
+- Links e rotas devem ser homologados contra a árvore `app/` do repositório real, não contra rotas presumidas.
 - Issue operacional central: #131.
 
 ## Dados, automações e código
@@ -38,7 +40,8 @@
 | Leads | [Table Editor](https://supabase.com/dashboard/project/pcrwtoddavpvkaxwtstc/editor) |
 | Edge Functions | [Funções](https://supabase.com/dashboard/project/pcrwtoddavpvkaxwtstc/functions) |
 | Advisors | [Segurança e performance](https://supabase.com/dashboard/project/pcrwtoddavpvkaxwtstc/advisors/security) |
-| GitHub | [Repositório](https://github.com/tassovasconcelos/gritnews.com.br) |
+| GitHub GRIT | [Repositório](https://github.com/tassovasconcelos/gritnews.com.br) |
+| GitHub Meu Cuidador | `tassovasconcelos/meu-cuidador` (privado) |
 | Remote Ops Kit | [PR #76](https://github.com/tassovasconcelos/gritnews.com.br/pull/76) |
 | Fonte Sr. Padeiro | [Issue #92](https://github.com/tassovasconcelos/gritnews.com.br/issues/92) |
 | Consolidação GRIT News | [Issue #93](https://github.com/tassovasconcelos/gritnews.com.br/issues/93) |
