@@ -1,47 +1,67 @@
 # Meu Cuidador — inventário oficial de rotas e links
 
-## Regra canônica
+## Fonte de verdade
 
-Domínio público: `https://meucuidadorapp.com.br`
+- Domínio público: `https://meucuidadorapp.com.br`
+- Código/frontend: repositório privado `tassovasconcelos/meu-cuidador`
+- Deploy: Hostinger via `.github/workflows/deploy-hostinger.yml`
+- Domínio legado/operacional: `https://meucuidador.gritnews.com.br`
 
-Domínio legado/operacional: `https://meucuidador.gritnews.com.br`
+O domínio legado só pode existir na regra de redirecionamento 301/308 e em compatibilidade de links antigos; não deve aparecer em canonical, sitemap, campanhas, QR Codes, redes sociais, e-mails ou CTAs públicos.
 
-O domínio legado não deve aparecer em canonical, sitemap, campanhas, QR Codes, redes sociais, e-mails ou CTAs públicos.
+## Rotas públicas confirmadas no código/configuração
 
-## Rotas que precisam existir e ser homologadas no frontend real
+As rotas abaixo são as superfícies públicas explicitamente tratadas pelo frontend atual e/ou sitemap. A árvore `app/` do repositório `tassovasconcelos/meu-cuidador` é a fonte de verdade final.
 
-| Área | Rota esperada | Critério de homologação |
+| Área | Rota/namespace | Regra |
 |---|---|---|
-| Home | `/` | carrega em mobile/desktop, CTA funcional, canonical correto |
-| Cadastro | `/cadastro` | permite escolher familiar/paciente ou profissional |
-| Cadastro profissional | `/cadastro/profissional` | cria Auth + `mc_profiles`, preserva atribuição de lead/campanha |
-| Cadastro família | `/cadastro/familia` | cria Auth + perfil correspondente |
-| Login | `/login` | autentica e redireciona pelo tipo de usuário |
-| Perfil | `/perfil` | leitura/edição do próprio perfil |
-| Documentos | `/perfil/documentos` | upload e acompanhamento de certificados/documentos |
-| Busca/Matching | `/buscar` | filtros por UF/cidade, necessidade e disponibilidade |
-| ILPIs | `/ilpis` | listagem por UF com expansão por cidade |
-| Conteúdo | `/conteudos` | hub indexável de artigos e orientações |
-| Termos | `/termos` | público e indexável |
-| Privacidade | `/privacidade` | público e indexável |
-| Contato | `/contato` | formulário/WhatsApp com tracking |
-| Gerencial | `/gerencial` | autenticado/admin |
-| CRM | `/gerencial/leads` | base → CRM → contato → cadastro → homologação → ativo |
-| Campanhas | `/gerencial/campanhas` | filas, status, compliance, tracking e métricas reais |
+| Home | `/` | pública, indexável, canonical oficial |
+| Famílias | `/familias` | pública |
+| Cuidadores | `/cuidadores` | pública |
+| Profissionais | `/profissionais` | pública |
+| Empresas | `/empresas` | pública |
+| ILPI | `/ilpi` | pública |
+| Oportunidades | `/oportunidades` e subrotas reais | pública |
+| Formação | `/formacao` e subrotas | pública |
+| Conteúdos | `/conteudos` e subrotas | pública |
+| Segurança | `/seguranca` | pública |
+| Ecossistema | `/ecossistema` | pública |
+| Indicação | `/indique-um-cuidador` | pública |
+| Brasil | `/brasil/...` | páginas nacionais/localizadas indexáveis quando possuírem conteúdo substancial |
+| Termos | `/termos` | pública |
+| Privacidade | `/privacidade` | pública |
+| App | `/app` | área de aplicação; não indexável |
+| Gerencial | `/app/gerencial/...` | autenticado/admin; não indexável |
+| Admin legado | `/admin/...` | redireciona para `/app/gerencial` |
 
-## Regras de links
+## Rotas funcionais do produto
 
-1. Links internos devem ser relativos ao domínio canônico.
+Cadastro, login, perfil, documentos, matching, CRM, campanhas, pendências e relacionamento devem ser homologados pelos caminhos atualmente implementados na árvore `app/`. Não criar aliases públicos apenas para satisfazer documentação antiga; quando uma URL histórica precisar ser preservada, usar redirecionamento permanente/intencional para a rota vigente.
+
+Fluxo funcional esperado permanece:
+
+`BASE → CRM → CONTATO → CADASTRO → HOMOLOGAÇÃO → ATIVO`
+
+## Regras de links e SEO
+
+1. Links internos públicos devem usar o domínio canônico ou caminhos relativos.
 2. Nenhum CTA público deve apontar para `meucuidador.gritnews.com.br`.
 3. Links externos devem usar HTTPS.
-4. Toda rota pública deve retornar 200 ou redirecionamento 301 intencional; nunca 404 silencioso.
-5. Rotas SPA devem funcionar também em acesso direto/reload.
-6. Login/gerencial não devem ser indexados.
-7. Privacidade, termos, conteúdo, ILPIs e páginas comerciais devem possuir title, description e canonical próprios.
-8. Sitemap deve conter apenas rotas públicas reais e indexáveis.
-9. `robots.txt` deve bloquear áreas autenticadas/gerenciais e liberar conteúdo público.
-10. Toda campanha deve usar UTMs e preservar `lead_id`/token de atribuição até o cadastro.
+4. Toda URL no sitemap precisa corresponder a página real/indexável; sitemap não pode publicar 404.
+5. Áreas `/app/`, `/admin/` e `/api/` permanecem fora do rastreamento público.
+6. Rotas gerenciais autenticadas devem emitir `noindex` também por header quando aplicável.
+7. Páginas públicas estratégicas devem possuir title, description e canonical coerentes.
+8. Páginas locais em escala só entram no sitemap quando houver conteúdo local substancial.
+9. Toda campanha deve usar UTMs e preservar atribuição do lead até o cadastro.
+10. O CI do frontend deve validar domínio canônico, rotas/sitemap, TypeScript e build antes do deploy.
 
-## Estado atual
+## Estado validado em 04/09/2026
 
-O frontend/deploy que serve `meucuidadorapp.com.br` ainda não foi localizado no monorepo principal. Este arquivo passa a ser o contrato de rotas para a correção e homologação assim que a origem do deploy for identificada.
+- repositório de produção localizado;
+- CI e Deploy Hostinger da release atual concluídos com sucesso;
+- marcador de produção: `mc-2026-09-04-process-recovery-v17`;
+- redirecionamento do domínio legado para o oficial configurado em `next.config.mjs`;
+- middleware redireciona `/admin/*` para `/app/gerencial` e protege `/app/gerencial/*`;
+- `robots.ts` bloqueia `/api/`, `/admin/` e `/app/`;
+- `sitemap.ts` usa o domínio oficial e lista as páginas públicas;
+- PR #70 do repositório Meu Cuidador adiciona auditoria automática entre sitemap e páginas reais antes do build.
