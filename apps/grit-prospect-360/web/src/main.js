@@ -170,6 +170,7 @@ async function loadCompanies() {
 }
 
 function socialMarkup() {
+  const companyOptions=state.companies.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.legal_name)+'</option>').join('');
   const rows = state.socialCandidates.map(c => '<tr><td>' + escapeHtml(c.company_label) +
     '</td><td>' + escapeHtml(c.platform) + '</td><td><a target="_blank" rel="noopener noreferrer" href="' +
     escapeHtml(c.profile_url) + '">' + escapeHtml(c.profile_url) + '</a></td><td>' +
@@ -185,6 +186,8 @@ function socialMarkup() {
     '<input id="social-name" maxlength="200" required placeholder="Razão social ou nome empresarial"/></div></div>' +
     '<label for="social-url">URL da página corporativa</label>' +
     '<input id="social-url" type="url" required maxlength="300" placeholder="https://www.instagram.com/empresa/"/>' +
+    '<label for="social-company">Vincular empresa cadastrada (opcional; página atual)</label>' +
+    '<select id="social-company"><option value="">Sem vínculo até validar CNPJ</option>'+companyOptions+'</select>' +
     '<div class="actions"><button type="submit" ' + (state.busy ? 'disabled' : '') +
     '>Adicionar à triagem</button></div></form>' +
     '<div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Rede</th><th>Página corporativa</th>' +
@@ -200,6 +203,7 @@ async function registerSocialCandidate(event) {
   const companyLabel=document.querySelector('#social-name')?.value.trim();
   const profileUrl=document.querySelector('#social-url')?.value.trim();
   const platform=document.querySelector('#social-platform')?.value;
+  const companyId=document.querySelector('#social-company')?.value || null;
   const organization=state.organizationId;
   state.busy=true;
   try {
@@ -207,7 +211,7 @@ async function registerSocialCandidate(event) {
       method:'POST',headers:{'Content-Type':'application/json',
         Authorization:'Bearer '+state.session.access_token},
       body:JSON.stringify({organization_id:organization,candidate:{platform,profile_url:profileUrl,
-        company_label:companyLabel,source_kind:'manual_corporate_url'}})
+        company_label:companyLabel,source_kind:'manual_corporate_url',company_id:companyId}})
     });
     const result=await response.json().catch(()=>null);
     if (!response.ok) throw new Error('Falha no cadastro do perfil empresarial ('+response.status+'). Código: '+
