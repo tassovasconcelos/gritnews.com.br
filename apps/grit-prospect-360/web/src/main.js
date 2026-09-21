@@ -171,6 +171,7 @@ function dashboardMarkup() {
         '<p class="muted">Arquivo CSV com CNPJ e razão social; cidade, UF e nome fantasia são opcionais. ' +
         'Limite: 2 MB e 5.000 empresas. A origem e a finalidade dos dados devem ser autorizadas.</p>' +
         '<label for="csv">Selecione o arquivo</label><input id="csv" type="file" accept=".csv,text/csv"/>' +
+        (state.file ? '<p class="muted" role="status">Arquivo selecionado: ' + escapeHtml(state.file.name) + '</p>' : '') +
         '<div class="actions"><button id="preview-import" ' + (state.busy ? 'disabled' : '') +
         '>Validar arquivo</button></div></section>' + preview) +
     '<p class="foot">Sem disparos automáticos. Nenhum dado do Meu Cuidador é acessado.</p></main></div>';
