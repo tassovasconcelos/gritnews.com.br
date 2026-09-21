@@ -35,5 +35,6 @@ test('import: rejects malformed and ambiguous inputs', () => {
   assert.throws(() => prepareCompanyImport('foo,bar\nx,y'), /required_columns/);
   assert.throws(() => prepareCompanyImport('cnpj,cnpj,razao social'), /duplicate_csv_header/);
   assert.throws(() => parseCsv('cnpj,razao social\n"unclosed'), /unclosed_csv_quote/);
-  assert.throws(() => prepareCompanyImport('cnpj,razao social\n11.222.333\/0001-81,A,B'), /column_count_mismatch|./);
+  const badColumns = prepareCompanyImport('cnpj,razao social\n11.222.333/0001-81,A,B');
+  assert.deepEqual(badColumns.skipped.map(x => x.reason), ['column_count_mismatch']);
 });
