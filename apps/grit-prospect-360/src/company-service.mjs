@@ -13,7 +13,7 @@ export function createCompanyImportService({ authenticate, membershipFor, existi
   const windows = new Map();
 
   async function prepare(input, mode) {
-    const { authorization, organizationId, csv } = input ?? {};
+    const { authorization, organizationId, csv, expectedSha256 } = input ?? {};
     if (!UUID.test(String(organizationId ?? ''))) throw Object.assign(new Error('invalid_organization_id'), { status: 400 });
     if (typeof authorization !== 'string' || !/^Bearer [^\s]+$/i.test(authorization)) {
       throw Object.assign(new Error('authentication_required'), { status: 401 });
@@ -44,6 +44,11 @@ export function createCompanyImportService({ authenticate, membershipFor, existi
     // Do not write or log the raw CSV. SHA-256 is calculated from the exact bytes.
     const parsed = prepareCompanyImport(csv);
     const hash = createHash('sha256').update(csv, 'utf8').digest('hex');
+    // Apply must refer to the exact file the operator reviewed in preview.
+    if (mode === 'apply' && (!/^[a-f0-9]{64}$/.test(String(expectedSha256 ?? ''))
+        || expectedSha256 !== hash)) {
+      throw Object.assign(new Error('preview_file_mismatch'), { status: 409 });
+    }
     const found = parsed.accepted.length
       ? await existingCnpjs(organizationId, parsed.accepted.map(x => x.tax_id))
       : [];
