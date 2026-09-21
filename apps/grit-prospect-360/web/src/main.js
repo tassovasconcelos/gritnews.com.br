@@ -285,38 +285,6 @@ async function registerSocialCandidate(event) {
   } catch(error){setMessage(error.message,true);} finally { state.busy=false;renderDashboard(); }
 }
 
-async function reviewSocialCandidate(event) {
-  event.preventDefault();
-  if(state.busy || !['owner','admin'].includes(state.currentRole) || !state.session?.access_token) return;
-  const form=event.currentTarget;
-  const decision=event.submitter?.value;
-  const companyId=decision==='approved' ? form.querySelector('.review-company')?.value || null : null;
-  const reason=form.querySelector('.review-reason')?.value.trim();
-  if(!form.querySelector('.review-confirm')?.checked) {
-    setMessage('Confirme a verificação manual antes de decidir.',true);renderDashboard();return;
-  }
-  if(decision==='approved'&&!companyId) {
-    setMessage('Selecione uma empresa da carteira para aprovar.',true);renderDashboard();return;
-  }
-  const organization=state.organizationId;
-  state.busy=true;
-  try {
-    const response=await fetch(state.apiBase+'/api/v1/social-candidates/review',{
-      method:'POST',headers:{'Content-Type':'application/json',
-        Authorization:'Bearer '+state.session.access_token},
-      body:JSON.stringify({organization_id:organization,candidate_id:form.dataset.candidate,
-        decision,company_id:companyId,reason})
-    });
-    const result=await response.json().catch(()=>null);
-    if(!response.ok) throw new Error('Falha na decisão ('+response.status+'). Código: '+
-      (result?.request_id || 'não disponível'));
-    if(organization!==state.organizationId) throw new Error('A organização mudou. Atualize os registros.');
-    setMessage(result.status==='already_reviewed' ? 'Registro já revisado.' :
-      'Decisão registrada no banco. Nenhuma mensagem foi enviada.');
-    await loadCompanies();
-  } catch(error){setMessage(error.message,true);} finally {state.busy=false;renderDashboard();}
-}
-
 function dashboardMarkup() {
   const orgOptions = state.organizations.map(org =>
     '<option value="' + escapeHtml(org.id) + '"' +
@@ -407,8 +375,6 @@ function renderDashboard() {
   document.querySelector('#preview-import').addEventListener('click', previewImport);
   document.querySelector('#social-form')?.addEventListener('submit', registerSocialCandidate);
   document.querySelectorAll('.social-review-form').forEach(form =>
-    form.addEventListener('submit',reviewSocialCandidate));
-  document.querySelectorAll('.social-review').forEach(form=>
     form.addEventListener('submit',reviewSocialCandidate));
   document.querySelector('#apply-import')?.addEventListener('click', applyImport);
   document.querySelector('#cancel-import')?.addEventListener('click', () => {
