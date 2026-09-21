@@ -82,3 +82,14 @@ The owner designated a professional email in the operator conversation; it is in
 The safe operator script is \`scripts/first-owner.mjs\`. Its \`invite\` mode remains gated on an actually configured, manually tested Auth redirect URL and SMTP, which cannot be verified from the connected Supabase toolset. The currently connected tool exposes SQL and project metadata but no Auth Admin invite action; never manufacture users with SQL inserts into \`auth.users\`. Only use Supabase Auth Admin to invite, then await actual email confirmation, and finally use the guarded activation RPC.
 
 See \`docs/FIRST-ADMIN-AND-E2E.md\` for the execution and evidence checklist.
+
+
+## Social prospecting — Instagram & LinkedIn (SOC-001)
+
+The reference creative advertises discovery, qualification, dashboards and follow-ups. It is not a verified indicator of GRIT capabilities. See \`docs/SOCIAL-PROSPECTING.md\` for the exact supported/unsupported functions and platform references.
+
+Migration \`prospect_360_0005_social_company_prospects\` was applied successfully **only** to the dedicated Supabase project. It adds a tenant-isolated corporate-page candidate queue and a closed-by-default channel configuration. Both tables have RLS; anonymous has no read access, authenticated users can read only their organization, and writes require the trusted service role. The database forbids enabling outbound messages through this configuration.
+
+The development UI now has a "Redes sociais" section to manually register and list Instagram corporate handles or LinkedIn company pages, optionally linking a known company. The backend's \`POST /api/v1/social-candidates\` checks user JWT, tenant membership and allowed corporate URL, deduplicates by (organization, platform, handle), and records each new item with status \`pending\`.
+
+**No provider integration is connected.** Instagram Business Discovery/hashtag discovery requires eligible official API access and review. LinkedIn API member data must not be harvested into the CRM; its separately approved Lead Sync product is a future option for the organization's authorized Lead Gen Forms. No automated DMs, LinkedIn connection requests, follow-ups, browser scraping, real lead capture or external sends have been implemented. All acquisition metrics remain unverified until the flow is deployed, authorized and measured.
