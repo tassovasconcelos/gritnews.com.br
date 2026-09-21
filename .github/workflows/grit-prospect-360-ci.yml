@@ -40,6 +40,8 @@ jobs:
           grep -q 'SECURITY INVOKER' db/migrations/0002_import_rpc.sql
           grep -q 'REVOKE ALL ON FUNCTION public.apply_company_import' db/migrations/0002_import_rpc.sql
           grep -q 'UNIQUE (organization_id, file_sha256)' db/migrations/0002_import_rpc.sql
+          grep -q 'SECURITY INVOKER' db/migrations/0004_first_owner.sql
+          grep -q 'REVOKE ALL ON FUNCTION public.bootstrap_first_owner' db/migrations/0004_first_owner.sql
           echo "Static migration checks passed. Database migration NOT applied."
 
   ui-build:
