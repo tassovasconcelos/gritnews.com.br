@@ -27,3 +27,10 @@ Runtime ingestion, API authentication, provider connections and integration with
 - Access for the new organization must be provisioned through a trusted server operation; self-assignment of memberships is not available through client RLS.
 - Only authorized B2B company data can be imported, with documented provenance and legal purpose.
 - New migrations, CI and a pull request are required before a production release.
+
+
+## Dedicated-project cost and authorization gate (2026-09-21)
+
+The connected Supabase cost tool reports amount 10, monthly recurrence, for creating a project in organization \`myarkaitcapeafgbrfbi\`. The API response does not indicate its currency. Explicit cost confirmation is required before creating the project; do not assume that existing subscription credits cover it.
+
+The test harness in \`db/tests/0001_rls_isolation.sql\` is **staged, not executed**. It creates two disposable auth users and organizations in a transaction, validates operator/viewer/anonymous restrictions, and rolls back. Execute only against a NEW disposable project after applying the migration; never against GRIT shared production. Live backup/restore, organization isolation and permissions remain unverified.
