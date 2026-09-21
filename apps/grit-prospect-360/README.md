@@ -52,3 +52,17 @@ Both require Authorization: Bearer <user-access-token> and owner/admin/operator 
 GET /health confirms HTTP process health only, and explicitly reports database_verified=false. It is not proof of Supabase connectivity or of successful import.
 
 Status: Node test suite covers HTTP request handling and business service with fake Supabase. SQL function privileges and table counts were inspected read-only on the dedicated project; cross-tenant and real persistence E2E have NOT been completed. No new organization member has been provisioned. No real customer data has been imported.
+
+
+## Browser interface (development only)
+
+An isolated responsive, Portuguese company management interface is versioned at \`web/index.html\` and \`web/src/main.js\`, with a dedicated Vite config and CSS. It provides Supabase Auth login, organization selection (subject to RLS), company list and search with pagination, CSV preview, explicit confirmation before applying the import, and logout. No automatic contact or mail is sent.
+
+Build using the already locked root workspace dependencies:
+
+    pnpm install --frozen-lockfile
+    pnpm exec vite build --config apps/grit-prospect-360/web/vite.config.mjs
+
+Public browser environment values are listed in \`web/.env.example\` and MUST contain only the project's public anon key, never any service role key. Host and reverse proxy configuration remain pending. An empty organization list is an expected state until the first user and membership are provisioned. Do not claim a tested end-to-end login.
+
+Dedicated CI exercises Node tests and builds the frontend artifact; both jobs passed on commit \`c79427cea12c96fd3550d945302d4b255c841fb0\`. The latest HEAD needs its own CI confirmation. Do not publish generated bundles until auth, cross-tenant tests, backups, legal purpose and vulnerability scanning are complete.
