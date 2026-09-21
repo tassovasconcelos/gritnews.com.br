@@ -40,6 +40,9 @@ export function createSocialProspectingService({ authenticate,membershipFor,find
       if (next.count>20) throw Object.assign(new Error('rate_limited'),{status:429});
       if (usage.size>2000) for(const [key,b] of usage) if(now-b.started>=60_000) usage.delete(key);
 
+      // A company association is allowed only through the separate human review RPC.
+      // Discard any company_id supplied by an untrusted client during intake.
+      normalized.company_id = null;
       const existing=await findExisting(organizationId,normalized.platform,normalized.account_key);
       if (existing) return {status:'already_exists',candidate_id:existing.id};
       // The database unique index is authoritative if two requests race.
