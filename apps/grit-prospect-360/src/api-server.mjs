@@ -96,7 +96,8 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
       const input = {
         authorization: req.headers.authorization,
         organizationId: body.organization_id,
-        csv: body.csv
+        csv: body.csv,
+        expectedSha256: body.expected_sha256
       };
       const response = isPreview ? await service.preview(input) : await service.apply(input);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
