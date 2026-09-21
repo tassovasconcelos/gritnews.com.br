@@ -44,8 +44,10 @@ export function createSocialProspectingService({ authenticate,membershipFor,find
       if (existing) return {status:'already_exists',candidate_id:existing.id};
       // The database unique index is authoritative if two requests race.
       try {
+        // A page is not an identity proof. Linking to a CNPJ only occurs in
+        // the explicit, audited owner/admin review transaction.
         const data=await insertCandidate({
-          ...normalized,organization_id:organizationId,created_by:user.id
+          ...normalized,company_id:null,organization_id:organizationId,created_by:user.id
         });
         return {status:'pending_review',candidate_id:data.id};
       } catch(error) {
