@@ -66,3 +66,10 @@ Build using the already locked root workspace dependencies:
 Public browser environment values are listed in \`web/.env.example\` and MUST contain only the project's public anon key, never any service role key. Host and reverse proxy configuration remain pending. An empty organization list is an expected state until the first user and membership are provisioned. Do not claim a tested end-to-end login.
 
 Dedicated CI exercises Node tests and builds the frontend artifact; both jobs passed on commit \`c79427cea12c96fd3550d945302d4b255c841fb0\`. The latest HEAD needs its own CI confirmation. Do not publish generated bundles until auth, cross-tenant tests, backups, legal purpose and vulnerability scanning are complete.
+
+
+## Latest audit & hardening
+
+The isolated responsive browser UI now binds an import preview to the selected organization so an operator cannot confirm a stale preview after switching tenants. The dedicated Supabase migration \`prospect_360_0003_fk_indexes\` was applied to address the five unindexed foreign key findings. New indexes are reported unused while the database remains empty; do not remove them just because the advisor shows unused-index info.
+
+See \`docs/FIRST-ADMIN-AND-E2E.md\` for the secure first-owner invitation, synthetic-data tests, RLS acceptance, backup/restore, and release gates. No first owner, tenant, customer or import has been provisioned, and no frontend/API process was deployed.
