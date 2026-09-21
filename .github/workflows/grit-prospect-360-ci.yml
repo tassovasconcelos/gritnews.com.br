@@ -45,6 +45,9 @@ jobs:
           grep -q 'ALTER TABLE public.social_prospect_candidates ENABLE ROW LEVEL SECURITY' db/migrations/0005_social_company_prospects.sql
           grep -q 'CHECK(outbound_enabled = false)' db/migrations/0005_social_company_prospects.sql
           grep -q 'REVOKE ALL ON TABLE public.social_prospect_candidates' db/migrations/0005_social_company_prospects.sql
+          grep -q 'SECURITY INVOKER' db/migrations/0006_social_review.sql
+          grep -q 'REVOKE ALL ON FUNCTION public.review_social_candidate' db/migrations/0006_social_review.sql
+          grep -q 'approved_candidate_needs_company' db/migrations/0006_social_review.sql
           echo "Static migration checks passed. Database migration NOT applied."
 
   ui-build:
