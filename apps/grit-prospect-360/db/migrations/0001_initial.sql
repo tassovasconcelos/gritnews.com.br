@@ -153,4 +153,18 @@ ALTER TABLE public.audit_events ENABLE ROW LEVEL SECURITY;
 -- No client policies: audit_events is server-only, intentionally inaccessible
 -- by anon/authenticated. Never store raw CSV rows or credentials in metadata.
 
+
+-- Explicit grants: enforce a deny-by-default API privilege boundary.
+-- RLS remains mandatory for every granted authenticated operation.
+REVOKE ALL ON TABLE public.organizations, public.memberships,
+  public.companies, public.company_import_batches,
+  public.company_import_items, public.audit_events FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON public.organizations, public.memberships TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.companies TO authenticated;
+GRANT SELECT ON public.company_import_batches, public.company_import_items TO authenticated;
+GRANT ALL ON TABLE public.organizations, public.memberships,
+  public.companies, public.company_import_batches,
+  public.company_import_items, public.audit_events TO service_role;
+GRANT USAGE, SELECT ON SEQUENCE public.audit_events_id_seq TO service_role;
+
 COMMIT;
