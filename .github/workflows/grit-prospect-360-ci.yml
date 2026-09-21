@@ -48,6 +48,8 @@ jobs:
           grep -q 'SECURITY INVOKER' db/migrations/0006_social_review.sql
           grep -q 'REVOKE ALL ON FUNCTION public.review_social_candidate' db/migrations/0006_social_review.sql
           grep -q 'approved_candidate_needs_company' db/migrations/0006_social_review.sql
+          grep -q 'pending_candidate_must_not_link_company' db/migrations/0007_review_link_guard.sql
+          grep -q 'rejected_candidate_must_not_link_company' db/migrations/0007_review_link_guard.sql
           echo "Static migration checks passed. Database migration NOT applied."
 
   ui-build:
