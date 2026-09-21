@@ -3,8 +3,8 @@ import { normalizeCorporateAccount } from './social-prospects.mjs';
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const WRITE_ROLES=new Set(['owner','admin','operator']);
 
-export function createSocialProspectingService({ authenticate,membershipFor,findExisting,insertCandidate,clock=Date.now }) {
-  if (![authenticate,membershipFor,findExisting,insertCandidate].every(x=>typeof x==='function')) {
+export function createSocialProspectingService({ authenticate,membershipFor,findExisting,insertCandidate,reviewAtomic,clock=Date.now }) {
+  if (![authenticate,membershipFor,findExisting,insertCandidate,reviewAtomic].every(x=>typeof x==='function')) {
     throw new Error('invalid_social_dependencies');
   }
   const usage=new Map();
@@ -55,6 +55,39 @@ export function createSocialProspectingService({ authenticate,membershipFor,find
           throw Object.assign(new Error('duplicate_candidate'),{status:409});
         }
         if (error?.code==='23503') throw Object.assign(new Error('invalid_company_for_tenant'),{status:400});
+        throw error;
+      }
+    },
+    async reviewCandidate({authorization,organizationId,candidateId,decision,companyId=null,reason}) {
+      if(!UUID.test(String(organizationId??''))||!UUID.test(String(candidateId??''))) {
+        throw Object.assign(new Error('invalid_review_id'),{status:400});
+      }
+      if(typeof authorization!=='string'||!/^Bearer [^\s]+$/i.test(authorization)) {
+        throw Object.assign(new Error('authentication_required'),{status:401});
+      }
+      const user=await authenticate(authorization.replace(/^Bearer /i,''));
+      if(!UUID.test(String(user?.id??''))) throw Object.assign(new Error('invalid_session'),{status:401});
+      const membership=await membershipFor(organizationId,user.id);
+      if(!membership?.active|| !['owner','admin'].includes(membership.role)) {
+        throw Object.assign(new Error('review_not_authorized'),{status:403});
+      }
+      const note=String(reason??'').trim();
+      if(!['approved','rejected'].includes(decision)||note.length<12||note.length>500
+        ||(decision==='approved'&&!UUID.test(String(companyId??'')))
+        ||(decision==='rejected'&&companyId!==null)) {
+        throw Object.assign(new Error('invalid_review_payload'),{status:400});
+      }
+      try {
+        return await reviewAtomic({
+          p_organization_id:organizationId,p_actor_id:user.id,
+          p_candidate_id:candidateId,p_decision:decision,
+          p_company_id:companyId,p_reason:note
+        });
+      } catch(error) {
+        if(error?.code==='42501') throw Object.assign(new Error('review_not_authorized'),{status:403});
+        if(error?.code==='22023') throw Object.assign(new Error('invalid_review_payload'),{status:400});
+        if(error?.code==='23505') throw Object.assign(new Error('candidate_already_reviewed'),{status:409});
+        if(error?.code==='P0002') throw Object.assign(new Error('candidate_not_found'),{status:404});
         throw error;
       }
     }
