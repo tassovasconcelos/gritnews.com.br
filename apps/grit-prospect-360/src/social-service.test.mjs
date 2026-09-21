@@ -49,6 +49,16 @@ test('social service: provisional CNPJ association is stripped until human revie
   assert.equal(calls[0].review_status,'pending');
 });
 
+test('social service: company supplied during intake is deferred until independent review',async()=>{
+  const {result,calls,request}=service();
+  await result.registerManual({...request,candidate:{
+    ...BASE,company_id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
+  }});
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].company_id,null);
+  assert.equal(calls[0].review_status,'pending');
+});
+
 test('social service: rejects anonymous and incorrect tenant or viewer',async()=>{
   const {result,calls,request}=service();
   await assert.rejects(result.registerManual({...request,authorization:null}),{status:401});
