@@ -311,6 +311,7 @@ async function logout() {
   await state.client.auth.signOut();
   state.session = null; state.organizationId = ''; state.organizations = [];
   state.companies = []; state.file = null; state.preview = null;
+  state.needsPasswordSetup = false;
   setMessage('Sessão encerrada.'); loginMarkup();
 }
 
@@ -325,6 +326,7 @@ async function boot() {
     state.client.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         state.session = null; state.file = null; state.preview = null;
+        state.needsPasswordSetup = false;
         setMessage('Sessão encerrada.'); loginMarkup();
       } else if (event === 'TOKEN_REFRESHED') {
         state.session = session;
