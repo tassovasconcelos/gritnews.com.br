@@ -207,12 +207,12 @@ function renderDashboard() {
   });
 }
 
-async function apiCall(path, file) {
+async function apiCall(path, file, expectedSha256 = null) {
   if (!state.session?.access_token) throw new Error('Sua sessão expirou. Entre novamente.');
   const res = await fetch(state.apiBase + path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + state.session.access_token },
-    body: JSON.stringify({ organization_id: state.organizationId, csv: file })
+    body: JSON.stringify({ organization_id: state.organizationId, csv: file, expected_sha256: expectedSha256 })
   });
   const data = await res.json().catch(() => null);
   if (!res.ok) {
@@ -245,7 +245,7 @@ async function applyImport() {
   state.busy = true;
   try {
     const csv = await state.file.text();
-    const result = await apiCall('/api/v1/company-imports/apply', csv);
+    const result = await apiCall('/api/v1/company-imports/apply', csv, state.preview.file_sha256);
     state.preview = null; state.file = null;
     setMessage(result.status === 'already_applied'
       ? 'Este arquivo já foi importado nesta organização.'
