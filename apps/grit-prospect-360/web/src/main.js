@@ -34,7 +34,7 @@ const root = document.querySelector('#app');
 const state = {
   client: null, apiBase: '', session: null, organizationId: '', organizations: [],
   companies: [], total: 0, page: 0, filter: '', file: null, preview: null, busy: false,
-  message: '', isError: false, needsPasswordSetup: false, socialCandidates: []
+  message: '', isError: false, needsPasswordSetup: false, socialCandidates: [], currentRole: ''
 };
 
 const notice = () => state.message
@@ -138,9 +138,13 @@ async function loadOrganizations() {
 }
 
 async function loadSocialCandidates() {
-  if (!state.organizationId) { state.socialCandidates = []; return; }
+  if (!state.organizationId) { state.socialCandidates = []; state.currentRole = ''; return; }
+  const {data:member,error:memberError}=await state.client.from('memberships')
+    .select('role,active').eq('organization_id',state.organizationId)
+    .eq('user_id',state.session?.user?.id).maybeSingle();
+  state.currentRole = memberError || !member?.active ? '' : member.role;
   const {data,error} = await state.client.from('social_prospect_candidates')
-    .select('id,platform,company_label,profile_url,source_kind,review_status,created_at')
+    .select('id,platform,company_label,profile_url,source_kind,review_status,company_id,created_at')
     .eq('organization_id',state.organizationId).order('created_at',{ascending:false}).limit(100);
   if (error) {
     state.socialCandidates = [];
@@ -171,6 +175,20 @@ async function loadCompanies() {
 
 function socialMarkup() {
   const companyOptions=state.companies.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.legal_name)+'</option>').join('');
+  const canReview=['owner','admin'].includes(state.currentRole);
+  const pending=canReview ? state.socialCandidates.filter(c=>c.review_status==='pending') : [];
+  const reviewForms=pending.map(c=>'<form class="stack social-review" data-candidate="'+escapeHtml(c.id)+'">' +
+    '<strong>'+escapeHtml(c.company_label)+' · '+escapeHtml(c.platform)+'</strong>' +
+    '<label for="company-'+escapeHtml(c.id)+'">Empresa cadastrada nesta página (obrigatória para aprovar)</label>' +
+    '<select id="company-'+escapeHtml(c.id)+'" class="review-company"><option value="">Selecione uma empresa conferida</option>' +
+    companyOptions+'</select>' +
+    '<label for="reason-'+escapeHtml(c.id)+'">Justificativa da verificação</label>' +
+    '<input id="reason-'+escapeHtml(c.id)+'" class="review-reason" required minlength="12" maxlength="500" ' +
+    'placeholder="Explique como confirmou ou rejeitou este vínculo"/>' +
+    '<label><input class="review-confirm" type="checkbox"/> Conferi manualmente a identidade empresarial e a fonte.</label>' +
+    '<div class="actions"><button type="submit" name="decision" value="approved">Aprovar vínculo</button>' +
+    '<button type="submit" class="secondary" name="decision" value="rejected">Rejeitar</button></div></form>'
+  ).join('');
   const rows = state.socialCandidates.map(c => '<tr><td>' + escapeHtml(c.company_label) +
     '</td><td>' + escapeHtml(c.platform) + '</td><td><a target="_blank" rel="noopener noreferrer" href="' +
     escapeHtml(c.profile_url) + '">' + escapeHtml(c.profile_url) + '</a></td><td>' +
@@ -193,7 +211,12 @@ function socialMarkup() {
     '<div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Rede</th><th>Página corporativa</th>' +
     '<th>Triagem</th></tr></thead><tbody>' + (rows ||
     '<tr><td colspan="4">Nenhum perfil empresarial registrado.</td></tr>') +
-    '</tbody></table></div><p class="muted">A coleta oficial e o acompanhamento de respostas só serão ativados ' +
+    '</tbody></table></div>' +
+    (canReview ? '<div class="stack"><h3>Triagem administrativa · '+pending.length+' pendentes</h3>' +
+      '<p class="muted">Aprovação exige uma empresa identificada nesta página. Busque a empresa na carteira ' +
+      'antes de avaliar o vínculo. Esta decisão não autoriza mensagens.</p>' +
+      (reviewForms || '<p>Nenhum registro aguardando triagem.</p>')+'</div>' : '') +
+    '<p class="muted">A coleta oficial e o acompanhamento de respostas só serão ativados ' +
     'após as permissões das plataformas e homologação do sistema.</p></section>';
 }
 
@@ -221,6 +244,38 @@ async function registerSocialCandidate(event) {
       'Página empresarial encaminhada para triagem. Nenhuma mensagem foi enviada.');
     await loadCompanies();
   } catch(error){setMessage(error.message,true);} finally { state.busy=false;renderDashboard(); }
+}
+
+async function reviewSocialCandidate(event) {
+  event.preventDefault();
+  if(state.busy || !['owner','admin'].includes(state.currentRole) || !state.session?.access_token) return;
+  const form=event.currentTarget;
+  const decision=event.submitter?.value;
+  const companyId=decision==='approved' ? form.querySelector('.review-company')?.value || null : null;
+  const reason=form.querySelector('.review-reason')?.value.trim();
+  if(!form.querySelector('.review-confirm')?.checked) {
+    setMessage('Confirme a verificação manual antes de decidir.',true);renderDashboard();return;
+  }
+  if(decision==='approved'&&!companyId) {
+    setMessage('Selecione uma empresa da carteira para aprovar.',true);renderDashboard();return;
+  }
+  const organization=state.organizationId;
+  state.busy=true;
+  try {
+    const response=await fetch(state.apiBase+'/api/v1/social-candidates/review',{
+      method:'POST',headers:{'Content-Type':'application/json',
+        Authorization:'Bearer '+state.session.access_token},
+      body:JSON.stringify({organization_id:organization,candidate_id:form.dataset.candidate,
+        decision,company_id:companyId,reason})
+    });
+    const result=await response.json().catch(()=>null);
+    if(!response.ok) throw new Error('Falha na decisão ('+response.status+'). Código: '+
+      (result?.request_id || 'não disponível'));
+    if(organization!==state.organizationId) throw new Error('A organização mudou. Atualize os registros.');
+    setMessage(result.status==='already_reviewed' ? 'Registro já revisado.' :
+      'Decisão registrada no banco. Nenhuma mensagem foi enviada.');
+    await loadCompanies();
+  } catch(error){setMessage(error.message,true);} finally {state.busy=false;renderDashboard();}
 }
 
 function dashboardMarkup() {
@@ -312,6 +367,8 @@ function renderDashboard() {
   });
   document.querySelector('#preview-import').addEventListener('click', previewImport);
   document.querySelector('#social-form')?.addEventListener('submit', registerSocialCandidate);
+  document.querySelectorAll('.social-review').forEach(form=>
+    form.addEventListener('submit',reviewSocialCandidate));
   document.querySelector('#apply-import')?.addEventListener('click', applyImport);
   document.querySelector('#cancel-import')?.addEventListener('click', () => {
     state.preview = null; state.file = null; renderDashboard();
