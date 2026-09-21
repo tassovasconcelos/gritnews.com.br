@@ -75,3 +75,10 @@ jobs:
           test -s apps/grit-prospect-360/web/dist/index.html
           test -d apps/grit-prospect-360/web/dist/assets
           echo "Frontend artifact built. No deploy performed."
+      - name: Preserve build for manual staging inspection only
+        uses: actions/upload-artifact@v4
+        with:
+          name: grit-prospect-360-ui-unconfigured
+          path: apps/grit-prospect-360/web/dist/
+          if-no-files-found: error
+          retention-days: 7
