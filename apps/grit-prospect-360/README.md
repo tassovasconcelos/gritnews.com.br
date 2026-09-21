@@ -93,3 +93,26 @@ Migration \`prospect_360_0005_social_company_prospects\` was applied successfull
 The development UI now has a "Redes sociais" section to manually register and list Instagram corporate handles or LinkedIn company pages, optionally linking a known company. The backend's \`POST /api/v1/social-candidates\` checks user JWT, tenant membership and allowed corporate URL, deduplicates by (organization, platform, handle), and records each new item with status \`pending\`.
 
 **No provider integration is connected.** Instagram Business Discovery/hashtag discovery requires eligible official API access and review. LinkedIn API member data must not be harvested into the CRM; its separately approved Lead Sync product is a future option for the organization's authorized Lead Gen Forms. No automated DMs, LinkedIn connection requests, follow-ups, browser scraping, real lead capture or external sends have been implemented. All acquisition metrics remain unverified until the flow is deployed, authorized and measured.
+
+
+## Social human review and verified company linkage (SOC-002)
+
+In dedicated Supabase \`qspluchjhnnzgbbgmsro\`, migrations
+\`prospect_360_0006_social_review\` and \`prospect_360_0007_review_link_guard\`
+were applied. New candidates must remain unlinked while \`pending\`.
+An owner/admin can approve only with an existing company in the **same tenant**
+and a 12–500 character review reason. Rejection has no company link. The RPC
+\`review_social_candidate\` is executable only through the service role and
+writes an audit event; the API verifies the user JWT and tenant membership
+before calling it. This review does not authorize any message to be sent.
+
+The browser review form allows administrators to verify a CNPJ against the
+company register before making a recorded decision. It is development code:
+actual invitation, logged-in review, real persistence and cross-tenant denial
+are not homologated. Automated discovery, LinkedIn profile extraction, sending
+DMs/follow-ups and provider integrations remain disabled.
+
+A duplicate browser review handler introduced during parallel editing was
+removed before the latest test run. Do not infer production readiness from a
+successful build. The project currently has no Auth users, organizations,
+companies, social candidates or imports. No existing GRIT database was altered.
