@@ -28,8 +28,10 @@ function fakeSupabase(calls) {
       };
     },
     async rpc(name, params) {
-      calls.push({ operation: 'apply', name, params });
-      return { data: { status: 'applied', batch_id: 'test-batch', applied_count: 1 }, error: null };
+      calls.push({ operation: name === 'review_social_candidate' ? 'review' : 'apply', name, params });
+      return name === 'review_social_candidate'
+        ? {data:{status:'reviewed',review_status:params.p_decision},error:null}
+        : {data:{status:'applied',batch_id:'test-batch',applied_count:1},error:null};
     }
   };
 }
@@ -164,5 +166,21 @@ test('HTTP rejects attempts to fake social API or LinkedIn member extraction',as
     });
     assert.equal(response2.status,400);
     assert.equal(calls.filter(x=>x.operation==='social_insert').length,0);
+  });
+});
+
+
+test('HTTP review denies operator even when Auth session exists',async()=>{
+  await withServer(async(url,calls)=>{
+    const response=await fetch(url+'/api/v1/social-candidates/review',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer valid-token'},
+      body:JSON.stringify({
+        organization_id:ORG,candidate_id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+        decision:'rejected',reason:'Página corporativa não corresponde à empresa.'
+      })
+    });
+    assert.equal(response.status,403);
+    assert.equal(calls.filter(x=>x.operation==='review').length,0);
   });
 });
