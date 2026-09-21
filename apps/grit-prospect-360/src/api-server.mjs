@@ -139,7 +139,7 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
         : ['invalid_csv_quote', 'unclosed_csv_quote', 'required_columns_cnpj_legal_name',
           'duplicate_csv_header', 'csv_header_required'].includes(error.message) ? 400 : 500);
       const publicError = status >= 500 ? 'internal_error' : error.message;
-      if (status >= 500) logger.error('prospect_import_error', { request_id: requestId, type: error.message });
+      if (status >= 500) logger.error('prospect_operation_error', { request_id: requestId, type: 'internal_error' });
       res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ error: publicError, request_id: requestId }));
     }
