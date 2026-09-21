@@ -35,3 +35,26 @@ O proprietário informa explicitamente o e-mail profissional do primeiro adminis
 - Política e teste de isolamento com resultado observável por papel.
 - Execução do lote sintético, reenvio idempotente, registro de auditoria e screenshot do painel.
 - Evidência de restauração, autorização de release e plano de reversão.
+
+
+## Primeiro administrador — execução restrita (status 21/09/2026)
+
+O proprietário indicou seu e-mail diretamente na solicitação operacional. Não gravar o endereço, tokens ou senha em arquivos públicos do repositório. O projeto alvo foi consultado: \`auth.users = 0\`, \`organizations = 0\`, \`memberships = 0\`. Nenhum convite foi emitido por esta integração, porque o conector disponível não oferece uma operação Auth Admin Invite e o endereço de retorno/SMTP ainda não foi homologado.
+
+### Antes de enviar convite
+
+- Confirmar implantação e disponibilidade HTTPS do frontend em \`https://prospect.gritnews.com.br/\`, cujo endereço é usado como redirect; a versão ainda está em branch de desenvolvimento e não está publicada.
+- Configurar Supabase Auth → URL Configuration: Site URL e allowlist de redirect do projeto exclusivo. Verificar a jornada de convite/definição de senha e recuperação no frontend.
+- Configurar SMTP institucional e testar entrega e resposta sem transferir configurações de outro produto.
+- Guardar \`PROSPECT_SUPABASE_SERVICE_ROLE_KEY\` somente no cofre local/host de operação; nunca em GitHub, chat, Vite ou URL.
+- Registrar aprovação do proprietário para envio e ativação; se o usuário já existir, o operador não reenvia convite automaticamente.
+
+### Script preparado (NÃO EXECUTADO)
+
+\`scripts/first-owner.mjs\` suporta \`status\`, \`invite\` e \`activate\` com Auth Admin SDK. Ele fixa o host do Supabase dedicado, exige correspondência do e-mail com a confirmação operacional, e bloqueia invite sem declarações explícitas de verificação do redirect e SMTP. Essas declarações são verificações humanas; não representam teste automático. O script não imprime tokens ou senhas.
+
+\`db/migrations/0004_first_owner.sql\` cria uma RPC atômica, invocável apenas pelo papel \`service_role\`; ela não cria usuário Auth, não confirma e-mail e não altera credenciais. A CLI só a invoca após consultar Auth Admin e constatar e-mail confirmado. A tentativa de executar a RPC anonimamente deve ser rejeitada. Não chamar RPC diretamente com UUID arbitrário.
+
+Após aceite do convite pelo destinatário, verificar confirmação de e-mail em Auth e executar \`activate\`. Registrar \`organization_id\` e verificar o papel \`owner\` em \`memberships\`. Não alegar entrega ou ativação com base na mera aceitação de uma chamada de convite.
+
+Até completar essa jornada, login, homologação de isolamento e publicação permanecem bloqueados.
