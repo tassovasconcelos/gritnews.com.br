@@ -37,4 +37,7 @@ jobs:
           grep -q 'ALTER TABLE public.companies ENABLE ROW LEVEL SECURITY' db/migrations/0001_initial.sql
           grep -q 'UNIQUE (organization_id, tax_id)' db/migrations/0001_initial.sql
           grep -q 'CREATE POLICY "companies_insert_operators"' db/migrations/0001_initial.sql
+          grep -q 'SECURITY INVOKER' db/migrations/0002_import_rpc.sql
+          grep -q 'REVOKE ALL ON FUNCTION public.apply_company_import' db/migrations/0002_import_rpc.sql
+          grep -q 'UNIQUE (organization_id, file_sha256)' db/migrations/0002_import_rpc.sql
           echo "Static migration checks passed. Database migration NOT applied."
