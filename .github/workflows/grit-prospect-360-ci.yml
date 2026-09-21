@@ -41,3 +41,27 @@ jobs:
           grep -q 'REVOKE ALL ON FUNCTION public.apply_company_import' db/migrations/0002_import_rpc.sql
           grep -q 'UNIQUE (organization_id, file_sha256)' db/migrations/0002_import_rpc.sql
           echo "Static migration checks passed. Database migration NOT applied."
+
+  ui-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install existing monorepo dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build isolated frontend (without project credentials)
+        run: pnpm exec vite build --config apps/grit-prospect-360/web/vite.config.mjs
+      - name: Verify frontend artifact
+        run: |
+          set -euo pipefail
+          test -s apps/grit-prospect-360/web/dist/index.html
+          test -d apps/grit-prospect-360/web/dist/assets
+          echo "Frontend artifact built. No deploy performed."
