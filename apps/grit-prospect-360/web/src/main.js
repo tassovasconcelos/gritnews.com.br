@@ -34,7 +34,7 @@ const root = document.querySelector('#app');
 const state = {
   client: null, apiBase: '', session: null, organizationId: '', organizations: [],
   companies: [], total: 0, page: 0, filter: '', file: null, preview: null, busy: false,
-  message: '', isError: false
+  message: '', isError: false, needsPasswordSetup: false
 };
 
 const notice = () => state.message
@@ -85,6 +85,43 @@ async function login(event) {
   } finally {
     button.disabled = false;
   }
+}
+
+// Supabase invite/recovery links establish a session via URL. The user must
+// set a new password before entering the administrative interface.
+function passwordSetupMarkup() {
+  root.innerHTML = '<main class="login panel"><p class="tag">Primeiro acesso seguro</p>' +
+    '<h1>Defina sua senha</h1><p class="muted">Conclua seu convite ou recuperação de acesso. ' +
+    'Use uma senha exclusiva do Prospect 360.</p>' + notice() +
+    '<form id="setup-password"><label for="new-password">Nova senha</label>' +
+    '<input id="new-password" type="password" autocomplete="new-password" required minlength="12" />' +
+    '<label for="confirm-password">Confirmar senha</label>' +
+    '<input id="confirm-password" type="password" autocomplete="new-password" required minlength="12" />' +
+    '<div class="actions"><button type="submit">Salvar senha</button>' +
+    '<button type="button" class="secondary" id="setup-logout">Cancelar e sair</button></div></form></main>';
+  document.querySelector('#setup-password').addEventListener('submit', finishPasswordSetup);
+  document.querySelector('#setup-logout').addEventListener('click', logout);
+}
+
+async function finishPasswordSetup(event) {
+  event.preventDefault();
+  const newInput = document.querySelector('#new-password');
+  const confirmInput = document.querySelector('#confirm-password');
+  const password = newInput.value;
+  const same = password === confirmInput.value;
+  newInput.value = ''; confirmInput.value = '';
+  if (!same || password.length < 12 || password.length > 128) {
+    setMessage('As senhas devem coincidir e conter entre 12 e 128 caracteres.', true);
+    passwordSetupMarkup(); return;
+  }
+  if (!state.session) { setMessage('O link expirou. Solicite novo convite.', true); loginMarkup(); return; }
+  const { error } = await state.client.auth.updateUser({ password });
+  if (error) { setMessage('Não foi possível definir a senha. Solicite novo link ou tente novamente.', true);
+    passwordSetupMarkup(); return; }
+  state.needsPasswordSetup = false;
+  window.history.replaceState(null, '', window.location.pathname);
+  setMessage('Senha definida. Verificando sua organização...');
+  await loadOrganizations();
 }
 
 async function loadOrganizations() {
@@ -281,8 +318,9 @@ async function boot() {
   try {
     const config = publicConfig(import.meta.env);
     state.apiBase = config.apiBase;
+    state.needsPasswordSetup = /(?:[?#&])type=(?:invite|recovery)(?:&|$)/.test(window.location.href);
     state.client = createClient(config.projectUrl, config.anonKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
     state.client.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
@@ -290,12 +328,16 @@ async function boot() {
         setMessage('Sessão encerrada.'); loginMarkup();
       } else if (event === 'TOKEN_REFRESHED') {
         state.session = session;
+      } else if (event === 'PASSWORD_RECOVERY') {
+        state.session = session;
+        state.needsPasswordSetup = true;
       }
     });
     const { data, error } = await state.client.auth.getSession();
     if (error) throw error;
     state.session = data.session;
-    if (state.session) await loadOrganizations();
+    if (state.session && state.needsPasswordSetup) passwordSetupMarkup();
+    else if (state.session) await loadOrganizations();
     else loginMarkup();
   } catch (error) { showUnavailable(error.message); }
 }
