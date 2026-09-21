@@ -3,6 +3,7 @@
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { createCompanyImportService } from './company-service.mjs';
+import { createSocialProspectingService } from './social-service.mjs';
 
 const DEDICATED_PROJECT_HOST = 'qspluchjhnnzgbbgmsro.supabase.co';
 const MAX_HTTP_BYTES = 2_200_000;
@@ -43,6 +44,32 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
     }
   });
 
+  const social = createSocialProspectingService({
+    authenticate: async token => {
+      const { data, error } = await supabase.auth.getUser(token);
+      return error ? null : data?.user ?? null;
+    },
+    membershipFor: async (organizationId,userId) => {
+      const {data,error}=await supabase.from('memberships').select('role,active')
+        .eq('organization_id',organizationId).eq('user_id',userId).maybeSingle();
+      if(error) throw new Error('social_membership_query_failed');
+      return data;
+    },
+    findExisting: async (organizationId,platform,key) => {
+      const {data,error}=await supabase.from('social_prospect_candidates').select('id')
+        .eq('organization_id',organizationId).eq('platform',platform)
+        .eq('account_key',key).maybeSingle();
+      if(error) throw new Error('social_candidate_query_failed');
+      return data;
+    },
+    insertCandidate: async payload => {
+      const {data,error}=await supabase.from('social_prospect_candidates').insert(payload)
+        .select('id').single();
+      if(error) throw error;
+      return data;
+    }
+  });
+
   return http.createServer(async (req, res) => {
     const requestId = randomUUID();
     res.setHeader('X-Request-Id', requestId);
@@ -68,7 +95,8 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
     }
     const isPreview = req.url === '/api/v1/company-imports/preview';
     const isApply = req.url === '/api/v1/company-imports/apply';
-    if ((!isPreview && !isApply) || req.method !== 'POST') {
+    const isSocial = req.url === '/api/v1/social-candidates';
+    if ((!isPreview && !isApply && !isSocial) || req.method !== 'POST') {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'not_found', request_id: requestId }));
       return;
@@ -99,7 +127,11 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
         csv: body.csv,
         expectedSha256: body.expected_sha256
       };
-      const response = isPreview ? await service.preview(input) : await service.apply(input);
+      const response = isSocial ? await social.registerManual({
+        authorization: req.headers.authorization,
+        organizationId: body.organization_id,
+        candidate: body.candidate
+      }) : isPreview ? await service.preview(input) : await service.apply(input);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ ...response, request_id: requestId }));
     } catch (error) {
