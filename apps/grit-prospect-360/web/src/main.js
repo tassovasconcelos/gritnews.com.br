@@ -34,7 +34,7 @@ const root = document.querySelector('#app');
 const state = {
   client: null, apiBase: '', session: null, organizationId: '', organizations: [],
   companies: [], total: 0, page: 0, filter: '', file: null, preview: null, busy: false,
-  message: '', isError: false, needsPasswordSetup: false, socialCandidates: [], currentRole: ''
+  message: '', isError: false, needsPasswordSetup: false, socialCandidates: [], currentRole: null, currentRole: ''
 };
 
 const notice = () => state.message
@@ -154,8 +154,13 @@ async function loadSocialCandidates() {
 
 async function loadCompanies() {
   if (!state.organizationId) {
-    state.companies = []; state.total = 0; state.socialCandidates = []; renderDashboard(); return;
+    state.companies = []; state.total = 0; state.socialCandidates = []; state.currentRole = null;
+    renderDashboard(); return;
   }
+  const {data: member, error: memberError} = await state.client.from('memberships')
+    .select('role,active').eq('organization_id',state.organizationId)
+    .eq('user_id',state.session?.user?.id).maybeSingle();
+  state.currentRole = !memberError && member?.active ? member.role : null;
   let query = state.client.from('companies').select(
     'id,legal_name,trade_name,tax_id,city,state,verification_status,created_at', { count: 'exact' }
   ).eq('organization_id', state.organizationId).order('created_at', { ascending: false })
@@ -174,29 +179,32 @@ async function loadCompanies() {
 }
 
 function socialMarkup() {
-  const companyOptions=state.companies.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.legal_name)+'</option>').join('');
-  const canReview=['owner','admin'].includes(state.currentRole);
-  const pending=canReview ? state.socialCandidates.filter(c=>c.review_status==='pending') : [];
-  const reviewForms=pending.map(c=>'<form class="stack social-review" data-candidate="'+escapeHtml(c.id)+'">' +
-    '<strong>'+escapeHtml(c.company_label)+' · '+escapeHtml(c.platform)+'</strong>' +
-    '<label for="company-'+escapeHtml(c.id)+'">Empresa cadastrada nesta página (obrigatória para aprovar)</label>' +
-    '<select id="company-'+escapeHtml(c.id)+'" class="review-company"><option value="">Selecione uma empresa conferida</option>' +
-    companyOptions+'</select>' +
-    '<label for="reason-'+escapeHtml(c.id)+'">Justificativa da verificação</label>' +
-    '<input id="reason-'+escapeHtml(c.id)+'" class="review-reason" required minlength="12" maxlength="500" ' +
-    'placeholder="Explique como confirmou ou rejeitou este vínculo"/>' +
-    '<label><input class="review-confirm" type="checkbox"/> Conferi manualmente a identidade empresarial e a fonte.</label>' +
-    '<div class="actions"><button type="submit" name="decision" value="approved">Aprovar vínculo</button>' +
-    '<button type="submit" class="secondary" name="decision" value="rejected">Rejeitar</button></div></form>'
-  ).join('');
-  const rows = state.socialCandidates.map(c => '<tr><td>' + escapeHtml(c.company_label) +
-    '</td><td>' + escapeHtml(c.platform) + '</td><td><a target="_blank" rel="noopener noreferrer" href="' +
-    escapeHtml(c.profile_url) + '">' + escapeHtml(c.profile_url) + '</a></td><td>' +
-    escapeHtml(c.review_status) + '</td></tr>').join('');
+  const reviewer = ['owner','admin'].includes(state.currentRole);
+  const rows = state.socialCandidates.map(candidate => {
+    const id=escapeHtml(candidate.id);
+    const review = reviewer && candidate.review_status === 'pending'
+      ? '<form class="social-review-form stack" data-candidate-id="'+id+'">' +
+        '<label for="review-cnpj-'+id+'">CNPJ confirmado (para aprovação)</label>' +
+        '<input id="review-cnpj-'+id+'" name="cnpj" inputmode="numeric" maxlength="18" ' +
+        'placeholder="00.000.000/0000-00" />' +
+        '<label for="review-reason-'+id+'">Justificativa da revisão (mínimo 12 caracteres)</label>' +
+        '<input id="review-reason-'+id+'" name="reason" minlength="12" maxlength="500" required ' +
+        'placeholder="Empresa e página conferidas em fonte independente" />' +
+        '<div class="actions"><button type="submit" name="decision" value="approved" ' +
+        (state.busy ? 'disabled' : '') + '>Aprovar</button>' +
+        '<button type="submit" name="decision" value="rejected" class="secondary" ' +
+        (state.busy ? 'disabled' : '') + '>Reprovar</button></div></form>'
+      : '<span class="muted">' + (candidate.review_status === 'pending'
+        ? 'Aguardando administrador' : 'Decisão registrada') + '</span>';
+    return '<tr><td>' + escapeHtml(candidate.company_label) + '</td><td>' +
+      escapeHtml(candidate.platform) + '</td><td><a target="_blank" rel="noopener noreferrer" href="' +
+      escapeHtml(candidate.profile_url) + '">' + escapeHtml(candidate.profile_url) +
+      '</a></td><td>' + escapeHtml(candidate.review_status) + '</td><td>' + review + '</td></tr>';
+  }).join('');
   return '<section id="social-prospects" class="panel" aria-labelledby="social-title">' +
     '<h3 id="social-title">Prospecção por redes sociais</h3>' +
-    '<p class="muted">Registre páginas corporativas do Instagram e do LinkedIn para triagem. ' +
-    'Sem coleta de perfis pessoais, scraping ou mensagens automáticas.</p>' +
+    '<p class="muted">Cadastre páginas corporativas do Instagram e do LinkedIn. A associação ao CNPJ ' +
+    'só ocorre após revisão de administrador. Não há raspagem de perfis ou disparos automáticos.</p>' +
     '<form id="social-form" class="stack"><div class="two"><div><label for="social-platform">Plataforma</label>' +
     '<select id="social-platform"><option value="instagram">Instagram empresarial</option>' +
     '<option value="linkedin">LinkedIn — página de empresa</option></select></div>' +
@@ -204,20 +212,52 @@ function socialMarkup() {
     '<input id="social-name" maxlength="200" required placeholder="Razão social ou nome empresarial"/></div></div>' +
     '<label for="social-url">URL da página corporativa</label>' +
     '<input id="social-url" type="url" required maxlength="300" placeholder="https://www.instagram.com/empresa/"/>' +
-    '<label for="social-company">Vincular empresa cadastrada (opcional; página atual)</label>' +
-    '<select id="social-company"><option value="">Sem vínculo até validar CNPJ</option>'+companyOptions+'</select>' +
     '<div class="actions"><button type="submit" ' + (state.busy ? 'disabled' : '') +
     '>Adicionar à triagem</button></div></form>' +
     '<div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Rede</th><th>Página corporativa</th>' +
-    '<th>Triagem</th></tr></thead><tbody>' + (rows ||
-    '<tr><td colspan="4">Nenhum perfil empresarial registrado.</td></tr>') +
-    '</tbody></table></div>' +
-    (canReview ? '<div class="stack"><h3>Triagem administrativa · '+pending.length+' pendentes</h3>' +
-      '<p class="muted">Aprovação exige uma empresa identificada nesta página. Busque a empresa na carteira ' +
-      'antes de avaliar o vínculo. Esta decisão não autoriza mensagens.</p>' +
-      (reviewForms || '<p>Nenhum registro aguardando triagem.</p>')+'</div>' : '') +
-    '<p class="muted">A coleta oficial e o acompanhamento de respostas só serão ativados ' +
-    'após as permissões das plataformas e homologação do sistema.</p></section>';
+    '<th>Triagem</th><th>Revisão</th></tr></thead><tbody>' + (rows ||
+    '<tr><td colspan="5">Nenhum perfil empresarial registrado.</td></tr>') +
+    '</tbody></table></div><p class="muted">A coleta oficial e o acompanhamento de respostas somente ' +
+    'serão ativados após permissão das plataformas e homologação independente.</p></section>';
+}
+
+async function reviewSocialCandidate(event) {
+  event.preventDefault();
+  if (state.busy || !state.session?.access_token || !['owner','admin'].includes(state.currentRole)) return;
+  const form=event.currentTarget;
+  const candidateId=form.dataset.candidateId;
+  const decision=event.submitter?.value;
+  if (!['approved','rejected'].includes(decision)) return;
+  const reason=form.elements.namedItem('reason')?.value.trim();
+  const cnpj=form.elements.namedItem('cnpj')?.value.replace(/\D/g,'') || '';
+  const org=state.organizationId;
+  if (!reason || reason.length < 12 || reason.length > 500) {
+    setMessage('Justificativa obrigatória de 12 a 500 caracteres.',true);renderDashboard();return;
+  }
+  let companyId=null;
+  state.busy=true;
+  try {
+    if (decision === 'approved') {
+      if (cnpj.length !== 14) throw new Error('Informe o CNPJ confirmado para aprovação.');
+      const {data,error}=await state.client.from('companies').select('id,tax_id')
+        .eq('organization_id',org).eq('tax_id',cnpj).maybeSingle();
+      if (error || !data?.id) throw new Error('CNPJ não cadastrado nesta organização. Importe a empresa antes.');
+      companyId=data.id;
+    }
+    if (org!==state.organizationId) throw new Error('Organização alterada. Recarregue a triagem.');
+    const response=await fetch(state.apiBase+'/api/v1/social-candidates/review',{
+      method:'POST',headers:{'Content-Type':'application/json',
+        Authorization:'Bearer '+state.session.access_token},
+      body:JSON.stringify({organization_id:org,candidate_id:candidateId,decision,
+        company_id:companyId,reason})
+    });
+    const result=await response.json().catch(()=>null);
+    if (!response.ok) throw new Error('Revisão não concluída ('+response.status+'). Código: '+
+      (result?.request_id || 'não disponível'));
+    setMessage(result.status==='already_reviewed'?'Decisão já registrada.':
+      'Revisão registrada com auditoria. Nenhuma mensagem foi enviada.');
+    await loadCompanies();
+  } catch(error){setMessage(error.message,true);} finally {state.busy=false;renderDashboard();}
 }
 
 async function registerSocialCandidate(event) {
@@ -226,7 +266,6 @@ async function registerSocialCandidate(event) {
   const companyLabel=document.querySelector('#social-name')?.value.trim();
   const profileUrl=document.querySelector('#social-url')?.value.trim();
   const platform=document.querySelector('#social-platform')?.value;
-  const companyId=document.querySelector('#social-company')?.value || null;
   const organization=state.organizationId;
   state.busy=true;
   try {
@@ -234,7 +273,7 @@ async function registerSocialCandidate(event) {
       method:'POST',headers:{'Content-Type':'application/json',
         Authorization:'Bearer '+state.session.access_token},
       body:JSON.stringify({organization_id:organization,candidate:{platform,profile_url:profileUrl,
-        company_label:companyLabel,source_kind:'manual_corporate_url',company_id:companyId}})
+        company_label:companyLabel,source_kind:'manual_corporate_url'}})
     });
     const result=await response.json().catch(()=>null);
     if (!response.ok) throw new Error('Falha no cadastro do perfil empresarial ('+response.status+'). Código: '+
@@ -367,6 +406,8 @@ function renderDashboard() {
   });
   document.querySelector('#preview-import').addEventListener('click', previewImport);
   document.querySelector('#social-form')?.addEventListener('submit', registerSocialCandidate);
+  document.querySelectorAll('.social-review-form').forEach(form =>
+    form.addEventListener('submit',reviewSocialCandidate));
   document.querySelectorAll('.social-review').forEach(form=>
     form.addEventListener('submit',reviewSocialCandidate));
   document.querySelector('#apply-import')?.addEventListener('click', applyImport);
