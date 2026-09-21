@@ -4,7 +4,7 @@ import { createApi, createConfiguredApi } from './api-server.mjs';
 
 const ORG = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const CSV = 'cnpj,razao social\n11.222.333/0001-81,Empresa Exemplo\n';
-function fakeSupabase(calls) {
+function fakeSupabase(calls,{role='operator'}={}) {
   return {
     auth: { getUser: async token => ({ data: { user: token === 'valid-token'
       ? { id: '11111111-1111-4111-8111-111111111111' } : null }, error: null }) },
@@ -16,7 +16,7 @@ function fakeSupabase(calls) {
         async maybeSingle() {
           if (name === 'social_prospect_candidates') return { data: null, error: null };
           assert.equal(name, 'memberships');
-          return { data: where.organization_id === ORG ? { role: 'operator', active: true } : null, error: null };
+          return { data: where.organization_id === ORG ? { role, active: true } : null, error: null };
         },
         insert(candidate) { calls.push({operation:'social_insert',candidate});return this; },
         async single() { return {data:{id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'},error:null}; },
@@ -36,9 +36,9 @@ function fakeSupabase(calls) {
   };
 }
 
-async function withServer(callback) {
+async function withServer(callback,{role='operator'}={}) {
   const calls = [];
-  const api = createApi({ supabase: fakeSupabase(calls), allowedOrigin: 'https://prospect.example.invalid' });
+  const api = createApi({ supabase: fakeSupabase(calls,{role}), allowedOrigin: 'https://prospect.example.invalid' });
   await new Promise(resolve => api.listen(0, '127.0.0.1', resolve));
   try {
     const address = api.address();
@@ -183,4 +183,22 @@ test('HTTP review denies operator even when Auth session exists',async()=>{
     assert.equal(response.status,403);
     assert.equal(calls.filter(x=>x.operation==='review').length,0);
   });
+});
+
+
+test('HTTP review: approved company linkage requires owner/admin, reason and RPC',async()=>{
+  await withServer(async(url,calls)=>{
+    const response=await fetch(url+'/api/v1/social-candidates/review',{
+      method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer valid-token'},
+      body:JSON.stringify({
+        organization_id:ORG,candidate_id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+        decision:'approved',company_id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+        reason:'Conferi o CNPJ e a identidade empresarial nesta página.'
+      })
+    });
+    assert.equal(response.status,200);
+    assert.equal((await response.json()).review_status,'approved');
+    assert.equal(calls.filter(x=>x.operation==='review').length,1);
+    assert.equal(calls.find(x=>x.operation==='review').params.p_organization_id,ORG);
+  },{role:'admin'});
 });
