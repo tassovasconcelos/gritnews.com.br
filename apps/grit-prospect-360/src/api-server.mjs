@@ -2,7 +2,6 @@
 // DO NOT launch until dedicated-project secrets and authorization are reviewed.
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { createClient } from '@supabase/supabase-js';
 import { createCompanyImportService } from './company-service.mjs';
 
 const DEDICATED_PROJECT_HOST = 'qspluchjhnnzgbbgmsro.supabase.co';
@@ -64,7 +63,7 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
     if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
     if (req.url === '/health' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', app: 'grit-prospect-360', database: 'dedicated' }));
+      res.end(JSON.stringify({ status: 'ok', app: 'grit-prospect-360', database_target: 'dedicated', database_verified: false }));
       return;
     }
     const isPreview = req.url === '/api/v1/company-imports/preview';
@@ -114,7 +113,7 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
   });
 }
 
-export function createConfiguredApi(env = process.env) {
+export async function createConfiguredApi(env = process.env) {
   const url = env.PROSPECT_SUPABASE_URL ?? '';
   const key = env.PROSPECT_SUPABASE_SERVICE_ROLE_KEY ?? '';
   let parsed;
@@ -123,6 +122,7 @@ export function createConfiguredApi(env = process.env) {
       || !key || key.length < 24) {
     throw new Error('dedicated_supabase_environment_required');
   }
+  const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false }
   });
@@ -130,7 +130,7 @@ export function createConfiguredApi(env = process.env) {
 }
 
 if (process.argv[1] && import.meta.url === new URL('file://' + process.argv[1]).href) {
-  const api = createConfiguredApi();
+  const api = await createConfiguredApi();
   const port = Number(process.env.PORT || 3400);
   if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('invalid_port');
   api.listen(port, process.env.HOST || '127.0.0.1', () =>
