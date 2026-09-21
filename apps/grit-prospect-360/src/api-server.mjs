@@ -67,6 +67,11 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
         .select('id').single();
       if(error) throw error;
       return data;
+    },
+    reviewAtomic: async params => {
+      const {data,error}=await supabase.rpc('review_social_candidate',params);
+      if(error) throw error;
+      return data;
     }
   });
 
@@ -96,7 +101,8 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
     const isPreview = req.url === '/api/v1/company-imports/preview';
     const isApply = req.url === '/api/v1/company-imports/apply';
     const isSocial = req.url === '/api/v1/social-candidates';
-    if ((!isPreview && !isApply && !isSocial) || req.method !== 'POST') {
+    const isSocialReview = req.url === '/api/v1/social-candidates/review';
+    if ((!isPreview && !isApply && !isSocial && !isSocialReview) || req.method !== 'POST') {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'not_found', request_id: requestId }));
       return;
@@ -127,7 +133,14 @@ export function createApi({ supabase, allowedOrigin = '', logger = console }) {
         csv: body.csv,
         expectedSha256: body.expected_sha256
       };
-      const response = isSocial ? await social.registerManual({
+      const response = isSocialReview ? await social.reviewCandidate({
+        authorization: req.headers.authorization,
+        organizationId: body.organization_id,
+        candidateId: body.candidate_id,
+        decision: body.decision,
+        companyId: body.company_id ?? null,
+        reason: body.reason
+      }) : isSocial ? await social.registerManual({
         authorization: req.headers.authorization,
         organizationId: body.organization_id,
         candidate: body.candidate
