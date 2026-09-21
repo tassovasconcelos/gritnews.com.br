@@ -73,3 +73,12 @@ Dedicated CI exercises Node tests and builds the frontend artifact; both jobs pa
 The isolated responsive browser UI now binds an import preview to the selected organization so an operator cannot confirm a stale preview after switching tenants. The dedicated Supabase migration \`prospect_360_0003_fk_indexes\` was applied to address the five unindexed foreign key findings. New indexes are reported unused while the database remains empty; do not remove them just because the advisor shows unused-index info.
 
 See \`docs/FIRST-ADMIN-AND-E2E.md\` for the secure first-owner invitation, synthetic-data tests, RLS acceptance, backup/restore, and release gates. No first owner, tenant, customer or import has been provisioned, and no frontend/API process was deployed.
+
+
+## First-owner authorization gate
+
+The owner designated a professional email in the operator conversation; it is intentionally not hardcoded into the public repository. Migration \`prospect_360_0004_first_owner\` was applied ONLY to the new Supabase project. \`bootstrap_first_owner(uuid)\` is SECURITY INVOKER and executable only by the backend service role. At verification time there were zero Auth users, organizations and memberships. **No invitation email has been sent or delivered, and no user has been activated.**
+
+The safe operator script is \`scripts/first-owner.mjs\`. Its \`invite\` mode remains gated on an actually configured, manually tested Auth redirect URL and SMTP, which cannot be verified from the connected Supabase toolset. The currently connected tool exposes SQL and project metadata but no Auth Admin invite action; never manufacture users with SQL inserts into \`auth.users\`. Only use Supabase Auth Admin to invite, then await actual email confirmation, and finally use the guarded activation RPC.
+
+See \`docs/FIRST-ADMIN-AND-E2E.md\` for the execution and evidence checklist.
