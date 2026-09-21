@@ -90,7 +90,7 @@ The reference creative advertises discovery, qualification, dashboards and follo
 
 Migration \`prospect_360_0005_social_company_prospects\` was applied successfully **only** to the dedicated Supabase project. It adds a tenant-isolated corporate-page candidate queue and a closed-by-default channel configuration. Both tables have RLS; anonymous has no read access, authenticated users can read only their organization, and writes require the trusted service role. The database forbids enabling outbound messages through this configuration.
 
-The development UI now has a "Redes sociais" section to manually register and list Instagram corporate handles or LinkedIn company pages, optionally linking a known company. The backend's \`POST /api/v1/social-candidates\` checks user JWT, tenant membership and allowed corporate URL, deduplicates by (organization, platform, handle), and records each new item with status \`pending\`.
+The development UI now has a "Redes sociais" section to register and list Instagram corporate handles or LinkedIn company pages. A company link is permitted only during an owner/admin review after independent verification of CNPJ and page identity. The backend's \`POST /api/v1/social-candidates\` checks user JWT, tenant membership and allowed corporate URL, deduplicates by (organization, platform, handle), and records each new item with status \`pending\`.
 
 **No provider integration is connected.** Instagram Business Discovery/hashtag discovery requires eligible official API access and review. LinkedIn API member data must not be harvested into the CRM; its separately approved Lead Sync product is a future option for the organization's authorized Lead Gen Forms. No automated DMs, LinkedIn connection requests, follow-ups, browser scraping, real lead capture or external sends have been implemented. All acquisition metrics remain unverified until the flow is deployed, authorized and measured.
 
@@ -116,3 +116,10 @@ A duplicate browser review handler introduced during parallel editing was
 removed before the latest test run. Do not infer production readiness from a
 successful build. The project currently has no Auth users, organizations,
 companies, social candidates or imports. No existing GRIT database was altered.
+
+
+## Human social review — latest increment
+
+Migrations \`prospect_360_0006_social_review\` and \`0007_review_link_guard\` were applied ONLY in the dedicated project. Pending/rejected social candidates cannot have a linked company; approval requires a company ID from the same tenant, reviewer ID, reviewed_at and a 12–500 character justification. The backend's \`POST /api/v1/social-candidates/review\` is authenticated and requires owner/admin membership, and the database RPC is callable only by service_role. Review records an audit event but **does not authorize outreach or send a message**.
+
+The browser review control accepts an exact corporate CNPJ and finds an existing company within the selected organization. It can approve or reject with a stated reason; ordinary operators/viewers cannot see an active review form. All controls remain untested against real Auth users pending first-owner onboarding and two-tenant E2E.
