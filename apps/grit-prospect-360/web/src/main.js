@@ -34,7 +34,7 @@ const root = document.querySelector('#app');
 const state = {
   client: null, apiBase: '', session: null, organizationId: '', organizations: [],
   companies: [], total: 0, page: 0, filter: '', file: null, preview: null, busy: false,
-  message: '', isError: false, needsPasswordSetup: false
+  message: '', isError: false, needsPasswordSetup: false, socialCandidates: []
 };
 
 const notice = () => state.message
@@ -137,9 +137,20 @@ async function loadOrganizations() {
   await loadCompanies();
 }
 
+async function loadSocialCandidates() {
+  if (!state.organizationId) { state.socialCandidates = []; return; }
+  const {data,error} = await state.client.from('social_prospect_candidates')
+    .select('id,platform,company_label,profile_url,source_kind,review_status,created_at')
+    .eq('organization_id',state.organizationId).order('created_at',{ascending:false}).limit(100);
+  if (error) {
+    state.socialCandidates = [];
+    setMessage('Falha ao consultar candidatos de redes sociais.',true);
+  } else state.socialCandidates = data ?? [];
+}
+
 async function loadCompanies() {
   if (!state.organizationId) {
-    state.companies = []; state.total = 0; renderDashboard(); return;
+    state.companies = []; state.total = 0; state.socialCandidates = []; renderDashboard(); return;
   }
   let query = state.client.from('companies').select(
     'id,legal_name,trade_name,tax_id,city,state,verification_status,created_at', { count: 'exact' }
@@ -154,7 +165,58 @@ async function loadCompanies() {
     state.companies = []; state.total = 0;
     setMessage('Falha ao consultar empresas. Nenhum total foi presumido.', true);
   } else { state.companies = data ?? []; state.total = count ?? 0; }
+  await loadSocialCandidates();
   renderDashboard();
+}
+
+function socialMarkup() {
+  const rows = state.socialCandidates.map(c => '<tr><td>' + escapeHtml(c.company_label) +
+    '</td><td>' + escapeHtml(c.platform) + '</td><td><a target="_blank" rel="noopener noreferrer" href="' +
+    escapeHtml(c.profile_url) + '">' + escapeHtml(c.profile_url) + '</a></td><td>' +
+    escapeHtml(c.review_status) + '</td></tr>').join('');
+  return '<section id="social-prospects" class="panel" aria-labelledby="social-title">' +
+    '<h3 id="social-title">Prospecção por redes sociais</h3>' +
+    '<p class="muted">Registre páginas corporativas do Instagram e do LinkedIn para triagem. ' +
+    'Sem coleta de perfis pessoais, scraping ou mensagens automáticas.</p>' +
+    '<form id="social-form" class="stack"><div class="two"><div><label for="social-platform">Plataforma</label>' +
+    '<select id="social-platform"><option value="instagram">Instagram empresarial</option>' +
+    '<option value="linkedin">LinkedIn — página de empresa</option></select></div>' +
+    '<div><label for="social-name">Nome da empresa</label>' +
+    '<input id="social-name" maxlength="200" required placeholder="Razão social ou nome empresarial"/></div></div>' +
+    '<label for="social-url">URL da página corporativa</label>' +
+    '<input id="social-url" type="url" required maxlength="300" placeholder="https://www.instagram.com/empresa/"/>' +
+    '<div class="actions"><button type="submit" ' + (state.busy ? 'disabled' : '') +
+    '>Adicionar à triagem</button></div></form>' +
+    '<div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Rede</th><th>Página corporativa</th>' +
+    '<th>Triagem</th></tr></thead><tbody>' + (rows ||
+    '<tr><td colspan="4">Nenhum perfil empresarial registrado.</td></tr>') +
+    '</tbody></table></div><p class="muted">A coleta oficial e o acompanhamento de respostas só serão ativados ' +
+    'após as permissões das plataformas e homologação do sistema.</p></section>';
+}
+
+async function registerSocialCandidate(event) {
+  event.preventDefault();
+  if (state.busy || !state.session?.access_token || !state.organizationId) return;
+  const companyLabel=document.querySelector('#social-name')?.value.trim();
+  const profileUrl=document.querySelector('#social-url')?.value.trim();
+  const platform=document.querySelector('#social-platform')?.value;
+  const organization=state.organizationId;
+  state.busy=true;
+  try {
+    const response=await fetch(state.apiBase+'/api/v1/social-candidates', {
+      method:'POST',headers:{'Content-Type':'application/json',
+        Authorization:'Bearer '+state.session.access_token},
+      body:JSON.stringify({organization_id:organization,candidate:{platform,profile_url:profileUrl,
+        company_label:companyLabel,source_kind:'manual_corporate_url'}})
+    });
+    const result=await response.json().catch(()=>null);
+    if (!response.ok) throw new Error('Falha no cadastro do perfil empresarial ('+response.status+'). Código: '+
+      (result?.request_id || 'não disponível'));
+    if (organization!==state.organizationId) throw new Error('A organização mudou. Atualize a lista.');
+    setMessage(result.status==='already_exists' ? 'Página corporativa já registrada nesta organização.' :
+      'Página empresarial encaminhada para triagem. Nenhuma mensagem foi enviada.');
+    await loadCompanies();
+  } catch(error){setMessage(error.message,true);} finally { state.busy=false;renderDashboard(); }
 }
 
 function dashboardMarkup() {
@@ -180,7 +242,8 @@ function dashboardMarkup() {
       '>Confirmar importação</button><button id="cancel-import" class="secondary">Cancelar</button></div></section>' : '';
   return '<div class="layout"><aside class="sidebar"><h1>GRIT<br>Prospect 360</h1>' +
     '<p>Inteligência comercial B2B</p><nav class="nav" aria-label="Módulos">' +
-    '<div class="nav-item" aria-current="page">Empresas</div>' +
+    '<button type="button" id="nav-companies" class="nav-item" aria-current="page">Empresas</button>' +
+    '<button type="button" id="nav-social" class="nav-item">Redes sociais</button>' +
     '<div class="nav-item">CRM · futuro</div><div class="nav-item">Campanhas · futuro</div>' +
     '</nav><p class="foot">Ambiente de desenvolvimento</p></aside>' +
     '<main class="main"><header class="top"><div><p class="tag">Cadastro empresarial</p>' +
@@ -210,13 +273,17 @@ function dashboardMarkup() {
         '<label for="csv">Selecione o arquivo</label><input id="csv" type="file" accept=".csv,text/csv"/>' +
         (state.file ? '<p class="muted" role="status">Arquivo selecionado: ' + escapeHtml(state.file.name) + '</p>' : '') +
         '<div class="actions"><button id="preview-import" ' + (state.busy ? 'disabled' : '') +
-        '>Validar arquivo</button></div></section>' + preview) +
+        '>Validar arquivo</button></div></section>' + preview + socialMarkup()) +
     '<p class="foot">Sem disparos automáticos. Nenhum dado do Meu Cuidador é acessado.</p></main></div>';
 }
 
 function renderDashboard() {
   root.innerHTML = dashboardMarkup();
   document.querySelector('#logout').addEventListener('click', logout);
+  document.querySelector('#nav-social')?.addEventListener('click',()=>
+    document.querySelector('#social-prospects')?.scrollIntoView({behavior:'smooth'}));
+  document.querySelector('#nav-companies')?.addEventListener('click',()=>
+    document.querySelector('.main')?.scrollIntoView({behavior:'smooth'}));
   if (!state.organizations.length) return;
   document.querySelector('#org').addEventListener('change', async event => {
     if (state.busy) return;
@@ -240,6 +307,7 @@ function renderDashboard() {
     setMessage(''); renderDashboard();
   });
   document.querySelector('#preview-import').addEventListener('click', previewImport);
+  document.querySelector('#social-form')?.addEventListener('submit', registerSocialCandidate);
   document.querySelector('#apply-import')?.addEventListener('click', applyImport);
   document.querySelector('#cancel-import')?.addEventListener('click', () => {
     state.preview = null; state.file = null; renderDashboard();
