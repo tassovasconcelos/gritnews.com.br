@@ -1,0 +1,40 @@
+name: GRIT Prospect 360 CI
+
+on:
+  push:
+    branches:
+      - feat/grit-prospect-360-mvp-foundation-20260921
+    paths:
+      - 'apps/grit-prospect-360/**'
+      - '.github/workflows/grit-prospect-360-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/grit-prospect-360/**'
+      - '.github/workflows/grit-prospect-360-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  company-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: apps/grit-prospect-360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test company import and deduplication
+        run: npm test
+      - name: Verify staged schema has org isolation and RLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'ALTER TABLE public.companies ENABLE ROW LEVEL SECURITY' db/migrations/0001_initial.sql
+          grep -q 'UNIQUE (organization_id, tax_id)' db/migrations/0001_initial.sql
+          grep -q 'CREATE POLICY "companies_insert_operators"' db/migrations/0001_initial.sql
+          echo "Static migration checks passed. Database migration NOT applied."
