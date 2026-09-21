@@ -139,7 +139,7 @@ function dashboardMarkup() {
       '<div><div class="metric">' + state.preview.skipped_count + '</div><small>Ignoradas</small></div></div>' +
       '<p class="muted">A prévia ainda não grava informações. A confirmação abaixo realizará a importação no banco exclusivo.</p>' +
       '<div class="actions"><button id="apply-import" ' +
-      (state.busy || !state.preview.accepted_count ? 'disabled ' : '') +
+      (state.busy || !state.preview.accepted_count || state.preview.organization_id !== state.organizationId ? 'disabled ' : '') +
       '>Confirmar importação</button><button id="cancel-import" class="secondary">Cancelar</button></div></section>' : '';
   return '<div class="layout"><aside class="sidebar"><h1>GRIT<br>Prospect 360</h1>' +
     '<p>Inteligência comercial B2B</p><nav class="nav" aria-label="Módulos">' +
@@ -182,6 +182,7 @@ function renderDashboard() {
   document.querySelector('#logout').addEventListener('click', logout);
   if (!state.organizations.length) return;
   document.querySelector('#org').addEventListener('change', async event => {
+    if (state.busy) return;
     state.organizationId = event.target.value; state.page = 0; state.filter = '';
     state.file = null; state.preview = null; await loadCompanies();
   });
@@ -197,6 +198,7 @@ function renderDashboard() {
     if ((state.page + 1) * PAGE_SIZE < state.total) { state.page++; await loadCompanies(); }
   });
   document.querySelector('#csv').addEventListener('change', event => {
+    if (state.busy) return;
     state.file = event.target.files?.[0] ?? null; state.preview = null;
     setMessage(''); renderDashboard();
   });
@@ -234,7 +236,12 @@ async function previewImport() {
   state.busy = true;
   try {
     const csv = await state.file.text();
-    state.preview = await apiCall('/api/v1/company-imports/preview', csv);
+    const approvedOrganization = state.organizationId;
+    const result = await apiCall('/api/v1/company-imports/preview', csv);
+    if (approvedOrganization !== state.organizationId) {
+      throw new Error('A organização mudou durante a prévia. Valide novamente.');
+    }
+    state.preview = { ...result, organization_id: approvedOrganization };
     setMessage('Prévia concluída. Confirme somente após verificar os resultados.');
   } catch (error) { state.preview = null; setMessage(error.message, true); }
   finally { state.busy = false; renderDashboard(); }
@@ -242,6 +249,12 @@ async function previewImport() {
 
 async function applyImport() {
   if (state.busy || !state.preview || !state.file || !state.organizationId) return;
+  if (state.preview.organization_id !== state.organizationId) {
+    state.preview = null;
+    setMessage('Organização alterada. Valide novamente o arquivo.', true);
+    renderDashboard();
+    return;
+  }
   state.busy = true;
   try {
     const csv = await state.file.text();
