@@ -14,9 +14,12 @@ function fakeSupabase(calls) {
         select() { return this; },
         eq(key, value) { where[key] = value; return this; },
         async maybeSingle() {
+          if (name === 'social_prospect_candidates') return { data: null, error: null };
           assert.equal(name, 'memberships');
           return { data: where.organization_id === ORG ? { role: 'operator', active: true } : null, error: null };
         },
+        insert(candidate) { calls.push({operation:'social_insert',candidate});return this; },
+        async single() { return {data:{id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'},error:null}; },
         async in(key, values) {
           assert.equal(name, 'companies'); assert.equal(key, 'tax_id');
           calls.push({ operation: 'lookup', values, organization_id: where.organization_id });
@@ -122,5 +125,44 @@ test('HTTP denies apply when CSV fingerprint was not approved', async () => {
     assert.equal(response.status, 409);
     assert.equal((await response.json()).error, 'preview_file_mismatch');
     assert.equal(calls.filter(x => x.operation === 'apply').length, 0);
+  });
+});
+
+
+test('HTTP accepts manual corporate Instagram intake, keeps review pending',async()=>{
+  await withServer(async(url,calls)=>{
+    const response=await fetch(url+'/api/v1/social-candidates',{
+      method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer valid-token'},
+      body:JSON.stringify({organization_id:ORG,candidate:{
+        platform:'instagram',profile_url:'https://instagram.com/empresa/',
+        company_label:'Empresa',source_kind:'manual_corporate_url'
+      }})
+    });
+    assert.equal(response.status,200);
+    assert.equal((await response.json()).status,'pending_review');
+    assert.equal(calls.filter(x=>x.operation==='social_insert').length,1);
+    assert.equal(calls.find(x=>x.operation==='social_insert').candidate.review_status,'pending');
+  });
+});
+
+test('HTTP rejects attempts to fake social API or LinkedIn member extraction',async()=>{
+  await withServer(async(url,calls)=>{
+    const response=await fetch(url+'/api/v1/social-candidates',{
+      method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer valid-token'},
+      body:JSON.stringify({organization_id:ORG,candidate:{
+        platform:'linkedin',profile_url:'https://linkedin.com/in/person',
+        company_label:'Person',source_kind:'manual_corporate_url'
+      }})
+    });
+    assert.equal(response.status,400);
+    const response2=await fetch(url+'/api/v1/social-candidates',{
+      method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer valid-token'},
+      body:JSON.stringify({organization_id:ORG,candidate:{
+        platform:'instagram',account_key:'empresa',company_label:'Empresa',
+        source_kind:'approved_meta_business_discovery',api_approved:true
+      }})
+    });
+    assert.equal(response2.status,400);
+    assert.equal(calls.filter(x=>x.operation==='social_insert').length,0);
   });
 });
