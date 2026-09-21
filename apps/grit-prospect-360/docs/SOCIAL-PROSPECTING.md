@@ -58,3 +58,12 @@ A arte de referência do usuário apresenta uma plataforma concorrente de capta�
 - Meta Send API: https://www.postman.com/meta/instagram/folder/uxudqu0/send-api
 - LinkedIn Marketing API restricted uses: https://learn.microsoft.com/en-us/linkedin/marketing/restricted-use-cases?view=li-lms-2026-03
 - LinkedIn Lead Sync access: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/getting-access-leadsync?view=li-lms-2026-03
+
+
+## Revisão humana implementada (SOC-002)
+
+- Migrations \`0006_social_review\` e \`0007_review_link_guard\` aplicadas SOMENTE ao Supabase exclusivo: pendentes/reprovados não podem ter \`company_id\`; aprovados precisam de \`company_id\`, \`reviewer_user_id\`, \`reviewed_at\` e motivo de 12 a 500 caracteres.
+- A API \`POST /api/v1/social-candidates/review\` valida a sessão, exige \`owner\` ou \`admin\`, e chama a função transacional restrita ao backend; não permite aprovação anônima, de operador ou viewer.
+- A tela permite informar CNPJ exato da empresa já cadastrada, validar no tenant e registrar aprovação ou reprovação com justificativa. A presença da página social isoladamente NÃO comprova identidade empresarial.
+- A revisão é auditada, idempotente para a mesma decisão do mesmo revisor, e **não autoriza nem dispara mensagens**.
+- Pendência: testes reais de permissão RLS, Auth inicial, persistência E2E e restauração antes de publicar.
