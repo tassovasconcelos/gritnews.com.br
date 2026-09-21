@@ -38,7 +38,8 @@ test('preview: authenticated operator sees valid count and stable hash, no persi
 
 test('apply: delegates atomic write only after authentication and membership', async () => {
   const { service, calls } = setup();
-  const res = await service.apply({ authorization: 'Bearer valid-token', organizationId: A, csv: CSV });
+  const preview = await service.preview({ authorization: 'Bearer valid-token', organizationId: A, csv: CSV });
+  const res = await service.apply({ authorization: 'Bearer valid-token', organizationId: A, csv: CSV, expectedSha256: preview.file_sha256 });
   assert.equal(res.status, 'applied');
   assert.equal(calls.length, 1);
   assert.equal(calls[0].p_actor_id, USER);
@@ -63,7 +64,7 @@ test('preview indicates existing companies; apply passes record to DB for race-s
   assert.equal(preview.accepted_count, 0);
   assert.equal(preview.skipped_count, 1);
   assert.deepEqual(preview.skipped, [{ line: 2, reason: 'already_exists' }]);
-  await service.apply(request);
+  await service.apply({ ...request, expectedSha256: preview.file_sha256 });
   assert.equal(calls[0].p_accepted.length, 1);
 });
 
@@ -79,4 +80,18 @@ test('rejects invalid organization ID and oversize input', async () => {
   const { service } = setup();
   await assert.rejects(service.preview({ authorization: 'Bearer valid-token', organizationId: 'bad', csv: CSV }), { status: 400 });
   await assert.rejects(service.preview({ authorization: 'Bearer valid-token', organizationId: A, csv: 'x'.repeat(2_000_001) }), /invalid_csv_size/);
+});
+
+
+test('apply: file hash mismatch or missing preview blocks persistence', async () => {
+  const { service, calls } = setup();
+  const input = { authorization: 'Bearer valid-token', organizationId: A, csv: CSV };
+  const preview = await service.preview(input);
+  await assert.rejects(service.apply(input), { status: 409 });
+  await assert.rejects(service.apply({ ...input, expectedSha256: '0'.repeat(64) }), { status: 409 });
+  await assert.rejects(service.apply({
+    ...input, csv: CSV.replace('Empresa Teste', 'Empresa Alterada'),
+    expectedSha256: preview.file_sha256
+  }), { status: 409 });
+  assert.equal(calls.length, 0);
 });
