@@ -34,7 +34,7 @@ const root = document.querySelector('#app');
 const state = {
   client: null, apiBase: '', session: null, organizationId: '', organizations: [],
   companies: [], total: 0, page: 0, filter: '', file: null, preview: null, busy: false,
-  message: '', isError: false, needsPasswordSetup: false, socialCandidates: [], currentRole: null, currentRole: ''
+  message: '', isError: false, needsPasswordSetup: false, socialCandidates: [], currentRole: null
 };
 
 const notice = () => state.message
