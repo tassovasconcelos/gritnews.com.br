@@ -74,8 +74,9 @@ test('HTTP supports preview and transactional apply with verified identity', asy
     };
     const preview = await fetch(url + '/api/v1/company-imports/preview', options);
     assert.equal(preview.status, 200);
-    assert.equal((await preview.json()).accepted_count, 1);
-    const approvedHash = (await preview.clone().json()).file_sha256;
+    const previewData = await preview.json();
+    assert.equal(previewData.accepted_count, 1);
+    const approvedHash = previewData.file_sha256;
     const apply = await fetch(url + '/api/v1/company-imports/apply', {
       ...options,
       body: JSON.stringify({ organization_id: ORG, csv: CSV, expected_sha256: approvedHash })
