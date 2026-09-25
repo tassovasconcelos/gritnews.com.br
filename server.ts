@@ -12,6 +12,25 @@ const OFFICIAL_PRODUCT_CATALOG: Record<string, { title: string; price: number; t
   'prod-re-destaque-eusebio': { title: 'Destaque de Imóvel no Eusébio (Selo Verificado)', price: 149.00, type: 'REAL_ESTATE_FEATURE' }
 };
 
+const OFFICIAL_COUPONS: Record<string, { kind: 'percent' | 'fixed'; value: number }> = {
+  GRIT10: { kind: 'percent', value: 10 },
+  BEMVINDO: { kind: 'percent', value: 10 },
+  PROMO2026: { kind: 'fixed', value: 5 },
+  DESCONTO5: { kind: 'fixed', value: 5 },
+};
+
+function calculateOfficialPrice(productId: string, couponValue?: unknown) {
+  const product = OFFICIAL_PRODUCT_CATALOG[productId];
+  if (!product) return null;
+  const couponCode = String(couponValue || '').trim().toUpperCase().slice(0, 40);
+  const coupon = couponCode ? OFFICIAL_COUPONS[couponCode] : undefined;
+  let amount = product.price;
+  if (coupon?.kind === 'percent') amount = amount * (1 - coupon.value / 100);
+  if (coupon?.kind === 'fixed') amount = amount - coupon.value;
+  amount = Math.max(0.01, Number(amount.toFixed(2)));
+  return { product, amount, couponCode: coupon ? couponCode : null };
+}
+
 const CANONICAL_ORIGIN = "https://gritnews.com.br";
 
 function getMercadoPagoClient(): MercadoPagoConfig | null {
@@ -118,8 +137,9 @@ async function startServer() {
   app.post("/api/mercadopago/preference", async (req, res) => {
     try {
       const productId = String(req.body?.productId || '');
-      const official = OFFICIAL_PRODUCT_CATALOG[productId];
-      if (!official) return res.status(400).json({ error: "Produto inválido." });
+      const priced = calculateOfficialPrice(productId, req.body?.couponCode);
+      if (!priced) return res.status(400).json({ error: "Produto inválido." });
+      const {product: official, amount, couponCode} = priced;
 
       const client = getMercadoPagoClient();
       if (!client) return res.status(503).json({ error: "Pagamento temporariamente indisponível." });
@@ -137,7 +157,7 @@ async function startServer() {
           title: official.title,
           description: `${official.title} - GRIT News`,
           quantity: 1,
-          unit_price: official.price,
+          unit_price: amount,
           currency_id: 'BRL',
         }],
         back_urls: {
@@ -147,11 +167,11 @@ async function startServer() {
         },
         auto_return: "approved",
         external_reference: externalReference,
-        metadata: { product_id: productId, product_type: official.type },
+        metadata: { product_id: productId, product_type: official.type, coupon_code: couponCode },
       };
       if (payerEmail) body.payer = { name: payerName, email: payerEmail };
       const result = await preference.create({ body });
-      return res.json({ status: "success", init_point: result.init_point, id: result.id, external_reference: externalReference });
+      return res.json({ status: "success", init_point: result.init_point, id: result.id, external_reference: externalReference, amount, coupon_code: couponCode });
     } catch (err: any) {
       console.error("[Mercado Pago Preference Error]:", err?.message || err);
       return res.status(502).json({ error: "Não foi possível iniciar o checkout." });
@@ -160,17 +180,10 @@ async function startServer() {
 
   app.post("/api/mercadopago/payment", async (req, res) => {
     try {
-      const requestedProductId = String(req.body?.productId || '');
-      const requestedAmount = Number(req.body?.transaction_amount);
-      let productId = requestedProductId;
-      let official = OFFICIAL_PRODUCT_CATALOG[productId];
-
-      if (!official && Number.isFinite(requestedAmount)) {
-        const matched = Object.entries(OFFICIAL_PRODUCT_CATALOG)
-          .find(([, item]) => Math.abs(item.price - requestedAmount) < 0.001);
-        if (matched) [productId, official] = matched;
-      }
-      if (!official) return res.status(400).json({ error: "Produto ou valor inválido." });
+      const productId = String(req.body?.productId || '');
+      const priced = calculateOfficialPrice(productId, req.body?.couponCode);
+      if (!priced) return res.status(400).json({ error: "Produto inválido." });
+      const {product: official, amount, couponCode} = priced;
 
       const client = getMercadoPagoClient();
       if (!client) return res.status(503).json({ error: "Pagamento temporariamente indisponível." });
@@ -184,7 +197,7 @@ async function startServer() {
       const paymentMethod = String(req.body?.payment_method_id || 'pix').slice(0, 40);
       const orderRef = `GRIT-${crypto.randomUUID()}`;
       const paymentPayload: any = {
-        transaction_amount: official.price,
+        transaction_amount: amount,
         description: official.title,
         payment_method_id: paymentMethod,
         payer: {
@@ -194,7 +207,7 @@ async function startServer() {
           identification: payer?.identification || (payer?.cpf ? { type: "CPF", number: String(payer.cpf).replace(/\D/g, "").slice(0, 14) } : undefined),
         },
         external_reference: orderRef,
-        metadata: { product_id: productId, product_type: official.type },
+        metadata: { product_id: productId, product_type: official.type, coupon_code: couponCode },
       };
 
       if (req.body?.token) paymentPayload.token = String(req.body.token).slice(0, 512);
@@ -204,7 +217,7 @@ async function startServer() {
 
       const payment = new Payment(client);
       const result = await payment.create({ body: paymentPayload });
-      const securityReceiptHash = generateSecurityReceiptHash(orderRef, official.price, customerEmail);
+      const securityReceiptHash = generateSecurityReceiptHash(orderRef, amount, customerEmail);
 
       return res.json({
         status: "success",
@@ -212,6 +225,8 @@ async function startServer() {
         paymentStatus: result.status,
         statusDetail: result.status_detail,
         external_reference: orderRef,
+        amount,
+        coupon_code: couponCode,
         securityHash: securityReceiptHash || undefined,
         qrCode: result.point_of_interaction?.transaction_data?.qr_code,
         qrCodeBase64: result.point_of_interaction?.transaction_data?.qr_code_base64,
