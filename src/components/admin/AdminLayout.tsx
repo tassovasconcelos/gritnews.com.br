@@ -39,6 +39,7 @@ import { AdminImoveis } from './AdminImoveis';
 import { AdminPlaybookOrders } from './AdminPlaybookOrders';
 import { AdminPayments } from './AdminPayments';
 import { AdminLoginScreen } from './AdminLoginScreen';
+import { adminSignOut, getAdminSession } from '../../lib/adminAuth';
 import { AdminGritVerify } from './AdminGritVerify';
 import { AdminNewsCandidates } from './AdminNewsCandidates';
 import { AdminSources } from './AdminSources';
@@ -98,69 +99,44 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   onExitAdmin,
   onShowToast
 }) => {
-  // Estado de Autenticação na Sessão
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('grit_admin_authenticated') === 'true';
-  });
+  const [authState,setAuthState]=useState<'loading'|'anonymous'|'authenticated'>('loading');
+  const [authUser,setAuthUser]=useState<{name:string;role:UserRole;email:string}|null>(null);
+  const [activeTab,setActiveTab]=useState<AdminTab>('dashboard');
+  const [isDocModalOpen,setIsDocModalOpen]=useState(false);
+  const currentRole:UserRole=authUser?.role||'READER';
 
-  const [authUser, setAuthUser] = useState<{ name: string; role: UserRole; email: string }>(() => {
-    const savedName = sessionStorage.getItem('grit_admin_user_name');
-    const savedRole = (sessionStorage.getItem('grit_admin_user_role') as UserRole) || 'SUPERADMIN';
-    const savedEmail = sessionStorage.getItem('grit_admin_user_email') || 'admin@gritnews.com.br';
+  useEffect(()=>{
+    let active=true;
+    getAdminSession().then(user=>{
+      if(!active)return;
+      if(user){setAuthUser(user);setAuthState('authenticated')}
+      else{setAuthUser(null);setAuthState('anonymous')}
+    }).catch(()=>{
+      if(active){setAuthUser(null);setAuthState('anonymous')}
+    });
+    return()=>{active=false};
+  },[]);
 
-    return {
-      name: savedName || 'Administrador Geral',
-      role: savedRole,
-      email: savedEmail
-    };
-  });
-
-  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
-  const [currentRole, setCurrentRole] = useState<UserRole>(authUser.role);
-  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
-
-  // Sincroniza role ativo se alterar usuário
-  useEffect(() => {
-    setCurrentRole(authUser.role);
-  }, [authUser]);
-
-  /**
-   * Executa a entrada no painel após autenticação bem-sucedida no login
-   */
-  const handleLoginSuccess = (user: { name: string; role: UserRole; email: string }) => {
-    sessionStorage.setItem('grit_admin_authenticated', 'true');
-    sessionStorage.setItem('grit_admin_user_name', user.name);
-    sessionStorage.setItem('grit_admin_user_role', user.role);
-    sessionStorage.setItem('grit_admin_user_email', user.email);
-
+  const handleLoginSuccess=(user:{name:string;role:UserRole;email:string})=>{
     setAuthUser(user);
-    setCurrentRole(user.role);
-    setIsAuthenticated(true);
+    setAuthState('authenticated');
     onShowToast(`Bem-vindo, ${user.name}! Sessão autenticada.`);
   };
 
-  /**
-   * Encerra a sessão administrativa com segurança
-   */
-  const handleLogout = () => {
-    sessionStorage.removeItem('grit_admin_authenticated');
-    sessionStorage.removeItem('grit_admin_user_name');
-    sessionStorage.removeItem('grit_admin_user_role');
-    sessionStorage.removeItem('grit_admin_user_email');
-
-    setIsAuthenticated(false);
+  const handleLogout=async()=>{
+    try{await adminSignOut()}catch{}
+    setAuthUser(null);
+    setAuthState('anonymous');
     onShowToast('Sessão encerrada com segurança.');
     onExitAdmin();
   };
 
-  // Se não estiver autenticado, exige login com Usuário e Senha
-  if (!isAuthenticated) {
-    return (
-      <AdminLoginScreen
-        onLoginSuccess={handleLoginSuccess}
-        onExit={onExitAdmin}
-      />
-    );
+  if(authState==='loading'){
+    return <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center"><div className="text-sm text-slate-300">Validando sessão administrativa…</div></div>;
+  }
+
+  if(authState!=='authenticated'||!authUser){
+    return <AdminLoginScreen onLoginSuccess={handleLoginSuccess} onExit={onExitAdmin}/>;
   }
 
   // Itens de Menu do Painel Gerencial (Hierarquia Editorial GRIT 2.0)
@@ -224,29 +200,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <p className="text-[10px] text-slate-300 font-mono truncate">{authUser.email}</p>
           </div>
 
-          {/* Role Switcher RBAC */}
           <div className="bg-white/5 p-3 rounded-xl space-y-1.5 border border-white/10">
-            <span className="text-[10px] font-bold uppercase text-gray-300 block">Nível de Permissão (RBAC)</span>
-            <select
-              value={currentRole}
-              onChange={e => {
-                const newRole = e.target.value as UserRole;
-                setCurrentRole(newRole);
-                setActiveTab('dashboard');
-                onShowToast(`Perfil de permissão ajustado para ${newRole}`);
-              }}
-              className="w-full bg-[#145EDB] text-white text-xs font-bold p-1.5 rounded-lg border border-white/20 focus:outline-none cursor-pointer"
-            >
-              <option value="SUPERADMIN">Superadmin (Acesso Total)</option>
-              <option value="ADMIN">Administrador</option>
-              <option value="EDITOR_IN_CHIEF">Editor-Chefe</option>
-              <option value="EDITOR">Editor</option>
-              <option value="COMMERCIAL_MANAGER">Gestor Comercial</option>
-              <option value="ANALYST">Analista de Inteligência</option>
-              <option value="PARTNER">Parceiro B2B</option>
-              <option value="AUTHOR">Autor / Colaborador</option>
-              <option value="READER">Leitor / Assinante</option>
-            </select>
+            <span className="text-[10px] font-bold uppercase text-gray-300 block">Permissão validada pelo servidor</span>
+            <div className="w-full bg-[#145EDB] text-white text-xs font-bold p-2 rounded-lg border border-white/20">
+              {currentRole}
+            </div>
           </div>
 
           {/* Navigation Menu */}
