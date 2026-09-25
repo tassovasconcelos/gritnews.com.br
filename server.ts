@@ -9,7 +9,11 @@ const OFFICIAL_PRODUCT_CATALOG: Record<string, { title: string; price: number; t
   'prod-ad-banner-header': { title: 'Plano Mídia: Banner Topo Header (30 Dias)', price: 350.00, type: 'AD_BANNER' },
   'prod-ad-publieditorial': { title: 'Publieditorial Patrocinado + Destaque na Home', price: 890.00, type: 'SPONSORED_POST' },
   'prod-ad-banner-sidebar': { title: 'Banner Lateral & In-Article (30 Dias)', price: 250.00, type: 'AD_BANNER' },
-  'prod-re-destaque-eusebio': { title: 'Destaque de Imóvel no Eusébio (Selo Verificado)', price: 149.00, type: 'REAL_ESTATE_FEATURE' }
+  'prod-re-destaque-eusebio': { title: 'Destaque de Imóvel no Eusébio (Selo Verificado)', price: 149.00, type: 'REAL_ESTATE_FEATURE' },
+  'prod-re-consultoria-vip': { title: 'Consultoria Imobiliária VIP no Eusébio', price: 490.00, type: 'REAL_ESTATE_CONSULTING' },
+  'prod-tenpets-apoio-50': { title: 'Cota de Apoio TenPets: Ração & Primeiros Cuidados', price: 50.00, type: 'DONATION_TENPETS' },
+  'prod-tenpets-apoio-150': { title: 'Cota TenPets: Tratamento Clínico & Cirurgias', price: 150.00, type: 'DONATION_TENPETS' },
+  'prod-grit-membership-pro': { title: 'Clube GRIT News Pro (Assinatura Anual)', price: 199.00, type: 'MEMBERSHIP' }
 };
 
 const OFFICIAL_COUPONS: Record<string, { kind: 'percent' | 'fixed'; value: number }> = {
