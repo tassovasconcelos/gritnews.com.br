@@ -1,1090 +1,222 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  ShieldCheck,
-  Lock,
-  CreditCard,
-  QrCode,
-  CheckCircle2,
-  Copy,
-  Zap,
-  ArrowRight,
-  ArrowLeft,
-  Sparkles,
-  Download,
-  Phone,
-  Mail,
-  User,
-  FileText,
-  Tag,
-  Check,
-  AlertCircle,
-  HelpCircle,
-  ExternalLink,
-  ChevronDown,
-  Clock,
-  Send,
-  Building,
-  HeartHandshake,
-  RefreshCw
-} from 'lucide-react';
-import { CommercialProduct, PlaybookOrder, SiteConfig } from '../../types';
-import { COMMERCIAL_PRODUCTS, getProductById } from '../../data/commercialProducts';
-import { getSiteConfig, addPlaybookOrder, getPlaybookOrders, updatePlaybookOrder } from '../../lib/storage';
-import { processMercadoPagoCheckout, detectCardBrand, checkMercadoPagoPaymentStatus } from '../../lib/mercadoPagoService';
-import confetti from 'canvas-confetti';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
+import {ArrowLeft,CheckCircle2,Copy,CreditCard,Download,ExternalLink,Lock,Mail,QrCode,RefreshCw,ShieldCheck,Tag,User,Zap} from 'lucide-react';
+import type {CommercialProduct,PlaybookOrder,SiteConfig} from '../../types';
+import {COMMERCIAL_PRODUCTS,getProductById} from '../../data/commercialProducts';
+import {addPlaybookOrder,getPlaybookOrders,getSiteConfig,updatePlaybookOrder} from '../../lib/storage';
+import {checkMercadoPagoPaymentStatus,processMercadoPagoCheckout} from '../../lib/mercadoPagoService';
 
-interface CheckoutViewProps {
-  initialProductId?: string;
-  onBackToHome: () => void;
-  onShowToast: (msg: string, type?: 'success' | 'info' | 'error') => void;
+interface CheckoutViewProps{
+  initialProductId?:string;
+  onBackToHome:()=>void;
+  onShowToast:(msg:string,type?:'success'|'info'|'error')=>void;
 }
 
-export const CheckoutView: React.FC<CheckoutViewProps> = ({
-  initialProductId = 'prod-playbook-emagrecimento',
-  onBackToHome,
-  onShowToast
-}) => {
-  const [siteConfig, setSiteConfig] = useState<SiteConfig>(() => getSiteConfig());
-  
-  // Produto selecionado
-  const [selectedProduct, setSelectedProduct] = useState<CommercialProduct>(() => {
-    const found = getProductById(initialProductId);
-    return found || COMMERCIAL_PRODUCTS[0];
-  });
-  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
+export const CheckoutView:React.FC<CheckoutViewProps>=({
+  initialProductId='prod-playbook-emagrecimento',onBackToHome,onShowToast
+})=>{
+  const[siteConfig]=useState<SiteConfig>(()=>getSiteConfig());
+  const[selectedProduct,setSelectedProduct]=useState<CommercialProduct>(()=>getProductById(initialProductId)||COMMERCIAL_PRODUCTS[0]);
+  const[paymentMethod,setPaymentMethod]=useState<'pix'|'card'|'mercadopago_wallet'>('pix');
+  const[customerName,setCustomerName]=useState('');
+  const[customerEmail,setCustomerEmail]=useState('');
+  const[customerPhone,setCustomerPhone]=useState('');
+  const[customerCpf,setCustomerCpf]=useState('');
+  const[couponInput,setCouponInput]=useState('');
+  const[appliedCoupon,setAppliedCoupon]=useState<string|null>(null);
+  const[busy,setBusy]=useState(false);
+  const[completedOrder,setCompletedOrder]=useState<PlaybookOrder|null>(null);
+  const[pixCode,setPixCode]=useState('');
+  const[pixImage,setPixImage]=useState('');
+  const[polling,setPolling]=useState(false);
+  const[paymentConfirmed,setPaymentConfirmed]=useState(false);
+  const pollRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
-  // Método de pagamento
-  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'mercadopago_wallet'>('pix');
+  const previewAmount=useMemo(()=>{
+    const base=selectedProduct.price;
+    if(appliedCoupon==='GRIT10'||appliedCoupon==='BEMVINDO')return Number((base*.9).toFixed(2));
+    if(appliedCoupon==='PROMO2026'||appliedCoupon==='DESCONTO5')return Math.max(.01,Number((base-5).toFixed(2)));
+    return base;
+  },[selectedProduct,appliedCoupon]);
 
-  // Dados do comprador
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerCpf, setCustomerCpf] = useState('');
+  const markPaid=(order:PlaybookOrder)=>{
+    const paid:{status:'PAID';accessSent:true;paidAt:string}={status:'PAID',accessSent:true,paidAt:new Date().toISOString()};
+    updatePlaybookOrder(order.id,paid);
+    setCompletedOrder({...order,...paid});
+    setPaymentConfirmed(true);
+    setPolling(false);
+    if(pollRef.current)clearInterval(pollRef.current);
+  };
 
-  // Cartão de Crédito
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardHolderName, setCardHolderName] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [installments, setInstallments] = useState(1);
+  useEffect(()=>{
+    if(typeof window==='undefined')return;
+    const params=new URLSearchParams(window.location.search);
+    const paymentId=params.get('payment_id')||params.get('collection_id')||'';
+    const reference=params.get('external_reference')||'';
+    if(!paymentId||!reference)return;
 
-  // Cupom
-  const [couponInput, setCouponInput] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
-  const [discountAmount, setDiscountAmount] = useState(0);
+    const existing=getPlaybookOrders().find(order=>order.id===reference);
+    if(!existing)return;
+    const product=existing.productId?getProductById(existing.productId):null;
+    if(product)setSelectedProduct(product);
+    setPaymentMethod(existing.paymentMethod==='card'?'card':existing.paymentMethod==='mercadopago_wallet'?'mercadopago_wallet':'pix');
+    setCustomerName(existing.customerName);
+    setCustomerEmail(existing.customerEmail);
+    setCustomerPhone(existing.customerPhone);
+    setCompletedOrder(existing);
 
-  // Processamento & Conclusão
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [orderCompleted, setOrderCompleted] = useState(false);
-  const [completedOrder, setCompletedOrder] = useState<PlaybookOrder | null>(null);
-  const [pixQrCodeUrl, setPixQrCodeUrl] = useState<string>('');
-  const [pixPayloadCode, setPixPayloadCode] = useState<string>('');
-  const [checkoutProUrl, setCheckoutProUrl] = useState<string>('');
-  const [isPaymentConfirmedRealTime, setIsPaymentConfirmedRealTime] = useState(false);
-  const [isPollingStatus, setIsPollingStatus] = useState(false);
-
-  // Timer do Pix (15 minutos)
-  const [timeLeft, setTimeLeft] = useState(900);
-  const pollingIntervalRef = useRef<any>(null);
-
-  useEffect(() => {
-    setSiteConfig(getSiteConfig());
-
-    // Verificar se retornou com parâmetro de status de pagamento do Mercado Pago
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const returnStatus = params.get('status') || params.get('collection_status');
-      const paymentId = params.get('payment_id') || params.get('collection_id');
-      if (returnStatus === 'approved' || returnStatus === 'success') {
-        onShowToast('Pagamento confirmado com sucesso via Mercado Pago!', 'success');
+    checkMercadoPagoPaymentStatus(paymentId).then(status=>{
+      if(status.status==='approved'){
+        markPaid({...existing,mercadoPagoPaymentId:paymentId});
+        onShowToast('Pagamento confirmado pelo Mercado Pago.','success');
+      }else{
+        onShowToast('O pagamento ainda não foi confirmado pelo gateway.','info');
       }
-    }
-  }, []);
+    }).catch(()=>onShowToast('Não foi possível confirmar o pagamento agora.','error'));
+  },[]);
 
-  // Timer regressivo para o PIX
-  useEffect(() => {
-    if (orderCompleted && paymentMethod === 'pix' && !isPaymentConfirmedRealTime) {
-      const timer = setInterval(() => {
-        setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [orderCompleted, paymentMethod, isPaymentConfirmedRealTime]);
+  useEffect(()=>{
+    const paymentId=completedOrder?.mercadoPagoPaymentId;
+    if(!completedOrder||completedOrder.status==='PAID'||!paymentId||paymentMethod!=='pix')return;
+    setPolling(true);
+    pollRef.current=setInterval(async()=>{
+      const result=await checkMercadoPagoPaymentStatus(paymentId);
+      if(result.status==='approved')markPaid(completedOrder);
+    },5000);
+    return()=>{if(pollRef.current)clearInterval(pollRef.current)};
+  },[completedOrder?.id,completedOrder?.mercadoPagoPaymentId,completedOrder?.status,paymentMethod]);
 
-  // Polling em tempo real para verificar se o pagamento PIX foi aprovado
-  useEffect(() => {
-    if (orderCompleted && paymentMethod === 'pix' && completedOrder?.mercadoPagoPaymentId && !isPaymentConfirmedRealTime) {
-      setIsPollingStatus(true);
-      
-      pollingIntervalRef.current = setInterval(async () => {
-        try {
-          const statusRes = await checkMercadoPagoPaymentStatus(
-            completedOrder.mercadoPagoPaymentId!,
-            siteConfig.mercadoPagoAccessToken
-          );
-
-          if (statusRes.status === 'approved') {
-            setIsPaymentConfirmedRealTime(true);
-            setIsPollingStatus(false);
-            clearInterval(pollingIntervalRef.current);
-
-            // Atualizar o pedido para PAID
-            const updated: PlaybookOrder = {
-              ...completedOrder,
-              status: 'PAID',
-              accessSent: true,
-              paidAt: new Date().toISOString(),
-              notes: `Pagamento PIX confirmado e aprovado em tempo real pelo Mercado Pago! ID: ${completedOrder.mercadoPagoPaymentId}`
-            };
-            setCompletedOrder(updated);
-            updatePlaybookOrder(completedOrder.id, {
-              status: 'PAID',
-              accessSent: true,
-              paidAt: new Date().toISOString()
-            });
-
-            try {
-              confetti({
-                particleCount: 100,
-                spread: 80,
-                origin: { y: 0.5 }
-              });
-            } catch (e) {}
-
-            onShowToast('PIX Reconhecido! Seu acesso e materiais estão 100% liberados.', 'success');
-          }
-        } catch (e) {
-          console.debug('Polling Mercado Pago status check...', e);
-        }
-      }, 4000);
-
-      return () => {
-        if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-      };
-    }
-  }, [orderCompleted, paymentMethod, completedOrder, isPaymentConfirmedRealTime, siteConfig.mercadoPagoAccessToken]);
-
-  const formatTimer = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Preço calculado
-  const basePrice = selectedProduct.price;
-  const finalPrice = Math.max(0, basePrice - discountAmount);
-
-  // Manipulação de máscaras
-  const handlePhoneChange = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 11);
-    if (digits.length <= 10) {
-      setCustomerPhone(digits.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim());
-    } else {
-      setCustomerPhone(digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim());
-    }
-  };
-
-  const handleCpfChange = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 11);
-    setCustomerCpf(digits.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4').replace(/[-.]$/, ''));
-  };
-
-  const handleCardNumberChange = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 16);
-    const parts = digits.match(/.{1,4}/g) || [];
-    setCardNumber(parts.join(' '));
-  };
-
-  const handleCardExpiryChange = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 4);
-    if (digits.length >= 3) {
-      setCardExpiry(`${digits.slice(0, 2)}/${digits.slice(2, 4)}`);
-    } else {
-      setCardExpiry(digits);
-    }
-  };
-
-  // Aplicação de Cupom
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const applyCoupon=(e:React.FormEvent)=>{
     e.preventDefault();
-    const cleanCoupon = couponInput.trim().toUpperCase();
-    if (!cleanCoupon) return;
-
-    if (cleanCoupon === 'GRIT10' || cleanCoupon === 'BEMVINDO') {
-      const disc = Number((basePrice * 0.1).toFixed(2));
-      setDiscountAmount(disc);
-      setAppliedCoupon(cleanCoupon);
-      onShowToast(`Cupom ${cleanCoupon} aplicado! Desconto de 10%.`, 'success');
-    } else if (cleanCoupon === 'PROMO2026' || cleanCoupon === 'DESCONTO5') {
-      const disc = 5.00;
-      setDiscountAmount(disc);
-      setAppliedCoupon(cleanCoupon);
-      onShowToast(`Cupom ${cleanCoupon} aplicado! Desconto de R$ 5,00.`, 'success');
-    } else {
-      onShowToast('Cupom inválido ou expirado.', 'error');
+    const code=couponInput.trim().toUpperCase();
+    if(['GRIT10','BEMVINDO','PROMO2026','DESCONTO5'].includes(code)){
+      setAppliedCoupon(code);onShowToast('Cupom aplicado. O servidor validará o desconto no fechamento.','success');
+    }else{
+      setAppliedCoupon(null);onShowToast('Cupom inválido ou expirado.','error');
     }
   };
 
-  // Envio do Pedido
-  const handleSubmitCheckout = async (e: React.FormEvent) => {
+  const submit=async(e:React.FormEvent)=>{
     e.preventDefault();
+    if(customerName.trim().length<2)return onShowToast('Informe seu nome completo.','error');
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim()))return onShowToast('Informe um e-mail válido.','error');
+    if(customerPhone.replace(/\D/g,'').length<10)return onShowToast('Informe um WhatsApp válido com DDD.','error');
 
-    if (!customerName.trim()) {
-      onShowToast('Por favor, informe seu nome completo.', 'error');
-      return;
-    }
-    if (!customerEmail.trim() || !customerEmail.includes('@')) {
-      onShowToast('Informe um e-mail válido para envio do acesso.', 'error');
-      return;
-    }
-    if (!customerPhone.trim()) {
-      onShowToast('Informe seu número de WhatsApp com DDD.', 'error');
-      return;
-    }
-
-    if (paymentMethod === 'card') {
-      const cleanCard = cardNumber.replace(/\D/g, '');
-      if (cleanCard.length < 15) {
-        onShowToast('Informe os 16 dígitos do seu cartão de crédito.', 'error');
-        return;
-      }
-      if (!cardHolderName.trim()) {
-        onShowToast('Informe o nome do titular impresso no cartão.', 'error');
-        return;
-      }
-      if (!cardExpiry.includes('/') || cardExpiry.length < 5) {
-        onShowToast('Informe a validade no formato MM/AA.', 'error');
-        return;
-      }
-      if (cardCvv.length < 3) {
-        onShowToast('Informe o código de segurança (CVV).', 'error');
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const result = await processMercadoPagoCheckout({
-        product: selectedProduct,
-        customerName,
-        customerEmail,
-        customerPhone,
-        customerCpf,
+    setBusy(true);
+    try{
+      const result=await processMercadoPagoCheckout({
+        product:selectedProduct,
+        customerName:customerName.trim(),
+        customerEmail:customerEmail.trim().toLowerCase(),
+        customerPhone:customerPhone.trim(),
+        customerCpf:customerCpf.replace(/\D/g,'')||undefined,
         paymentMethod,
-        cardDetails: paymentMethod === 'card' ? {
-          cardNumber,
-          cardHolderName,
-          cardExpiry,
-          cardCvv,
-          installments,
-          brand: detectCardBrand(cardNumber)
-        } : undefined,
-        couponCode: appliedCoupon || undefined,
-        discountAmount,
-        finalAmount: finalPrice,
-        siteConfig
+        couponCode:appliedCoupon||undefined,
+        discountAmount:Math.max(0,selectedProduct.price-previewAmount),
+        finalAmount:previewAmount,
+        siteConfig,
       });
+      addPlaybookOrder(result.order);
+      setCompletedOrder(result.order);
+      setPixCode(result.pixPayload||'');
+      setPixImage(result.pixQrCodeDataUrl||'');
+      onShowToast(result.message,'success');
 
-      if (result.success) {
-        // Gravar no histórico de pedidos do sistema
-        addPlaybookOrder(result.order);
-        setCompletedOrder(result.order);
-        if (result.pixQrCodeDataUrl) setPixQrCodeUrl(result.pixQrCodeDataUrl);
-        if (result.pixPayload) setPixPayloadCode(result.pixPayload);
-        if (result.mercadoPagoInitPoint) setCheckoutProUrl(result.mercadoPagoInitPoint);
-
-        // Se for Wallet Mercado Pago, redirecionar
-        if (paymentMethod === 'mercadopago_wallet' && result.mercadoPagoInitPoint) {
-          window.open(result.mercadoPagoInitPoint, '_blank');
-        }
-
-        // Lançar confetes se cartão aprovado ou pedido criado
-        try {
-          confetti({
-            particleCount: 80,
-            spread: 70,
-            origin: { y: 0.6 }
-          });
-        } catch (e) {}
-
-        setOrderCompleted(true);
-        onShowToast(result.message, 'success');
-      } else {
-        onShowToast('Não foi possível processar o pedido. Tente novamente.', 'error');
+      if(result.mercadoPagoInitPoint){
+        window.location.assign(result.mercadoPagoInitPoint);
+        return;
       }
-    } catch (err) {
-      console.error('Erro no checkout:', err);
-      onShowToast('Ocorreu um erro ao processar o pagamento com o Mercado Pago.', 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
+    }catch(err){
+      onShowToast(err instanceof Error?err.message:'Não foi possível iniciar o pagamento.','error');
+    }finally{setBusy(false)}
   };
 
-  const handleCopyPix = () => {
-    if (!pixPayloadCode) return;
-    navigator.clipboard.writeText(pixPayloadCode);
-    onShowToast('Código PIX Copia e Cola copiado com sucesso!', 'success');
+  const copy=async(value:string,label:string)=>{
+    if(!value)return;
+    await navigator.clipboard.writeText(value);
+    onShowToast(`${label} copiado. `,'success');
   };
 
-  const handleCopyPixKey = () => {
-    const key = siteConfig.pixKey || 'tassovasconcelos@gmail.com';
-    navigator.clipboard.writeText(key);
-    onShowToast(`Chave PIX (${key}) copiada!`, 'success');
-  };
+  const paid=completedOrder?.status==='PAID'&&completedOrder.accessSent===true;
 
-  const handleSendWhatsAppReceipt = () => {
-    if (!completedOrder) return;
-    const phone = '5585994441122'; // WhatsApp Comercial GRIT News
-    const msg = `Olá, Equipe GRIT News! 👋\n\nAcabei de realizar o pedido *${completedOrder.id}* no portal:\n- *Produto:* ${selectedProduct.title}\n- *Valor:* R$ ${completedOrder.amount.toFixed(2)}\n- *Cliente:* ${completedOrder.customerName}\n- *E-mail:* ${completedOrder.customerEmail}\n- *Selo de Autenticidade:* ${completedOrder.securityHash || 'HASH-AUTENTICADO'}\n\nGostaria de confirmar o pagamento e o recebimento dos acessos. Obrigado!`;
-    const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
-  };
-
-  // Simulação instantânea de aprovação PIX para testes e homologação
-  const handleManualSimulatePixApproval = () => {
-    if (!completedOrder) return;
-    setIsPaymentConfirmedRealTime(true);
-    setIsPollingStatus(false);
-    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-
-    const updated: PlaybookOrder = {
-      ...completedOrder,
-      status: 'PAID',
-      accessSent: true,
-      paidAt: new Date().toISOString(),
-      notes: `Pagamento PIX confirmado e aprovado (Modo Homologação/Simulação). ID: ${completedOrder.id}`
-    };
-    setCompletedOrder(updated);
-    updatePlaybookOrder(completedOrder.id, {
-      status: 'PAID',
-      accessSent: true,
-      paidAt: new Date().toISOString()
-    });
-
-    try {
-      confetti({
-        particleCount: 100,
-        spread: 80,
-        origin: { y: 0.5 }
-      });
-    } catch (e) {}
-
-    onShowToast('PIX Aprovado com sucesso! Materiais liberados.', 'success');
-  };
-
-  return (
-    <div className="min-h-screen bg-[#F7F9FC] text-[#0B2343] py-8 sm:py-12">
-      <div className="max-w-6xl mx-auto px-4">
-        
-        {/* Top Header Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <button
-            onClick={onBackToHome}
-            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-[#145EDB] bg-white px-4 py-2 rounded-full border border-slate-200 shadow-2xs transition-all cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Voltar ao Portal GRIT</span>
-          </button>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Ambiente 100% Criptografado SSL</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 px-3 py-1.5 rounded-full border border-sky-200">
-              <Lock className="w-3.5 h-3.5 text-sky-600" />
-              <span>Checkout Oficial Mercado Pago</span>
-            </div>
-          </div>
+  return <div className="min-h-screen bg-[#F7F9FC] text-[#0B2343] py-8 sm:py-12">
+    <div className="max-w-5xl mx-auto px-4 space-y-6">
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <button onClick={onBackToHome} className="inline-flex items-center gap-2 text-xs font-bold bg-white px-4 py-2 rounded-full border border-slate-200"><ArrowLeft className="w-4 h-4"/>Voltar ao Portal GRIT</button>
+        <div className="flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200"><ShieldCheck className="w-4 h-4"/>Valor validado no servidor</span>
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 px-3 py-1.5 rounded-full border border-sky-200"><Lock className="w-4 h-4"/>Cartão processado pelo Mercado Pago</span>
         </div>
+      </header>
 
-        {!orderCompleted ? (
-          /* =========================================================
-             TELA DE CHECKOUT PRINCIPAL (FORMULÁRIO + RESUMO)
-             ========================================================= */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            {/* COLUNA ESQUERDA (7 COLS): DADOS DO CLIENTE & PAGAMENTO */}
-            <div className="lg:col-span-7 space-y-6">
-              
-              {/* Box 1: Seletor de Produto */}
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-[#145EDB] text-white text-xs font-black flex items-center justify-center">1</span>
-                    <h3 className="text-base font-black text-[#0B2343]">Item Selecionado para Compra</h3>
-                  </div>
+      {!completedOrder?
+        <form onSubmit={submit} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <section className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-6 space-y-6">
+            <div><h1 className="text-2xl font-black">Checkout seguro</h1><p className="text-xs text-slate-500 mt-1">O GRIT News não recebe nem armazena número de cartão, validade ou CVV.</p></div>
 
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsProductDropdownOpen(!isProductDropdownOpen)}
-                      className="text-xs font-bold text-[#145EDB] hover:text-[#0B2343] flex items-center gap-1 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-100 transition-colors cursor-pointer"
-                    >
-                      <span>Trocar Produto</span>
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
-
-                    {isProductDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-2 space-y-1 max-h-96 overflow-y-auto">
-                        <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400 px-3 py-1">
-                          Catálogo de Produtos e Serviços GRIT
-                        </p>
-                        {COMMERCIAL_PRODUCTS.map(prod => (
-                          <button
-                            key={prod.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedProduct(prod);
-                              setDiscountAmount(0);
-                              setAppliedCoupon(null);
-                              setIsProductDropdownOpen(false);
-                            }}
-                            className={`w-full text-left p-3 rounded-xl transition-colors flex items-center justify-between gap-3 cursor-pointer ${
-                              selectedProduct.id === prod.id ? 'bg-sky-50 border border-sky-200' : 'hover:bg-slate-50'
-                            }`}
-                          >
-                            <div className="space-y-0.5">
-                              <p className="text-xs font-bold text-[#0B2343] line-clamp-1">{prod.title}</p>
-                              <p className="text-[10px] text-slate-500 line-clamp-1">{prod.category}</p>
-                            </div>
-                            <span className="text-xs font-black text-[#145EDB] shrink-0">
-                              R$ {prod.price.toFixed(2)}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Card do Produto Selecionado */}
-                <div className="flex flex-col sm:flex-row gap-4 items-center bg-[#F7F9FC] p-4 rounded-2xl border border-slate-200">
-                  {selectedProduct.image && (
-                    <img
-                      src={selectedProduct.image}
-                      alt={selectedProduct.title}
-                      className="w-full sm:w-28 h-24 sm:h-24 object-cover rounded-xl shrink-0"
-                    />
-                  )}
-                  <div className="space-y-1 flex-1 text-center sm:text-left">
-                    <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-[#145EDB]/10 text-[#145EDB]">
-                        {selectedProduct.category}
-                      </span>
-                      {selectedProduct.badge && (
-                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-[#FF8500]/10 text-[#FF8500]">
-                          {selectedProduct.badge}
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="text-sm font-black text-[#0B2343]">{selectedProduct.title}</h4>
-                    <p className="text-xs text-slate-600 line-clamp-2">{selectedProduct.subtitle}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Box 2: Dados do Comprador */}
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#145EDB] text-white text-xs font-black flex items-center justify-center">2</span>
-                  <h3 className="text-base font-black text-[#0B2343]">Dados de Identificação & Envio</h3>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="sm:col-span-2">
-                    <label className="block font-bold text-slate-700 mb-1">Nome Completo *</label>
-                    <div className="relative">
-                      <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        required
-                        placeholder="Ex: Carlos Eduardo de Albuquerque"
-                        value={customerName}
-                        onChange={e => setCustomerName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Seu Melhor E-mail *</label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="email"
-                        required
-                        placeholder="Ex: seuemail@gmail.com"
-                        value={customerEmail}
-                        onChange={e => setCustomerEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none transition-all"
-                      />
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1">O link de download e recibo serão enviados aqui.</p>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">WhatsApp com DDD *</label>
-                    <div className="relative">
-                      <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="tel"
-                        required
-                        placeholder="(85) 99999-9999"
-                        value={customerPhone}
-                        onChange={e => handlePhoneChange(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none transition-all"
-                      />
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1">Para suporte ágil e envio de confirmação.</p>
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block font-bold text-slate-700 mb-1">CPF ou CNPJ (para emissão do comprovante)</label>
-                    <div className="relative">
-                      <FileText className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder="000.000.000-00"
-                        value={customerCpf}
-                        onChange={e => handleCpfChange(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Box 3: Seleção e Formulário de Pagamento */}
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#145EDB] text-white text-xs font-black flex items-center justify-center">3</span>
-                  <h3 className="text-base font-black text-[#0B2343]">Forma de Pagamento Mercado Pago</h3>
-                </div>
-
-                {/* Abas de Pagamento */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* PIX */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('pix')}
-                    className={`p-4 rounded-2xl border-2 text-left flex flex-col justify-between transition-all cursor-pointer ${
-                      paymentMethod === 'pix'
-                        ? 'border-emerald-600 bg-emerald-50/50 shadow-md ring-2 ring-emerald-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
-                        <QrCode className="w-5 h-5" />
-                      </div>
-                      <span className="text-[10px] font-extrabold uppercase bg-emerald-600 text-white px-2 py-0.5 rounded-full">
-                        Instantâneo
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-[#0B2343]">PIX Oficial</p>
-                      <p className="text-[11px] text-slate-500">Aprovação em segundos</p>
-                    </div>
-                  </button>
-
-                  {/* CARTÃO DE CRÉDITO */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('card')}
-                    className={`p-4 rounded-2xl border-2 text-left flex flex-col justify-between transition-all cursor-pointer ${
-                      paymentMethod === 'card'
-                        ? 'border-[#145EDB] bg-sky-50/50 shadow-md ring-2 ring-sky-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="p-2 bg-sky-100 text-[#145EDB] rounded-xl">
-                        <CreditCard className="w-5 h-5" />
-                      </div>
-                      <span className="text-[10px] font-extrabold uppercase bg-[#145EDB] text-white px-2 py-0.5 rounded-full">
-                        Até 12x
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-[#0B2343]">Cartão de Crédito</p>
-                      <p className="text-[11px] text-slate-500">Mercado Pago Seguro</p>
-                    </div>
-                  </button>
-
-                  {/* CHECKOUT PRO / WALLET */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('mercadopago_wallet')}
-                    className={`p-4 rounded-2xl border-2 text-left flex flex-col justify-between transition-all cursor-pointer ${
-                      paymentMethod === 'mercadopago_wallet'
-                        ? 'border-sky-600 bg-sky-50 shadow-md ring-2 ring-sky-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="p-2 bg-sky-200 text-sky-800 rounded-xl">
-                        <Zap className="w-5 h-5" />
-                      </div>
-                      <span className="text-[10px] font-extrabold uppercase bg-sky-600 text-white px-2 py-0.5 rounded-full">
-                        Conta MP
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-[#0B2343]">Conta Mercado Pago</p>
-                      <p className="text-[11px] text-slate-500">Saldo ou Checkout Pro</p>
-                    </div>
-                  </button>
-                </div>
-
-                {/* CONTEÚDO DO MÉTODO SELECIONADO */}
-                {paymentMethod === 'pix' && (
-                  <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-2 text-xs text-emerald-950">
-                    <div className="flex items-center gap-2 text-emerald-800 font-bold">
-                      <QrCode className="w-4 h-4" />
-                      <span>Como funciona o pagamento por PIX:</span>
-                    </div>
-                    <ul className="space-y-1 text-[11px] text-emerald-900 list-disc list-inside">
-                      <li>Ao clicar no botão abaixo, geramos o QR Code dinâmico e o código Copia e Cola oficial do Mercado Pago / Banco Central.</li>
-                      <li>Você copia o código ou aponta a câmera no app de qualquer instituição bancária.</li>
-                      <li>Nosso sistema possui verificação em tempo real: assim que o banco confirmar, a tela atualiza e o acesso é liberado instantaneamente.</li>
-                    </ul>
-                  </div>
-                )}
-
-                {paymentMethod === 'card' && (
-                  <div className="space-y-4 pt-2">
-                    <div className="p-4 bg-gradient-to-r from-[#0B2343] to-[#145EDB] text-white rounded-2xl shadow-lg relative overflow-hidden text-xs">
-                      <div className="flex justify-between items-center mb-6">
-                        <span className="font-mono text-[10px] tracking-widest text-sky-200">MERCADO PAGO TRANSPARENTE</span>
-                        <span className="font-extrabold text-sm uppercase bg-white/20 px-2 py-0.5 rounded">
-                          {detectCardBrand(cardNumber).toUpperCase()}
-                        </span>
-                      </div>
-                      <p className="font-mono text-base tracking-widest mb-4">
-                        {cardNumber || '•••• •••• •••• ••••'}
-                      </p>
-                      <div className="flex justify-between items-end text-[11px]">
-                        <div>
-                          <p className="text-[9px] text-sky-200 uppercase">Titular</p>
-                          <p className="font-bold uppercase tracking-wider">{cardHolderName || 'NOME DO TITULAR'}</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] text-sky-200 uppercase">Validade</p>
-                          <p className="font-bold">{cardExpiry || 'MM/AA'}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="sm:col-span-2">
-                        <label className="block font-bold text-slate-700 mb-1">Número do Cartão *</label>
-                        <div className="relative">
-                          <CreditCard className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            placeholder="0000 0000 0000 0000"
-                            value={cardNumber}
-                            onChange={e => handleCardNumberChange(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-mono font-medium focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label className="block font-bold text-slate-700 mb-1">Nome Impresso no Cartão *</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: CARLOS E ALBUQUERQUE"
-                          value={cardHolderName}
-                          onChange={e => setCardHolderName(e.target.value.toUpperCase())}
-                          className="w-full px-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-medium uppercase focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-1">Validade (MM/AA) *</label>
-                        <input
-                          type="text"
-                          placeholder="MM/AA"
-                          value={cardExpiry}
-                          onChange={e => handleCardExpiryChange(e.target.value)}
-                          className="w-full px-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-medium text-center focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-1">Código de Segurança (CVV) *</label>
-                        <input
-                          type="password"
-                          maxLength={4}
-                          placeholder="123"
-                          value={cardCvv}
-                          onChange={e => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                          className="w-full px-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-medium text-center focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label className="block font-bold text-slate-700 mb-1">Opções de Parcelamento *</label>
-                        <select
-                          value={installments}
-                          onChange={e => setInstallments(Number(e.target.value))}
-                          className="w-full px-4 py-3 bg-[#F7F9FC] border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none"
-                        >
-                          <option value={1}>1x de R$ {finalPrice.toFixed(2)} (à vista sem juros)</option>
-                          <option value={2}>2x de R$ {(finalPrice / 2).toFixed(2)} sem juros</option>
-                          <option value={3}>3x de R$ {(finalPrice / 3).toFixed(2)} sem juros</option>
-                          <option value={6}>6x de R$ {((finalPrice * 1.05) / 6).toFixed(2)}</option>
-                          <option value={12}>12x de R$ {((finalPrice * 1.12) / 12).toFixed(2)}</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === 'mercadopago_wallet' && (
-                  <div className="p-4 bg-sky-50 border border-sky-200 rounded-2xl space-y-2 text-xs text-sky-950">
-                    <p className="font-bold text-sky-900 flex items-center gap-1.5">
-                      <Zap className="w-4 h-4 text-sky-600" />
-                      Pague com a sua conta Mercado Pago:
-                    </p>
-                    <p className="text-[11px] text-sky-800">
-                      Ao clicar em finalizar, você será direcionado ao ambiente seguro do Mercado Pago com sua preferência configurada, podendo pagar com saldo, cartão salvo ou Mercado Crédito.
-                    </p>
-                  </div>
-                )}
-              </div>
+            <div>
+              <label className="text-xs font-bold block mb-2">Produto</label>
+              <select value={selectedProduct.id} onChange={e=>{const p=getProductById(e.target.value);if(p){setSelectedProduct(p);setAppliedCoupon(null)}}} className="w-full border border-slate-200 rounded-xl p-3 text-sm">
+                {COMMERCIAL_PRODUCTS.map(p=><option key={p.id} value={p.id}>{p.title} — R$ {p.price.toFixed(2)}</option>)}
+              </select>
             </div>
 
-            {/* COLUNA DIREITA (5 COLS): RESUMO FINANCEIRO, CUPOM E BOTÃO DE FECHAMENTO */}
-            <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-8">
-              
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-md space-y-6">
-                <h3 className="text-base font-black text-[#0B2343] pb-3 border-b border-slate-100">
-                  Resumo do Pedido
-                </h3>
-
-                {/* Lista de Benefícios do Produto */}
-                <div className="space-y-2.5 text-xs text-slate-700">
-                  <p className="font-bold text-[#0B2343]">O que está incluso na sua compra:</p>
-                  {selectedProduct.benefits.map((benefit, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-[11px]">
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{benefit}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Formulário de Cupom */}
-                <form onSubmit={handleApplyCoupon} className="pt-3 border-t border-slate-100 space-y-2">
-                  <label className="block text-xs font-bold text-slate-700">Cupom de Desconto</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Tag className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder="Ex: GRIT10"
-                        value={couponInput}
-                        onChange={e => setCouponInput(e.target.value.toUpperCase())}
-                        className="w-full pl-9 pr-3 py-2 bg-[#F7F9FC] border border-slate-200 rounded-xl text-xs font-mono uppercase focus:ring-2 focus:ring-[#145EDB] focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
-                    >
-                      Aplicar
-                    </button>
-                  </div>
-                  {appliedCoupon && (
-                    <p className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Cupom {appliedCoupon} ativo (-R$ {discountAmount.toFixed(2)})
-                    </p>
-                  )}
-                </form>
-
-                {/* Tabela de Preços */}
-                <div className="pt-4 border-t border-slate-100 space-y-2 text-xs">
-                  {selectedProduct.originalPrice && selectedProduct.originalPrice > selectedProduct.price && (
-                    <div className="flex justify-between text-slate-400">
-                      <span>Valor Original:</span>
-                      <span className="line-through">R$ {selectedProduct.originalPrice.toFixed(2)}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between text-slate-600 font-medium">
-                    <span>Preço Promocional:</span>
-                    <span>R$ {basePrice.toFixed(2)}</span>
-                  </div>
-
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between text-emerald-600 font-bold">
-                      <span>Desconto do Cupom:</span>
-                      <span>- R$ {discountAmount.toFixed(2)}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-baseline pt-3 border-t border-slate-200 text-[#0B2343]">
-                    <div>
-                      <span className="text-base font-black">Total a Pagar:</span>
-                      <p className="text-[10px] text-slate-500">Sem taxas adicionais</p>
-                    </div>
-                    <span className="text-2xl sm:text-3xl font-black text-[#145EDB]">
-                      R$ {finalPrice.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Botão de Conclusão do Checkout */}
-                <button
-                  type="button"
-                  onClick={handleSubmitCheckout}
-                  disabled={isSubmitting}
-                  className="w-full py-4 bg-gradient-to-r from-[#FF8500] via-[#FF9E2C] to-[#FF8500] hover:from-[#E67700] hover:to-[#E67700] text-slate-950 font-black text-sm rounded-2xl shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Conectando ao Mercado Pago...</span>
-                    </span>
-                  ) : (
-                    <>
-                      <span>FINALIZAR PAGAMENTO (R$ {finalPrice.toFixed(2)})</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
-
-                {/* Selos de Garantia */}
-                <div className="space-y-2 pt-2 text-[11px] text-slate-500 border-t border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Garantia incondicional de 7 dias ou seu dinheiro de volta.</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Download className="w-4 h-4 text-sky-600 shrink-0" />
-                    <span>Acesso imediato enviado para o seu e-mail e WhatsApp.</span>
-                  </div>
-                </div>
-              </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <Field icon={<User className="w-4 h-4"/>} label="Nome completo" value={customerName} onChange={setCustomerName}/>
+              <Field icon={<Mail className="w-4 h-4"/>} label="E-mail" type="email" value={customerEmail} onChange={setCustomerEmail}/>
+              <Field icon={<Zap className="w-4 h-4"/>} label="WhatsApp" value={customerPhone} onChange={setCustomerPhone}/>
+              <Field label="CPF (opcional)" value={customerCpf} onChange={setCustomerCpf}/>
             </div>
 
+            <div>
+              <p className="text-xs font-bold mb-2">Forma de pagamento</p>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <Method active={paymentMethod==='pix'} onClick={()=>setPaymentMethod('pix')} icon={<QrCode className="w-5 h-5"/>} title="PIX" subtitle="QR Code oficial"/>
+                <Method active={paymentMethod==='card'} onClick={()=>setPaymentMethod('card')} icon={<CreditCard className="w-5 h-5"/>} title="Cartão" subtitle="Checkout Pro"/>
+                <Method active={paymentMethod==='mercadopago_wallet'} onClick={()=>setPaymentMethod('mercadopago_wallet')} icon={<Zap className="w-5 h-5"/>} title="Conta MP" subtitle="Ambiente oficial"/>
+              </div>
+              {paymentMethod==='card'&&<div className="mt-3 p-4 bg-sky-50 border border-sky-200 rounded-2xl text-xs text-sky-900">Os dados do cartão serão informados somente depois do redirecionamento ao Mercado Pago.</div>}
+            </div>
+          </section>
+
+          <aside className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-6 space-y-5 h-fit">
+            <div><h2 className="font-black">{selectedProduct.title}</h2><p className="text-xs text-slate-500 mt-1">{selectedProduct.subtitle}</p></div>
+            <form onSubmit={applyCoupon} className="flex gap-2"><div className="relative flex-1"><Tag className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={couponInput} onChange={e=>setCouponInput(e.target.value)} className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-xs" placeholder="Cupom"/></div><button type="submit" className="px-4 rounded-xl bg-slate-100 text-xs font-bold">Aplicar</button></form>
+            <div className="border-t border-slate-100 pt-4 flex items-end justify-between"><span className="text-sm font-bold">Total</span><strong className="text-3xl">R$ {previewAmount.toFixed(2)}</strong></div>
+            <p className="text-[11px] text-slate-500">O valor exibido é uma prévia. O preço final e o cupom são recalculados pelo servidor antes da cobrança.</p>
+            <button disabled={busy} className="w-full bg-[#145EDB] text-white rounded-xl py-3 font-black text-sm disabled:opacity-50">{busy?'Criando cobrança…':paymentMethod==='pix'?'Gerar PIX seguro':'Continuar no Mercado Pago'}</button>
+          </aside>
+        </form>
+      :
+        <section className="max-w-2xl mx-auto bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 text-center space-y-6">
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto ${paid?'bg-emerald-100 text-emerald-600':'bg-sky-100 text-sky-600'}`}>
+            {paid?<CheckCircle2 className="w-10 h-10"/>:<RefreshCw className={`w-8 h-8 ${polling?'animate-spin':''}`}/>}
           </div>
-        ) : (
-          /* =========================================================
-             TELA DE SUCESSO / CONFIRMAÇÃO DO PEDIDO (PIX, CARTÃO OU WALLET)
-             ========================================================= */
-          <div className="max-w-2xl mx-auto bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-xl text-center space-y-6">
-            
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
-              <CheckCircle2 className="w-10 h-10" />
-            </div>
+          <div><h2 className="text-2xl font-black">{paid?'Pagamento confirmado':'Pagamento aguardando confirmação'}</h2><p className="text-xs text-slate-500 mt-2">Pedido <strong>{completedOrder.id}</strong> • R$ {completedOrder.amount.toFixed(2)}</p></div>
 
-            <div className="space-y-1">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                {isPaymentConfirmedRealTime || paymentMethod === 'card' ? 'Pagamento Aprovado' : 'Pedido Gerado com Sucesso'}
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#0B2343]">
-                {isPaymentConfirmedRealTime || paymentMethod === 'card'
-                  ? 'Pagamento Confirmado no Mercado Pago!'
-                  : paymentMethod === 'mercadopago_wallet'
-                  ? 'Pedido Pronto no Mercado Pago!'
-                  : 'Cobrança PIX Gerada!'}
-              </h2>
-              <p className="text-xs text-slate-600">
-                Obrigado, <strong className="text-[#0B2343]">{customerName}</strong>! Pedido código: <strong className="font-mono text-[#145EDB]">{completedOrder?.id}</strong>
-              </p>
-            </div>
+          {paymentMethod==='pix'&&!paid&&<div className="text-left bg-emerald-50 border border-emerald-200 rounded-2xl p-5 space-y-4">
+            <p className="text-xs font-bold text-emerald-900">PIX gerado pelo Mercado Pago. O acesso só será liberado após confirmação automática do gateway.</p>
+            {pixImage&&<img src={pixImage} alt="QR Code PIX" className="w-56 h-56 mx-auto rounded-xl bg-white"/>}
+            {pixCode&&<><div className="break-all font-mono text-[10px] bg-white border border-emerald-200 p-3 rounded-xl">{pixCode}</div><button onClick={()=>copy(pixCode,'Código PIX')} className="w-full bg-emerald-600 text-white rounded-xl py-3 text-xs font-bold inline-flex items-center justify-center gap-2"><Copy className="w-4 h-4"/>Copiar PIX Copia e Cola</button></>}
+          </div>}
 
-            {/* SE O PIX FOI CONFIRMADO EM TEMPO REAL */}
-            {isPaymentConfirmedRealTime && (
-              <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-900 text-xs font-bold flex items-center justify-center gap-2">
-                <Sparkles className="w-5 h-5 text-emerald-600" />
-                <span>Identificamos seu pagamento PIX no Mercado Pago com sucesso!</span>
-              </div>
-            )}
+          {paid&&selectedProduct.downloadUrl&&<div className="text-left bg-emerald-50 border border-emerald-200 rounded-2xl p-5 space-y-3">
+            <p className="text-xs font-bold text-emerald-900 inline-flex items-center gap-2"><Download className="w-5 h-5"/>Material liberado após confirmação do pagamento</p>
+            <a href={selectedProduct.downloadUrl} download className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl text-xs font-black"><Download className="w-4 h-4"/>Baixar material</a>
+          </div>}
 
-            {/* SE FOR PIX PENDENTE: EXIBIR O QR CODE E CÓDIGO COPIA E COLA */}
-            {paymentMethod === 'pix' && !isPaymentConfirmedRealTime && (
-              <div className="bg-[#F7F9FC] p-6 rounded-2xl border-2 border-emerald-500/30 text-left space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-extrabold text-emerald-800 flex items-center gap-1.5">
-                    <QrCode className="w-4 h-4" />
-                    <span>Pague com o PIX Oficial (R$ {finalPrice.toFixed(2)}):</span>
-                  </p>
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Expira em {formatTimer(timeLeft)}</span>
-                  </div>
-                </div>
+          {!paid&&paymentMethod!=='pix'&&<div className="bg-sky-50 border border-sky-200 rounded-2xl p-5 text-xs text-sky-900">Conclua o pagamento no ambiente oficial do Mercado Pago. Ao retornar, o status será validado pelo gateway antes de qualquer liberação.</div>}
 
-                {isPollingStatus && (
-                  <div className="flex items-center gap-2 text-[11px] text-sky-700 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-200">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-600" />
-                    <span>Aguardando transferência... Ao pagar no app do seu banco, a confirmação é automática.</span>
-                  </div>
-                )}
-
-                {/* QR Code Imagem Gerada Dinamicamente */}
-                {pixQrCodeUrl && (
-                  <div className="flex justify-center py-2">
-                    <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-md">
-                      <img
-                        src={pixQrCodeUrl}
-                        alt="QR Code PIX Mercado Pago"
-                        className="w-48 h-48 sm:w-56 sm:h-56 mx-auto"
-                      />
-                      <p className="text-[10px] text-center text-slate-400 mt-2 font-medium">
-                        Aponte a câmera do aplicativo do seu banco
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Código Copia e Cola */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-slate-700">
-                    Código PIX Copia e Cola:
-                  </label>
-                  <div className="p-3 bg-white rounded-xl text-[10px] font-mono text-slate-700 break-all border border-slate-200 select-all max-h-20 overflow-y-auto">
-                    {pixPayloadCode}
-                  </div>
-                </div>
-
-                {/* Botões de Ação do PIX */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleCopyPix}
-                    className="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
-                  >
-                    <Copy className="w-4 h-4" />
-                    <span>Copiar Código Copia e Cola</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleCopyPixKey}
-                    className="py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer border border-slate-300 transition-all"
-                  >
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    <span>Copiar Chave ({siteConfig.pixKey || 'tassovasconcelos@gmail.com'})</span>
-                  </button>
-                </div>
-
-                {/* Botão de Homologação / Simulação Rápida em Ambiente de Teste */}
-                <div className="pt-2 text-center">
-                  <button
-                    type="button"
-                    onClick={handleManualSimulatePixApproval}
-                    className="text-[11px] font-bold text-[#145EDB] hover:text-[#0B2343] underline cursor-pointer inline-flex items-center gap-1"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Testando o fluxo? Clique aqui para simular aprovação instantânea</span>
-                  </button>
-                </div>
-
-                {/* Detalhes do Favorecido Oficial */}
-                <div className="pt-3 border-t border-slate-200 text-[11px] text-slate-600 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Beneficiário:</span>
-                    <strong className="text-slate-900">{siteConfig.pixBeneficiaryName || 'TASSO VASCONCELOS'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Chave PIX:</span>
-                    <strong className="text-slate-900">{siteConfig.pixKey || 'tassovasconcelos@gmail.com'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Cidade:</span>
-                    <strong className="text-slate-900">{siteConfig.pixCity || 'FORTALEZA'}</strong>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SELO CRIPTOGRÁFICO DE AUTENTICIDADE ANTI-FRAUDE */}
-            {completedOrder?.securityHash && (
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-left flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Autenticação Anti-Fraude GRIT Media:</span>
-                    <span className="font-mono font-bold text-slate-800">{completedOrder.securityHash}</span>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md border border-emerald-200">
-                  Conciliado BACEN/MP
-                </span>
-              </div>
-            )}
-
-            {/* SE FOR CHECKOUT PRO / WALLET: LINK DE REDIRECIONAMENTO */}
-            {paymentMethod === 'mercadopago_wallet' && checkoutProUrl && (
-              <div className="p-5 bg-sky-50 border border-sky-200 rounded-2xl text-center space-y-3">
-                <p className="text-xs font-bold text-sky-900">
-                  Clique no botão abaixo para acessar o Checkout Pro Seguro do Mercado Pago:
-                </p>
-                <a
-                  href={checkoutProUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 bg-sky-600 hover:bg-sky-700 text-white font-black text-xs rounded-xl shadow-md transition-all"
-                >
-                  <span>Pagar no Ambiente Oficial Mercado Pago</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-            )}
-
-            {/* SE O PRODUTO FOR DIGITAL (PLAYBOOK), BOTÃO DE DOWNLOAD */}
-            {selectedProduct.downloadUrl && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-left space-y-3">
-                <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs">
-                  <Download className="w-5 h-5 text-emerald-600" />
-                  <span>Seu E-book e Bônus estão liberados para download:</span>
-                </div>
-                <p className="text-xs text-emerald-800">
-                  Enviamos uma cópia de segurança para <strong>{customerEmail}</strong>. Você também pode baixar o arquivo em PDF de alta qualidade agora mesmo.
-                </p>
-                <a
-                  href={selectedProduct.downloadUrl}
-                  download="Playbook-Emagrecimento-Grit-News.pdf"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition-all"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>BAIXAR PLAYBOOK EM PDF AGORA</span>
-                </a>
-              </div>
-            )}
-
-            {/* BOTÃO PARA ENVIAR COMPROVANTE POR WHATSAPP */}
-            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                type="button"
-                onClick={handleSendWhatsAppReceipt}
-                className="px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <Send className="w-4 h-4" />
-                <span>Enviar Comprovante pelo WhatsApp</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={onBackToHome}
-                className="px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
-              >
-                Voltar à Página Inicial
-              </button>
-            </div>
-
-          </div>
-        )}
-
-      </div>
+          <button onClick={onBackToHome} className="text-xs font-bold text-slate-600">Voltar ao portal</button>
+        </section>
+      }
     </div>
-  );
+  </div>;
 };
+
+function Field({label,value,onChange,type='text',icon}:{label:string;value:string;onChange:(v:string)=>void;type?:string;icon?:React.ReactNode}){
+  return <label className="text-xs font-bold">{label}<div className="relative mt-1">{icon&&<span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} className={`w-full border border-slate-200 rounded-xl py-3 pr-3 text-sm ${icon?'pl-9':'pl-3'}`} /></div></label>;
+}
+
+function Method({active,onClick,icon,title,subtitle}:{active:boolean;onClick:()=>void;icon:React.ReactNode;title:string;subtitle:string}){
+  return <button type="button" onClick={onClick} className={`p-4 rounded-2xl border-2 text-left ${active?'border-[#145EDB] bg-sky-50':'border-slate-200 bg-white'}`}><span className="text-[#145EDB]">{icon}</span><strong className="block text-xs mt-2">{title}</strong><span className="text-[11px] text-slate-500">{subtitle}</span></button>;
+}
