@@ -11,7 +11,6 @@ import GatewayHomologation from './GatewayHomologation';
 import { supabase } from './lib/supabase';
 
 type Role='owner'|'manager'|'cashier'|'stockist'|'viewer';
-const GLOBAL_SUPERADMIN_EMAIL='gritsolucoes@gmail.com';
 
 export default function App() {
   const path=window.location.pathname;
@@ -19,13 +18,11 @@ export default function App() {
   async function hydrate(next:Session|null){
     setSession(next); setAccess('blocked'); setIsSuper(false);
     if(!next){setOrgId(null);setLoading(false);return}
-    const normalizedEmail=(next.user.email||'').trim().toLowerCase();
     const [{data:admin},{data:member}]=await Promise.all([
       supabase.from('admin_users').select('role,active').eq('user_id',next.user.id).maybeSingle(),
       supabase.from('srp_members').select('organization_id,role').eq('user_id',next.user.id).eq('active',true).limit(1).maybeSingle()
     ]);
-    const globalSuper=normalizedEmail===GLOBAL_SUPERADMIN_EMAIL;
-    setIsSuper(globalSuper||Boolean(admin?.active&&String(admin.role||'').toLowerCase()==='superadmin'));
+    setIsSuper(Boolean(admin?.active&&String(admin.role||'').toLowerCase()==='superadmin'));
     setOrgId(member?.organization_id||null); if(member?.role)setRole(member.role as Role);
     if(member?.organization_id){
       const {data:a}=await supabase.from('srp_access_control').select('access_mode,trial_ends_at,barter_until,manual_release').eq('organization_id',member.organization_id).maybeSingle();
