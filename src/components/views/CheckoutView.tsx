@@ -85,8 +85,7 @@ export const CheckoutView:React.FC<CheckoutViewProps>=({
     return()=>{if(pollRef.current)clearInterval(pollRef.current)};
   },[completedOrder?.id,completedOrder?.mercadoPagoPaymentId,completedOrder?.status,paymentMethod]);
 
-  const applyCoupon=(e:React.FormEvent)=>{
-    e.preventDefault();
+  const applyCoupon=()=>{
     const code=couponInput.trim().toUpperCase();
     if(['GRIT10','BEMVINDO','PROMO2026','DESCONTO5'].includes(code)){
       setAppliedCoupon(code);onShowToast('Cupom aplicado. O servidor validará o desconto no fechamento.','success');
@@ -180,7 +179,7 @@ export const CheckoutView:React.FC<CheckoutViewProps>=({
 
           <aside className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-6 space-y-5 h-fit">
             <div><h2 className="font-black">{selectedProduct.title}</h2><p className="text-xs text-slate-500 mt-1">{selectedProduct.subtitle}</p></div>
-            <form onSubmit={applyCoupon} className="flex gap-2"><div className="relative flex-1"><Tag className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={couponInput} onChange={e=>setCouponInput(e.target.value)} className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-xs" placeholder="Cupom"/></div><button type="submit" className="px-4 rounded-xl bg-slate-100 text-xs font-bold">Aplicar</button></form>
+            <div className="flex gap-2"><div className="relative flex-1"><Tag className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={couponInput} onChange={e=>setCouponInput(e.target.value)} className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-xs" placeholder="Cupom"/></div><button type="button" onClick={applyCoupon} className="px-4 rounded-xl bg-slate-100 text-xs font-bold">Aplicar</button></div>
             <div className="border-t border-slate-100 pt-4 flex items-end justify-between"><span className="text-sm font-bold">Total</span><strong className="text-3xl">R$ {previewAmount.toFixed(2)}</strong></div>
             <p className="text-[11px] text-slate-500">O valor exibido é uma prévia. O preço final e o cupom são recalculados pelo servidor antes da cobrança.</p>
             <button disabled={busy} className="w-full bg-[#145EDB] text-white rounded-xl py-3 font-black text-sm disabled:opacity-50">{busy?'Criando cobrança…':paymentMethod==='pix'?'Gerar PIX seguro':'Continuar no Mercado Pago'}</button>
