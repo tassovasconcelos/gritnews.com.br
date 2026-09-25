@@ -6,7 +6,6 @@ import GritLeadsCrm from './GritLeadsCrm';
 import SecurityOpsCenter from './SecurityOpsCenter';
 import { supabase } from './lib/supabase';
 
-const GLOBAL_SUPERADMIN_EMAIL='gritsolucoes@gmail.com';
 const quickStyle={display:'inline-flex',alignItems:'center',gap:8,padding:'12px 16px',borderRadius:14,color:'#fff',fontWeight:800,textDecoration:'none',boxShadow:'0 12px 30px rgba(15,23,42,.20)'} as const;
 
 export default function AdminLoginEntry(){
@@ -23,8 +22,6 @@ export default function AdminLoginEntry(){
   async function validate(next:Session|null){
     setSession(next);
     if(!next){setAllowed(false);setReady(true);return;}
-    const email=(next.user.email||'').trim().toLowerCase();
-    if(email===GLOBAL_SUPERADMIN_EMAIL){setAllowed(true);setReady(true);return;}
     try{
       const{data}=await supabase?.from('admin_users').select('role,active').eq('user_id',next.user.id).maybeSingle()||{data:null};
       setAllowed(Boolean(data?.active&&String(data.role||'').toLowerCase()==='superadmin'));
