@@ -241,9 +241,7 @@ export interface SiteSettings {
   pixKeyType?: 'email' | 'cpf' | 'cnpj' | 'phone' | 'random';
   pixBeneficiaryName?: string;
   pixCity?: string;
-  mercadoPagoAccessToken?: string;
   mercadoPagoPublicKey?: string;
-  mercadoPagoWebhookSecret?: string;
   mercadoPagoSandbox?: boolean;
   mercadoPagoAutoApprove?: boolean;
   mercadoPagoWalletUrl?: string;
