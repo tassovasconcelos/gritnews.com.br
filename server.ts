@@ -116,6 +116,14 @@ async function startServer() {
   });
   app.use(express.json({ limit: '64kb' }));
 
+  // Security: legacy/public administrative shortcut is intentionally disabled.
+  // Administrative access must never be advertised or redirected from a public route.
+  app.get(['/admin/apps', '/admin/apps/'], (_req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    return res.status(404).type('text/plain').send('Not Found');
+  });
+
   // Compatibilidade Hostinger: se o subdomínio Meu Espetinho estiver apontando para
   // a aplicação raiz do monorepo, servimos automaticamente o build correto pelo Host.
   const meuEspetinhoDist = path.resolve(process.cwd(), "apps", "meu-espetinho", "dist");
