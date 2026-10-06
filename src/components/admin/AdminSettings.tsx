@@ -134,17 +134,13 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ onShowToast }) => 
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[#E2E8F0] space-y-3">
-            <div>
-              <label className="block text-xs font-bold text-[#0B2343] mb-1">Mercado Pago - Access Token (Produção)</label>
-              <input
-                type="password"
-                placeholder="APP_USR-1234567890123456-..."
-                value={config.mercadoPagoAccessToken || ''}
-                onChange={e => setConfig({ ...config, mercadoPagoAccessToken: e.target.value })}
-                className="w-full px-4 py-2 bg-[#F7F9FC] border border-[#E2E8F0] rounded-xl text-xs font-mono"
-              />
-              <p className="text-[10px] text-slate-400 mt-1">Insira seu Access Token do Mercado Pago para liberar processamento de Cartão e PIX diretamente na sua conta.</p>
+          <div className="pt-3 border-t border-[#E2E8F0]">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <p className="text-xs font-bold text-emerald-800">Credenciais financeiras protegidas no servidor</p>
+              <p className="text-[11px] text-emerald-700 mt-1">
+                Access Token, webhook secret e demais chaves privadas do Mercado Pago não podem ser visualizados, digitados ou armazenados neste painel.
+                Alterações devem ser feitas somente no secret manager/variáveis de ambiente da hospedagem.
+              </p>
             </div>
           </div>
         </div>
