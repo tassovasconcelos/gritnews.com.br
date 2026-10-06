@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bookmark, LayoutDashboard, Menu, Search, X } from 'lucide-react';
+import { Bookmark, Menu, Search, X } from 'lucide-react';
 import { Category } from '../../types';
 
 interface NavbarProps {
@@ -63,7 +63,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button onClick={() => setSearchOpen(v => !v)} className="w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" aria-label="Buscar"><Search className="w-4 h-4"/></button>
           <button onClick={onNavigateBookmarks} className="relative w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" aria-label="Salvos"><Bookmark className="w-4 h-4"/>{bookmarksCount > 0 && <span className="absolute -right-1 -top-1 w-4 h-4 rounded-full bg-[#FF6A00] text-[9px] grid place-items-center">{bookmarksCount}</span>}</button>
           <a href="/produtos/" className="bg-[#FF6A00] hover:bg-[#e65f00] px-4 py-2.5 rounded-xl font-black text-sm">Conhecer produtos</a>
-          <button onClick={onNavigateAdmin} className="w-10 h-10 rounded-xl border border-white/15 hover:bg-white/10 flex items-center justify-center" title="Acesso gerencial"><LayoutDashboard className="w-4 h-4"/></button>
         </div>
 
         <button onClick={() => setMobileOpen(v => !v)} className="lg:hidden w-10 h-10 rounded-xl border border-white/15 flex items-center justify-center">{mobileOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}</button>
