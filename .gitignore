@@ -7,3 +7,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+public/security-release.json
+apps/gritnews/public/security-release.json

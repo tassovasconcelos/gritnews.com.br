@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { clearAdminBrowserCredentials } from './adminAuth';
 import {
   getArticles,
   getCategories,
@@ -22,29 +23,8 @@ export interface SupabaseConfig {
   source: 'env' | 'none';
 }
 
-const LEGACY_BROWSER_CREDENTIAL_KEYS = [
-  'grit_news_supabase_url',
-  'grit_news_supabase_anon_key',
-  'grit_admin_authenticated',
-  'grit_admin_user_name',
-  'grit_admin_user_role',
-  'grit_admin_user_email'
-];
-
 export function purgeLegacySupabaseBrowserCredentials(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    LEGACY_BROWSER_CREDENTIAL_KEYS.forEach(key => {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
-    });
-    for (let i = localStorage.length - 1; i >= 0; i -= 1) {
-      const key = localStorage.key(i);
-      if (key && /^sb-[a-z0-9]+-auth-token$/i.test(key)) localStorage.removeItem(key);
-    }
-  } catch {
-    // Security cleanup is best-effort when browser storage is unavailable.
-  }
+  clearAdminBrowserCredentials();
 }
 
 /**

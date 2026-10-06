@@ -8,15 +8,21 @@ const authConfigured=Boolean(configuredKey);
 
 export function clearAdminBrowserCredentials():void{
   if(typeof window==='undefined')return;
+  for(const storageName of ['localStorage','sessionStorage'] as const){
+    try{
+      const storage=window[storageName];
+      for(let i=storage.length-1;i>=0;i-=1){
+        const key=storage.key(i);
+        if(key&&(/^(grit[_-]admin|grit_news_supabase_)/i.test(key)||/^sb-.*-(auth-token|code-verifier)/i.test(key)))storage.removeItem(key);
+      }
+    }catch{}
+  }
+  // Remove only legacy authentication databases, preserving public editorial data.
   try{
-    for(const key of ['grit_news_supabase_url','grit_news_supabase_anon_key','grit_admin_authenticated','grit_admin_user_name','grit_admin_user_role','grit_admin_user_email']){
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
-    }
-    for(let i=localStorage.length-1;i>=0;i-=1){
-      const key=localStorage.key(i);
-      if(key&&/^sb-[a-z0-9]+-auth-token$/i.test(key))localStorage.removeItem(key);
-    }
+    const db=window.indexedDB as IDBFactory & {databases?:()=>Promise<{name?:string}[]>};
+    db.databases?.().then(items=>items.forEach(({name})=>{
+      if(name&&/^(grit[_-]admin|supabase[_-]auth|sb-.*auth)/i.test(name))db.deleteDatabase(name);
+    })).catch(()=>undefined);
   }catch{}
 }
 
@@ -27,7 +33,7 @@ const client=createClient(PROJECT_URL,configuredKey||'missing-public-key',{
     persistSession:false,
     autoRefreshToken:false,
     detectSessionInUrl:true,
-    flowType:'pkce',
+    flowType:'implicit',
   },
 });
 
@@ -64,12 +70,16 @@ export async function adminSignIn(email:string,password:string):Promise<AdminIde
   if(String(password||'').length<8)throw new Error('Senha inválida.');
 
   const {data,error}=await client.auth.signInWithPassword({email:normalized,password});
-  if(error||!data.user)throw new Error('E-mail ou senha inválidos.');
+  if(error||!data.user){
+    await client.auth.signOut({scope:'local'}).catch(()=>undefined);
+    clearAdminBrowserCredentials();
+    throw new Error('E-mail ou senha inválidos.');
+  }
 
   const identity=await resolveIdentity(data.user);
   if(!identity){
     await client.auth.signOut({scope:'local'}).catch(()=>undefined);
-    throw new Error('Esta conta não possui acesso administrativo ativo.');
+    throw new Error('E-mail ou senha inválidos.');
   }
   return identity;
 }
@@ -92,7 +102,8 @@ export async function requestAdminPasswordReset(email:string):Promise<void>{
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized))throw new Error('Informe um e-mail válido.');
   const redirectTo='https://gritnews.com.br/?view=admin&recovery=1';
   const {error}=await client.auth.resetPasswordForEmail(normalized,{redirectTo});
-  if(error)throw new Error('Não foi possível iniciar a recuperação agora.');
+  // Keep the same outward result regardless of whether the account exists.
+  if(error) return;
 }
 
 export async function updateRecoveredAdminPassword(password:string):Promise<void>{
@@ -102,4 +113,5 @@ export async function updateRecoveredAdminPassword(password:string):Promise<void
   if(userError||!userData.user)throw new Error('Abra novamente o link de recuperação enviado por e-mail.');
   const {error}=await client.auth.updateUser({password});
   if(error)throw new Error('Não foi possível atualizar a senha.');
+  await adminSignOut();
 }

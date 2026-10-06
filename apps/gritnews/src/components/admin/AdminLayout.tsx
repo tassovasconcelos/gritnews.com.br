@@ -6,7 +6,7 @@
  * SEGURANÇA E FLUXO DE AUTENTICAÇÃO:
  * - O acesso a esta interface exige autenticação por Usuário e Senha através do
  *   componente AdminLoginScreen.
- * - A sessão permanece ativa no sessionStorage do navegador enquanto o usuário edita.
+ * - A sessão permanece somente em memória enquanto o usuário edita.
  * - Inclui botão de Logout ("Sair do Painel") para encerrar a sessão com segurança.
  */
 

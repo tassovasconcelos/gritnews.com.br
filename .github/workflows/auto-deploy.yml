@@ -31,6 +31,7 @@ jobs:
           set -e
           if [ -f package.json ]; then
             pnpm install --frozen-lockfile
+            pnpm run test:security
             pnpm run build
           else
             echo "No root package.json; repository validation skipped."
@@ -40,37 +41,30 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     steps:
-      - name: Validate Hostinger deploy hook
+      - name: Trigger optional hosting hook
         env:
           HOSTINGER_DEPLOY_HOOK: ${{ secrets.HOSTINGER_DEPLOY_HOOK }}
         shell: bash
         run: |
-          if [ -z "$HOSTINGER_DEPLOY_HOOK" ]; then
-            echo "::error::HOSTINGER_DEPLOY_HOOK is not configured. Production cannot be updated automatically."
-            exit 1
+          if [ -n "$HOSTINGER_DEPLOY_HOOK" ]; then
+            curl --fail --show-error --silent --retry 3 -X POST "$HOSTINGER_DEPLOY_HOOK"
+          else
+            echo "Using the existing Hostinger GitHub auto-deploy integration."
           fi
 
-      - name: Trigger hosting deploy
-        env:
-          HOSTINGER_DEPLOY_HOOK: ${{ secrets.HOSTINGER_DEPLOY_HOOK }}
-        shell: bash
-        run: |
-          curl --fail --show-error --silent --retry 3 -X POST "$HOSTINGER_DEPLOY_HOOK"
-          echo "Hosting deploy triggered."
-
-      - name: Verify Meu Espetinho production release
+      - name: Verify GRIT News production security release
         shell: bash
         run: |
           set -e
-          URL="https://meuespetinho.gritnews.com.br/deploy-health.json"
-          for attempt in $(seq 1 18); do
-            BODY="$(curl --fail --silent --show-error --max-time 10 "$URL" 2>/dev/null || true)"
-            if echo "$BODY" | grep -q '"release": "grit-control-center-v1"'; then
-              echo "Production verified: GRIT Control Center V1 is online."
+          URL="https://gritnews.com.br/security-release.json"
+          for attempt in $(seq 1 24); do
+            BODY="$(curl --fail --silent --show-error --max-time 10 -H 'Cache-Control: no-cache' "$URL?commit=${GITHUB_SHA}" 2>/dev/null || true)"
+            if echo "$BODY" | grep -q "$GITHUB_SHA"; then
+              echo "Production verified: current GRIT News commit is online."
               exit 0
             fi
-            echo "Waiting for production propagation ($attempt/18)..."
-            sleep 10
+            echo "Waiting for Hostinger deployment ($attempt/24)..."
+            sleep 15
           done
-          echo "::error::Hostinger deploy was triggered, but production did not expose the expected release marker."
+          echo "::error::GRIT News has not published this commit. Check the Hostinger deployment logs."
           exit 1

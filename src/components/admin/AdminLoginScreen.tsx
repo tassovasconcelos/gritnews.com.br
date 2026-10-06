@@ -24,9 +24,10 @@ export const AdminLoginScreen:React.FC<AdminLoginScreenProps>=({onLoginSuccess,o
     e.preventDefault();setError('');setMessage('');setBusy(true);
     try{
       const user=await adminSignIn(email,password);
-      setPassword('');
+      setEmail('');setPassword('');setConfirmPassword('');setShowPassword(false);
       onLoginSuccess(user);
     }catch(err){
+      setEmail('');setPassword('');setConfirmPassword('');setShowPassword(false);clearAdminBrowserCredentials();
       setError(err instanceof Error?err.message:'Não foi possível autenticar.');
     }finally{setBusy(false)}
   };
@@ -39,6 +40,7 @@ export const AdminLoginScreen:React.FC<AdminLoginScreenProps>=({onLoginSuccess,o
       await requestAdminPasswordReset(email);
       setMessage('Se o e-mail estiver habilitado para acesso, você receberá um link de recuperação. O link expira e a senha não é exibida nem armazenada neste navegador.');
     }catch(err){
+      setEmail('');setPassword('');setConfirmPassword('');setShowPassword(false);clearAdminBrowserCredentials();
       setError(err instanceof Error?err.message:'Não foi possível iniciar a recuperação.');
     }finally{setBusy(false)}
   };
@@ -53,6 +55,7 @@ export const AdminLoginScreen:React.FC<AdminLoginScreenProps>=({onLoginSuccess,o
       setMessage('Senha atualizada. Remova o parâmetro de recuperação da URL e entre com sua nova senha.');
       if(typeof window!=='undefined')window.history.replaceState({},'',window.location.pathname+'?view=admin');
     }catch(err){
+      setEmail('');setPassword('');setConfirmPassword('');setShowPassword(false);clearAdminBrowserCredentials();
       setError(err instanceof Error?err.message:'Não foi possível atualizar a senha.');
     }finally{setBusy(false)}
   };
@@ -77,7 +80,7 @@ export const AdminLoginScreen:React.FC<AdminLoginScreenProps>=({onLoginSuccess,o
         {recovery?
           <form onSubmit={updatePassword} autoComplete="off" className="space-y-4">
             <PasswordField value={password} onChange={setPassword} show={showPassword} setShow={setShowPassword} label="Nova senha"/>
-            <div><label className="block text-[11px] font-bold mb-1">Confirmar nova senha</label><input type={showPassword?'text':'password'} value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} autoComplete="off" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" minLength={12} required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm"/></div>
+            <div><label className="block text-[11px] font-bold mb-1">Confirmar nova senha</label><input type={showPassword?'text':'password'} value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} autoComplete="new-password" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" minLength={12} required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm"/></div>
             <button disabled={busy} className="w-full bg-[#145EDB] py-3 rounded-xl font-bold text-sm disabled:opacity-50">{busy?'Atualizando...':'Atualizar senha'}</button>
           </form>
         :
@@ -94,5 +97,5 @@ export const AdminLoginScreen:React.FC<AdminLoginScreenProps>=({onLoginSuccess,o
 };
 
 function PasswordField({value,onChange,show,setShow,label}:{value:string;onChange:(v:string)=>void;show:boolean;setShow:(v:boolean)=>void;label:string}){
-  return <div><label className="block text-[11px] font-bold mb-1">{label}</label><div className="relative"><KeyRound className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/><input type={show?'text':'password'} autoComplete="off" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" value={value} onChange={e=>onChange(e.target.value)} minLength={8} required className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-10 py-3 text-sm"/><button type="button" onClick={()=>setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" aria-label={show?'Ocultar senha':'Mostrar senha'}>{show?<EyeOff className="w-4 h-4"/>:<Eye className="w-4 h-4"/>}</button></div></div>
+  return <div><label className="block text-[11px] font-bold mb-1">{label}</label><div className="relative"><KeyRound className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/><input type={show?'text':'password'} autoComplete="new-password" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" value={value} onChange={e=>onChange(e.target.value)} minLength={8} required className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-10 py-3 text-sm"/><button type="button" onClick={()=>setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" aria-label={show?'Ocultar senha':'Mostrar senha'}>{show?<EyeOff className="w-4 h-4"/>:<Eye className="w-4 h-4"/>}</button></div></div>
 }

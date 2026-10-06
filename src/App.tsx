@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { clearAdminBrowserCredentials } from './lib/adminAuth';
+clearAdminBrowserCredentials();
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { HomeView } from './components/views/HomeView';
@@ -18,7 +20,7 @@ import { CheckoutView } from './components/views/CheckoutView';
 import { RadarMercadosView } from './components/views/RadarMercadosView';
 import { GritFatoView } from './components/views/GritFatoView';
 import { OpiniaoView } from './components/views/OpiniaoView';
-import { AdminLayout } from './components/admin/AdminLayout';
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then(module => ({default: module.AdminLayout})));
 import { Toast } from './components/ui/Toast';
 import { Modal } from './components/ui/Modal';
 import { ContactPartnershipModal } from './components/ui/ContactPartnershipModal';
@@ -411,12 +413,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleNavigateAdmin = () => {
-    setCurrentView('admin');
-    window.history.pushState({ view: 'admin' }, '', '?view=admin');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleNavigateTenPets = () => {
     setCurrentView('tenpets');
     window.history.pushState({ view: 'tenpets' }, '', '?view=tenpets');
@@ -477,6 +473,7 @@ export default function App() {
   if (currentView === 'admin') {
     return (
       <>
+        <Suspense fallback={<div className="min-h-screen bg-slate-950 text-white p-8">Carregando…</div>}>
         <AdminLayout
           articles={articles}
           categories={categories}
@@ -486,9 +483,10 @@ export default function App() {
           offers={offers}
           ads={ads}
           onRefreshData={loadData}
-          onExitAdmin={() => setCurrentView('home')}
+          onExitAdmin={() => { setCurrentView('home'); window.history.replaceState({}, '', '/'); }}
           onShowToast={showToast}
         />
+        </Suspense>
         <Toast
           message={toast.message}
           type={toast.type}
@@ -509,7 +507,6 @@ export default function App() {
         onNavigateHome={handleNavigateHome}
         onNavigateOffers={handleNavigateOffers}
         onNavigateBookmarks={handleNavigateBookmarks}
-        onNavigateAdmin={handleNavigateAdmin}
         onNavigateTenPets={handleNavigateTenPets}
         onNavigateRadar={handleNavigateRadar}
         onNavigateFato={handleNavigateFato}
@@ -722,7 +719,6 @@ export default function App() {
         }}
         onNavigateCheckout={handleNavigateCheckout}
         onOpenDocs={() => setIsDocModalOpen(true)}
-        onNavigateAdmin={() => setCurrentView('admin')}
         onOpenContactModal={() => setIsContactModalOpen(true)}
       />
 

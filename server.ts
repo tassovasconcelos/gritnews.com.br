@@ -115,6 +115,14 @@ async function startServer() {
     next();
   });
   app.use(express.json({ limit: '64kb' }));
+  // Never serve server source, maps or deploy credentials through the static fallback.
+  app.use((req, res, next) => {
+    if (/\.map$|\/(?:\.env(?:\.|$)|server\.(?:js|ts|cjs)$|package(?:-lock)?\.json$|pnpm-lock\.yaml$|\.git(?:\/|$))/i.test(req.path)) {
+      return res.status(404).type('text/plain').send('Not Found');
+    }
+    next();
+  });
+
 
   // Security: legacy/public administrative shortcut is intentionally disabled.
   // Administrative access must never be advertised or redirected from a public route.

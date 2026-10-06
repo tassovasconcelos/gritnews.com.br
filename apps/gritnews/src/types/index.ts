@@ -1,4 +1,4 @@
-export type Role = 'SUPERADMIN' | 'EDITOR_IN_CHIEF' | 'EDITOR' | 'AUTHOR' | 'COMMERCIAL_MANAGER';
+export type Role = 'SUPERADMIN' | 'ADMIN' | 'EDITOR_IN_CHIEF' | 'EDITOR' | 'AUTHOR' | 'COMMERCIAL_MANAGER' | 'ANALYST' | 'READER';
 export type UserRole = Role;
 
 export interface User {

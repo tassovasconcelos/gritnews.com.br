@@ -8,7 +8,6 @@ interface NavbarProps {
   onSelectCategory: (slug?: string) => void;
   onNavigateOffers: () => void;
   onNavigateBookmarks: () => void;
-  onNavigateAdmin: () => void;
   onNavigateTenPets: () => void;
   onSearch: (query: string) => void;
   onNavigateHome: () => void;
@@ -19,7 +18,6 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({
   onNavigateBookmarks,
-  onNavigateAdmin,
   onSearch,
   onNavigateHome,
   bookmarksCount

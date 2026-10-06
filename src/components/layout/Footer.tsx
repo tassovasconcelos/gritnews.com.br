@@ -15,7 +15,6 @@ interface FooterProps {
   onNavigatePlaybook?: () => void;
   onNavigateCheckout?: (productId?: string) => void;
   onOpenDocs: () => void;
-  onNavigateAdmin?: () => void;
   onOpenContactModal?: () => void;
 }
 

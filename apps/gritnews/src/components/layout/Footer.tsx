@@ -7,7 +7,6 @@ interface FooterProps {
   onSelectCategory: (slug?: string) => void;
   onNavigateOffers: () => void;
   onOpenDocs: () => void;
-  onNavigateAdmin?: () => void;
   onOpenContactModal?: () => void;
 }
 

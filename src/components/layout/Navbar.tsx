@@ -9,7 +9,6 @@ interface NavbarProps {
   onSelectCategory: (slug?: string) => void;
   onNavigateOffers: () => void;
   onNavigateBookmarks: () => void;
-  onNavigateAdmin: () => void;
   onNavigateTenPets: () => void;
   onNavigateImoveis?: () => void;
   onNavigatePlaybook?: () => void;
@@ -24,7 +23,7 @@ interface NavbarProps {
   bookmarksCount: number;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, onSelectCategory, onNavigateBookmarks, onNavigateAdmin, onSearch, onNavigateHome, bookmarksCount }) => {
+export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, onSelectCategory, onNavigateBookmarks, onSearch, onNavigateHome, bookmarksCount }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
