@@ -652,22 +652,34 @@ export function toggleBookmark(articleId: string): boolean {
 }
 
 // Site Settings
+const SENSITIVE_BROWSER_SETTING_KEYS = [
+  'mercadoPagoAccessToken',
+  'mercadoPagoPublicKey',
+  'mercadoPagoWalletUrl',
+  'pixKey',
+  'pixKeyType',
+  'pixBeneficiaryName',
+  'pixCity'
+] as const;
+
+function sanitizeSiteSettingsForBrowser(settings: SiteSettings | Record<string, unknown>): SiteSettings {
+  const sanitized = { ...settings } as Record<string, unknown>;
+  for (const key of SENSITIVE_BROWSER_SETTING_KEYS) delete sanitized[key];
+  return sanitized as unknown as SiteSettings;
+}
+
 export function getSiteSettings(): SiteSettings {
   initStorage();
-  const loaded = loadItem<SiteSettings>(KEYS.SETTINGS, INITIAL_SITE_SETTINGS) as SiteSettings & {mercadoPagoAccessToken?: string};
-  if (loaded.mercadoPagoAccessToken) {
-    const sanitized = {...loaded} as any;
-    delete sanitized.mercadoPagoAccessToken;
-    saveItem(KEYS.SETTINGS, sanitized);
-    return {...INITIAL_SITE_SETTINGS, ...sanitized};
-  }
-  return {...INITIAL_SITE_SETTINGS, ...loaded};
+  const loaded = loadItem<SiteSettings>(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
+  const sanitized = sanitizeSiteSettingsForBrowser(loaded);
+  // Rewrite the browser cache so credentials/payment identifiers from older
+  // versions are actively removed instead of merely hidden from the UI.
+  saveItem(KEYS.SETTINGS, sanitized);
+  return { ...INITIAL_SITE_SETTINGS, ...sanitized };
 }
 
 export function saveSiteSettings(settings: SiteSettings): void {
-  const sanitized = {...settings} as any;
-  delete sanitized.mercadoPagoAccessToken;
-  saveItem(KEYS.SETTINGS, sanitized);
+  saveItem(KEYS.SETTINGS, sanitizeSiteSettingsForBrowser(settings));
 }
 
 // TenPets - Articles
