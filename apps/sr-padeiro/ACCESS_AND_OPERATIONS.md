@@ -14,9 +14,9 @@ Project ref: `pcrwtoddavpvkaxwtstc`
 API URL: `https://pcrwtoddavpvkaxwtstc.supabase.co`
 
 ## Super Admin
-Conta central: `tassovasconcelos@gmail.com`
+Conta central: provisionada exclusivamente via Supabase Auth/secret manager; identificadores não devem ser documentados no repositório.
 Autorização: `public.admin_users.role = superadmin` e `active = true`.
-Senha: gerenciada exclusivamente pelo Supabase Auth. Nunca registrar senha em texto puro no banco, GitHub ou documentação.
+Senha: nunca armazenada, exibida ou versionada. Use somente o fluxo seguro de autenticação e recuperação.
 
 ## Isolamento Sr. Padeiro
 Prefixo das tabelas: `srp_`
