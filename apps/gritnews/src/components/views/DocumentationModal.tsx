@@ -108,7 +108,7 @@ Monólito modular construído em Next.js (React + TypeScript) com renderização
     content: `# Modelagem do Banco de Dados GRIT NEWS (MySQL / Prisma)
 
 ## Entidades Principais
-- \`User\` & \`Role\` (Superadmin, Editor, Autor, Gestor Comercial)
+- \`User\` & \`Role\` (vínculo protegido de autenticação)
 - \`Article\` (status, slug, visualizações, blocos JSON, versão)
 - \`Category\` (nome, slug, cor, ícone, destaque)
 - \`Offer\` (preço original, preço promocional, cupom, comissionamento)

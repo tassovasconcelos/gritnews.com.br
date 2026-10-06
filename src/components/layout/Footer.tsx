@@ -146,11 +146,6 @@ export const Footer: React.FC<FooterProps> = ({
                 </li>
               )}
               <li>
-                <button onClick={onOpenDocs} className="hover:text-[#FF8A00] transition-colors">
-                  Manual de Publicação & Hostinger
-                </button>
-              </li>
-              <li>
                 <a href="#editorial" onClick={e => { e.preventDefault(); onOpenDocs(); }} className="hover:text-[#FF8A00]">
                   Política Editorial & E-E-A-T
                 </a>
