@@ -46,11 +46,11 @@ Para habilitar o subdomínio **tenpets.gritnews.com.br**:
 \`\`\`env
 NODE_ENV=production
 PORT=3000
-DATABASE_URL="mysql://usuario_grit:senha_segura@localhost:3306/gritnews_db"
-NEXTAUTH_SECRET="chave_super_secreta_jwt_grit_2026"
+DATABASE_URL="<configure_no_secret_manager_da_hospedagem>"
+NEXTAUTH_SECRET="<gerar_e_configurar_somente_no_servidor>"
 NEXTAUTH_URL="https://gritnews.com.br"
 APP_URL="https://gritnews.com.br"
-GEMINI_API_KEY="sua_chave_gemini_api"
+GEMINI_API_KEY="<configurar_somente_no_servidor>"
 \`\`\`
 
 ## 3. Comandos de Build e Execution
