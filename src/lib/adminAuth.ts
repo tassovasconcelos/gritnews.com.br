@@ -1,19 +1,31 @@
 import { createClient, type User } from '@supabase/supabase-js';
 import type { UserRole } from '../types';
 
-const EXPECTED_URL='https://pcrwtoddavpvkaxwtstc.supabase.co';
-const FALLBACK_PUBLISHABLE_KEY='sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS';
-
+const PROJECT_URL='https://pcrwtoddavpvkaxwtstc.supabase.co';
 const env=(import.meta as any).env||{};
-const configuredUrl=String(env.VITE_SUPABASE_URL||'').trim();
 const configuredKey=String(env.VITE_SUPABASE_ANON_KEY||env.VITE_SUPABASE_PUBLISHABLE_KEY||'').trim();
-const url=configuredUrl===EXPECTED_URL?configuredUrl:EXPECTED_URL;
-const key=configuredUrl===EXPECTED_URL&&configuredKey?configuredKey:FALLBACK_PUBLISHABLE_KEY;
+const authConfigured=Boolean(configuredKey);
 
-const client=createClient(url,key,{
+export function clearAdminBrowserCredentials():void{
+  if(typeof window==='undefined')return;
+  try{
+    for(const key of ['grit_news_supabase_url','grit_news_supabase_anon_key','grit_admin_authenticated','grit_admin_user_name','grit_admin_user_role','grit_admin_user_email']){
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    }
+    for(let i=localStorage.length-1;i>=0;i-=1){
+      const key=localStorage.key(i);
+      if(key&&/^sb-[a-z0-9]+-auth-token$/i.test(key))localStorage.removeItem(key);
+    }
+  }catch{}
+}
+
+clearAdminBrowserCredentials();
+
+const client=createClient(PROJECT_URL,configuredKey||'missing-public-key',{
   auth:{
-    persistSession:true,
-    autoRefreshToken:true,
+    persistSession:false,
+    autoRefreshToken:false,
     detectSessionInUrl:true,
     flowType:'pkce',
   },
@@ -46,6 +58,7 @@ async function resolveIdentity(user:User):Promise<AdminIdentity|null>{
 }
 
 export async function adminSignIn(email:string,password:string):Promise<AdminIdentity>{
+  if(!authConfigured)throw new Error('Acesso administrativo temporariamente indisponível.');
   const normalized=String(email||'').trim().toLowerCase();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized))throw new Error('Informe um e-mail válido.');
   if(String(password||'').length<8)throw new Error('Senha inválida.');
@@ -62,16 +75,19 @@ export async function adminSignIn(email:string,password:string):Promise<AdminIde
 }
 
 export async function getAdminSession():Promise<AdminIdentity|null>{
+  if(!authConfigured)return null;
   const {data,error}=await client.auth.getUser();
   if(error||!data.user)return null;
   return resolveIdentity(data.user);
 }
 
 export async function adminSignOut():Promise<void>{
-  await client.auth.signOut({scope:'local'});
+  await client.auth.signOut({scope:'local'}).catch(()=>undefined);
+  clearAdminBrowserCredentials();
 }
 
 export async function requestAdminPasswordReset(email:string):Promise<void>{
+  if(!authConfigured)throw new Error('Acesso administrativo temporariamente indisponível.');
   const normalized=String(email||'').trim().toLowerCase();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized))throw new Error('Informe um e-mail válido.');
   const redirectTo='https://gritnews.com.br/?view=admin&recovery=1';
@@ -80,6 +96,7 @@ export async function requestAdminPasswordReset(email:string):Promise<void>{
 }
 
 export async function updateRecoveredAdminPassword(password:string):Promise<void>{
+  if(!authConfigured)throw new Error('Acesso administrativo temporariamente indisponível.');
   if(String(password||'').length<12)throw new Error('Use uma senha com pelo menos 12 caracteres.');
   const {data:userData,error:userError}=await client.auth.getUser();
   if(userError||!userData.user)throw new Error('Abra novamente o link de recuperação enviado por e-mail.');
