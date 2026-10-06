@@ -69,6 +69,12 @@ async function validMercadoPagoSignature(req: express.Request, dataId: string) {
   return safeEqual(expected, parts.v1);
 }
 
+function reqIsAdministrative(req: express.Request) {
+  const pathValue = String(req.path || '').toLowerCase();
+  const view = String(req.query?.view || '').toLowerCase();
+  return pathValue.includes('/admin') || pathValue.includes('/gerencial') || view === 'admin' || view === 'gerencial';
+}
+
 async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT || 3000);
@@ -80,8 +86,31 @@ async function startServer() {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
     if (process.env.NODE_ENV === 'production') {
-      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+      res.setHeader(
+        'Content-Security-Policy',
+        [
+          "default-src 'self'",
+          "base-uri 'self'",
+          "object-src 'none'",
+          "frame-ancestors 'none'",
+          "form-action 'self' https://*.mercadopago.com https://www.mercadopago.com",
+          "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: blob: https:",
+          "font-src 'self' data: https:",
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com https://stats.g.doubleclick.net",
+          "frame-src 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.youtube.com https://www.youtube-nocookie.com",
+          "upgrade-insecure-requests"
+        ].join('; ')
+      );
+    }
+    if (reqIsAdministrative(_req)) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
     }
     next();
   });

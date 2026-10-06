@@ -15,74 +15,57 @@ import {
   getTenPetsPartners
 } from './storage';
 
-const SUPABASE_STORAGE_KEYS = {
-  URL: 'grit_news_supabase_url',
-  ANON_KEY: 'grit_news_supabase_anon_key'
-};
-
 export interface SupabaseConfig {
   url: string;
   anonKey: string;
   isConfigured: boolean;
-  source: 'env' | 'custom' | 'none';
+  source: 'env' | 'none';
+}
+
+const LEGACY_BROWSER_CREDENTIAL_KEYS = [
+  'grit_news_supabase_url',
+  'grit_news_supabase_anon_key',
+  'grit_admin_authenticated',
+  'grit_admin_user_name',
+  'grit_admin_user_role',
+  'grit_admin_user_email'
+];
+
+export function purgeLegacySupabaseBrowserCredentials(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    LEGACY_BROWSER_CREDENTIAL_KEYS.forEach(key => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+    for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+      const key = localStorage.key(i);
+      if (key && /^sb-[a-z0-9]+-auth-token$/i.test(key)) localStorage.removeItem(key);
+    }
+  } catch {
+    // Security cleanup is best-effort when browser storage is unavailable.
+  }
 }
 
 /**
- * Get active Supabase configuration (localStorage override or VITE_ env vars)
+ * Browser configuration is read only from deploy-time public environment variables.
+ * Credentials can no longer be entered, overridden or persisted from the admin UI.
  */
 export function getSupabaseConfig(): SupabaseConfig {
-  const customUrl = localStorage.getItem(SUPABASE_STORAGE_KEYS.URL);
-  const customKey = localStorage.getItem(SUPABASE_STORAGE_KEYS.ANON_KEY);
-
-  if (customUrl && customKey) {
-    return {
-      url: customUrl,
-      anonKey: customKey,
-      isConfigured: true,
-      source: 'custom'
-    };
-  }
-
   const metaEnv = (import.meta as any).env || {};
-  const envUrl = metaEnv.VITE_SUPABASE_URL || '';
-  const envKey = metaEnv.VITE_SUPABASE_ANON_KEY || '';
-
-  if (envUrl && envKey && !envUrl.includes('your-project-id')) {
-    return {
-      url: envUrl,
-      anonKey: envKey,
-      isConfigured: true,
-      source: 'env'
-    };
-  }
+  const envUrl = String(metaEnv.VITE_SUPABASE_URL || '').trim();
+  const envKey = String(metaEnv.VITE_SUPABASE_ANON_KEY || metaEnv.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim();
+  const isConfigured = Boolean(envUrl && envKey && !envUrl.includes('your-project-id'));
 
   return {
-    url: customUrl || envUrl || '',
-    anonKey: customKey || envKey || '',
-    isConfigured: false,
-    source: 'none'
+    url: isConfigured ? envUrl : '',
+    anonKey: isConfigured ? envKey : '',
+    isConfigured,
+    source: isConfigured ? 'env' : 'none'
   };
 }
 
-/**
- * Save user custom Supabase credentials
- */
-export function saveSupabaseConfig(url: string, anonKey: string): void {
-  if (url.trim()) {
-    localStorage.setItem(SUPABASE_STORAGE_KEYS.URL, url.trim());
-  } else {
-    localStorage.removeItem(SUPABASE_STORAGE_KEYS.URL);
-  }
-
-  if (anonKey.trim()) {
-    localStorage.setItem(SUPABASE_STORAGE_KEYS.ANON_KEY, anonKey.trim());
-  } else {
-    localStorage.removeItem(SUPABASE_STORAGE_KEYS.ANON_KEY);
-  }
-
-  // Reset cached instance
-  cachedClient = null;
-}
+purgeLegacySupabaseBrowserCredentials();
 
 let cachedClient: SupabaseClient | null = null;
 
@@ -98,8 +81,8 @@ export function getSupabaseClient(): SupabaseClient | null {
   try {
     cachedClient = createClient(config.url, config.anonKey, {
       auth: {
-        persistSession: true,
-        autoRefreshToken: true
+        persistSession: false,
+        autoRefreshToken: false
       }
     });
     return cachedClient;
@@ -121,7 +104,7 @@ export async function testSupabaseConnection(): Promise<{
   if (!client) {
     return {
       success: false,
-      message: 'Credenciais do Supabase não configuradas (URL ou Anon Key ausentes).'
+      message: 'Configuração segura do Supabase indisponível no ambiente de produção.'
     };
   }
 

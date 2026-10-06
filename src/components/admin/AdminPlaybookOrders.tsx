@@ -258,7 +258,7 @@ export const AdminPlaybookOrders: React.FC<AdminPlaybookOrdersProps> = ({ onShow
                   Chave PIX Ativa no Checkout: <span className="font-mono text-white bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-500/30">{siteConfig.pixKey || 'tassovasconcelos@gmail.com'}</span> ({siteConfig.pixKeyType || 'email'})
                 </p>
                 <p className="text-slate-300 text-[11px]">
-                  Titular: <strong>{siteConfig.pixBeneficiaryName || 'TASSO VASCONCELOS'}</strong> • Cidade: <strong>{siteConfig.pixCity || 'FORTALEZA'}</strong> • Mercado Pago: <strong>{siteConfig.mercadoPagoAccessToken ? 'Integrado' : 'PIX Direto'}</strong>
+                  Titular: <strong>{siteConfig.pixBeneficiaryName || 'TASSO VASCONCELOS'}</strong> • Cidade: <strong>{siteConfig.pixCity || 'FORTALEZA'}</strong> • Mercado Pago: <strong>Gerenciado no servidor</strong>
                 </p>
               </div>
             </div>

@@ -73,7 +73,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div>
             <p className="text-[10px] text-sky-200 font-bold uppercase tracking-wider">Gateway Mercado Pago</p>
             <p className="text-xs font-bold text-white">
-              {siteConfig.mercadoPagoAccessToken ? 'API Conectada (Produção)' : 'PIX BACEN Direto Ativo'}
+              Credenciais protegidas no servidor
             </p>
           </div>
         </div>

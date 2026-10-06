@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {AlertCircle,ArrowLeft,CheckCircle2,Eye,EyeOff,KeyRound,Lock,Mail,ShieldCheck} from 'lucide-react';
 import type {UserRole} from '../../types';
-import {adminSignIn,requestAdminPasswordReset,updateRecoveredAdminPassword} from '../../lib/adminAuth';
+import {adminSignIn,clearAdminBrowserCredentials,requestAdminPasswordReset,updateRecoveredAdminPassword} from '../../lib/adminAuth';
 
 interface AdminLoginScreenProps{
   onLoginSuccess:(user:{name:string;role:UserRole;email:string})=>void;
@@ -18,18 +18,13 @@ export const AdminLoginScreen:React.FC<AdminLoginScreenProps>=({onLoginSuccess,o
   const[message,setMessage]=useState('');
   const recovery=useMemo(()=>typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('recovery')==='1',[]);
 
-  useEffect(()=>{
-    try{
-      for(const key of ['grit_admin_authenticated','grit_admin_user_name','grit_admin_user_role','grit_admin_user_email']){
-        sessionStorage.removeItem(key);
-      }
-    }catch{}
-  },[]);
+  useEffect(()=>{ clearAdminBrowserCredentials(); },[]);
 
   const submit=async(e:React.FormEvent)=>{
     e.preventDefault();setError('');setMessage('');setBusy(true);
     try{
       const user=await adminSignIn(email,password);
+      setPassword('');
       onLoginSuccess(user);
     }catch(err){
       setError(err instanceof Error?err.message:'Não foi possível autenticar.');
@@ -80,14 +75,14 @@ export const AdminLoginScreen:React.FC<AdminLoginScreenProps>=({onLoginSuccess,o
         {message&&<div className="bg-emerald-950/80 border border-emerald-800 text-emerald-200 p-3 rounded-2xl text-xs flex gap-2"><CheckCircle2 className="w-4 h-4 shrink-0"/><span>{message}</span></div>}
 
         {recovery?
-          <form onSubmit={updatePassword} className="space-y-4">
+          <form onSubmit={updatePassword} autoComplete="off" className="space-y-4">
             <PasswordField value={password} onChange={setPassword} show={showPassword} setShow={setShowPassword} label="Nova senha"/>
-            <div><label className="block text-[11px] font-bold mb-1">Confirmar nova senha</label><input type={showPassword?'text':'password'} value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} minLength={12} required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm"/></div>
+            <div><label className="block text-[11px] font-bold mb-1">Confirmar nova senha</label><input type={showPassword?'text':'password'} value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} autoComplete="new-password" minLength={12} required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm"/></div>
             <button disabled={busy} className="w-full bg-[#145EDB] py-3 rounded-xl font-bold text-sm disabled:opacity-50">{busy?'Atualizando...':'Atualizar senha'}</button>
           </form>
         :
-          <form onSubmit={submit} className="space-y-4">
-            <div><label className="block text-[11px] font-bold mb-1">E-mail</label><div className="relative"><Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/><input type="email" autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-3 text-sm" placeholder="seu@email.com"/></div></div>
+          <form onSubmit={submit} autoComplete="off" className="space-y-4">
+            <div><label className="block text-[11px] font-bold mb-1">E-mail</label><div className="relative"><Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/><input type="email" autoComplete="off" value={email} onChange={e=>setEmail(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-3 text-sm" placeholder="seu@email.com"/></div></div>
             <PasswordField value={password} onChange={setPassword} show={showPassword} setShow={setShowPassword} label="Senha"/>
             <button disabled={busy} className="w-full bg-[#145EDB] py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"><ShieldCheck className="w-4 h-4"/>{busy?'Autenticando...':'Entrar com segurança'}</button>
             <button type="button" onClick={recover} disabled={busy} className="w-full text-xs text-amber-300 hover:text-amber-200 flex items-center justify-center gap-2"><KeyRound className="w-4 h-4"/>Esqueci minha senha</button>
@@ -99,5 +94,5 @@ export const AdminLoginScreen:React.FC<AdminLoginScreenProps>=({onLoginSuccess,o
 };
 
 function PasswordField({value,onChange,show,setShow,label}:{value:string;onChange:(v:string)=>void;show:boolean;setShow:(v:boolean)=>void;label:string}){
-  return <div><label className="block text-[11px] font-bold mb-1">{label}</label><div className="relative"><KeyRound className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/><input type={show?'text':'password'} autoComplete={label==='Senha'?'current-password':'new-password'} value={value} onChange={e=>onChange(e.target.value)} minLength={8} required className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-10 py-3 text-sm"/><button type="button" onClick={()=>setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" aria-label={show?'Ocultar senha':'Mostrar senha'}>{show?<EyeOff className="w-4 h-4"/>:<Eye className="w-4 h-4"/>}</button></div></div>
+  return <div><label className="block text-[11px] font-bold mb-1">{label}</label><div className="relative"><KeyRound className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/><input type={show?'text':'password'} autoComplete="new-password" value={value} onChange={e=>onChange(e.target.value)} minLength={8} required className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-10 py-3 text-sm"/><button type="button" onClick={()=>setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" aria-label={show?'Ocultar senha':'Mostrar senha'}>{show?<EyeOff className="w-4 h-4"/>:<Eye className="w-4 h-4"/>}</button></div></div>
 }

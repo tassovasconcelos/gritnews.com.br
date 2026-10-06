@@ -654,11 +654,20 @@ export function toggleBookmark(articleId: string): boolean {
 // Site Settings
 export function getSiteSettings(): SiteSettings {
   initStorage();
-  return loadItem<SiteSettings>(KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
+  const loaded = loadItem<SiteSettings>(KEYS.SETTINGS, INITIAL_SITE_SETTINGS) as SiteSettings & {mercadoPagoAccessToken?: string};
+  if (loaded.mercadoPagoAccessToken) {
+    const sanitized = {...loaded} as any;
+    delete sanitized.mercadoPagoAccessToken;
+    saveItem(KEYS.SETTINGS, sanitized);
+    return {...INITIAL_SITE_SETTINGS, ...sanitized};
+  }
+  return {...INITIAL_SITE_SETTINGS, ...loaded};
 }
 
 export function saveSiteSettings(settings: SiteSettings): void {
-  saveItem(KEYS.SETTINGS, settings);
+  const sanitized = {...settings} as any;
+  delete sanitized.mercadoPagoAccessToken;
+  saveItem(KEYS.SETTINGS, sanitized);
 }
 
 // TenPets - Articles

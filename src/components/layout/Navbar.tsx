@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Menu, X, Bookmark, LayoutDashboard, Newspaper, ArrowRight } from 'lucide-react';
+import { Search, Menu, X, Bookmark, Newspaper, ArrowRight } from 'lucide-react';
 import { Category } from '../../types';
 import { GritBrandLogo } from '../ui/GritBrandLogo';
 
@@ -56,7 +56,6 @@ export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, 
           </button>
           <div className="hidden md:flex items-center gap-4 text-slate-400">
             <span>Inteligência • Tecnologia • Execução • Resultados</span>
-            <button onClick={onNavigateAdmin} className="hover:text-[#FF6A00]">Admin</button>
           </div>
         </div>
       </div>
@@ -111,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, 
             <button onClick={goInsights} className="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-white/5">GRIT Insights / News</button>
             <form onSubmit={handleSearchSubmit} className="relative pt-1"><input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscar no GRIT Insights" className="w-full pl-10 pr-3 py-3 rounded-xl bg-white/5 border border-white/15 text-sm outline-none"/><Search className="absolute left-3.5 top-[18px] w-4 h-4 text-slate-500"/></form>
             <button onClick={() => goSection('diagnostico')} className="w-full bg-[#FF6A00] text-white px-4 py-3.5 rounded-xl font-extrabold">Conte seu desafio</button>
-            <div className="flex items-center gap-2 pt-2"><button onClick={onNavigateBookmarks} className="flex-1 border border-white/15 px-3 py-2.5 rounded-xl text-xs font-bold"><Bookmark className="w-4 h-4 inline mr-1"/> Salvos{bookmarksCount>0?` (${bookmarksCount})`:''}</button><button onClick={onNavigateAdmin} className="flex-1 border border-white/15 px-3 py-2.5 rounded-xl text-xs font-bold"><LayoutDashboard className="w-4 h-4 inline mr-1"/> Admin</button></div>
+            <button onClick={onNavigateBookmarks} className="w-full border border-white/15 px-3 py-2.5 rounded-xl text-xs font-bold"><Bookmark className="w-4 h-4 inline mr-1"/> Salvos{bookmarksCount>0?` (${bookmarksCount})`:``}</button>
           </div>
         </div>
       )}
