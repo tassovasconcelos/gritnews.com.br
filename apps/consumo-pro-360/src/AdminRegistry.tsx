@@ -58,7 +58,7 @@ export default function AdminRegistry({orgId,companyId,companies,departments,pro
   {tab==="usuarios"&&<UserManagement orgId={orgId} companies={companies} departments={departments} groupAdmin={groupAdmin} techAdmin={techAdmin}/>}
   {(tab==="setores"||tab==="unidades"||tab==="produtos"||tab==="fornecedores")&&<section className="panel">
    <header className="panel-header"><h3>{label[tab]} do Grupo</h3>
-   {(tab==="produtos"||tab==="fornecedores")&&<button className="btn primary small" onClick={()=>onView(tab)}>Abrir módulo <Plus size={15}/></button>}</header>
+   {(tab==="produtos"||tab==="fornecedores")&&<button className="btn primary small" onClick={()=>onView(tab==="produtos"?"products":"suppliers")}>Abrir módulo <Plus size={15}/></button>}</header>
    <div className="registry-toolbar"><label className="registry-search"><Search size={17}/><input aria-label={"Buscar "+label[tab]} value={filter}
     placeholder="Buscar nesta lista..." onChange={e=>setFilter(e.target.value)}/></label>
     <button className="btn secondary" onClick={exportCsv}><Download size={16}/> CSV</button></div>
@@ -70,11 +70,11 @@ export default function AdminRegistry({orgId,companyId,companies,departments,pro
     </div>)}</div>:<div className="empty"><Layers3 size={26}/><strong>Nenhum registro por aqui</strong>
     <span>Os registros só aparecem quando estiverem efetivamente cadastrados.</span></div>}
    {canAdmin&&tab==="setores"&&<form className="registry-create" onSubmit={e=>{e.preventDefault();if(!db)return;
-    void action(()=>db.rpc("cp_admin_department",{p_company:companyId,p_name:name,p_budget:null,p_threshold:0}),"Setor criado. A política financeira deverá ser definida pelo responsável.");}}>
+    void action(()=>db!.rpc("cp_admin_department",{p_company:companyId,p_name:name,p_budget:null,p_threshold:0}),"Setor criado. A política financeira deverá ser definida pelo responsável.");}}>
     <strong>Novo setor</strong><div><input required minLength={2} aria-label="Nome do setor" placeholder="Nome do setor" value={name} onChange={e=>setName(e.target.value)}/>
     <button className="btn primary" disabled={saving}>+ Cadastrar</button></div></form>}
    {canAdmin&&tab==="unidades"&&<form className="registry-create" onSubmit={e=>{e.preventDefault();if(!db)return;
-    void action(()=>db.rpc("cp_admin_unit",{p_company:companyId,p_name:name,p_code:unitCode||null,p_city:city||null,p_state:uf||null}),"Unidade cadastrada e auditada.");}}>
+    void action(()=>db!.rpc("cp_admin_unit",{p_company:companyId,p_name:name,p_code:unitCode||null,p_city:city||null,p_state:uf||null}),"Unidade cadastrada e auditada.");}}>
     <strong>Nova unidade</strong><div><input required minLength={2} aria-label="Nome da unidade" placeholder="Unidade / loja" value={name} onChange={e=>setName(e.target.value)}/>
     <input aria-label="Código da unidade" placeholder="Código opcional" value={unitCode} onChange={e=>setUnitCode(e.target.value)}/>
     <input aria-label="Cidade" placeholder="Cidade" value={city} onChange={e=>setCity(e.target.value)}/>
@@ -89,7 +89,7 @@ export default function AdminRegistry({orgId,companyId,companies,departments,pro
     {(groupAdmin)&&<button className="btn secondary small" onClick={()=>{setBudgetDept(d.id);setBudget(d.budget_monthly==null?"":String(d.budget_monthly));setThreshold(String(d.finance_threshold));}}>Editar</button>}
    </div>)}
    {groupAdmin&&budgetDept&&<form className="registry-create" onSubmit={e=>{e.preventDefault();if(!db)return;
-    void action(()=>db.rpc("cp_update_department_budget",{p_department:budgetDept,p_budget:budget===""?null:Number(budget),p_threshold:Number(threshold)}),"Orçamento ajustado com trilha de auditoria.");}}>
+    void action(()=>db!.rpc("cp_update_department_budget",{p_department:budgetDept,p_budget:budget===""?null:Number(budget),p_threshold:Number(threshold)}),"Orçamento ajustado com trilha de auditoria.");}}>
     <strong>Editar {departments.find(d=>d.id===budgetDept)?.name}</strong><div>
     <input aria-label="Orçamento mensal em reais" type="number" min="0" step=".01" placeholder="Limite mensal R$" value={budget} onChange={e=>setBudget(e.target.value)}/>
     <input aria-label="Alçada financeira em reais" type="number" min="0" step=".01" value={threshold} onChange={e=>setThreshold(e.target.value)}/>
