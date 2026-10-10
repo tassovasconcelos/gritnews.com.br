@@ -3,11 +3,12 @@ import type { User } from "@supabase/supabase-js";
 import {
   LayoutDashboard, ClipboardList, CheckCircle2, Package, Boxes, FileText, Truck,
   Scale, ShieldCheck, Settings, Menu, LogOut, Plus, RefreshCw, AlertTriangle,
-  Search, Building2, BarChart3, BrainCircuit, Users, X, ChevronRight,
+  Search, Building2, BarChart3, BrainCircuit, X, ChevronRight,
   UploadCloud, CircleHelp, Lock, Send
 } from "lucide-react";
 import { db,configured } from "./lib/supabase";
 import ProcurementWorkbench from "./ProcurementWorkbench";
+import UserManagement from "./UserManagement";
 import { readNFe, type FiscalLine } from "./lib/nfe";
 
 type View = "overview"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"audit"|"admin";
@@ -80,7 +81,6 @@ export default function App(){
  const [quotes,setQuotes]=useState<Rec[]>([]);
  const [events,setEvents]=useState<Rec[]>([]);
  const [audit,setAudit]=useState<Rec[]>([]);
- const [allMembers,setAllMembers]=useState<Rec[]>([]);
  const [modal,setModal]=useState("");
  const [actionId,setActionId]=useState("");
  const [reason,setReason]=useState("");
@@ -95,7 +95,6 @@ export default function App(){
  const [supplierForm,setSupplierForm]=useState({name:"",tax_id:"",email:"",phone:""});
  const [opening,setOpening]=useState({warehouse_id:"",product_id:"",quantity:1,cost:0,reason:""});
  const [adminCompany,setAdminCompany]=useState("");
- const [invite,setInvite]=useState({email:"",role:"requester",company_id:"",department_id:""});
  const [adminDepartment,setAdminDepartment]=useState({name:"",budget:"",threshold:"500"});
  const [quoteForm,setQuoteForm]=useState({title:"",deadline:""});
  const [nf,setNf]=useState({supplier_name:"",tax_id:"",access_key:"",number:"",series:"",issued_at:"",source_format:"manual"});
@@ -116,6 +115,9 @@ export default function App(){
   if(!user||!db)return;
   let live=true;
   (async()=>{
+   // Activates only an already-approved and email-verified directory identity.
+   // The service itself checks the signed JWT and official GRIT bootstrap record.
+   try { await db!.functions.invoke("cp-activate-access",{body:{}}); } catch { /* Keep login usable if activation is pending. */ }
    const [m,c]=await Promise.all([
     db!.from("cp_memberships").select("*").eq("user_id",user.id).eq("active",true),
     db!.from("cp_companies").select("*").eq("active",true).order("name")
@@ -142,7 +144,9 @@ export default function App(){
   return ()=>{active=false;};
  },[orgId]);
  const hasRole=(roles:string[])=>members.some((m)=>m.active&&m.organization_id===orgId&&roles.includes(m.role)&&(!m.company_id||m.company_id===companyId));
- const isAdmin=hasRole(["group_admin"]);
+ const isAdmin=hasRole(["group_admin","grit_superadmin"]);
+ const groupAdmin=hasRole(["group_admin"]);
+ const techAdmin=hasRole(["grit_superadmin"]);
  const canApprove=hasRole(["manager","group_admin","director"]);
  const canFinance=hasRole(["finance","group_admin","director"]);
  const canWarehouse=hasRole(["warehouse","group_admin"]);
@@ -158,12 +162,12 @@ export default function App(){
    ["cp_product_costs","company_id",companyId],["cp_requests","company_id",companyId],
    ["cp_invoices","company_id",companyId],["cp_suppliers","organization_id",orgId],
    ["cp_quote_batches","company_id",companyId],["cp_stock_events","company_id",companyId],
-   ["cp_audit_events","company_id",companyId],["cp_memberships","organization_id",orgId]
+   ["cp_audit_events","company_id",companyId]
   ];
   const result=await Promise.all(cfg.map(async([table,key,value])=>db!.from(table).select("*").eq(key,value!).limit(1000)));
   const data=result.map((r)=>r.data||[]);
   setDepartments(data[0]);setProducts(data[1]);setWarehouses(data[2]);setStock(data[3]);setCosts(data[4]);
-  setRequests(data[5]);setInvoices(data[6]);setSuppliers(data[7]);setQuotes(data[8]);setEvents(data[9]);setAudit(data[10]);setAllMembers(data[11]);
+  setRequests(data[5]);setInvoices(data[6]);setSuppliers(data[7]);setQuotes(data[8]);setEvents(data[9]);setAudit(data[10]);
   const ids=data[5].map((r:Rec)=>r.id);
   if(ids.length){
    const lines=await db.from("cp_request_lines").select("*").in("request_id",ids);
@@ -366,7 +370,11 @@ export default function App(){
  </div>;
  if(!members.length||!companies.length)return <div className="setup-screen"><div className="setup-mark">CP<span>360</span></div>
   <h1>Conta autenticada</h1><p>Seu usuário ainda não possui vínculo ativo com o Grupo, empresa ou setor.</p>
-  <p>O administrador deve criar uma organização e conceder acesso no ambiente seguro do banco. Nenhuma permissão é criada automaticamente.</p>
+  <p>O cadastro pode estar aguardando confirmação do convite ou liberação do administrador. Nenhuma permissão é atribuída sem identidade verificada.</p>
+  <button className="btn primary" onClick={async()=>{if(!db)return;const result=await db.functions.invoke("cp-activate-access",{body:{}});if(result.error||!result.data?.success){setNotice(result.data?.error||result.error?.message||"A ativação ainda depende do convite corporativo.");}else window.location.reload();}}>
+   Verificar convite e ativar acesso
+  </button>
+  {notice&&<p className="muted">{notice}</p>}
   <button className="btn secondary" onClick={logout}>Sair com segurança</button>
   <small>Tecnologia e desenvolvimento: GRIT Soluções e Negócios</small>
  </div>;
@@ -515,14 +523,12 @@ export default function App(){
       <section className="panel"><div className="panel-header"><h3>Setores e alçadas</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("department")}><Plus size={15}/> Adicionar</button>}</div>
        {departments.length?departments.map((d)=><div className="simple-row" key={d.id}><span className="grow">{d.name}</span><small>Financeiro acima de {currency(Number(d.finance_threshold))}</small></div>):
         <Empty title="Sem setores" detail="Cadastre setores para permitir solicitações."/>}</section>
-      <section className="panel"><div className="panel-header"><h3>Usuários e papéis</h3>{isAdmin?<button className="btn ghost small" onClick={()=>setModal("invite")}><Plus size={15}/> Convidar</button>:<Users size={18}/>}</div>
-       <p className="muted">Permissões são vinculadas ao usuário autenticado no banco. Convites por e-mail exigem função administrativa dedicada.</p>
-       <div className="mini-stat"><strong>{allMembers.length}</strong><span>vínculos de acesso visíveis</span></div>
-       {allMembers.slice(0,5).map((m)=><div className="simple-row" key={m.id}><span className="mono tiny">{String(m.user_id).slice(0,8)}…</span><span>{m.role}</span></div>)}</section>
       <section className="panel"><div className="panel-header"><h3>Almoxarifados</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("warehouse")}><Plus size={15}/> Adicionar</button>}</div>
        {warehouses.length?warehouses.map((w)=><div key={w.id} className="simple-row"><Boxes size={17}/><span>{w.name}</span></div>):
         <Empty title="Sem depósitos" detail="Registre pelo menos um depósito da empresa."/>}</section>
-     </div><section className="panel integrations"><div className="panel-header"><h3>Saúde das integrações</h3><span className="muted">Somente conexões confirmadas são marcadas como ativas</span></div>
+     </div>
+     <UserManagement orgId={orgId} companies={companies} departments={departments} groupAdmin={groupAdmin} techAdmin={techAdmin}/>
+     <section className="panel integrations"><div className="panel-header"><h3>Saúde das integrações</h3><span className="muted">Somente conexões confirmadas são marcadas como ativas</span></div>
       <div className="integration-grid">{["ERP Procfit","Automação SMTP","OCR de PDF e foto","IA avançada","Validação SEFAZ"].map((v)=>
        <div className="integration" key={v}><span>{v}</span><span className="pill warn">Não conectado</span></div>)}</div></section>
      <section className="panel brand-admin"><div className="panel-header"><h3>Marca oficial do Grupo Prohospital</h3><ShieldCheck size={18}/></div>
@@ -604,13 +610,6 @@ export default function App(){
    <div className="form-grid"><label>Limite de consumo mensal (R$)<input type="number" min="0" step=".01" value={adminDepartment.budget} onChange={(e)=>setAdminDepartment({...adminDepartment,budget:e.target.value})}/></label>
    <label>Escalar para financeiro acima de (R$)<input required type="number" min="0" step=".01" value={adminDepartment.threshold} onChange={(e)=>setAdminDepartment({...adminDepartment,threshold:e.target.value})}/></label></div>
    <div className="form-footer"><button className="btn primary" disabled={busy}>Cadastrar setor</button></div></form></Modal>}
-  {modal==="invite"&&<Modal title="Convite de usuário com permissão" onClose={()=>setModal("")}><form onSubmit={(e)=>{e.preventDefault();void mutate("Convite enviado e vínculo criado.",()=>db!.functions.invoke("cp-invite-user",{body:{email:invite.email,role:invite.role,organization_id:orgId,company_id:invite.company_id||null,department_id:invite.department_id||null}}));}}>
-   <label>E-mail corporativo<input type="email" required value={invite.email} onChange={(e)=>setInvite({...invite,email:e.target.value})}/></label>
-   <div className="form-grid"><label>Perfil de acesso<select value={invite.role} onChange={(e)=>setInvite({...invite,role:e.target.value})}>{["requester","manager","warehouse","buyer","finance","controller","director","group_admin"].map((x)=><option key={x} value={x}>{({requester:"Solicitante",manager:"Gestor setorial",warehouse:"Almoxarife",buyer:"Compras",finance:"Financeiro",controller:"Controladoria",director:"Diretoria",group_admin:"Administrador do Grupo"} as Rec)[x]}</option>)}</select></label>
-   <label>Empresa de vínculo<select value={invite.company_id} onChange={(e)=>setInvite({...invite,company_id:e.target.value,department_id:""})}><option value="">Todo o Grupo (apenas perfis globais)</option>{companies.map((x)=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
-   <label className="wide">Setor opcional<select value={invite.department_id} onChange={(e)=>setInvite({...invite,department_id:e.target.value})}><option value="">Todos os setores permitidos</option>{departments.filter((d)=>d.company_id===invite.company_id).map((d)=><option key={d.id} value={d.id}>{d.name}</option>)}</select></label></div>
-   <div className="info-strip"><ShieldCheck size={18}/> Convite envia e-mail real somente quando a Edge Function estiver implantada no banco dedicado. Não há senha ou usuário público pré-configurado.</div>
-   <div className="form-footer"><button className="btn primary" disabled={busy}>Enviar convite autorizado</button></div></form></Modal>}
   {modal==="warehouse"&&<Modal title="Novo almoxarifado" onClose={()=>setModal("")}><form onSubmit={(e)=>{e.preventDefault();const name=(e.currentTarget.elements.namedItem("name") as HTMLInputElement).value;
    void mutate("Depósito cadastrado.",()=>db!.from("cp_warehouses").insert({company_id:companyId,name}));}}>
    <label>Nome do depósito<input required name="name" placeholder="Almoxarifado central"/></label><div className="form-footer"><button className="btn primary" disabled={busy}>Criar depósito</button></div></form></Modal>}
