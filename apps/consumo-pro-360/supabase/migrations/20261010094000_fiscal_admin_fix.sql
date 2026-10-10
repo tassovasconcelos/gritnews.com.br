@@ -60,6 +60,7 @@ end $$;
 create or replace function public.cp_approve_request(p_request uuid,p_approve boolean,p_reason text default null)
 returns text language plpgsql security definer set search_path='' as $$
 declare r public.cp_requests%rowtype; v_org uuid; v_total numeric; v_threshold numeric; v_state text;
+ v_budget numeric; v_spent numeric; v_unknown integer;
 begin
  select * into r from public.cp_requests where id=p_request for update;
  if r.id is null or r.status<>'submitted' then raise exception 'Solicitação indisponível para aprovação'; end if;
@@ -73,15 +74,22 @@ begin
     and (m.department_id is null or m.department_id=r.department_id)
   ))
  ) then raise exception 'Gestor sem alçada para este setor'; end if;
- select c.organization_id,d.finance_threshold into v_org,v_threshold
+ select c.organization_id,d.finance_threshold,d.budget_monthly into v_org,v_threshold,v_budget
  from public.cp_companies c join public.cp_departments d on d.company_id=c.id
  where c.id=r.company_id and d.id=r.department_id;
  if not p_approve and nullif(trim(coalesce(p_reason,'')),'') is null then raise exception 'Motivo obrigatório'; end if;
- select coalesce(sum(rl.quantity*coalesce(pc.avg_cost,0)),0) into v_total
+ select coalesce(sum(rl.quantity*coalesce(pc.avg_cost,0)),0),
+ count(*) filter (where pc.avg_cost is null or pc.avg_cost<=0) into v_total,v_unknown
  from public.cp_request_lines rl left join public.cp_product_costs pc
  on pc.company_id=r.company_id and pc.product_id=rl.product_id where rl.request_id=r.id;
+ select coalesce(sum(abs(e.quantity_change)*e.unit_cost),0) into v_spent
+ from public.cp_stock_events e where e.company_id=r.company_id and e.department_id=r.department_id
+ and e.event_type='delivery' and (e.occurred_at at time zone 'America/Fortaleza')::date >=
+ date_trunc('month',now() at time zone 'America/Fortaleza')::date;
  v_state:=case when not p_approve then 'rejected'
- when v_total>=v_threshold then 'pending_finance' else 'approved' end;
+ when v_unknown>0 or v_total>=v_threshold
+ or (v_budget is not null and v_spent+v_total>v_budget) then 'pending_finance'
+ else 'approved' end;
  update public.cp_requests set status=v_state,reason=p_reason,updated_at=now() where id=r.id;
  insert into public.cp_audit_events(organization_id,company_id,actor_id,entity,entity_id,action,detail)
  values(v_org,r.company_id,auth.uid(),'request',r.id,'manager_decision',
