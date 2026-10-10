@@ -210,6 +210,36 @@ export default function App(){
   }catch(e){setNotice("Falha ao aplicar a marca: "+errText(e));}
   finally{setBusy(false);}
  }
+ async function refreshCorporateAccess(){
+  if(!db||!user)return;
+  setBusy(true);setNotice("");
+  try{
+   // Database is authoritative; don't depend on Edge/CORS for an already active admin.
+   const read=async()=>Promise.all([
+    db!.from("cp_memberships").select("*").eq("user_id",user.id).eq("active",true),
+    db!.from("cp_companies").select("*").eq("active",true).order("name")
+   ]);
+   let [memberResult,companyResult]=await read();
+   if(memberResult.error)throw memberResult.error;
+   if(companyResult.error)throw companyResult.error;
+   if(!(memberResult.data||[]).length){
+    const activation=await db.functions.invoke("cp-activate-access",{body:{}});
+    if(activation.error)throw new Error("Não foi possível validar o convite no servidor. Atualize a página ou entre novamente. Detalhe: "+activation.error.message);
+    if(!activation.data?.success)throw new Error(activation.data?.error||"Convite ainda não autorizado.");
+    [memberResult,companyResult]=await read();
+    if(memberResult.error)throw memberResult.error;
+    if(companyResult.error)throw companyResult.error;
+   }
+   const linked=memberResult.data||[],available=companyResult.data||[];
+   if(!linked.length)throw new Error("Conta autenticada, mas nenhum perfil foi liberado. Confira o e-mail da sessão.");
+   if(!available.length)throw new Error("Perfil ativo localizado, mas nenhuma empresa está disponível para acesso.");
+   setMembers(linked);setCompanies(available);
+   const selected=available.find(c=>c.id===companyId)||available[0];
+   setCompanyId(selected.id);setOrgId(selected.organization_id);
+   setNotice("Permissões atualizadas. O acesso corporativo está habilitado.");
+  }catch(error){setNotice("Não foi possível atualizar o acesso: "+errText(error));}
+  finally{setBusy(false);setMembershipReady(true);}
+ }
  async function login(e:React.FormEvent) {
   e.preventDefault();if(!db)return;setLoginBusy(true);setNotice("");
   const {error}=await db.auth.signInWithPassword({email,password});
@@ -384,9 +414,9 @@ export default function App(){
  if(!membershipReady)return <div className="loading-screen">Consultando permissões de acesso…</div>;
  if(!members.length||!companies.length)return <div className="setup-screen"><div className="setup-mark">CP<span>360</span></div>
   <h1>Conta autenticada</h1><p>Seu usuário ainda não possui vínculo ativo com o Grupo, empresa ou setor.</p>
-  <p>O cadastro pode estar aguardando confirmação do convite ou liberação do administrador. Nenhuma permissão é atribuída sem identidade verificada.</p>
-  <button className="btn primary" onClick={async()=>{if(!db)return;const result=await db.functions.invoke("cp-activate-access",{body:{}});if(result.error||!result.data?.success){setNotice(result.data?.error||result.error?.message||"A ativação ainda depende do convite corporativo.");}else window.location.reload();}}>
-   Verificar convite e ativar acesso
+  <p>Conta conectada: <strong>{user.email}</strong>. Caso a liberação tenha sido recente, atualize as permissões abaixo. Nenhuma permissão é atribuída sem validação.</p>
+  <button className="btn primary" disabled={busy} onClick={()=>void refreshCorporateAccess()}>
+   {busy?"Atualizando permissões…":"Atualizar permissões e entrar"}
   </button>
   {notice&&<p className="muted">{notice}</p>}
   <button className="btn secondary" onClick={logout}>Sair com segurança</button>
