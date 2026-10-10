@@ -262,3 +262,23 @@ tr:last-child td{border-bottom:0}
  .auth-hero{min-height:305px}
 }
 @media print{.sidebar,.topbar,.mobile-bottom,.filterbar,.heading-actions,.icon-button,.app-footer,.btn{display:none!important}.main-wrap{margin:0}.panel{break-inside:avoid;box-shadow:none}.content{padding:0}.kpis{grid-template-columns:repeat(4,1fr)}}
+
+/* Equalizador GRIT: responsivo, formulários objetivos, valores evidenciados */
+.procurement{margin-top:18px}
+.procurement>label{margin:8px 0 16px}
+.proc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:15px 0}
+.proc-form{background:#fcfcfd;border:1px solid #eceef2;border-radius:12px;padding:18px;display:grid;gap:12px}
+.proc-form h3,.proc-section-title{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0 8px;color:#333b45}
+.proc-form>p{font-size:11px;line-height:1.65}
+.procurement-offer{margin:19px 0}
+.proc-check{display:flex;flex-direction:row;align-items:center;gap:10px;font-size:12px;color:#4a5967}
+.proc-check input{width:18px;height:18px}
+.proc-simulation{background:#faeff1;border-radius:9px;padding:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.proc-simulation span{font-size:11px;color:#6a4350}
+.proc-simulation b{font-weight:800;color:#a5293b}
+.proc-section-title{margin:25px 0 15px}
+.proc-award{margin:17px 0;background:#fff;border:1px solid #e6e9ed;border-radius:11px;padding:17px}
+.proc-award h3{font-size:13px}
+.proc-award p{font-size:11px;color:#85919a;margin:7px 0 10px}
+.proc-award-list .simple-row{align-items:center;justify-content:space-between;flex-wrap:wrap}
+@media(max-width:680px){.proc-grid{grid-template-columns:1fr}.proc-form{padding:14px}.proc-simulation{flex-direction:column}.procurement>label{width:100%}}
