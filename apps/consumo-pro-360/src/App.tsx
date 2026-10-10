@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { db,configured } from "./lib/supabase";
 import ProcurementWorkbench from "./ProcurementWorkbench";
-import UserManagement from "./UserManagement";
+import AdminRegistry from "./AdminRegistry";
 import { readNFe, type FiscalLine } from "./lib/nfe";
 
 type View = "overview"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"audit"|"admin";
@@ -153,7 +153,7 @@ export default function App(){
  const canFinance=hasRole(["finance","group_admin","director"]);
  const canWarehouse=hasRole(["warehouse","group_admin"]);
  const canBuy=hasRole(["buyer","group_admin"]);
- const canControl=hasRole(["controller","group_admin","director","finance","buyer"]);
+ const canControl=hasRole(["controller","group_admin","director","finance","buyer","grit_superadmin"]);
 
  const reload=useCallback(async()=>{
   if(!db||!companyId||!orgId)return;
@@ -520,29 +520,10 @@ export default function App(){
       {[...audit].sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,100).map((e)=><tr key={e.id}>
        <td>{date(e.created_at)}</td><td>{e.entity}</td><td>{e.action}</td><td className="mono">{e.actor_id?String(e.actor_id).slice(0,8)+"…":"Sistema"}</td><td className="mono tiny">{JSON.stringify(e.detail).slice(0,95)}</td></tr>)}</tbody></table></div>:
       <Empty title="Nenhum evento auditável" detail="Logs transacionais aparecem quando houver requisições, autorizações ou movimentações."/>}</section>}
-    {view==="admin"&&<>
-     <div className="admin-grid"><section className="panel"><div className="panel-header"><h3>Empresas</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("company")}><Plus size={15}/> Adicionar</button>}</div>
-      {companies.map((c)=><div key={c.id} className="simple-row"><Building2 size={17}/><span>{c.name}</span><Pill value={c.active?"Ativa":"Inativa"}/></div>)}</section>
-      <section className="panel"><div className="panel-header"><h3>Setores e alçadas</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>{setAdminDepartment({name:"",budget:"",threshold:groupAdmin?"500":"0"});setModal("department");}}><Plus size={15}/> Adicionar</button>}</div>
-       {departments.length?departments.map((d)=><div className="simple-row" key={d.id}><span className="grow">{d.name}</span><small>Financeiro acima de {currency(Number(d.finance_threshold))}</small></div>):
-        <Empty title="Sem setores" detail="Cadastre setores para permitir solicitações."/>}</section>
-      <section className="panel"><div className="panel-header"><h3>Almoxarifados</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("warehouse")}><Plus size={15}/> Adicionar</button>}</div>
-       {warehouses.length?warehouses.map((w)=><div key={w.id} className="simple-row"><Boxes size={17}/><span>{w.name}</span></div>):
-        <Empty title="Sem depósitos" detail="Registre pelo menos um depósito da empresa."/>}</section>
-     </div>
-     <UserManagement orgId={orgId} companies={companies} departments={departments} groupAdmin={groupAdmin} techAdmin={techAdmin}/>
-     <section className="panel integrations"><div className="panel-header"><h3>Saúde das integrações</h3><span className="muted">Somente conexões confirmadas são marcadas como ativas</span></div>
-      <div className="integration-grid">{["ERP Procfit","Automação SMTP","OCR de PDF e foto","IA avançada","Validação SEFAZ"].map((v)=>
-       <div className="integration" key={v}><span>{v}</span><span className="pill warn">Não conectado</span></div>)}</div></section>
-     <section className="panel brand-admin"><div className="panel-header"><h3>Marca oficial do Grupo Prohospital</h3><ShieldCheck size={18}/></div>
-     <p className="muted">Não redesenhamos a marca. O administrador pode enviar o arquivo original aprovado, com registro de auditoria.</p>
-     {brandLogo&&<img className="official-logo brand-preview" src={brandLogo} alt="Logomarca oficial aprovada do Grupo Prohospital"/>}
-     {isAdmin?<label className="brand-upload">Selecionar logotipo original (PNG/JPG/WebP, até 2 MB)
-       <input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy}
-        onChange={(e)=>void uploadBrand(e.target.files?.[0]||null)}/>
-      </label>:<small className="muted">Alteração restrita à administração do Grupo.</small>}
-    </section>
-    </>}
+    {view==="admin"&&<AdminRegistry orgId={orgId} companyId={companyId} companies={companies}
+     departments={departments} products={products} suppliers={suppliers} canAdmin={isAdmin}
+     groupAdmin={groupAdmin} techAdmin={techAdmin} brandLogo={brandLogo}
+     onReload={reload} onUpload={uploadBrand} onView={setView}/>}
    </main>
    <footer className="app-footer">CONSUMO PRO 360 · Grupo Prohospital <span>Desenvolvimento & tecnologia: <strong>GRIT Soluções e Negócios</strong></span></footer>
   </div>
