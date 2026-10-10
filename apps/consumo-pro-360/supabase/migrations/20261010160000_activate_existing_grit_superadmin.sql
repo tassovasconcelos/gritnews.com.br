@@ -2,7 +2,7 @@
 do $$
 declare v_user uuid; v_org uuid; v_dir uuid; v_count int;
 begin
- select count(*), min(id) into v_count,v_user from auth.users
+ select count(*), (array_agg(id))[1] into v_count,v_user from auth.users
  where lower(email)='gritsolucoes@gmail.com' and email_confirmed_at is not null and deleted_at is null;
  if v_count <> 1 then raise exception 'Expected exactly one verified GRIT Auth user, got %',v_count; end if;
  select id into strict v_org from public.cp_organizations where name='Grupo Prohospital';
