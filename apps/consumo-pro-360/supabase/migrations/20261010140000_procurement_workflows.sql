@@ -57,7 +57,7 @@ declare b public.cp_quote_batches%rowtype; v_org uuid; v_id uuid;
 begin
  select * into b from public.cp_quote_batches where id=p_batch for update;
  if b.id is null or b.status <> 'draft' then raise exception 'Cotação não está em rascunho'; end if;
- if not private.cp_has_role(b.company_id,array['group_admin','buyer'])) then raise exception 'Sem permissão de compras'; end if;
+ if not private.cp_has_role(b.company_id,array['group_admin','buyer']) then raise exception 'Sem permissão de compras'; end if;
  if p_qty is null or p_qty<=0 or p_qty>1000000 then raise exception 'Quantidade inválida'; end if;
  select organization_id into v_org from public.cp_companies where id=b.company_id;
  if not exists(select 1 from public.cp_products where id=p_product and organization_id=v_org and active) then raise exception 'SKU fora do catálogo da organização'; end if;
@@ -79,7 +79,7 @@ declare b public.cp_quote_batches%rowtype; v_org uuid; v_qty numeric; v_id uuid;
 begin
  select * into b from public.cp_quote_batches where id=p_batch for update;
  if b.id is null or b.status not in ('draft','ready') then raise exception 'Campanha encerrada'; end if;
- if not private.cp_has_role(b.company_id,array['group_admin','buyer'])) then raise exception 'Sem permissão de compras'; end if;
+ if not private.cp_has_role(b.company_id,array['group_admin','buyer']) then raise exception 'Sem permissão de compras'; end if;
  if p_price is null or p_price<0 or p_unit_factor is null or p_unit_factor<=0
   or p_freight<0 or p_tax<0 or p_discount<0 or p_delivery<0 or p_payment<0
  then raise exception 'Preço, conversão ou condição inválidos'; end if;
