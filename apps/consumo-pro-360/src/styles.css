@@ -282,3 +282,7 @@ tr:last-child td{border-bottom:0}
 .proc-award p{font-size:11px;color:#85919a;margin:7px 0 10px}
 .proc-award-list .simple-row{align-items:center;justify-content:space-between;flex-wrap:wrap}
 @media(max-width:680px){.proc-grid{grid-template-columns:1fr}.proc-form{padding:14px}.proc-simulation{flex-direction:column}.procurement>label{width:100%}}
+
+.camera-upload{display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px;background:#fff;border:1px solid #e3c0c7;border-radius:10px;color:#a5283d;font-size:12px;font-weight:800;padding:13px 15px}
+.camera-upload input{max-width:250px;background:transparent;border:0;padding:0;font-size:11px}
+@media(max-width:610px){.camera-upload{flex-direction:column;align-items:flex-start}}
