@@ -12,8 +12,9 @@ Deno.serve(async(req)=>{
  const origin=req.headers.get("origin")||"";
  const allowed=(Deno.env.get("APP_ALLOWED_ORIGINS")||projectOrigin).split(",").map(x=>x.trim()).filter(Boolean);
  // Authorization is enforced by JWT and org role; CORS is not used as an authorization boundary.
- if(origin&&!allowed.includes(origin))return response({error:"Origem não autorizada para administração"},403,"");
- if(req.method==="OPTIONS")return response({},204,origin);
+ const allowedPreview=/^https:\/\/consumo-pro-360-grit-[a-z0-9-]+-tassos-projects-167133f0\.vercel\.app$/.test(origin);
+ if(origin&&!allowed.includes(origin)&&!allowedPreview)return response({error:"Origem não autorizada para administração"},403,"");
+ if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization,apikey,content-type","Access-Control-Allow-Methods":"POST,OPTIONS","Vary":"Origin"}});
  if(req.method!=="POST")return response({error:"Método não permitido"},405,origin);
  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY"),secret=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
  if(!url||!anon||!secret)return response({error:"Serviço não configurado"},503,origin);
