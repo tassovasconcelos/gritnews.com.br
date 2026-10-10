@@ -57,6 +57,8 @@ export default function App(){
  const [email,setEmail]=useState("");
  const [password,setPassword]=useState("");
  const [loginBusy,setLoginBusy]=useState(false);
+ const [newPassword,setNewPassword]=useState("");
+ const [confirmPassword,setConfirmPassword]=useState("");
  const [members,setMembers]=useState<Rec[]>([]);
  const [companies,setCompanies]=useState<Rec[]>([]);
  const [companyId,setCompanyId]=useState("");
@@ -107,7 +109,7 @@ export default function App(){
   if(!db){setAuthReady(true);return;}
   const client=db; let alive=true;
   client.auth.getUser().then(({data})=>{if(alive){setUser(data.user);setAuthReady(true);}});
-  const {data:{subscription}}=client.auth.onAuthStateChange((_event,session)=>{if(alive){setUser(session?.user||null);setAuthReady(true);}});
+  const {data:{subscription}}=client.auth.onAuthStateChange((event,session)=>{if(alive){setUser(session?.user||null);setAuthReady(true);if(event==="PASSWORD_RECOVERY")setModal("account");}});
   return ()=>{alive=false;subscription.unsubscribe();};
  },[]);
 
@@ -365,6 +367,7 @@ export default function App(){
    <label>E-mail corporativo<input autoComplete="email" type="email" required value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="nome@empresa.com.br"/></label>
    <label>Senha<input autoComplete="current-password" type="password" required value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••••"/></label>
    <button className="btn primary full" disabled={loginBusy}>{loginBusy?"Validando…":"Entrar no CONSUMO PRO"}<ChevronRight size={18}/></button>
+   <button type="button" className="link-button centered" disabled={loginBusy||!email.trim()} onClick={async()=>{if(!db||!email.trim())return;setLoginBusy(true);const {error}=await db.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin});setLoginBusy(false);setNotice(error?"Não foi possível enviar o e-mail de recuperação: "+error.message:"Se houver uma conta habilitada, as instruções serão encaminhadas para o e-mail informado.");}}>Esqueci minha senha</button>
    <div className="muted centered"><Lock size={13}/> Acesso restrito a colaboradores autorizados</div>
   </form></div>
  </div>;
@@ -397,7 +400,7 @@ export default function App(){
      >{companies.map((c)=><option value={c.id} key={c.id}>{c.name}</option>)}</select></div>
     <div className="topbar-right"><span className="desktop-only small-muted">Ambiente corporativo</span>
      <button title="Atualizar dados" aria-label="Atualizar dados" className="icon-button" onClick={()=>void reload()}><RefreshCw size={18} className={loading?"spinning":""}/></button>
-     <div className="avatar" title={user.email}>{(user.email||"U").slice(0,1).toUpperCase()}</div>
+     <button className="avatar account-trigger" aria-label="Minha conta e senha" title="Minha conta e senha" onClick={()=>setModal("account")}>{(user.email||"U").slice(0,1).toUpperCase()}</button>
      <button title="Sair" aria-label="Sair" className="icon-button" onClick={logout}><LogOut size={18}/></button></div>
    </header>
    <main className="content">
@@ -548,6 +551,15 @@ export default function App(){
     <I size={20}/><small>{n.id==="overview"?"Início":n.id==="requests"?"Solicitar":n.id==="approvals"?"Aprovar":n.id==="stock"?"Estoque":"Mais"}</small></button>;})}
   </nav>
 
+  {modal==="account"&&<Modal title="Minha conta e segurança" onClose={()=>setModal("")}>
+   <div className="detail-head"><div><strong>{user.email}</strong><p className="muted">Identidade confirmada pelo Supabase Auth</p></div><Lock size={19}/></div>
+   <p>Defina uma senha exclusiva para este sistema. A senha nunca fica salva no banco de cadastros ou exposta ao Superadmin GRIT.</p>
+   <form onSubmit={async(e)=>{e.preventDefault();if(!db)return;if(newPassword.length<12||newPassword!==confirmPassword){setNotice("A senha precisa ter pelo menos 12 caracteres e coincidir com a confirmação.");return;}setBusy(true);const {error}=await db.auth.updateUser({password:newPassword});setBusy(false);if(error){setNotice("Não foi possível atualizar a senha: "+error.message);}else{setNotice("Senha atualizada. A identidade continua vinculada ao seu perfil.");setNewPassword("");setConfirmPassword("");setModal("");}}}>
+    <label>Nova senha (mínimo 12 caracteres)<input required minLength={12} autoComplete="new-password" type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)}/></label>
+    <label>Confirmar nova senha<input required minLength={12} autoComplete="new-password" type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)}/></label>
+    <div className="form-footer"><button className="btn secondary" type="button" onClick={()=>setModal("")}>Cancelar</button><button disabled={busy||newPassword.length<12||newPassword!==confirmPassword} className="btn primary">Salvar senha</button></div>
+   </form>
+  </Modal>}
   {modal==="new-request"&&<Modal title="Nova solicitação de materiais" onClose={()=>setModal("")}><form onSubmit={submitReq}>
    <div className="form-grid"><label className="wide">Setor solicitante<select required value={reqDepartment} onChange={(e)=>setReqDepartment(e.target.value)}>
     {departments.map((d)=><option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
