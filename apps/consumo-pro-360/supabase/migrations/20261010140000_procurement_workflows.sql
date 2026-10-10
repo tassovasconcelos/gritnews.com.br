@@ -116,7 +116,7 @@ declare b public.cp_quote_batches%rowtype; v_org uuid; v_count integer; v_covera
 begin
  select * into b from public.cp_quote_batches where id=p_batch for update;
  if b.id is null or b.status='closed' then raise exception 'Cotação não aceita propostas'; end if;
- if not private.cp_has_role(b.company_id,array['buyer','group_admin'])) then raise exception 'Somente Compras pode propor pedido'; end if;
+ if not private.cp_has_role(b.company_id,array['buyer','group_admin']) then raise exception 'Somente Compras pode propor pedido'; end if;
  select organization_id into v_org from public.cp_companies where id=b.company_id;
  if not exists(select 1 from public.cp_suppliers where id=p_supplier and organization_id=v_org and active) then
   raise exception 'Fornecedor não autorizado'; end if;
