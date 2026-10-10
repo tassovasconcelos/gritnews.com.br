@@ -60,6 +60,7 @@ export default function App(){
  const [companies,setCompanies]=useState<Rec[]>([]);
  const [companyId,setCompanyId]=useState("");
  const [orgId,setOrgId]=useState("");
+ const [brandLogo,setBrandLogo]=useState("");
  const [view,setView]=useState<View>("overview");
  const [menuOpen,setMenuOpen]=useState(false);
  const [busy,setBusy]=useState(false);
@@ -130,6 +131,16 @@ export default function App(){
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[user?.id]);
 
+ useEffect(()=>{
+  if(!db||!orgId){setBrandLogo("");return;}
+  let active=true;
+  db.from("cp_branding").select("logo_path").eq("organization_id",orgId).maybeSingle()
+   .then(({data})=>{
+    if(!active)return;
+    setBrandLogo(data?.logo_path?db!.storage.from("consumo-pro-brand").getPublicUrl(data.logo_path).data.publicUrl:"");
+   });
+  return ()=>{active=false;};
+ },[orgId]);
  const hasRole=(roles:string[])=>members.some((m)=>m.active&&m.organization_id===orgId&&roles.includes(m.role)&&(!m.company_id||m.company_id===companyId));
  const isAdmin=hasRole(["group_admin"]);
  const canApprove=hasRole(["manager","group_admin","director"]);
@@ -166,6 +177,23 @@ export default function App(){
  useEffect(()=>{if(warehouses.length&&!warehousePick)setWarehousePick(warehouses[0].id);},[warehouses,warehousePick]);
  useEffect(()=>{if(departments.length&&!reqDepartment)setReqDepartment(departments[0].id);},[departments,reqDepartment]);
 
+ async function uploadBrand(f:File|null){
+  if(!f||!db||!isAdmin)return;
+  const mime:{[key:string]:string}={"image/png":"png","image/jpeg":"jpg","image/webp":"webp"};
+  const extension=mime[f.type];
+  if(!extension||f.size>2*1024*1024){setNotice("Envie somente a logomarca original em PNG, JPG ou WebP, até 2 MB.");return;}
+  setBusy(true);setNotice("");
+  try{
+   const filePath=orgId+"/"+Date.now()+"-"+crypto.randomUUID()+"-oficial."+extension;
+   const up=await db.storage.from("consumo-pro-brand").upload(filePath,f,{upsert:false,contentType:f.type});
+   if(up.error)throw up.error;
+   const linked=await db.rpc("cp_set_brand_logo",{p_org:orgId,p_path:filePath});
+   if(linked.error)throw linked.error;
+   setBrandLogo(db.storage.from("consumo-pro-brand").getPublicUrl(filePath).data.publicUrl);
+   setNotice("Logomarca oficial aplicada e registrada na auditoria.");
+  }catch(e){setNotice("Falha ao aplicar a marca: "+errText(e));}
+  finally{setBusy(false);}
+ }
  async function login(e:React.FormEvent) {
   e.preventDefault();if(!db)return;setLoginBusy(true);setNotice("");
   const {error}=await db.auth.signInWithPassword({email,password});
@@ -345,7 +373,7 @@ export default function App(){
 
  return <div className="app-shell">
   <aside className={"sidebar "+(menuOpen?"visible":"")}>
-   <div className="sidebar-brand"><div className="brand-square">CP<span>360</span></div><div><b>CONSUMO PRO</b><small>GRUPO PROHOSPITAL</small></div></div>
+   <div className="sidebar-brand"><div className="brand-square">CP<span>360</span></div><div><b>CONSUMO PRO</b>{brandLogo?<img className="official-logo" src={brandLogo} alt="Marca original do Grupo Prohospital"/>:<small>GRUPO PROHOSPITAL</small>}</div></div>
    <div className="side-caption">GESTÃO & OPERAÇÃO</div>
    <nav aria-label="Navegação principal">{nav.map((item)=>{const I=item.icon;return <button key={item.id}
     className={"nav-item "+(view===item.id?"active":"")} onClick={()=>{setView(item.id);setMenuOpen(false);setSearch("");}}>
@@ -497,7 +525,14 @@ export default function App(){
      </div><section className="panel integrations"><div className="panel-header"><h3>Saúde das integrações</h3><span className="muted">Somente conexões confirmadas são marcadas como ativas</span></div>
       <div className="integration-grid">{["ERP Procfit","Automação SMTP","OCR de PDF e foto","IA avançada","Validação SEFAZ"].map((v)=>
        <div className="integration" key={v}><span>{v}</span><span className="pill warn">Não conectado</span></div>)}</div></section>
-     <div className="info-strip"><Lock size={18}/> A identidade oficial do Grupo deverá ser enviada por administrador; esta versão não redesenha nem reproduz um logotipo não autorizado.</div>
+     <section className="panel brand-admin"><div className="panel-header"><h3>Marca oficial do Grupo Prohospital</h3><ShieldCheck size={18}/></div>
+     <p className="muted">Não redesenhamos a marca. O administrador pode enviar o arquivo original aprovado, com registro de auditoria.</p>
+     {brandLogo&&<img className="official-logo brand-preview" src={brandLogo} alt="Logomarca oficial aprovada do Grupo Prohospital"/>}
+     {isAdmin?<label className="brand-upload">Selecionar logotipo original (PNG/JPG/WebP, até 2 MB)
+       <input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy}
+        onChange={(e)=>void uploadBrand(e.target.files?.[0]||null)}/>
+      </label>:<small className="muted">Alteração restrita à administração do Grupo.</small>}
+    </section>
     </>}
    </main>
    <footer className="app-footer">CONSUMO PRO 360 · Grupo Prohospital <span>Desenvolvimento & tecnologia: <strong>GRIT Soluções e Negócios</strong></span></footer>
