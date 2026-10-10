@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ClipboardList, CheckCircle2, Package, Boxes, FileText, Truck,
   Scale, ShieldCheck, Settings, Menu, LogOut, Plus, RefreshCw, AlertTriangle,
   Search, Building2, BarChart3, BrainCircuit, Users, X, ChevronRight,
-  UploadCloud, CircleHelp, Lock, Send, Smartphone
+  UploadCloud, CircleHelp, Lock, Send
 } from "lucide-react";
 import { db,configured } from "./lib/supabase";
 import { readNFe, type FiscalLine } from "./lib/nfe";
