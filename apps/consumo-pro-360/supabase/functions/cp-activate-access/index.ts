@@ -4,13 +4,13 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 const projectOrigin="https://consumo-pro-360-grit-tassos-projects-167133f0.vercel.app";
 const reply=(body:unknown,status:number,origin:string)=>new Response(JSON.stringify(body),{status,
  headers:{"Content-Type":"application/json","Access-Control-Allow-Origin":origin,
- "Access-Control-Allow-Headers":"authorization,apikey,content-type","Access-Control-Allow-Methods":"POST,OPTIONS","Vary":"Origin"}});
+ "Access-Control-Allow-Headers":"authorization,x-client-info,apikey,content-type,x-retry-count,traceparent,tracestate,baggage","Access-Control-Allow-Methods":"POST,OPTIONS","Vary":"Origin"}});
 Deno.serve(async(req)=>{
  const origin=req.headers.get("origin")||"";
  const origins=(Deno.env.get("APP_ALLOWED_ORIGINS")||projectOrigin).split(",").map(s=>s.trim());
  const allowedPreview=/^https:\/\/consumo-pro-360-grit-[a-z0-9-]+-tassos-projects-167133f0\.vercel\.app$/.test(origin);
  if(origin&&!origins.includes(origin)&&!allowedPreview)return reply({error:"Origem não autorizada"},403,"");
- if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization,apikey,content-type","Access-Control-Allow-Methods":"POST,OPTIONS","Vary":"Origin"}});
+ if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization,x-client-info,apikey,content-type,x-retry-count,traceparent,tracestate,baggage","Access-Control-Allow-Methods":"POST,OPTIONS","Vary":"Origin"}});
  if(req.method!=="POST")return reply({error:"Método inválido"},405,origin);
  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY"),secret=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
  if(!url||!anon||!secret)return reply({error:"Serviço indisponível"},503,origin);
