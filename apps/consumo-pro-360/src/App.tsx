@@ -92,6 +92,7 @@ export default function App(){
  const [supplierForm,setSupplierForm]=useState({name:"",tax_id:"",email:"",phone:""});
  const [opening,setOpening]=useState({warehouse_id:"",product_id:"",quantity:1,cost:0,reason:""});
  const [adminCompany,setAdminCompany]=useState("");
+ const [invite,setInvite]=useState({email:"",role:"requester",company_id:"",department_id:""});
  const [adminDepartment,setAdminDepartment]=useState({name:"",budget:"",threshold:"500"});
  const [quoteForm,setQuoteForm]=useState({title:"",deadline:""});
  const [nf,setNf]=useState({supplier_name:"",tax_id:"",access_key:"",number:"",series:"",issued_at:"",source_format:"manual"});
@@ -475,7 +476,7 @@ export default function App(){
       <section className="panel"><div className="panel-header"><h3>Setores e alçadas</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("department")}><Plus size={15}/> Adicionar</button>}</div>
        {departments.length?departments.map((d)=><div className="simple-row" key={d.id}><span className="grow">{d.name}</span><small>Financeiro acima de {currency(Number(d.finance_threshold))}</small></div>):
         <Empty title="Sem setores" detail="Cadastre setores para permitir solicitações."/>}</section>
-      <section className="panel"><div className="panel-header"><h3>Usuários e papéis</h3><Users size={18}/></div>
+      <section className="panel"><div className="panel-header"><h3>Usuários e papéis</h3>{isAdmin?<button className="btn ghost small" onClick={()=>setModal("invite")}><Plus size={15}/> Convidar</button>:<Users size={18}/>}</div>
        <p className="muted">Permissões são vinculadas ao usuário autenticado no banco. Convites por e-mail exigem função administrativa dedicada.</p>
        <div className="mini-stat"><strong>{allMembers.length}</strong><span>vínculos de acesso visíveis</span></div>
        {allMembers.slice(0,5).map((m)=><div className="simple-row" key={m.id}><span className="mono tiny">{String(m.user_id).slice(0,8)}…</span><span>{m.role}</span></div>)}</section>
@@ -557,6 +558,13 @@ export default function App(){
    <div className="form-grid"><label>Limite de consumo mensal (R$)<input type="number" min="0" step=".01" value={adminDepartment.budget} onChange={(e)=>setAdminDepartment({...adminDepartment,budget:e.target.value})}/></label>
    <label>Escalar para financeiro acima de (R$)<input required type="number" min="0" step=".01" value={adminDepartment.threshold} onChange={(e)=>setAdminDepartment({...adminDepartment,threshold:e.target.value})}/></label></div>
    <div className="form-footer"><button className="btn primary" disabled={busy}>Cadastrar setor</button></div></form></Modal>}
+  {modal==="invite"&&<Modal title="Convite de usuário com permissão" onClose={()=>setModal("")}><form onSubmit={(e)=>{e.preventDefault();void mutate("Convite enviado e vínculo criado.",()=>db!.functions.invoke("cp-invite-user",{body:{email:invite.email,role:invite.role,organization_id:orgId,company_id:invite.company_id||null,department_id:invite.department_id||null}}));}}>
+   <label>E-mail corporativo<input type="email" required value={invite.email} onChange={(e)=>setInvite({...invite,email:e.target.value})}/></label>
+   <div className="form-grid"><label>Perfil de acesso<select value={invite.role} onChange={(e)=>setInvite({...invite,role:e.target.value})}>{["requester","manager","warehouse","buyer","finance","controller","director","group_admin"].map((x)=><option key={x} value={x}>{({requester:"Solicitante",manager:"Gestor setorial",warehouse:"Almoxarife",buyer:"Compras",finance:"Financeiro",controller:"Controladoria",director:"Diretoria",group_admin:"Administrador do Grupo"} as Rec)[x]}</option>)}</select></label>
+   <label>Empresa de vínculo<select value={invite.company_id} onChange={(e)=>setInvite({...invite,company_id:e.target.value,department_id:""})}><option value="">Todo o Grupo (apenas perfis globais)</option>{companies.map((x)=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
+   <label className="wide">Setor opcional<select value={invite.department_id} onChange={(e)=>setInvite({...invite,department_id:e.target.value})}><option value="">Todos os setores permitidos</option>{departments.filter((d)=>d.company_id===invite.company_id).map((d)=><option key={d.id} value={d.id}>{d.name}</option>)}</select></label></div>
+   <div className="info-strip"><ShieldCheck size={18}/> Convite envia e-mail real somente quando a Edge Function estiver implantada no banco dedicado. Não há senha ou usuário público pré-configurado.</div>
+   <div className="form-footer"><button className="btn primary" disabled={busy}>Enviar convite autorizado</button></div></form></Modal>}
   {modal==="warehouse"&&<Modal title="Novo almoxarifado" onClose={()=>setModal("")}><form onSubmit={(e)=>{e.preventDefault();const name=(e.currentTarget.elements.namedItem("name") as HTMLInputElement).value;
    void mutate("Depósito cadastrado.",()=>db!.from("cp_warehouses").insert({company_id:companyId,name}));}}>
    <label>Nome do depósito<input required name="name" placeholder="Almoxarifado central"/></label><div className="form-footer"><button className="btn primary" disabled={busy}>Criar depósito</button></div></form></Modal>}
