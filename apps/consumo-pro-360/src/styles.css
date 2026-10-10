@@ -292,3 +292,24 @@ tr:last-child td{border-bottom:0}
 .brand-admin p{font-size:12px;line-height:1.7}
 .brand-upload{display:grid;gap:10px;margin:15px 0;max-width:440px;background:#f9fafb;border:1px dashed #d7dbe1;border-radius:11px;padding:17px}
 @media(max-width:610px){.brand-preview{max-width:85%}}
+
+/* GRIT identity & user administration */
+.users-panel .panel-header h3{display:flex;align-items:center;gap:9px}
+.user-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:16px 0 20px}
+.user-stat-grid>div{display:flex;flex-direction:column;gap:5px;background:#faf7f8;border:1px solid #f1e9eb;border-radius:10px;padding:16px}
+.user-stat-grid strong{font:800 24px Manrope,sans-serif;color:#a72133}
+.user-stat-grid span{color:#838c97;font-size:11px;font-weight:700}
+.users-filters{margin-top:12px}
+.users-filters .search{max-width:450px}
+.users-email{color:#939ca6;font-size:11px;margin-top:4px;word-break:break-word}
+.users-protected{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#797d89;font-size:11px}
+.users-form-footer{flex-wrap:wrap}
+.users-form-footer .btn.danger{margin-right:auto}
+@media(max-width:610px){
+.user-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.user-stat-grid>div{padding:12px}
+.users-panel .panel-header{align-items:flex-start}
+.users-panel .panel-header>.btn{width:100%}
+.users-filters .search{width:100%}
+.users-form-footer .btn.danger{width:100%;margin:0}
+}
