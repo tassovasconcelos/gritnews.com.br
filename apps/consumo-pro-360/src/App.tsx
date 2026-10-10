@@ -242,7 +242,10 @@ export default function App(){
   setReceiver("");
  }
  async function importFile(f:File|null){
-  if(!f)return;setFile(f);
+  if(!f)return;
+  if(f.size>10*1024*1024){setNotice("Arquivo acima do limite de 10 MB.");return;}
+  if(!/\.(xml|pdf|jpg|jpeg|png|webp)$/i.test(f.name)){setNotice("Envie apenas XML, PDF, JPG, PNG ou WebP.");return;}
+  setFile(f);
   const kind=f.name.toLowerCase().endsWith(".xml")?"xml":f.type==="application/pdf"?"pdf":"image";
   setNf((v)=>({...v,source_format:kind}));
   if(kind==="xml"){
@@ -476,7 +479,7 @@ export default function App(){
     {view==="audit"&&<section className="panel"><div className="panel-header"><h3>Trilha de governança</h3><small className="muted">Quem fez, quando, em qual empresa e com qual evidência</small></div>
      {audit.length?<div className="table-scroll"><table><thead><tr><th>Data</th><th>Entidade</th><th>Ação</th><th>Usuário</th><th>Evidência</th></tr></thead><tbody>
       {[...audit].sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,100).map((e)=><tr key={e.id}>
-       <td>{date(e.created_at)}</td><td>{e.entity}</td><td>{e.action}</td><td className="mono">{String(e.actor_id).slice(0,8)}…</td><td className="mono tiny">{JSON.stringify(e.detail).slice(0,95)}</td></tr>)}</tbody></table></div>:
+       <td>{date(e.created_at)}</td><td>{e.entity}</td><td>{e.action}</td><td className="mono">{e.actor_id?String(e.actor_id).slice(0,8)+"…":"Sistema"}</td><td className="mono tiny">{JSON.stringify(e.detail).slice(0,95)}</td></tr>)}</tbody></table></div>:
       <Empty title="Nenhum evento auditável" detail="Logs transacionais aparecem quando houver requisições, autorizações ou movimentações."/>}</section>}
     {view==="admin"&&<>
      <div className="admin-grid"><section className="panel"><div className="panel-header"><h3>Empresas</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("company")}><Plus size={15}/> Adicionar</button>}</div>
@@ -579,6 +582,9 @@ export default function App(){
   {modal==="new-invoice"&&<Modal title="Importação fiscal — pré-conferência" onClose={()=>setModal("")}><form onSubmit={createInvoice}>
    <label className="upload-zone"><UploadCloud size={25}/><strong>Selecionar XML, PDF ou fotografia da nota</strong><small>O arquivo é guardado no bucket privado. XML tem leitura estruturada.</small>
     <input type="file" accept=".xml,application/xml,text/xml,.pdf,application/pdf,image/jpeg,image/png,image/webp" onChange={(e)=>void importFile(e.target.files?.[0]||null)}/></label>
+   <label className="camera-upload"><FileText size={16}/> Fotografar nota pelo celular
+    <input type="file" accept="image/*" capture="environment" onChange={(e)=>void importFile(e.target.files?.[0]||null)}/>
+   </label>
    {file&&<div className="file-caption">Anexo: {file.name}</div>}
    <div className="form-grid"><label className="wide">Fornecedor<input required value={nf.supplier_name} onChange={(e)=>setNf({...nf,supplier_name:e.target.value})}/></label>
     <label>CNPJ do emissor<input value={nf.tax_id} onChange={(e)=>setNf({...nf,tax_id:e.target.value})}/></label>
