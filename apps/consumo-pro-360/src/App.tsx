@@ -54,6 +54,7 @@ const emptyFiscalLine=():FiscalLine=>({external_code:"",description:"",brand:"",
 export default function App(){
  const [user,setUser]=useState<User|null>(null);
  const [authReady,setAuthReady]=useState(false);
+ const [membershipReady,setMembershipReady]=useState(false);
  const [email,setEmail]=useState("");
  const [password,setPassword]=useState("");
  const [loginBusy,setLoginBusy]=useState(false);
@@ -116,17 +117,26 @@ export default function App(){
  useEffect(()=>{
   if(!user||!db)return;
   let live=true;
+  setMembershipReady(false);
   (async()=>{
-   // Activates only an already-approved and email-verified directory identity.
-   // The service itself checks the signed JWT and official GRIT bootstrap record.
-   try { await db!.functions.invoke("cp-activate-access",{body:{}}); } catch { /* Keep login usable if activation is pending. */ }
    const [m,c]=await Promise.all([
     db!.from("cp_memberships").select("*").eq("user_id",user.id).eq("active",true),
     db!.from("cp_companies").select("*").eq("active",true).order("name")
    ]);
    if(!live)return;
-   if(m.error)setNotice("Não foi possível consultar as permissões: "+m.error.message);
-   setMembers(m.data||[]);setCompanies(c.data||[]);
+   if(m.error)setNotice("Falha ao consultar permissões: "+m.error.message);
+   let linked=m.data||[];
+   if(!linked.length){
+    try {
+     const activation=await db!.functions.invoke("cp-activate-access",{body:{}});
+     if(!activation.error&&activation.data?.success){
+      const reassigned=await db!.from("cp_memberships").select("*").eq("user_id",user.id).eq("active",true);
+      linked=reassigned.data||[];
+     }
+    }catch{ /* Convites sem permissão não bloqueiam a sessão. */ }
+   }
+   if(!live)return;
+   setMembers(linked);setCompanies(c.data||[]);setMembershipReady(true);
    const chosen=(c.data||[]).find((x)=>x.id===companyId)||(c.data||[])[0];
    if(chosen){setCompanyId(chosen.id);setOrgId(chosen.organization_id);}
   })();
@@ -371,6 +381,7 @@ export default function App(){
    <div className="muted centered"><Lock size={13}/> Acesso restrito a colaboradores autorizados</div>
   </form></div>
  </div>;
+ if(!membershipReady)return <div className="loading-screen">Consultando permissões de acesso…</div>;
  if(!members.length||!companies.length)return <div className="setup-screen"><div className="setup-mark">CP<span>360</span></div>
   <h1>Conta autenticada</h1><p>Seu usuário ainda não possui vínculo ativo com o Grupo, empresa ou setor.</p>
   <p>O cadastro pode estar aguardando confirmação do convite ou liberação do administrador. Nenhuma permissão é atribuída sem identidade verificada.</p>
@@ -529,7 +540,7 @@ export default function App(){
   </div>
   <nav className="mobile-bottom" aria-label="Navegação móvel">
    {[nav[0],nav[1],nav[2],nav[3],nav[10]].map((n)=>{const I=n.icon;return <button key={n.id} className={view===n.id?"active":""} onClick={()=>{setView(n.id);setSearch("");}}>
-    <I size={20}/><small>{n.id==="overview"?"Início":n.id==="requests"?"Solicitar":n.id==="approvals"?"Aprovar":n.id==="stock"?"Estoque":"Mais"}</small></button>;})}
+    <I size={20}/><small>{n.id==="overview"?"Início":n.id==="requests"?"Solicitar":n.id==="approvals"?"Pedidos":n.id==="stock"?"Estoque":"Mais"}</small></button>;})}
   </nav>
 
   {modal==="account"&&<Modal title="Minha conta e segurança" onClose={()=>setModal("")}>
