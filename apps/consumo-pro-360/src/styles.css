@@ -313,3 +313,40 @@ tr:last-child td{border-bottom:0}
 .users-filters .search{width:100%}
 .users-form-footer .btn.danger{width:100%;margin:0}
 }
+
+/* 2026 GRIT responsive administrative workflow */
+.registry-intro{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:19px 22px;margin-bottom:13px;background:linear-gradient(105deg,#fff,#fbf4f5);border:1px solid #f0e1e4;border-radius:13px}
+.registry-intro span:first-child{font-size:10px;font-weight:800;letter-spacing:.12em;color:#b1283b}
+.registry-intro h2{font-size:21px;margin:6px 0;color:#272e3b}
+.registry-intro p{font-size:12px;color:#6d7581;line-height:1.55}
+.registry-access{font-size:11px!important;color:#a42c3e!important;white-space:nowrap;border:1px solid #efcdd2;border-radius:20px;padding:8px 10px}
+.registry-tabs{display:flex;gap:9px;overflow:auto;padding:1px 0 16px;scrollbar-width:thin}
+.registry-tabs button{border:1px solid #e4e8ec;background:#fff;color:#4d5765;border-radius:9px;white-space:nowrap;padding:12px 15px;font-size:12px;font-weight:700;min-height:42px}
+.registry-tabs button.selected{background:#fff0f2;color:#a52d41;border-color:#f1dce0}
+.registry-toolbar{display:flex;gap:10px;margin-bottom:8px}
+.registry-search{flex:1;display:flex;flex-direction:row;align-items:center;gap:9px;padding:0 12px;background:#fff;border:1px solid #e4e7eb;border-radius:9px}
+.registry-search input{border:0;background:transparent;box-shadow:none!important;padding:11px 0}
+.registry-list{max-height:440px;overflow:auto}
+.registry-list-row{display:flex;align-items:center;gap:11px;border-bottom:1px solid #eff1f3;padding:12px 3px}
+.registry-list-row>div:nth-child(2){flex:1;min-width:0}
+.registry-list-row strong{display:block;font-size:12px;color:#29333f;margin-bottom:3px}
+.registry-list-row span:not(.pill){display:block;font-size:11px;color:#87919e;line-height:1.5}
+.registry-icon{height:36px;width:36px;border-radius:9px;display:grid;place-items:center;background:#fdf0f1;color:#a4263b;flex-shrink:0}
+.registry-create{padding:17px;border-radius:11px;margin-top:18px;background:#fafbfc;border:1px solid #eceef1}
+.registry-create>strong{display:block;margin-bottom:11px;font-size:12px}
+.registry-create>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.registry-create input{flex:1;min-width:120px}
+.registry-create .btn{min-height:43px}
+@media(max-width:660px){
+ .registry-intro{align-items:flex-start;flex-direction:column;padding:17px}
+ .registry-intro h2{font-size:19px}
+ .registry-access{font-size:10px!important}
+ .registry-tabs{margin:0 -12px;padding-left:12px;padding-right:12px;gap:7px}
+ .registry-tabs button{padding:10px 13px;font-size:12px}
+ .registry-create>div{display:grid;grid-template-columns:1fr 1fr}
+ .registry-create input{min-width:0}
+ .registry-create .btn{grid-column:1/-1}
+ .registry-toolbar .btn{padding:10px 11px}
+ .registry-list-row{gap:8px}
+ .registry-list-row .btn{flex-shrink:0}
+}
