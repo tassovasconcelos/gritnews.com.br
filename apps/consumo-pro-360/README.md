@@ -70,3 +70,14 @@ Inventário 10 resmas -> requisição 2 -> gerente diferente do solicitante apro
 - Vercel ainda não conectada e frontend não publicado. `vercel.json` está preparado, mas deployment depende de instalar/conectar Vercel e configurar variáveis de ambiente no projeto próprio.
 - Auth sem usuários reais, nenhum superadmin GRIT com senha padrão. O responsável deve cadastrar usuário real verificado no Auth e conceder `group_admin`; uma identidade GRIT só recebe papel `grit_superadmin` explicitamente, separado da aprovação financeira.
 - Integração SMTP, OCR/IA avançada, SEFAZ e ERP Procfit ainda não conectada. Nenhuma dessas funcionalidades pode aparecer como ativa antes de teste real.
+
+## Gestão de usuários — GRIT Superadmin (10/10/2026)
+
+- Perfil técnico oficial do Grupo: `gritsolucoes@gmail.com`, papel `grit_superadmin`, abrangência organizacional, **status pending**. Registro criado em `cp_user_directory`; não há senha fixa, usuário Auth nem vínculo ativo antes da verificação do e-mail.
+- Autorizações da GRIT: administração técnica, estrutura organizacional, produtos, permissões e auditoria; **sem alçadas financeiras** para aprovar despesas, pagamentos ou alterar orçamento/limites da organização.
+- Para habilitar de forma segura: em [Supabase Auth](https://supabase.com/dashboard/project/xscxwazanootrdtyrumb/auth/users) convidar `gritsolucoes@gmail.com` em ambiente administrativo; configurar em Authentication > URL Configuration o Site URL e Redirect URLs da hospedagem Vercel autorizada; concluir a confirmação de e-mail; acessar o app. A função `cp-activate-access` só libera a identidade previamente registrada após Auth verificado.
+- Menu Administração > Gestão de usuários: busca/filtros/status, cadastro (nome, e-mail, cargo, telefone, perfil, empresa, setor), convite Auth, revisão/edição, suspensão e reativação via `cp-invite-user`, com auditoria e RLS. O Superadmin GRIT não pode ser editado ou suspenso por fluxos operacionais comuns.
+- Convite é individual e confirmado pelo backend, depende da configuração de e-mail/URLs no Supabase; não declarar envios como homologados sem receber e abrir convite real.
+- Conta pessoal: funcionário define senha própria após aceitar convite ou usa recuperação Auth; nunca armazenar senhas na aplicação.
+- Smoke test com rollback validou acesso GRIT ao cadastro, isolamento de alçada financeira e bloqueio de alteração de orçamento pelo técnico.
+- Base atual sem dados inventados: 1 perfil GRIT pendente, 0 contas Auth, 0 vínculos ativos, 1 empresa inicial, 11 setores provisórios. A ativação e os primeiros convites ainda requerem identidade real.
