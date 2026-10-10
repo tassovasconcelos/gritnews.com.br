@@ -69,11 +69,26 @@ export default function ProcurementWorkbench({companyId,batches,products,supplie
     p_notes:offer.notes||null
    }));
  };
- const ranked=[...offers].filter(x=>x.status==="received").sort((a,b)=>cost(a)-cost(b));
+ async function generateReplenishment(){
+  if(!db)return;setBusy(true);setMessage("");
+  try{
+   const {data,error}=await db.rpc("cp_generate_replenishment_draft",{p_company:companyId,p_cycle:null});
+   if(error)throw error;
+   setBatchId(String(data));
+   await onChanged();
+   setMessage("Reposição sugerida com base no consumo dos últimos 90 dias e no estoque disponível. Confira os itens antes de cotar.");
+  }catch(e){setMessage("Falha: "+(e instanceof Error?e.message:String(e)));}finally{setBusy(false);}
+ }
+ const ranked=[...offers].filter(x=>x.status==="received").sort((a,b)=>
+  String(a.product_id).localeCompare(String(b.product_id))||cost(a)-cost(b));
  return <section className="panel procurement">
   <div className="panel-header"><div><h3>Equalizador e compras</h3>
     <small className="muted">Unidades normalizadas, frete, condições e aprovação humana</small></div>
-   <button type="button" className="btn secondary small" onClick={()=>void refresh()}><RefreshCw size={15}/> Atualizar</button></div>
+   <div className="heading-actions">
+    {canBuy&&<button type="button" className="btn primary small" disabled={busy} onClick={()=>void generateReplenishment()}>
+     <Plus size={15}/> Sugerir reposição mensal</button>}
+    <button type="button" className="btn secondary small" onClick={()=>void refresh()}><RefreshCw size={15}/> Atualizar</button>
+   </div></div>
   {message&&<div className={"notice "+(message.startsWith("Falha")||message.startsWith("Não")?"error":"success")}>{message}<button type="button" className="icon-button" onClick={()=>setMessage("")}><X size={15}/></button></div>}
   <label className="wide">Campanha em análise
    <select value={batchId} onChange={e=>setBatchId(e.target.value)}>
@@ -159,7 +174,7 @@ export default function ProcurementWorkbench({companyId,batches,products,supplie
      <td className="strong-cell">{money(cost(q))}</td><td>{q.delivery_days??"—"} dias</td>
      <td>{q.payment_days??"—"} dias</td><td>{q.technical_compliant?<span className="positive">Conforme</span>:<span className="negative">Não conforme</span>}</td>
     </tr>)}</tbody></table></div>:
-    <p className="muted">Sem propostas recebidas. Registre preços fornecidos para iniciar a equalização.</p>}
+    <p className="muted">Sem propostas recebidas. Registre preços fornecidos para iniciar a equalização. Compare valores somente dentro do mesmo SKU.</p>}
    {canBuy&&ranked.length>0&&<div className="proc-award">
     <h3>Propor pedido de compra para aprovação financeira</h3>
     <p>O fornecedor deve cobrir todos os itens da campanha com propostas conformes. A proposta não representa compra aprovada.</p>
