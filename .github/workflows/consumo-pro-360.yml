@@ -1,0 +1,40 @@
+name: CONSUMO PRO 360 - Build & Safety
+on:
+  pull_request:
+    paths:
+      - 'apps/consumo-pro-360/**'
+      - '.github/workflows/consumo-pro-360.yml'
+  push:
+    branches:
+      - 'feature/consumo-pro-*'
+    paths:
+      - 'apps/consumo-pro-360/**'
+      - '.github/workflows/consumo-pro-360.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/consumo-pro-360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Typecheck and build
+        run: npm run build
+      - name: Validate email templates
+        run: node tests/check-email-templates.mjs
+      - name: Static controls
+        run: |
+          test -f supabase/migrations/20261010090000_consumo_pro_core.sql
+          test -f supabase/migrations/20261010094000_fiscal_admin_fix.sql
+      - uses: actions/upload-artifact@v4
+        with:
+          name: consumo-pro-360-dist
+          path: apps/consumo-pro-360/dist/
+          retention-days: 7
