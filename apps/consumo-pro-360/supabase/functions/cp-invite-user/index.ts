@@ -84,7 +84,7 @@ Deno.serve(async(req)=>{
      requested_role:role,status:"pending"}).select("id").single();
     if(error)throw error;id=data.id;
    }
-   const {data:invited,error:inviteErr}=await admin.auth.admin.inviteUserByEmail(email);
+   const {data:invited,error:inviteErr}=await admin.auth.admin.inviteUserByEmail(email,{redirectTo:origin||projectOrigin});
    if(inviteErr||!invited?.user){
     await audit(id!,"invite_failed",{email,reason:"Auth invite unsuccessful"});
     return response({error:"Convite não enviado: "+(inviteErr?.message||"conta já existente")},409,origin);
