@@ -36,14 +36,23 @@ INSERT INTO public.cp_memberships(organization_id,user_id,role) VALUES ('ID-ORGA
 Substitua placeholders somente no painel seguro. Nunca criar senhas padrão ou login público.
 
 ## Pendências explícitas
-- Supabase dedicado ainda NÃO provisionado. Migrações e RLS ainda NÃO aplicadas/testadas.
-- Administração de convites: função escrita, ainda sem deploy real; associação de membros depende de Auth.
+- Supabase dedicado CRIADO na região sa-east-1, com migrations e RLS aplicados; QA transacional efetuado com rollback. Pendente homologação web com usuários reais.
+- Função cp-invite-user publicada com JWT obrigatório; precisa configurar origem autorizada, SMTP Auth e usuário inicial verificado.
 - Envio SMTP, equalizador completo/PO, OCR, validação SEFAZ e IA generativa ainda NÃO conectados.
 - Requer homologação financeira do custo médio multi-depósito e preços por períodos.
-- Publicação HTTPS, ícones PNG de PWA e instalação móvel requerem validação.
+- Configuração Vercel criada, mas frontend e PWA ainda não publicados nem homologados.
 - Enviar ativo original da marca Grupo Prohospital para uso sem redesenho.
 
 ## Testes de aceitação (a executar)
 Inventário 10 resmas -> requisição 2 -> gerente diferente do solicitante aprova -> reserva saldo disponível 8 (físico 10) -> entrega físico 8 e reservado 0 -> painel setor -> auditoria. XML duplicado não deve lançar estoque duas vezes. Usuário sem empresa/setor não deve acessar dados alheios. Avaliar mobile 360px.
 
 **Segurança:** não adicionar segredos ao GitHub, não conectar com bases produtivas existentes, desabilitar self-signup, exigir MFA para administradores, validar Security Advisor e registrar alterações por perfil.
+
+## Atualização da implantação em 10/10/2026
+- Supabase dedicado ativo: consumo-pro-360-grit (xscxwazanootrdtyrumb, São Paulo).
+- Banco com 19 tabelas RLS, Grupo Prohospital, empresa inicial Prohospital e 11 setores com orçamento ainda não definido.
+- Todos os testes com dados fictícios foram revertidos: fluxo estoque 10 -> pedido 2 -> gerente -> financeiro -> reserva -> entrega 8, duplicação de NF XML/PDF, requisição idempotente, RLS por setor.
+- Nenhum usuário real ou credencial padrão foi criado; Auth e convites reais dependem do responsável autorizado.
+- Função Edge cp-invite-user publicada com verificação de JWT obrigatória, ainda sem teste de e-mail corporativo.
+- Vercel preparada em vercel.json. Na Vercel definir Root Directory apps/consumo-pro-360, Build npm run build, Output dist; env VITE_SUPABASE_URL=https://xscxwazanootrdtyrumb.supabase.co e VITE_SUPABASE_PUBLISHABLE_KEY do projeto.
+- Não publicar secret/service_role no navegador. Revisar lints SECURITY DEFINER antes de produção.
