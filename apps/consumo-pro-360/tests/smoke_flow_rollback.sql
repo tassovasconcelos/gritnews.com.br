@@ -86,6 +86,16 @@ begin
  exception when others then
   if sqlerrm='FAIL: NF duplicada permitida' then raise; end if;
  end;
+ -- Even a PDF/manual upload lacking XML key cannot clone an existing NF.
+ begin
+  perform public.cp_import_invoice(v_company,'Fornecedor QA','00000000000000',
+   null,'10','1',now(),'pdf',
+   jsonb_build_array(jsonb_build_object('description','Resma A4 QA','unit','RESMA',
+   'quantity',3,'unit_price',21)));
+  raise exception 'FAIL: XML/PDF duplicate permitted';
+ exception when others then
+  if sqlerrm='FAIL: XML/PDF duplicate permitted' then raise; end if;
+ end;
  -- No membership may use company/sector functions even if knows UUIDs.
  perform pg_catalog.set_config('request.jwt.claim.sub','abc00000-0000-4000-8000-000000000099',true);
  if private.cp_company_access(v_company) or private.cp_department_access(v_department)
