@@ -404,14 +404,15 @@ begin
  join public.cp_products p on p.id=il.product_id where il.invoice_id=i.id order by il.product_id loop
   if l.product_org<>v_org then raise exception 'Produto pertence a outra organização'; end if;
   v_qty:=l.quantity*l.conversion_factor;
-  insert into public.cp_stock(company_id,warehouse_id,product_id,physical)
-    values(i.company_id,p_warehouse,l.product_id,0) on conflict(warehouse_id,product_id) do nothing;
-  select physical into v_physical from public.cp_stock
-    where warehouse_id=p_warehouse and product_id=l.product_id for update;
+  -- Serializar custo médio por empresa/SKU, independentemente do depósito.
   insert into public.cp_product_costs(company_id,product_id,avg_cost) values(i.company_id,l.product_id,0)
    on conflict(company_id,product_id) do nothing;
   select avg_cost into v_price from public.cp_product_costs
     where company_id=i.company_id and product_id=l.product_id for update;
+  select coalesce(sum(physical),0) into v_physical from public.cp_stock
+    where company_id=i.company_id and product_id=l.product_id;
+  insert into public.cp_stock(company_id,warehouse_id,product_id,physical)
+    values(i.company_id,p_warehouse,l.product_id,0) on conflict(warehouse_id,product_id) do nothing;
   update public.cp_product_costs set avg_cost=case when v_physical+v_qty>0
    then round(((v_physical*v_price)+(v_qty*(l.unit_price/l.conversion_factor)))/(v_physical+v_qty),4) else 0 end,
    updated_at=now() where company_id=i.company_id and product_id=l.product_id;
@@ -436,9 +437,14 @@ begin
  if not exists(select 1 from public.cp_warehouses where id=p_warehouse and company_id=p_company)
  or not exists(select 1 from public.cp_products where id=p_product and organization_id=v_org) then raise exception 'Depósito ou SKU inválido'; end if;
  if exists(select 1 from public.cp_stock where warehouse_id=p_warehouse and product_id=p_product) then raise exception 'Saldo inicial já registrado; use processo de ajuste auditado'; end if;
- insert into public.cp_stock(company_id,warehouse_id,product_id,physical) values(p_company,p_warehouse,p_product,p_quantity);
- insert into public.cp_product_costs(company_id,product_id,avg_cost) values(p_company,p_product,p_unit_cost)
+ insert into public.cp_product_costs(company_id,product_id,avg_cost) values(p_company,p_product,0)
  on conflict(company_id,product_id) do nothing;
+ -- Saldo inicial de outro depósito ajusta o custo ponderado consolidado da empresa.
+ perform 1 from public.cp_product_costs where company_id=p_company and product_id=p_product for update;
+ with prior as (select coalesce(sum(physical),0) qty from public.cp_stock where company_id=p_company and product_id=p_product)
+ update public.cp_product_costs c set avg_cost=round((prior.qty*c.avg_cost+p_quantity*p_unit_cost)/(prior.qty+p_quantity),4),updated_at=now()
+ from prior where c.company_id=p_company and c.product_id=p_product;
+ insert into public.cp_stock(company_id,warehouse_id,product_id,physical) values(p_company,p_warehouse,p_product,p_quantity);
  insert into public.cp_stock_events(company_id,warehouse_id,product_id,event_type,quantity_change,unit_cost,actor_id,reason)
  values(p_company,p_warehouse,p_product,'opening',p_quantity,p_unit_cost,auth.uid(),p_reason);
  insert into public.cp_audit_events(organization_id,company_id,actor_id,entity,entity_id,action,detail)
