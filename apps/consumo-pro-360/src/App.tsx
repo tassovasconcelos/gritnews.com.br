@@ -520,7 +520,7 @@ export default function App(){
     {view==="admin"&&<>
      <div className="admin-grid"><section className="panel"><div className="panel-header"><h3>Empresas</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("company")}><Plus size={15}/> Adicionar</button>}</div>
       {companies.map((c)=><div key={c.id} className="simple-row"><Building2 size={17}/><span>{c.name}</span><Pill value={c.active?"Ativa":"Inativa"}/></div>)}</section>
-      <section className="panel"><div className="panel-header"><h3>Setores e alçadas</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("department")}><Plus size={15}/> Adicionar</button>}</div>
+      <section className="panel"><div className="panel-header"><h3>Setores e alçadas</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>{setAdminDepartment({name:"",budget:"",threshold:groupAdmin?"500":"0"});setModal("department");}}><Plus size={15}/> Adicionar</button>}</div>
        {departments.length?departments.map((d)=><div className="simple-row" key={d.id}><span className="grow">{d.name}</span><small>Financeiro acima de {currency(Number(d.finance_threshold))}</small></div>):
         <Empty title="Sem setores" detail="Cadastre setores para permitir solicitações."/>}</section>
       <section className="panel"><div className="panel-header"><h3>Almoxarifados</h3>{isAdmin&&<button className="btn ghost small" onClick={()=>setModal("warehouse")}><Plus size={15}/> Adicionar</button>}</div>
@@ -607,8 +607,8 @@ export default function App(){
   {modal==="department"&&<Modal title="Cadastrar setor e alçada" onClose={()=>setModal("")}><form onSubmit={(e)=>{e.preventDefault();void mutate("Setor cadastrado.",()=>db!.rpc("cp_admin_department",{p_company:companyId,p_name:adminDepartment.name,
    p_budget:adminDepartment.budget===""?null:Number(adminDepartment.budget),p_threshold:Number(adminDepartment.threshold)}));}}>
    <label>Nome do setor<input required value={adminDepartment.name} onChange={(e)=>setAdminDepartment({...adminDepartment,name:e.target.value})}/></label>
-   <div className="form-grid"><label>Limite de consumo mensal (R$)<input type="number" min="0" step=".01" value={adminDepartment.budget} onChange={(e)=>setAdminDepartment({...adminDepartment,budget:e.target.value})}/></label>
-   <label>Escalar para financeiro acima de (R$)<input required type="number" min="0" step=".01" value={adminDepartment.threshold} onChange={(e)=>setAdminDepartment({...adminDepartment,threshold:e.target.value})}/></label></div>
+   <div className="form-grid"><label>Limite de consumo mensal (R$)<input disabled={techAdmin&&!groupAdmin} type="number" min="0" step=".01" value={adminDepartment.budget} onChange={(e)=>setAdminDepartment({...adminDepartment,budget:e.target.value})}/></label>
+   <label>Escalar para financeiro acima de (R$)<input disabled={techAdmin&&!groupAdmin} required type="number" min="0" step=".01" value={adminDepartment.threshold} onChange={(e)=>setAdminDepartment({...adminDepartment,threshold:e.target.value})}/></label></div>
    <div className="form-footer"><button className="btn primary" disabled={busy}>Cadastrar setor</button></div></form></Modal>}
   {modal==="warehouse"&&<Modal title="Novo almoxarifado" onClose={()=>setModal("")}><form onSubmit={(e)=>{e.preventDefault();const name=(e.currentTarget.elements.namedItem("name") as HTMLInputElement).value;
    void mutate("Depósito cadastrado.",()=>db!.from("cp_warehouses").insert({company_id:companyId,name}));}}>
