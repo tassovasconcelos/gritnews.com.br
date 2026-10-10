@@ -86,6 +86,7 @@ export default function App(){
  const [warehousePick,setWarehousePick]=useState("");
  const [reqDepartment,setReqDepartment]=useState("");
  const [reqItems,setReqItems]=useState<{product_id:string;quantity:number}[]>([]);
+ const [requestKey,setRequestKey]=useState(()=>crypto.randomUUID());
  const [reqProduct,setReqProduct]=useState("");
  const [reqQty,setReqQty]=useState(1);
  const [productForm,setProductForm]=useState({sku:"",name:"",category:"Escritório",brand:"",unit:"UN",package_factor:1,min_stock:0});
@@ -216,8 +217,13 @@ export default function App(){
 
  async function submitReq(e:React.FormEvent){
   e.preventDefault();if(!db||!reqItems.length){setNotice("Inclua ao menos um produto.");return;}
-  await mutate("Solicitação registrada e encaminhada ao gestor.",()=>db!.rpc("cp_submit_request",{p_company:companyId,p_department:reqDepartment,p_items:reqItems}));
-  setReqItems([]);
+  setBusy(true);setNotice("");
+  try{
+   const {error}=await db.rpc("cp_submit_request_once",{p_company:companyId,p_department:reqDepartment,p_items:reqItems,p_key:requestKey});
+   if(error)throw error;
+   setNotice("Solicitação registrada e encaminhada ao gestor.");setModal("");setReqItems([]);setRequestKey(crypto.randomUUID());
+   await reload();
+  }catch(e){setNotice("Não concluído: "+errText(e));}finally{setBusy(false);}
  }
  async function runRequestAction(decision:boolean,finance:boolean){
   if(!db)return;
@@ -421,7 +427,7 @@ export default function App(){
        </article>)}</div>:<Empty title="Sem decisões em aberto" detail="As demandas serão apresentadas nesta fila conforme suas permissões."/>}</section>}
     {view==="stock"&&<>
      <section className="panel"><div className="panel-header"><div><h3>Saldo por depósito</h3><small className="muted">Físico, reservado e disponível</small></div>
-       {canWarehouse&&isAdmin&&<button className="btn secondary" onClick={()=>setModal("opening")}><Plus size={16}/> Inventário inicial</button>}</div>
+       {hasRole(["group_admin","controller"])&&<button className="btn secondary" onClick={()=>setModal("opening")}><Plus size={16}/> Inventário inicial</button>}</div>
       {stock.length?<div className="table-scroll"><table><thead><tr><th>Material</th><th>Depósito</th><th>Físico</th><th>Reservado</th><th>Disponível</th><th>Unidade</th></tr></thead><tbody>
        {stock.filter((s)=>normalize(productName(s.product_id)).includes(normalize(search))).map((s)=><tr key={s.warehouse_id+"-"+s.product_id}>
         <td className="strong-cell">{productName(s.product_id)}</td><td>{warehouses.find((w)=>w.id===s.warehouse_id)?.name||"Depósito"}</td>
