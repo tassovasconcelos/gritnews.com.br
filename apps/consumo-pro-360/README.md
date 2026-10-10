@@ -56,3 +56,17 @@ Inventário 10 resmas -> requisição 2 -> gerente diferente do solicitante apro
 - Função Edge cp-invite-user publicada com verificação de JWT obrigatória, ainda sem teste de e-mail corporativo.
 - Vercel preparada em vercel.json. Na Vercel definir Root Directory apps/consumo-pro-360, Build npm run build, Output dist; env VITE_SUPABASE_URL=https://xscxwazanootrdtyrumb.supabase.co e VITE_SUPABASE_PUBLISHABLE_KEY do projeto.
 - Não publicar secret/service_role no navegador. Revisar lints SECURITY DEFINER antes de produção.
+
+## Atualização de engenharia — compras, controladoria e marca
+- Migrações adicionais aplicadas no banco dedicado: propostas normalizadas, pedidos de compra e aprovação financeira segregada, vedação de segundo vencedor da mesma cotação, rascunho mensal por consumo real, auditoria de alteração em produtos/fornecedores/depósitos/cotações e armazenamento de marca oficial.
+- O equalizador mostra marca, embalagem, fator de conversão, preço por unidade, frete, tributos informados, desconto, prazo e aderência técnica. Propostas são inseridas manualmente; **nenhum e-mail é enviado sem integração autorizada**.
+- O botão de reposição mensal calcula, por SKU da empresa, teto positivo de (consumo entregue dos últimos 90 dias / 3 + estoque mínimo - estoque disponível), arredondado para cima. Cria **rascunho**, auditado e idempotente por mês. Não existe agendamento automático do job de e-mail nesta versão.
+- Testes de banco executados com transações revertidas: 10→2→8 resmas, idempotência NF XML/PDF, propostas de fornecedores em diferentes unidades, preço posto, comprador ≠ aprovador, proibição de segundo fornecedor aprovado e cálculo de reposição mensal.
+- Marca oficial: a administração poderá enviar logotipo original PNG/JPG/WebP até 2 MB; upload/versionamento no bucket e troca auditada. A interface não recria a logomarca.
+- PWA: captura por câmera via input image/capture e validação de arquivo antes do envio; ainda requer validação em Android e iOS.
+- Revisão de segurança Supabase: RLS ativa e alertas informativos de funções SECURITY DEFINER intencionalmente autenticadas, cuja autorização é verificada por RPC. Revisar manualmente antes de operação em produção.
+
+## Restrições de liberação
+- Vercel ainda não conectada e frontend não publicado. `vercel.json` está preparado, mas deployment depende de instalar/conectar Vercel e configurar variáveis de ambiente no projeto próprio.
+- Auth sem usuários reais, nenhum superadmin GRIT com senha padrão. O responsável deve cadastrar usuário real verificado no Auth e conceder `group_admin`; uma identidade GRIT só recebe papel `grit_superadmin` explicitamente, separado da aprovação financeira.
+- Integração SMTP, OCR/IA avançada, SEFAZ e ERP Procfit ainda não conectada. Nenhuma dessas funcionalidades pode aparecer como ativa antes de teste real.
