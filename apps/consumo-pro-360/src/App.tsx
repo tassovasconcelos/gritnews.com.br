@@ -7,6 +7,7 @@ import {
   UploadCloud, CircleHelp, Lock, Send
 } from "lucide-react";
 import { db,configured } from "./lib/supabase";
+import ProcurementWorkbench from "./ProcurementWorkbench";
 import { readNFe, type FiscalLine } from "./lib/nfe";
 
 type View = "overview"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"audit"|"admin";
@@ -461,7 +462,8 @@ export default function App(){
      <div className="info-strip"><AlertTriangle size={18}/> SMTP ainda não conectado: não há disparos automáticos. As campanhas criadas permanecem em rascunho.</div>
      {quotes.length?<div className="table-scroll"><table><thead><tr><th>Campanha</th><th>Prazo</th><th>Estado</th><th>Criada em</th></tr></thead><tbody>
       {quotes.map((q)=><tr key={q.id}><td className="strong-cell">{q.title}</td><td>{q.deadline?date(q.deadline):"—"}</td><td><Pill value={q.status}/></td><td>{date(q.created_at)}</td></tr>)}</tbody></table></div>:
-      <Empty title="Nenhuma campanha iniciada" detail="Agregue a demanda de consumo antes da rodada mensal de cotação. Equalização está na próxima fase."/>}</section>}
+      <Empty title="Nenhuma campanha iniciada" detail="Inicie uma campanha para registrar materiais e propostas de fornecedores."/>}</section>}
+    {view==="quotes"&&<ProcurementWorkbench companyId={companyId} batches={quotes} products={products} suppliers={suppliers} canBuy={canBuy} canFinance={canFinance} onChanged={reload}/>}
     {view==="nexo"&&<div className="nexo-page"><section className="nexo-hero"><div className="nexo-icon"><BrainCircuit size={30}/></div><div>
       <div className="eyebrow">GRIT INTELLIGENCE · AGENTE NEXO</div><h2>Controller de Consumo</h2>
       <p>Auditoria preventiva baseada em estoques, orçamentos, entregas e custos reais. Nenhuma decisão financeira é automática.</p></div></section>
