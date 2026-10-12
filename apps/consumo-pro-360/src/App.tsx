@@ -522,7 +522,7 @@ export default function App(){
    <main className="content">
     <div className="page-heading"><div><div className="eyebrow dark">CONTROLE & INTELIGÊNCIA · {selectedCompany?.name}</div>
      <h1>{nav.find((n)=>n.id===view)?.label}</h1>
-     <p>{view==="overview"?"Visibilidade financeira e operacional do consumo corporativo.":view==="nexo"?"Recomendações objetivas com evidências verificáveis.":"Operação conectada a empresas, setores e responsáveis."}</p></div>
+     <p>{view==="overview"?"Visibilidade financeira e operacional do consumo corporativo.":view==="nexo"?"Recomendações objetivas com evidências verificáveis.":view==="lab"?"Novas práticas, hipóteses testáveis e aprendizados auditados.":view==="travel"?"Pesquisa de tarifas, roteiros e custo total das viagens corporativas.":"Operação conectada a empresas, setores e responsáveis."}</p></div>
      <div className="heading-actions">
       {view==="overview"&&<button className="btn secondary" onClick={exportCsv}><BarChart3 size={17}/> Exportar setor</button>}
       {view==="requests"&&<button className="btn primary" onClick={()=>setModal("new-request")}><Plus size={17}/> Nova solicitação</button>}
