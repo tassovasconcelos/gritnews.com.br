@@ -2,7 +2,7 @@
   "name": "CONSUMO PRO 360 | Grupo Prohospital",
   "short_name": "Consumo Pro",
   "description": "Gestão e auditoria de consumo corporativo",
-  "start_url": "/",
+  "start_url": "/solicitar",
   "display": "standalone",
   "theme_color": "#aa2030",
   "background_color": "#f7f8fa",
@@ -12,6 +12,36 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "scope": "/",
+  "id": "/consumo-pro-360",
+  "shortcuts": [
+    {
+      "name": "Solicitar materiais",
+      "short_name": "Solicitar",
+      "description": "Registrar uma nova solicitação",
+      "url": "/solicitar",
+      "icons": [
+        {
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Gestão do consumo",
+      "short_name": "Gestão",
+      "description": "Acompanhar pedidos e estoque",
+      "url": "/gestao",
+      "icons": [
+        {
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ]
 }
