@@ -1,0 +1,140 @@
+name: CONSUMO PRO 360 - Hostinger release
+
+on:
+  push:
+    branches: [feature/consumo-pro-360-mvp]
+    paths:
+      - "apps/consumo-pro-360/**"
+      - ".github/workflows/consumo-pro-hostinger.yml"
+  workflow_dispatch:
+    inputs:
+      deploy_hostinger:
+        description: "Publicar em Hostinger com controle de credenciais e pasta exclusiva"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: consumo-hostinger-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Validate and package PWA
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/consumo-pro-360
+    env:
+      VITE_SUPABASE_URL: https://xscxwazanootrdtyrumb.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.CONSUMO_SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate public client configuration
+        shell: bash
+        env:
+          AUTO_DEPLOY: ${{ vars.CONSUMO_HOSTINGER_AUTO_DEPLOY }}
+          DISPATCH_DEPLOY: ${{ inputs.deploy_hostinger }}
+        run: |
+          set -euo pipefail
+          if [ -z "$VITE_SUPABASE_PUBLISHABLE_KEY" ]; then
+            if [ "$AUTO_DEPLOY" = "true" ] || [ "$DISPATCH_DEPLOY" = "true" ]; then
+              echo "::error::CONSUMO_SUPABASE_PUBLISHABLE_KEY is required for production release."
+              exit 1
+            fi
+            echo "::warning::Build-only with non-operational client key. Artifact may not be deployed."
+            echo "VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_CI_ONLY_NOT_FOR_PRODUCTION" >> "$GITHUB_ENV"
+          fi
+      - name: Install isolated app dependencies
+        run: npm install --no-audit --no-fund
+      - name: Type check and build
+        run: |
+          npm run check
+          npm run build
+      - name: Verify and mark release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/index.html
+          test -s dist/manifest.webmanifest
+          test -s dist/sw.js
+          test -s dist/icon.svg
+          test -s dist/robots.txt
+          test -f dist/.htaccess || cp public/.htaccess dist/.htaccess
+          test -s dist/.htaccess
+          node -e "const fs=require('node:fs'); const m=JSON.parse(fs.readFileSync('dist/manifest.webmanifest','utf8')); if(m.start_url!=='/solicitar'||m.display!=='standalone') process.exit(1)"
+          node -e "const fs=require('node:fs'); fs.writeFileSync('dist/release.json',JSON.stringify({application:'consumo-pro-360',commit:process.env.GITHUB_SHA,releaseTarget:'hostinger'},null,2)+'\n')"
+      - name: Store installable release archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: consumo-pro-hostinger-${{ github.sha }}
+          path: apps/consumo-pro-360/dist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  deploy:
+    name: Publish only in dedicated Hostinger document root
+    needs: build
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.deploy_hostinger == true)
+      || (github.event_name == 'push' && vars.CONSUMO_HOSTINGER_AUTO_DEPLOY == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: consumo-pro-hostinger
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: consumo-pro-hostinger-${{ github.sha }}
+          path: dist/
+      - name: Verify deployment target and upload
+        shell: bash
+        env:
+          SSH_HOST: ${{ secrets.CONSUMO_HOSTINGER_SSH_HOST }}
+          SSH_USER: ${{ secrets.CONSUMO_HOSTINGER_SSH_USER }}
+          SSH_PORT: ${{ secrets.CONSUMO_HOSTINGER_SSH_PORT }}
+          SSH_KEY: ${{ secrets.CONSUMO_HOSTINGER_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.CONSUMO_HOSTINGER_SSH_KNOWN_HOSTS }}
+          REMOTE_PATH: ${{ secrets.CONSUMO_HOSTINGER_DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          for field in SSH_HOST SSH_USER SSH_KEY SSH_KNOWN_HOSTS REMOTE_PATH; do
+            if [ -z "${!field:-}" ]; then
+              echo "::error::Missing credential or path: $field"
+              exit 1
+            fi
+          done
+          SSH_PORT="${SSH_PORT:-22}"
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] || { echo "::error::Invalid SSH port"; exit 1; }
+          [[ "$REMOTE_PATH" =~ ^/[A-Za-z0-9._/-]+$ ]] || { echo "::error::Canonical absolute deployment path required"; exit 1; }
+          case "$REMOTE_PATH" in
+            */public_html/consumo | */consumo.gritnews.com.br/public_html | */public_html/consumo-pro-360) ;;
+            *) echo "::error::Unsafe path: will not touch the GRIT News root"; exit 1 ;;
+          esac
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/consumo_deploy_key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/consumo_deploy_key" "$HOME/.ssh/known_hosts"
+          SSH_OPTS=(-i "$HOME/.ssh/consumo_deploy_key" -p "$SSH_PORT" -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes -o BatchMode=yes)
+          REMOTE="${SSH_USER}@${SSH_HOST}"
+          ssh "${SSH_OPTS[@]}" "$REMOTE" \
+            "test -f '$REMOTE_PATH/.consumo-pro-deploy-root' && grep -Fxq 'CONSUMO_PRO_360_HOSTINGER_ONLY' '$REMOTE_PATH/.consumo-pro-deploy-root'" || {
+              echo "::error::Hostinger root marker absent; refusing upload."
+              exit 1
+            }
+          scp -i "$HOME/.ssh/consumo_deploy_key" -P "$SSH_PORT" \
+            -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes -o BatchMode=yes \
+            -r dist/. "$REMOTE:$REMOTE_PATH/"
+          ssh "${SSH_OPTS[@]}" "$REMOTE" \
+            "test -s '$REMOTE_PATH/index.html' && test -s '$REMOTE_PATH/manifest.webmanifest' && test -s '$REMOTE_PATH/.htaccess' && grep -Fq '$GITHUB_SHA' '$REMOTE_PATH/release.json'"
+          echo "### CONSUMO PRO 360 — Hostinger" >> "$GITHUB_STEP_SUMMARY"
+          echo "Files uploaded to approved isolated app directory. DNS, HTTPS, login and mobile require user QA." >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
