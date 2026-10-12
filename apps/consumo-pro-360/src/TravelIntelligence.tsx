@@ -4,6 +4,7 @@ import {
  FilePlus2,RefreshCw,Save,ShieldAlert,Ticket,TrainFront,TrendingDown,Wallet
 } from "lucide-react";
 import {db} from "./lib/supabase";
+import {Area,AreaChart,CartesianGrid,ResponsiveContainer,Tooltip,XAxis,YAxis} from "recharts";
 import {
  CITY_NAMES,DEFAULT_COSTS,cheapestObserved,evaluateScenario,makeScenarios,
  quoteKey,rankComplete,recommendations,validateDates,type QuoteInput,
@@ -53,6 +54,7 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
  const [history,setHistory]=useState<QuoteRow[]>([]);
  const [liveSearch,setLiveSearch]=useState<LiveSearch|null>(null);
  const [airSearching,setAirSearching]=useState(false);
+ const [trendRoute,setTrendRoute]=useState("FOR-SLZ-air");
  const [studies,setStudies]=useState<SavedRow[]>([]);
  const [quoteDraft,setQuoteDraft]=useState<QuoteDraft>(()=>blankQuote("2026-11-10"));
  const [busy,setBusy]=useState(false);
@@ -62,6 +64,19 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
  const ranked=useMemo(()=>rankComplete(rows),[rows]);
  const messages=useMemo(()=>recommendations(rows,dates),[rows,dates]);
  const dateErrors=useMemo(()=>validateDates(dates),[dates]);
+ const trendOptions=useMemo(()=>[...new Set(history.map(q=>q.from_code+"-"+q.to_code+"-"+q.mode))].sort(),[history]);
+ const trendData=useMemo(()=>{
+  const fareRows=history.filter(q=>q.from_code+"-"+q.to_code+"-"+q.mode===trendRoute);
+  const byDate=new Map<string,{date:string,value:number;records:number}>();
+  for(const q of fareRows){
+   const price=Number(q.fare)+Number(q.baggage)+Number(q.fees);
+   if(!Number.isFinite(price)||price<=0)continue;
+   const current=byDate.get(q.travel_date);
+   if(!current)byDate.set(q.travel_date,{date:q.travel_date,value:price,records:1});
+   else{current.value=Math.min(current.value,price);current.records+=1;}
+  }
+  return [...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));
+ },[history,trendRoute]);
  const lowest=useMemo(()=>cheapestObserved(history.map(q=>({
   from:q.from_code,to:q.to_code,mode:q.mode,date:q.travel_date,price:Number(q.fare),
   observedAt:q.observed_at,source:q.source_url
@@ -325,6 +340,24 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
         <td>{offer&&<button className="btn secondary small" onClick={()=>applyLiveFare(day,offer)}>Usar no roteiro</button>}</td></tr>;
       })}</tbody></table></div>
     </section>}
+   </section>
+   <section className="panel"><div className="panel-header"><h3><TrendingDown size={18}/> Curva de tarifas por data de viagem</h3>
+     <span className="muted">Observações registradas, não previsão nem cotação em tempo real</span></div>
+    <div className="travel-trend-filter"><label>Trecho analisado<select value={trendRoute}
+     onChange={e=>setTrendRoute(e.target.value)}>
+     {[...new Set([trendRoute,...trendOptions])].map(code=><option key={code} value={code}>{code.replace("-air"," · avião").replace("-bus"," · ônibus").replaceAll("-"," → ")}</option>)}
+    </select></label><small>{trendData.length} data(s) com tarifa informada</small></div>
+    {trendData.length<2?<div className="travel-empty"><TrendingDown size={23}/><p>Registre tarifas da mesma rota em pelo menos duas datas distintas para visualizar a tendência comparável.</p></div>:
+    <div className="travel-trend-chart"><ResponsiveContainer width="100%" height={240}>
+     <AreaChart data={trendData} margin={{top:10,right:14,left:4,bottom:4}}>
+      <defs><linearGradient id="gritTravelGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ad2b41" stopOpacity={0.26}/><stop offset="100%" stopColor="#ad2b41" stopOpacity={0.01}/></linearGradient></defs>
+      <CartesianGrid strokeDasharray="3 4" stroke="#eef0f3"/>
+      <XAxis dataKey="date" tick={{fontSize:10}} tickFormatter={(d:string)=>labelDate(d).slice(0,5)}/>
+      <YAxis tick={{fontSize:10}} width={65} tickFormatter={(v:number)=>"R$"+Math.round(v)}/>
+      <Tooltip formatter={(v)=>[brl(Number(v)),"Menor registro"]} labelFormatter={(label)=>labelDate(String(label))}/>
+      <Area dataKey="value" type="monotone" stroke="#ae2940" fill="url(#gritTravelGradient)" strokeWidth={2}/>
+     </AreaChart></ResponsiveContainer></div>}
+    <p className="travel-footnote">Curva de menor preço observado por dia de viagem, incluindo bagagem e taxas informadas; não representa cotação de hoje nem garantia de assento.</p>
    </section>
    <section className="panel"><div className="panel-header"><h3><TrendingDown size={18}/> Menores tarifas registradas</h3><span className="muted">Apenas fontes registradas há até 48h · sem confirmação de assento</span></div>
     {lowest.length===0?<div className="travel-empty"><Ticket size={24}/><b>Nenhuma pesquisa recente com fonte.</b><p>Registre preços de novembro para o agente comparar datas de verdade, sem estimar valores falsos.</p></div>:
