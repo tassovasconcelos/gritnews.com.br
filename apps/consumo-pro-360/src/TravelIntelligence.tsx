@@ -40,7 +40,6 @@ const providerUrl=(from:string,to:string,mode:Mode)=>{
  return "https://www.clickbus.com.br/";
 };
 const canUseUrl=(s:string)=>{try{return new URL(s).protocol==="https:";}catch{return false;}};
-const QUOTE_KEYS=["price","hours","baggage","fees","source","provider","checkedAt"] as const;
 
 export default function TravelIntelligence({companyId,userId}:{companyId:string;userId:string}){
  // Editable example dates, not a company travel commitment or a booking.
@@ -122,7 +121,7 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
    const d=inputs.dates as TravelDates;
    if(typeof d.outbound==="string"&&typeof d.connection==="string"&&typeof d.inbound==="string")setDates(d);
   }
-  if(inputs.costs&&typeof inputs.costs==="object")setCosts({...DEFAULT_COSTS,...inputs.costs as TravelCosts});
+  if(inputs.costs&&typeof inputs.costs==="object")setCosts({...DEFAULT_COSTS,...(inputs.costs as TravelCosts)});
   if(inputs.quotes&&typeof inputs.quotes==="object")setQuotes(inputs.quotes as Record<string,QuoteInput>);
   setTab("scenarios");setNotice("Estudo carregado em modo de simulação; nenhuma compra foi realizada.");
  };
