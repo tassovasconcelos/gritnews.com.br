@@ -29,6 +29,21 @@ jobs:
         run: npm run build
       - name: Validate email templates
         run: node tests/check-email-templates.mjs
+      - name: Test Hostinger API provisioning safety
+        shell: bash
+        run: |
+          python3 -m unittest discover -s tests -p 'test_hostinger_provision.py' -v
+          python3 -m py_compile scripts/provision_hostinger.py
+          bash -n scripts/verify_hostinger.sh
+      - name: Assert portable Hostinger PWA bundle
+        run: |
+          test -s dist/index.html
+          test -s dist/manifest.webmanifest
+          test -s dist/sw.js
+          test -s public/.htaccess
+          test -s dist/robots.txt
+          cp -f public/.htaccess dist/.htaccess
+          test -s dist/.htaccess
       - name: Static controls
         run: |
           test -f supabase/migrations/20261010090000_consumo_pro_core.sql
