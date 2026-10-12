@@ -136,8 +136,9 @@ export default function App(){
     }catch{ /* Convites sem permissão não bloqueiam a sessão. */ }
    }
    if(!live)return;
-   setMembers(linked);setCompanies(c.data||[]);setMembershipReady(true);
-   const chosen=(c.data||[]).find((x)=>x.id===companyId)||(c.data||[])[0];
+   const accessible=(c.data||[]).filter(company=>linked.some(link=>link.active&&link.organization_id===company.organization_id&&(!link.company_id||link.company_id===company.id)));
+   setMembers(linked);setCompanies(accessible);setMembershipReady(true);
+   const chosen=accessible.find((x)=>x.id===companyId)||accessible[0];
    if(chosen){setCompanyId(chosen.id);setOrgId(chosen.organization_id);}
   })();
   return ()=>{live=false;};
@@ -225,7 +226,11 @@ export default function App(){
   return ()=>{window.clearInterval(interval);document.removeEventListener("visibilitychange",refreshIfVisible);};
  },[user?.id,companyId,view,reload]);
  useEffect(()=>{if(warehouses.length&&!warehousePick)setWarehousePick(warehouses[0].id);},[warehouses,warehousePick]);
- useEffect(()=>{if(departments.length&&!reqDepartment)setReqDepartment(departments[0].id);},[departments,reqDepartment]);
+ const permittedDepartments=useMemo(()=>departments.filter(d=>members.some(m=>m.active&&m.organization_id===orgId&&(!m.company_id||m.company_id===companyId)&&(!m.department_id||m.department_id===d.id))),[departments,members,companyId,orgId]);
+ useEffect(()=>{
+  if(permittedDepartments.length&&!permittedDepartments.some(d=>d.id===reqDepartment))
+   setReqDepartment(permittedDepartments[0].id);
+ },[permittedDepartments,reqDepartment]);
 
  async function uploadBrand(f:File|null){
   if(!f||!db||!isAdmin)return;
@@ -264,7 +269,7 @@ export default function App(){
     if(memberResult.error)throw memberResult.error;
     if(companyResult.error)throw companyResult.error;
    }
-   const linked=memberResult.data||[],available=companyResult.data||[];
+   const linked=memberResult.data||[],available=(companyResult.data||[]).filter(company=>linked.some(link=>link.active&&link.organization_id===company.organization_id&&(!link.company_id||link.company_id===company.id)));
    if(!linked.length)throw new Error("Conta autenticada, mas nenhum perfil foi liberado. Confira o e-mail da sessão.");
    if(!available.length)throw new Error("Perfil ativo localizado, mas nenhuma empresa está disponível para acesso.");
    setMembers(linked);setCompanies(available);
@@ -326,6 +331,7 @@ export default function App(){
 
  async function submitReq(e:React.FormEvent){
   e.preventDefault();if(!db||!reqItems.length){setNotice("Inclua ao menos um produto.");return;}
+  if(!permittedDepartments.some(d=>d.id===reqDepartment)){setNotice("Selecione um setor autorizado para seu usuário.");return;}
   setBusy(true);setNotice("");
   try{
    const {error}=await db.rpc("cp_submit_request_once",{p_company:companyId,p_department:reqDepartment,p_items:reqItems,p_key:requestKey});
@@ -643,7 +649,7 @@ export default function App(){
   </Modal>}
   {modal==="new-request"&&<Modal title="Nova solicitação de materiais" onClose={()=>setModal("")}><form onSubmit={submitReq}>
    <div className="form-grid"><label className="wide">Setor solicitante<select required value={reqDepartment} onChange={(e)=>setReqDepartment(e.target.value)}>
-    {departments.map((d)=><option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
+    {permittedDepartments.map((d)=><option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
     <label>Produto do catálogo<select value={reqProduct} onChange={(e)=>setReqProduct(e.target.value)}><option value="">Selecione…</option>
       {products.filter((p)=>p.active).map((p)=><option key={p.id} value={p.id}>{p.sku} · {p.name} ({number(stockAvailable(p.id))} disp.)</option>)}</select></label>
     <label>Quantidade<input type="number" min=".001" step=".001" value={reqQty} onChange={(e)=>setReqQty(Number(e.target.value))}/></label></div>
