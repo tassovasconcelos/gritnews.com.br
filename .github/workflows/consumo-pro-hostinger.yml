@@ -145,7 +145,7 @@ jobs:
           [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] || { echo "::error::Invalid SSH port"; exit 1; }
           [[ "$REMOTE_PATH" =~ ^/[A-Za-z0-9._/-]+$ ]] || { echo "::error::Canonical absolute deployment path required"; exit 1; }
           case "$REMOTE_PATH" in
-            */public_html/consumo | */consumo.gritnews.com.br/public_html | */public_html/consumo-pro-360) ;;
+            */domains/gritnews.com.br/public_html/consumo | */domains/gritnews.com.br/consumo | */domains/consumo.gritnews.com.br/public_html) ;;
             *) echo "::error::Unsafe path: will not touch the GRIT News root"; exit 1 ;;
           esac
           mkdir -p "$HOME/.ssh"
