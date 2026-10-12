@@ -65,7 +65,11 @@ export const normalizedPrice=(v:unknown):number|null=>{
  const value=Number(v);
  return Number.isFinite(value)&&value>0?value:null;
 };
-export const isValidDate=(value:string)=>/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(value+"T12:00:00"));
+export const isValidDate=(value:string)=>{
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+ const d=new Date(value+"T12:00:00Z");
+ return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value;
+};
 export const validateDates=(dates:TravelDates):string[]=>{
  const reasons:string[]=[];
  if(!isValidDate(dates.outbound)||!isValidDate(dates.connection)||!isValidDate(dates.inbound))
@@ -102,8 +106,10 @@ export function evaluateScenario(
   if(age!==null&&age>48)warnings.push("Trecho "+(i+1)+": preço informado há mais de 48 horas; reconfirmar.");
   if(leg.mode==="bus"&&Number(q.hours)>10)
    warnings.push("Trecho "+(i+1)+": mais de 10 horas de ônibus; avaliar fadiga e descanso.");
-  if(leg.mode==="air"&&!q.source.trim())
-   warnings.push("Trecho "+(i+1)+": tarifa sem fonte registrada; confirme bagagem e regras.");
+  if(!q.source.trim())warnings.push("Trecho "+(i+1)+": tarifa sem fonte auditável; valor apenas informativo.");
+  if(!q.checkedAt)warnings.push("Trecho "+(i+1)+": data/hora da cotação não registrada.");
+  if(q.baggage===null||q.fees===null)warnings.push("Trecho "+(i+1)+": bagagem ou taxas não verificadas.");
+  if(leg.mode==="air"&&Number(q.hours)>6)warnings.push("Trecho "+(i+1)+": voo ou conexões demorados; conferir escala.");
  }
  if(scenario.orderingWarning)warnings.push(scenario.orderingWarning);
  if(badCost)warnings.push("Despesas extras inválidas: utilize valores positivos ou zero.");
@@ -145,7 +151,7 @@ export function cheapestObserved(fares:HistoricalFare[],now=new Date()):Historic
 }
 export function recommendations(rows:CalculatedScenario[],dates:TravelDates):string[]{
  const messages=validateDates(dates);
- const ranked=rankComplete(rows);
+ const ranked=messages.length?[]:rankComplete(rows);
  if(!ranked.length){
   messages.push("O agente AERO não escolhe a tarifa mais barata sem preços e durações informados para todos os trechos.");
   messages.push("Colete cotações com data/hora de consulta e bagagem incluída; compare o custo porta a porta.");
