@@ -82,6 +82,7 @@ jobs:
         shell: bash
         run: |
           python3 -m py_compile scripts/provision_hostinger.py
+          python3 -m unittest discover -s tests -p 'test_hostinger_provision.py' -v
           bash -n scripts/verify_hostinger.sh
       - name: Type check and build
         run: |
