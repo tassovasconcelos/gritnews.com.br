@@ -70,11 +70,19 @@ jobs:
               echo "::error::CONSUMO_SUPABASE_PUBLISHABLE_KEY is required for production release."
               exit 1
             fi
-            echo "::warning::Build-only with non-operational client key. Artifact may not be deployed."
+            echo "::warning::Validation-only with non-operational client key. No release artifact will be published."
             echo "VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_CI_ONLY_NOT_FOR_PRODUCTION" >> "$GITHUB_ENV"
+            echo "RELEASE_READY=false" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_READY=true" >> "$GITHUB_ENV"
           fi
       - name: Install isolated app dependencies
         run: npm install --no-audit --no-fund
+      - name: Check provision script and release smoke test syntax
+        shell: bash
+        run: |
+          python3 -m py_compile scripts/provision_hostinger.py
+          bash -n scripts/verify_hostinger.sh
       - name: Type check and build
         run: |
           npm run check
@@ -93,6 +101,7 @@ jobs:
           node -e "const fs=require('node:fs'); const m=JSON.parse(fs.readFileSync('dist/manifest.webmanifest','utf8')); if(m.start_url!=='/solicitar'||m.display!=='standalone') process.exit(1)"
           node -e "const fs=require('node:fs'); fs.writeFileSync('dist/release.json',JSON.stringify({application:'consumo-pro-360',commit:process.env.GITHUB_SHA,releaseTarget:'hostinger'},null,2)+'\n')"
       - name: Store installable release archive
+        if: env.RELEASE_READY == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: consumo-pro-hostinger-${{ github.sha }}
