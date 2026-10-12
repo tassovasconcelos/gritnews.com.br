@@ -24,6 +24,23 @@
 - O envio via SSH/SCP só é executado após habilitação deliberada e confirmação do diretório exclusivo. Nenhum arquivo de produção é apagado automaticamente.
 - O arquivo `release.json` registra o commit compilado para conferência da versão que chegou à hospedagem.
 
+## Alternativa: criar o subdomínio pela API oficial (automatizado e controlado)
+
+A Hostinger disponibiliza API oficial para consultar e criar subdomínios em sites de hospedagem compatíveis. O arquivo `scripts/provision_hostinger.py` foi criado com **modo somente consulta por padrão** e opção `--apply` para criar exclusivamente `consumo.gritnews.com.br` em pasta isolada. Antes de alterar qualquer recurso, ele consulta a lista de subdomínios, evita recriação e recusa um diretório raiz compartilhado. Não modifica DNS, portal GRIT News ou banco Supabase.
+
+Configure **somente em GitHub Secrets**, nunca no código, as credenciais:
+
+- `CONSUMO_HOSTINGER_API_TOKEN` — token de API de uma identidade Hostinger autorizada;
+- `CONSUMO_HOSTINGER_HOSTING_USERNAME` — nome do usuário de hospedagem do site, por exemplo formato `u123456789` (não é e-mail).
+
+O workflow de publicação inclui o job `provision`. **Ele não executa por padrão.** Para habilitar criação mediante push ao ramo do aplicativo, use temporariamente a variável GitHub Actions `CONSUMO_HOSTINGER_PROVISION=true` depois de configurar os dois Secrets e a proteção do Environment `consumo-pro-hostinger`. Desative essa variável assim que o subdomínio estiver criado e verificado.
+
+A API de criação de subdomínio é específica de hospedagens que permitem adicionar subdomínios ao site pai. Caso o `gritnews.com.br` esteja instalado em um Website Builder que não admite esse endpoint, crie `consumo.gritnews.com.br` **como um site independente** pelo hPanel (método da seção a seguir); não force a chamada API contra recursos incompatíveis.
+
+Referência oficial: https://developers.hostinger.com/api/hosting/v1/accounts/{username}/websites/{domain}/subdomains
+
+**Importante:** um resultado de build `READY` na Vercel ou o commit criado no GitHub não comprovam criação/publicação na Hostinger. A migração está pendente até a verificação do `release.json` no subdomínio com DNS da Hostinger.
+
 ## 1. Preparar o subdomínio na Hostinger
 
 No **hPanel da Hostinger**, entre na hospedagem vinculada ao gritnews.com.br e crie o subdomínio **consumo** com **document root exclusivo**, sem apontá-lo à raiz do site GRIT News.
