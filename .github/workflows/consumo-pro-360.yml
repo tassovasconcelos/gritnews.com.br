@@ -18,6 +18,9 @@ jobs:
     defaults:
       run:
         working-directory: apps/consumo-pro-360
+    env:
+      VITE_SUPABASE_URL: https://xscxwazanootrdtyrumb.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.CONSUMO_SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,7 +54,17 @@ jobs:
         run: |
           test -f supabase/migrations/20261010090000_consumo_pro_core.sql
           test -f supabase/migrations/20261010094000_fiscal_admin_fix.sql
+      - name: Declare release readiness
+        shell: bash
+        run: |
+          if [ -z "${VITE_SUPABASE_PUBLISHABLE_KEY:-}" ]; then
+            echo "::warning::CI compile passed; no Supabase publishable key configured; do NOT use this build as live app."
+            echo "RELEASE_READY=false" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_READY=true" >> "$GITHUB_ENV"
+          fi
       - uses: actions/upload-artifact@v4
+        if: env.RELEASE_READY == 'true'
         with:
           name: consumo-pro-360-dist
           path: apps/consumo-pro-360/dist/
