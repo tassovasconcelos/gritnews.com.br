@@ -19,6 +19,9 @@ type QuoteRow={
  source_url:string;observed_at:string;notes:string;
 };
 type QuoteDraft={from:TripCity;to:TripCity;mode:Mode;date:string;provider:string;fare:string;hours:string;url:string;baggage:string;fees:string;notes:string};
+type LiveOffer={quote_id:string;price:number;currency:string;duration_hours:number|null;carrier_codes:string[];segments_count:number};
+type LiveDate={from:TripCity;to:TripCity;date:string;status:string;offers:LiveOffer[]};
+type LiveSearch={provider:string;checked_at:string;results:LiveDate[];warning:string};
 const brl=(value:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(value);
 const labelDate=(value:string)=>value?new Date(value+"T12:00:00").toLocaleDateString("pt-BR"):"—";
 const formatTime=(raw:string)=>raw?new Date(raw).toLocaleString("pt-BR"):"—";
@@ -48,6 +51,8 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
  const [quotes,setQuotes]=useState<Record<string,QuoteInput>>({});
  const [tab,setTab]=useState<"scenarios"|"radar"|"saved">("scenarios");
  const [history,setHistory]=useState<QuoteRow[]>([]);
+ const [liveSearch,setLiveSearch]=useState<LiveSearch|null>(null);
+ const [airSearching,setAirSearching]=useState(false);
  const [studies,setStudies]=useState<SavedRow[]>([]);
  const [quoteDraft,setQuoteDraft]=useState<QuoteDraft>(()=>blankQuote("2026-11-10"));
  const [busy,setBusy]=useState(false);
@@ -124,6 +129,51 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
   if(inputs.costs&&typeof inputs.costs==="object")setCosts({...DEFAULT_COSTS,...(inputs.costs as TravelCosts)});
   if(inputs.quotes&&typeof inputs.quotes==="object")setQuotes(inputs.quotes as Record<string,QuoteInput>);
   setTab("scenarios");setNotice("Estudo carregado em modo de simulação; nenhuma compra foi realizada.");
+ };
+ const searchFlights=async()=>{
+  if(!db||!companyId)return;
+  if(quoteDraft.mode!=="air"){setNotice("A consulta aérea exige modalidade avião.");return;}
+  if(quoteDraft.from===quoteDraft.to||!quoteDraft.date){setNotice("Selecione uma rota e data válida.");return;}
+  setAirSearching(true);setLiveSearch(null);setNotice("");
+  const start=new Date(quoteDraft.date+"T12:00:00Z");
+  const referenceMonth=quoteDraft.date.slice(0,7);
+  const candidates=[-2,-1,0,1,2].map(delta=>{
+   const candidate=new Date(start.getTime()+delta*86400000);
+   return candidate.toISOString().slice(0,10);
+  }).filter(x=>x.slice(0,7)===referenceMonth&&x>=new Date().toISOString().slice(0,10));
+  try{
+   if(!candidates.length)throw Error("Selecione um dia futuro para pesquisar.");
+   const {data,error}=await db.functions.invoke("cp-travel-flight-search",{body:{
+    company_id:companyId,adults:Math.max(1,Math.min(4,Math.floor(costs.travelers))),
+    legs:candidates.map(date=>({from:quoteDraft.from,to:quoteDraft.to,date}))
+   }});
+   if(error)throw Error("API aérea ainda não habilitada ou indisponível: "+error.message);
+   if(!data?.results)throw Error(String(data?.error||"Provedor ainda não retornou cotações."));
+   setLiveSearch(data as LiveSearch);
+   setNotice("AERO consultou o fornecedor. Os resultados são indicativos e exigem reconfirmação antes da compra.");
+  }catch(e){setNotice(e instanceof Error?e.message:String(e));}
+  finally{setAirSearching(false);}
+ };
+ const applyLiveFare=(day:LiveDate,offer:LiveOffer)=>{
+  const target=makeScenarios(dates);
+  let matches=0;
+  setQuotes(prev=>{
+   const next={...prev};
+   for(const scenario of target){
+    scenario.legs.forEach((leg,i)=>{
+     if(leg.mode!=="air"||leg.from!==day.from||leg.to!==day.to||leg.date!==day.date)return;
+     next[quoteKey(scenario.id,i)]={
+      price:offer.price,hours:offer.duration_hours,baggage:null,fees:null,
+      source:"API Amadeus Production (consulta autenticada; sem URL de bilhete)",
+      provider:offer.carrier_codes.join(",")||"Companhia a confirmar",
+      checkedAt:liveSearch?.checked_at||new Date().toISOString()
+     };matches++;
+    });
+   }
+   return next;
+  });
+  setTab("scenarios");
+  setNotice(matches?("Oferta indicativa aplicada a "+matches+" cenário(s). Confirme bagagem e impostos diretamente antes de aprovar."):"Data consultada difere do roteiro. Ajuste a data do cenário antes de aplicar.");
  };
  const saveFare=async()=>{
   if(!db||!companyId||!userId)return;
@@ -258,6 +308,23 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
     <div className="travel-actions"><a className="btn secondary" target="_blank" rel="noreferrer" href={providerUrl(quoteDraft.from,quoteDraft.to,quoteDraft.mode)}>
      Consultar fornecedor <ExternalLink size={15}/></a>
      <button className="btn primary" disabled={busy} onClick={()=>void saveFare()}><FilePlus2 size={15}/> Registrar cotação</button></div>
+    {quoteDraft.mode==="air"&&<div className="travel-api-block">
+     <div><b><BrainCircuit size={17}/> AERO · Pesquisa aérea por cinco datas</b>
+      <p>Pesquisa até dois dias antes/depois da data escolhida, dentro do mês. Usa somente a API Amadeus de produção, quando contratada e configurada.</p></div>
+     <button className="btn secondary" disabled={airSearching} onClick={()=>void searchFlights()}><TrendingDown size={15}/>{airSearching?"Pesquisando…":"Pesquisar menor preço aéreo"}</button>
+    </div>}
+    {liveSearch&&<section className="travel-live">
+     <h4>{liveSearch.provider} · consultado em {formatTime(liveSearch.checked_at)}</h4>
+     <p>{liveSearch.warning}</p>
+     <div className="table-scroll"><table><thead><tr><th>Dia</th><th>Rota</th><th>Menor preço consultado</th><th>Voo</th><th>Aplicar</th></tr></thead><tbody>
+      {liveSearch.results.map(day=>{
+       const offer=day.offers?.[0];
+       return <tr key={day.from+"-"+day.to+"-"+day.date}><td>{labelDate(day.date)}</td><td>{day.from} → {day.to}</td>
+        <td>{offer?brl(Number(offer.price)):"Sem tarifa no provedor"}</td>
+        <td>{offer?(offer.carrier_codes.join(", ")||"A confirmar")+" · "+(offer.duration_hours?.toFixed(1)||"—")+"h · "+offer.segments_count+" segmento(s)":"—"}</td>
+        <td>{offer&&<button className="btn secondary small" onClick={()=>applyLiveFare(day,offer)}>Usar no roteiro</button>}</td></tr>;
+      })}</tbody></table></div>
+    </section>}
    </section>
    <section className="panel"><div className="panel-header"><h3><TrendingDown size={18}/> Menores tarifas registradas</h3><span className="muted">Apenas fontes registradas há até 48h · sem confirmação de assento</span></div>
     {lowest.length===0?<div className="travel-empty"><Ticket size={24}/><b>Nenhuma pesquisa recente com fonte.</b><p>Registre preços de novembro para o agente comparar datas de verdade, sem estimar valores falsos.</p></div>:
