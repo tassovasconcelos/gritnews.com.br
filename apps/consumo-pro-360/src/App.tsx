@@ -4,14 +4,16 @@ import {
   LayoutDashboard, ClipboardList, CheckCircle2, Package, Boxes, FileText, Truck,
   Scale, ShieldCheck, Settings, Menu, LogOut, Plus, RefreshCw, AlertTriangle,
   Search, Building2, BarChart3, BrainCircuit, X, ChevronRight,
-  UploadCloud, CircleHelp, Lock, Send
+  UploadCloud, CircleHelp, Lock, Send, FlaskConical, PlaneTakeoff
 } from "lucide-react";
 import { db,configured } from "./lib/supabase";
 import ProcurementWorkbench from "./ProcurementWorkbench";
+import TravelIntelligence from "./TravelIntelligence";
+import MarketLab from "./MarketLab";
 import AdminRegistry from "./AdminRegistry";
 import { readNFe, type FiscalLine } from "./lib/nfe";
 
-type View = "overview"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"audit"|"admin";
+type View = "overview"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"lab"|"travel"|"audit"|"admin";
 type Rec = Record<string,any>;
 const nav: {id:View;label:string;icon:any}[] = [
  {id:"overview",label:"Visão geral",icon:LayoutDashboard},
@@ -23,6 +25,8 @@ const nav: {id:View;label:string;icon:any}[] = [
  {id:"suppliers",label:"Fornecedores",icon:Truck},
  {id:"quotes",label:"Cotações",icon:Scale},
  {id:"nexo",label:"NEXO · Controller",icon:BrainCircuit},
+ {id:"lab",label:"Laboratório IA",icon:FlaskConical},
+ {id:"travel",label:"Viagens inteligentes",icon:PlaneTakeoff},
  {id:"audit",label:"Auditoria",icon:ShieldCheck},
  {id:"admin",label:"Administração",icon:Settings}
 ];
@@ -65,7 +69,12 @@ export default function App(){
  const [companyId,setCompanyId]=useState("");
  const [orgId,setOrgId]=useState("");
  const [brandLogo,setBrandLogo]=useState("");
- const [view,setView]=useState<View>(()=>window.location.pathname.startsWith("/solicitar")?"requests":"overview");
+ const [view,setView]=useState<View>(()=>{
+  const parts=window.location.pathname.split("/").filter(Boolean);
+  if(parts[0]==="solicitar")return "requests";
+  if(parts[0]==="gestao"&&nav.some(n=>n.id===parts[1]))return parts[1] as View;
+  return "overview";
+ });
  const [menuOpen,setMenuOpen]=useState(false);
  const [busy,setBusy]=useState(false);
  const [loading,setLoading]=useState(false);
@@ -165,6 +174,7 @@ export default function App(){
   if(item.id==="invoices")return hasRole(["warehouse","buyer","finance","group_admin","grit_superadmin"]);
   if(item.id==="suppliers"||item.id==="quotes")return hasRole(["buyer","group_admin"]);
   if(item.id==="nexo"||item.id==="audit")return hasRole(["controller","finance","director","group_admin","grit_superadmin"]);
+  if(item.id==="lab"||item.id==="travel")return hasRole(["group_admin","director","controller","buyer","finance","manager","grit_superadmin"]);
   if(item.id==="admin")return hasRole(["group_admin","grit_superadmin"]);
   return false;
  });
@@ -626,6 +636,9 @@ export default function App(){
       {[...audit].sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,100).map((e)=><tr key={e.id}>
        <td>{date(e.created_at)}</td><td>{e.entity}</td><td>{e.action}</td><td className="mono">{e.actor_id?String(e.actor_id).slice(0,8)+"…":"Sistema"}</td><td className="mono tiny">{JSON.stringify(e.detail).slice(0,95)}</td></tr>)}</tbody></table></div>:
       <Empty title="Nenhum evento auditável" detail="Logs transacionais aparecem quando houver requisições, autorizações ou movimentações."/>}</section>}
+    {view==="lab"&&<MarketLab companyId={companyId} userId={user.id} onTravel={()=>navigate("travel")}
+      inventoryCount={products.length} pendingRequests={pending.length}/>}
+    {view==="travel"&&<TravelIntelligence companyId={companyId} userId={user.id}/>}
     {view==="admin"&&<AdminRegistry orgId={orgId} companyId={companyId} companies={companies}
      departments={departments} products={products} suppliers={suppliers} canAdmin={isAdmin}
      groupAdmin={groupAdmin} techAdmin={techAdmin} brandLogo={brandLogo}
@@ -634,8 +647,8 @@ export default function App(){
    <footer className="app-footer">CONSUMO PRO 360 · Grupo Prohospital <span>Desenvolvimento & tecnologia: <strong>GRIT Soluções e Negócios</strong></span></footer>
   </div>
   <nav className="mobile-bottom" aria-label="Navegação móvel">
-   {[nav[0],nav[1],nav[2],nav[3],nav[10]].filter(n=>visibleNav.some(v=>v.id===n.id)).map((n)=>{const I=n.icon;return <button key={n.id} className={view===n.id?"active":""} onClick={()=>navigate(n.id)}>
-    <I size={20}/><small>{n.id==="overview"?"Início":n.id==="requests"?"Solicitar":n.id==="approvals"?"Pedidos":n.id==="stock"?"Estoque":"Mais"}</small></button>;})}
+   {(["overview","requests","approvals","travel","admin"] as View[]).map(id=>nav.find(n=>n.id===id)!).filter(n=>visibleNav.some(v=>v.id===n.id)).map((n)=>{const I=n.icon;return <button key={n.id} className={view===n.id?"active":""} onClick={()=>navigate(n.id)}>
+    <I size={20}/><small>{n.id==="overview"?"Início":n.id==="requests"?"Solicitar":n.id==="approvals"?"Pedidos":n.id==="travel"?"Viagens":"Mais"}</small></button>;})}
   </nav>
 
   {modal==="account"&&<Modal title="Minha conta e segurança" onClose={()=>setModal("")}>
