@@ -84,6 +84,15 @@ Se já existir CNAME/A de `consumo` apontando à Vercel, substitua **apenas esse
 
 O subdomínio só deve ser considerado migrado após o DNS apontar para a Hostinger e o `release.json` corresponder ao commit esperado.
 
+Com HTTPS e DNS já operacionais, rode a verificação automatizada a partir da pasta `apps/consumo-pro-360`:
+
+```bash
+bash scripts/verify_hostinger.sh https://consumo.gritnews.com.br <COMMIT_PUBLICADO>
+```
+
+O teste verifica `/gestao`, `/solicitar`, PWA, assinatura Hostinger em `release.json` e cabeçalhos de segurança. Ele **não substitui** a homologação do login com usuários autorizados e de operações reais no celular.
+
+
 ## 5. Ajustar Supabase Auth sem perder a contingência
 
 No painel Supabase do projeto dedicado:
