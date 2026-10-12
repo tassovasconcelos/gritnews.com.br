@@ -215,6 +215,15 @@ export default function App(){
   setLoading(false);
  },[companyId,orgId]);
  useEffect(()=>{void reload();},[reload]);
+ // Keep open management and request screens synchronized while they are visible.
+ // This is foreground monitoring, not background push notification delivery.
+ useEffect(()=>{
+  if(!db||!user||!companyId||!["overview","requests","approvals","stock"].includes(view))return;
+  const refreshIfVisible=()=>{if(document.visibilityState==="visible")void reload();};
+  const interval=window.setInterval(refreshIfVisible,45000);
+  document.addEventListener("visibilitychange",refreshIfVisible);
+  return ()=>{window.clearInterval(interval);document.removeEventListener("visibilitychange",refreshIfVisible);};
+ },[user?.id,companyId,view,reload]);
  useEffect(()=>{if(warehouses.length&&!warehousePick)setWarehousePick(warehouses[0].id);},[warehouses,warehousePick]);
  useEffect(()=>{if(departments.length&&!reqDepartment)setReqDepartment(departments[0].id);},[departments,reqDepartment]);
 
