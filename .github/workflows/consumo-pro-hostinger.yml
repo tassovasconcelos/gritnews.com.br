@@ -13,6 +13,11 @@ on:
         required: true
         default: false
         type: boolean
+      provision_hostinger:
+        description: "Criar somente o subdominio isolado na Hostinger por API"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -22,6 +27,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  provision:
+    name: Provision isolated subdomain (explicit opt-in only)
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.provision_hostinger == true)
+      || (github.event_name == 'push' && vars.CONSUMO_HOSTINGER_PROVISION == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: consumo-pro-hostinger
+    env:
+      HOSTINGER_API_TOKEN: ${{ secrets.CONSUMO_HOSTINGER_API_TOKEN }}
+      HOSTINGER_HOSTING_USERNAME: ${{ secrets.CONSUMO_HOSTINGER_HOSTING_USERNAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and provision only the isolated subdomain
+        run: python3 apps/consumo-pro-360/scripts/provision_hostinger.py --apply
+
   build:
     name: Validate and package PWA
     runs-on: ubuntu-latest
