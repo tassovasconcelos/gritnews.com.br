@@ -39,6 +39,9 @@ jobs:
         run: |
           test -s dist/index.html
           test -s dist/manifest.webmanifest
+          test -s dist/icon-192.png
+          test -s dist/icon-512.png
+          test -s dist/icon-maskable-512.png
           test -s dist/sw.js
           test -s public/.htaccess
           test -s dist/robots.txt
