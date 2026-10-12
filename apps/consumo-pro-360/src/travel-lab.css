@@ -112,3 +112,8 @@
 .travel-live h4{font-size:13px;color:#345166;margin-bottom:8px}
 .travel-live>p{font-size:11px;color:#738594;line-height:1.6;margin-bottom:14px}
 @media(max-width:700px){.travel-api-block{flex-direction:column;align-items:stretch}.travel-api-block button{width:100%}}
+
+.travel-trend-filter{display:flex;align-items:flex-end;gap:16px;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+.travel-trend-filter>label{width:260px;max-width:100%}
+.travel-trend-filter>small{color:#8c97a1}
+.travel-trend-chart{height:246px;width:100%;min-width:0}
