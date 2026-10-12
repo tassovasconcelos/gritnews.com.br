@@ -3,6 +3,8 @@
 
 Aplicativo corporativo web responsivo e PWA, desenvolvido em código próprio e independente da Hostinger.
 
+> **Implantação GRIT — atualização de 12/10/2026.** Este README contém um histórico de fases anteriores (algumas menções a “ainda não publicado” e a “nenhum usuário” estão desatualizadas). A versão Vercel foi compilada e publicada como contingência; o projeto Supabase possui 1 conta Auth verificada e vínculo `grit_superadmin` ativo. A migração para a Hostinger está **preparada no código, mas NÃO foi publicada na Hostinger e o DNS não foi redirecionado**. Consulte [HOSTINGER_MIGRATION.md](./HOSTINGER_MIGRATION.md) e o workflow [consumo-pro-hostinger.yml](../../.github/workflows/consumo-pro-hostinger.yml). Não publicar no `public_html` raiz do portal principal.
+
 ## Padrão GRIT
 - Frontend React + TypeScript + Vite; banco dedicado Supabase PostgreSQL + Auth + Storage privado.
 - RLS por organização/empresa/setor; RPCs transacionais para movimentações críticas.
