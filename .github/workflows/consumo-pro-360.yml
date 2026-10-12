@@ -28,6 +28,8 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Travel intelligence regression tests
+        run: npm run test:travel
       - name: Typecheck and build
         run: npm run build
       - name: Validate email templates
