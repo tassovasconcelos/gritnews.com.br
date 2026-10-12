@@ -159,7 +159,8 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
   try{
    if(!candidates.length)throw Error("Selecione um dia futuro para pesquisar.");
    const {data,error}=await db.functions.invoke("cp-travel-flight-search",{body:{
-    company_id:companyId,adults:Math.max(1,Math.min(4,Math.floor(costs.travelers))),
+    // Request a per-person fare: the scenario engine multiplies by the traveler count.
+    company_id:companyId,adults:1,
     legs:candidates.map(date=>({from:quoteDraft.from,to:quoteDraft.to,date}))
    }});
    if(error)throw Error("API aérea ainda não habilitada ou indisponível: "+error.message);
@@ -325,7 +326,7 @@ export default function TravelIntelligence({companyId,userId}:{companyId:string;
      <button className="btn primary" disabled={busy} onClick={()=>void saveFare()}><FilePlus2 size={15}/> Registrar cotação</button></div>
     {quoteDraft.mode==="air"&&<div className="travel-api-block">
      <div><b><BrainCircuit size={17}/> AERO · Pesquisa aérea por cinco datas</b>
-      <p>Pesquisa até dois dias antes/depois da data escolhida, dentro do mês. Usa somente a API Amadeus de produção, quando contratada e configurada.</p></div>
+      <p>Pesquisa até dois dias antes/depois da data escolhida, dentro do mês, por passageiro. Multiplicação pelo grupo ocorre no cenário; assentos para todos exigem conferência. API Amadeus de produção, se conectada.</p></div>
      <button className="btn secondary" disabled={airSearching} onClick={()=>void searchFlights()}><TrendingDown size={15}/>{airSearching?"Pesquisando…":"Pesquisar menor preço aéreo"}</button>
     </div>}
     {liveSearch&&<section className="travel-live">
