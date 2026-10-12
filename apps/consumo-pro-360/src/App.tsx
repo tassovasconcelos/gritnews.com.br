@@ -65,7 +65,7 @@ export default function App(){
  const [companyId,setCompanyId]=useState("");
  const [orgId,setOrgId]=useState("");
  const [brandLogo,setBrandLogo]=useState("");
- const [view,setView]=useState<View>("overview");
+ const [view,setView]=useState<View>(()=>window.location.pathname.startsWith("/solicitar")?"requests":"overview");
  const [menuOpen,setMenuOpen]=useState(false);
  const [busy,setBusy]=useState(false);
  const [loading,setLoading]=useState(false);
@@ -157,6 +157,31 @@ export default function App(){
  },[orgId]);
  const hasRole=(roles:string[])=>members.some((m)=>m.active&&m.organization_id===orgId&&roles.includes(m.role)&&(!m.company_id||m.company_id===companyId));
  const isAdmin=hasRole(["group_admin","grit_superadmin"]);
+ const visibleNav=nav.filter(item=>{
+  if(item.id==="overview"||item.id==="requests"||item.id==="products")return true;
+  if(item.id==="approvals")return hasRole(["manager","finance","director","group_admin"]);
+  if(item.id==="stock")return hasRole(["warehouse","controller","group_admin","director","grit_superadmin"]);
+  if(item.id==="invoices")return hasRole(["warehouse","buyer","finance","group_admin","grit_superadmin"]);
+  if(item.id==="suppliers"||item.id==="quotes")return hasRole(["buyer","group_admin"]);
+  if(item.id==="nexo"||item.id==="audit")return hasRole(["controller","finance","director","group_admin","grit_superadmin"]);
+  if(item.id==="admin")return hasRole(["group_admin","grit_superadmin"]);
+  return false;
+ });
+ const navigate=(next:View)=>{
+  if(!visibleNav.some(item=>item.id===next))return;
+  setView(next);setSearch("");
+  const path=next==="requests"?"/solicitar":next==="overview"?"/gestao":"/gestao/"+next;
+  if(window.location.pathname!==path)window.history.pushState({view:next},"",path);
+ };
+ useEffect(()=>{
+  const onBack=()=>{
+   const segment=window.location.pathname.split("/").filter(Boolean);
+   const next:View=segment[0]==="solicitar"?"requests":nav.some(n=>n.id===segment[1])?segment[1] as View:"overview";
+   setView(next);
+  };
+  window.addEventListener("popstate",onBack);
+  return ()=>window.removeEventListener("popstate",onBack);
+ },[]);
  const groupAdmin=hasRole(["group_admin"]);
  const techAdmin=hasRole(["grit_superadmin"]);
  const canApprove=hasRole(["manager","group_admin","director"]);
@@ -366,6 +391,31 @@ export default function App(){
    {p_line:lineId,p_product:productId,p_conversion:conversion}),false);
   await openInvoice(selectedInvoice);
  }
+ async function registerSkuFromInvoice(line:Rec){
+  if(!db||!selectedInvoice||!isAdmin||line.product_id)return;
+  if(!window.confirm("Criar produto a partir deste item fiscal? Confirme descrição, unidade e embalagem antes de dar entrada no estoque."))return;
+  setBusy(true);setNotice("");
+  try{
+   const sku="NF-"+String(selectedInvoice.id).slice(0,8).toUpperCase()+"-"+String(line.id).slice(0,8).toUpperCase();
+   const previous=await db.from("cp_products").select("id").eq("organization_id",orgId).eq("sku",sku).maybeSingle();
+   if(previous.error)throw previous.error;
+   let productId=previous.data?.id as string|undefined;
+   if(!productId){
+    const created=await db.from("cp_products").insert({
+     organization_id:orgId,sku,name:String(line.description||"Produto da NF").trim().slice(0,220),
+     category:"Outros",brand:"",unit:String(line.unit||"UN").trim().toUpperCase().slice(0,12),
+     package_factor:1,min_stock:0,active:true
+    }).select("id").single();
+    if(created.error)throw created.error;
+    productId=created.data.id;
+   }
+   const mapped=await db.rpc("cp_map_invoice_line",{p_line:line.id,p_product:productId,p_conversion:Number(line.conversion_factor)||1});
+   if(mapped.error)throw mapped.error;
+   setNotice("SKU cadastrado e vinculado à nota. Confira a conversão e autorize a entrada.");
+   await reload();await openInvoice(selectedInvoice);
+  }catch(e){setNotice("Não foi possível criar o SKU: "+errText(e));}
+  finally{setBusy(false);}
+ }
  async function bookInvoice(){
   if(!db||!selectedInvoice)return;
   await mutate("Recebimento fiscal lançado no estoque.",()=>db!.rpc("cp_book_invoice",{p_invoice:selectedInvoice.id,p_warehouse:warehousePick}));
@@ -427,8 +477,8 @@ export default function App(){
   <aside className={"sidebar "+(menuOpen?"visible":"")}>
    <div className="sidebar-brand"><div className="brand-square">CP<span>360</span></div><div><b>CONSUMO PRO</b>{brandLogo?<img className="official-logo" src={brandLogo} alt="Marca original do Grupo Prohospital"/>:<small>GRUPO PROHOSPITAL</small>}</div></div>
    <div className="side-caption">GESTÃO & OPERAÇÃO</div>
-   <nav aria-label="Navegação principal">{nav.map((item)=>{const I=item.icon;return <button key={item.id}
-    className={"nav-item "+(view===item.id?"active":"")} onClick={()=>{setView(item.id);setMenuOpen(false);setSearch("");}}>
+   <nav aria-label="Navegação principal">{visibleNav.map((item)=>{const I=item.icon;return <button key={item.id}
+    className={"nav-item "+(view===item.id?"active":"")} onClick={()=>{navigate(item.id);setMenuOpen(false);}}>
      <I size={19}/><span>{item.label}</span>{view===item.id&&<span className="nav-active-dot"/>}</button>;})}</nav>
    <div className="side-bottom"><div className="side-status"><span className="online-dot"/> Dados protegidos por perfil</div>
     <small>Desenvolvido por <strong>GRIT Soluções e Negócios</strong></small></div>
@@ -479,11 +529,11 @@ export default function App(){
        return <div className="bar-row" key={d.name}><div><span>{d.name}</span><strong>{currency(d.total)}</strong></div>
         <div className="bar-track"><div style={{width:100*d.total/max+"%"}}/></div></div>;})}</div>:
        <Empty title="Aguardando consumo" detail="As entregas auditadas aparecerão aqui após as primeiras movimentações."/>}</section>
-      <section className="panel"><div className="panel-header"><h3>Alertas do NEXO</h3><button className="link-button" onClick={()=>setView("nexo")}>Ver inteligência <ChevronRight size={16}/></button></div>
+      <section className="panel"><div className="panel-header"><h3>Alertas do NEXO</h3><button className="link-button" onClick={()=>navigate("nexo")}>Ver inteligência <ChevronRight size={16}/></button></div>
        {alerts.length?<div className="alert-list">{alerts.slice(0,5).map((a,i)=><div className="alert-row" key={i}><AlertTriangle size={17}/><div><b>{a.title}</b><small>{a.description}</small></div></div>)}</div>:
        <Empty title="Nenhum alerta calculado" detail="Aplique parâmetros mínimos de estoque e orçamentos para monitoramento automático."/>}</section>
      </div>
-     <section className="panel"><div className="panel-header"><h3>Últimas solicitações</h3><button className="link-button" onClick={()=>setView("requests")}>Ver todas <ChevronRight size={16}/></button></div>
+     <section className="panel"><div className="panel-header"><h3>Últimas solicitações</h3><button className="link-button" onClick={()=>navigate("requests")}>Ver todas <ChevronRight size={16}/></button></div>
       {requests.length?<div className="table-scroll"><table><thead><tr><th>Protocolo</th><th>Setor</th><th>Emissão</th><th>Status</th><th>Valor estimado</th></tr></thead>
        <tbody>{[...requests].sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,5).map((r)=><tr key={r.id}>
         <td className="strong-cell">{r.code}</td><td>{departmentName(r.department_id)}</td><td>{date(r.created_at)}</td>
@@ -569,7 +619,7 @@ export default function App(){
    <footer className="app-footer">CONSUMO PRO 360 · Grupo Prohospital <span>Desenvolvimento & tecnologia: <strong>GRIT Soluções e Negócios</strong></span></footer>
   </div>
   <nav className="mobile-bottom" aria-label="Navegação móvel">
-   {[nav[0],nav[1],nav[2],nav[3],nav[10]].map((n)=>{const I=n.icon;return <button key={n.id} className={view===n.id?"active":""} onClick={()=>{setView(n.id);setSearch("");}}>
+   {[nav[0],nav[1],nav[2],nav[3],nav[10]].filter(n=>visibleNav.some(v=>v.id===n.id)).map((n)=>{const I=n.icon;return <button key={n.id} className={view===n.id?"active":""} onClick={()=>navigate(n.id)}>
     <I size={20}/><small>{n.id==="overview"?"Início":n.id==="requests"?"Solicitar":n.id==="approvals"?"Pedidos":n.id==="stock"?"Estoque":"Mais"}</small></button>;})}
   </nav>
 
@@ -683,6 +733,8 @@ export default function App(){
     <label>Conversão para unidade base<input disabled={selectedInvoice.status==="booked"} type="number" step=".001" min=".001" value={l.conversion_factor}
      onChange={(e)=>setInvoiceLines((all)=>all.map((x)=>x.id===l.id?{...x,conversion_factor:Number(e.target.value)}:x))}/></label></div>
     {selectedInvoice.status==="review"&&<button className="btn secondary small" disabled={busy||!l.product_id} onClick={()=>void mapInvoiceLine(l.id,l.product_id,Number(l.conversion_factor))}>Salvar vínculo do item</button>}
+    {selectedInvoice.status==="review"&&isAdmin&&!l.product_id&&<button className="btn secondary small" disabled={busy} onClick={()=>void registerSkuFromInvoice(l)}>Criar SKU sugerido e vincular</button>}
+    {l.product_id&&<p className="muted">Custo unitário equivalente: {currency(Number(l.unit_price)/Math.max(Number(l.conversion_factor)||1,0.001))} · Custo médio atual: {currency(avgCost(l.product_id))}</p>}
    </div>)}
    {selectedInvoice.status==="review"&&<><label>Depósito de entrada<select value={warehousePick} onChange={(e)=>setWarehousePick(e.target.value)}>{warehouses.map((w)=><option value={w.id} key={w.id}>{w.name}</option>)}</select></label>
     <div className="form-footer"><button className="btn primary" disabled={busy||!warehousePick||invoiceLines.some((l)=>!l.product_id)}
