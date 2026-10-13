@@ -20,7 +20,8 @@ jobs:
         working-directory: apps/consumo-pro-360
     env:
       VITE_SUPABASE_URL: https://xscxwazanootrdtyrumb.supabase.co
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.CONSUMO_SUPABASE_PUBLISHABLE_KEY }}
+      # Supabase publishable key is public by design and embedded in the browser; never service_role.
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.CONSUMO_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable__Vi7D5JV9HK651civRcJrg_7_YoosK-' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
