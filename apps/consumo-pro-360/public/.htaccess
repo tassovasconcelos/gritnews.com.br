@@ -3,6 +3,11 @@
 Options -Indexes
 DirectoryIndex index.html
 
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+  AddType application/javascript .js
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   # Keep ACME SSL issuance possible on this subdomain.

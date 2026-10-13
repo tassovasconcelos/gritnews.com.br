@@ -4,13 +4,14 @@ import {
   LayoutDashboard, ClipboardList, CheckCircle2, Package, Boxes, FileText, Truck,
   Scale, ShieldCheck, Settings, Menu, LogOut, Plus, RefreshCw, AlertTriangle,
   Search, Building2, BarChart3, BrainCircuit, X, ChevronRight,
-  UploadCloud, CircleHelp, Lock, Send, FlaskConical, PlaneTakeoff
+  UploadCloud, CircleHelp, Lock, FlaskConical, PlaneTakeoff
 } from "lucide-react";
 import { db,configured } from "./lib/supabase";
 import ProcurementWorkbench from "./ProcurementWorkbench";
 import TravelIntelligence from "./TravelIntelligence";
 import MarketLab from "./MarketLab";
 import AdminRegistry from "./AdminRegistry";
+import RequestComposer from "./RequestComposer";
 import { readNFe, type FiscalLine } from "./lib/nfe";
 
 type View = "overview"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"lab"|"travel"|"audit"|"admin";
@@ -68,7 +69,7 @@ export default function App(){
  const [companies,setCompanies]=useState<Rec[]>([]);
  const [companyId,setCompanyId]=useState("");
  const [orgId,setOrgId]=useState("");
- const [brandLogo,setBrandLogo]=useState("");
+ const [brandLogo,setBrandLogo]=useState("/logo-prohospital.webp");
  const [view,setView]=useState<View>(()=>{
   const parts=window.location.pathname.split("/").filter(Boolean);
   if(parts[0]==="solicitar")return "requests";
@@ -80,6 +81,7 @@ export default function App(){
  const [loading,setLoading]=useState(false);
  const [notice,setNotice]=useState("");
  const [search,setSearch]=useState("");
+ const [requestStatus,setRequestStatus]=useState("all");
  const [period,setPeriod]=useState("month");
  const [departments,setDepartments]=useState<Rec[]>([]);
  const [products,setProducts]=useState<Rec[]>([]);
@@ -101,8 +103,6 @@ export default function App(){
  const [reqDepartment,setReqDepartment]=useState("");
  const [reqItems,setReqItems]=useState<{product_id:string;quantity:number}[]>([]);
  const [requestKey,setRequestKey]=useState(()=>crypto.randomUUID());
- const [reqProduct,setReqProduct]=useState("");
- const [reqQty,setReqQty]=useState(1);
  const [productForm,setProductForm]=useState({sku:"",name:"",category:"Escritório",brand:"",unit:"UN",package_factor:1,min_stock:0});
  const [supplierForm,setSupplierForm]=useState({name:"",tax_id:"",email:"",phone:""});
  const [opening,setOpening]=useState({warehouse_id:"",product_id:"",quantity:1,cost:0,reason:""});
@@ -114,6 +114,8 @@ export default function App(){
  const [file,setFile]=useState<File|null>(null);
  const [invoiceLines,setInvoiceLines]=useState<Rec[]>([]);
  const [selectedInvoice,setSelectedInvoice]=useState<Rec|null>(null);
+
+ useEffect(()=>{setReqItems([]);setRequestKey(crypto.randomUUID());setModal("");setRequestStatus("all");},[companyId,user?.id]);
 
  useEffect(()=>{
   if(!db){setAuthReady(true);return;}
@@ -156,12 +158,12 @@ export default function App(){
  },[user?.id]);
 
  useEffect(()=>{
-  if(!db||!orgId){setBrandLogo("");return;}
+  if(!db||!orgId){setBrandLogo("/logo-prohospital.webp");return;}
   let active=true;
   db.from("cp_branding").select("logo_path").eq("organization_id",orgId).maybeSingle()
    .then(({data})=>{
     if(!active)return;
-    setBrandLogo(data?.logo_path?db!.storage.from("consumo-pro-brand").getPublicUrl(data.logo_path).data.publicUrl:"");
+    setBrandLogo(data?.logo_path?db!.storage.from("consumo-pro-brand").getPublicUrl(data.logo_path).data.publicUrl:"/logo-prohospital.webp");
    });
   return ()=>{active=false;};
  },[orgId]);
@@ -334,7 +336,7 @@ export default function App(){
   return a;
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[products,stock,departments,events,requests]);
- const visibleRequests=requests.filter((r)=>!search||normalize(r.code+" "+departmentName(r.department_id)+" "+statusText[r.status]).includes(normalize(search)))
+ const visibleRequests=requests.filter((r)=>requestStatus==="all"||(requestStatus==="open"?!["delivered","rejected"].includes(r.status):r.status===requestStatus)).filter((r)=>!search||normalize(r.code+" "+departmentName(r.department_id)+" "+statusText[r.status]).includes(normalize(search)))
   .sort((a,b)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime());
  const visibleProducts=products.filter((p)=>normalize(p.name+" "+p.sku+" "+p.brand+" "+p.category).includes(normalize(search)));
  const receiptInvoices=invoices.filter((i)=>normalize(i.supplier_name+" "+i.number+" "+i.access_key).includes(normalize(search)));
@@ -445,11 +447,6 @@ export default function App(){
   if(!db||!selectedInvoice)return;
   await mutate("Recebimento fiscal lançado no estoque.",()=>db!.rpc("cp_book_invoice",{p_invoice:selectedInvoice.id,p_warehouse:warehousePick}));
  }
- const addReqItem=()=>{
-  if(!reqProduct||reqQty<=0||!Number.isFinite(reqQty)){setNotice("Selecione produto e quantidade.");return;}
-  if(reqItems.some((i)=>i.product_id===reqProduct)){setNotice("Produto já incluído.");return;}
-  setReqItems([...reqItems,{product_id:reqProduct,quantity:reqQty}]);setReqProduct("");setReqQty(1);
- };
  const updateLine=(index:number,key:keyof FiscalLine,value:string|number)=>{
   setNfLines((lines)=>lines.map((l,i)=>i===index?{...l,[key]:value}:l));
  };
@@ -468,7 +465,7 @@ export default function App(){
  </div>;
  if(!authReady)return <div className="loading-screen">Validando acesso corporativo…</div>;
  if(!user)return <div className="auth-layout">
-  <div className="auth-hero"><div className="auth-brand">GRUPO <strong>PROHOSPITAL</strong></div>
+  <div className="auth-hero"><div className="auth-brand"><img className="login-official-logo" src="/logo-prohospital.webp" alt="Grupo Prohospital"/></div>
    <div className="auth-body"><span className="eyebrow">Gestão inteligente de consumo</span>
     <h1>Menos desperdício.<br/><em>Mais controle.</em></h1>
     <p>Solicitações, materiais, compras, notas fiscais e decisões apoiadas por dados — em um único ambiente.</p>
@@ -510,7 +507,7 @@ export default function App(){
   </aside>
   {menuOpen&&<button aria-label="Fechar menu" className="sidebar-backdrop" onClick={()=>setMenuOpen(false)}/>}
   <div className="main-wrap">
-   <header className="topbar"><button className="mobile-menu icon-button" aria-label="Abrir menu" onClick={()=>setMenuOpen(true)}><Menu size={22}/></button>
+   <header className="topbar"><button className="mobile-menu icon-button" aria-label="Abrir menu" onClick={()=>setMenuOpen(true)}><Menu size={22}/></button><img className="header-official-logo" src={brandLogo} alt="Grupo Prohospital"/>
     <div className="topbar-company"><span className="topbar-company-label">EMPRESA ATIVA</span><select aria-label="Selecionar empresa" value={companyId}
       onChange={(e)=>{const id=e.target.value;setCompanyId(id);setOrgId(companies.find((c)=>c.id===id)?.organization_id||"");}}
      >{companies.map((c)=><option value={c.id} key={c.id}>{c.name}</option>)}</select></div>
@@ -565,12 +562,12 @@ export default function App(){
         <td><Pill value={r.status}/></td><td>{canControl?currency(requestValue(r.id)):"—"}</td></tr>)}</tbody></table></div>:
        <Empty title="Sem solicitações" detail="O primeiro pedido aparecerá quando um setor solicitar materiais."/>}</section>
     </>}
-    {view==="requests"&&<section className="panel"><div className="panel-header"><div><h3>Requisições por setor</h3><small className="muted">Histórico rastreável de pedidos e liberações</small></div></div>
-     {visibleRequests.length?<div className="table-scroll"><table><thead><tr><th>Solicitação</th><th>Setor</th><th>Produtos</th><th>Data</th><th>Status</th><th>Estimativa</th></tr></thead>
-      <tbody>{visibleRequests.map((r)=><tr key={r.id}><td className="strong-cell">{r.code}</td><td>{departmentName(r.department_id)}</td>
-       <td>{requestLines.filter((l)=>l.request_id===r.id).map((l)=>number(l.quantity)+"× "+productName(l.product_id)).join("; ")||"—"}</td>
-       <td>{date(r.created_at)}</td><td><Pill value={r.status}/></td><td>{canControl?currency(requestValue(r.id)):"—"}</td></tr>)}</tbody></table></div>:
-      <Empty title="Nenhum pedido encontrado" detail="Abra uma solicitação com os produtos e quantidades necessárias para o setor."/>}</section>}
+    {view==="requests"&&<section className="panel request-panel"><div className="panel-header"><div><h3>Acompanhe seus pedidos</h3><small className="muted">Escolha os materiais, confira e envie. O status mostra o próximo passo.</small></div></div>
+     <label className="request-status-filter">Mostrar<select value={requestStatus} onChange={e=>setRequestStatus(e.target.value)}><option value="all">Todos os pedidos</option><option value="open">Em andamento</option><option value="delivered">Entregues</option><option value="rejected">Rejeitados</option></select></label>
+     {visibleRequests.length?<div className="request-cards">{visibleRequests.map(r=><article className="request-card" key={r.id}><header><div><strong>{r.code}</strong><small>{departmentName(r.department_id)} · {date(r.created_at)}</small></div><Pill value={r.status}/></header>
+      <p className="request-next">{{submitted:"O gestor está analisando seu pedido.",pending_finance:"O financeiro está avaliando a liberação.",approved:"Pedido aprovado. Aguarde a separação dos materiais.",reserved:"O almoxarifado está preparando a entrega.",delivered:"Entrega concluída.",rejected:"Pedido não aprovado. Consulte o responsável pelo setor."}[r.status as string]||"Consulte o responsável pelo setor para acompanhar esta etapa."}</p>
+      <details><summary>Ver materiais ({requestLines.filter(l=>l.request_id===r.id).length})</summary><ul>{requestLines.filter(l=>l.request_id===r.id).map(l=><li key={l.id}>{number(l.quantity)} {products.find(p=>p.id===l.product_id)?.unit||"UN"} · {productName(l.product_id)}</li>)}</ul>{canControl&&<small>Estimativa: {currency(requestValue(r.id))}</small>}</details></article>)}</div>:
+      <Empty title="Nenhum pedido encontrado" detail="Toque em Nova solicitação para escolher materiais. Se você já enviou um pedido, confira os filtros acima."/>}</section>}
     {view==="approvals"&&<section className="panel"><div className="panel-header"><h3>Fila de decisões</h3><small className="muted">O banco valida perfil, setor e alçada de cada aprovação</small></div>
      {requests.filter((r)=>r.status==="submitted"||r.status==="pending_finance"||r.status==="approved"||r.status==="reserved").length?
       <div className="task-grid">{requests.filter((r)=>["submitted","pending_finance","approved","reserved"].includes(r.status)).map((r)=>
@@ -660,18 +657,7 @@ export default function App(){
     <div className="form-footer"><button className="btn secondary" type="button" onClick={()=>setModal("")}>Cancelar</button><button disabled={busy||newPassword.length<12||newPassword!==confirmPassword} className="btn primary">Salvar senha</button></div>
    </form>
   </Modal>}
-  {modal==="new-request"&&<Modal title="Nova solicitação de materiais" onClose={()=>setModal("")}><form onSubmit={submitReq}>
-   <div className="form-grid"><label className="wide">Setor solicitante<select required value={reqDepartment} onChange={(e)=>setReqDepartment(e.target.value)}>
-    {permittedDepartments.map((d)=><option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
-    <label>Produto do catálogo<select value={reqProduct} onChange={(e)=>setReqProduct(e.target.value)}><option value="">Selecione…</option>
-      {products.filter((p)=>p.active).map((p)=><option key={p.id} value={p.id}>{p.sku} · {p.name} ({number(stockAvailable(p.id))} disp.)</option>)}</select></label>
-    <label>Quantidade<input type="number" min=".001" step=".001" value={reqQty} onChange={(e)=>setReqQty(Number(e.target.value))}/></label></div>
-   <button className="btn secondary" type="button" onClick={addReqItem}><Plus size={16}/> Incluir material</button>
-   <div className="form-lines">{reqItems.length?reqItems.map((item)=><div className="simple-row" key={item.product_id}><span className="grow">{productName(item.product_id)} · {number(item.quantity)} {products.find((p)=>p.id===item.product_id)?.unit}</span>
-    <button type="button" aria-label="Retirar item" className="icon-button" onClick={()=>setReqItems(reqItems.filter((i)=>i.product_id!==item.product_id))}><X size={17}/></button></div>):
-    <p className="muted">Nenhum item selecionado.</p>}</div>
-   <div className="form-footer"><button className="btn secondary" type="button" onClick={()=>setModal("")}>Cancelar</button><button className="btn primary" disabled={busy||!reqItems.length}>Enviar ao gestor <Send size={16}/></button></div>
-  </form></Modal>}
+  {modal==="new-request"&&<Modal title="Nova solicitação de materiais" onClose={()=>{if(!busy)setModal("");}}><RequestComposer products={products as {id:string;name:string;sku:string;unit:string;active:boolean}[]} departments={permittedDepartments as {id:string;name:string}[]} department={reqDepartment} setDepartment={setReqDepartment} items={reqItems} setItems={setReqItems} busy={busy} submit={submitReq} cancel={()=>setModal("")}/></Modal>}
 
   {(modal==="decision"||modal==="finance")&&<Modal title={modal==="finance"?"Aprovação financeira":"Decisão da gerência"} onClose={()=>setModal("")}>
     <p>Pedido <strong>{requests.find((r)=>r.id===actionId)?.code}</strong>. Toda decisão registra usuário, horário e justificativa.</p>
