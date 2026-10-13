@@ -56,6 +56,9 @@ jobs:
         run: |
           test -f supabase/migrations/20261010090000_consumo_pro_core.sql
           test -f supabase/migrations/20261010094000_fiscal_admin_fix.sql
+      - name: Inspect Hostinger subdomain DNS and published shell
+        if: github.event_name == 'push'
+        run: bash scripts/audit-public-hostinger.sh
       - name: Declare release readiness
         shell: bash
         run: |
