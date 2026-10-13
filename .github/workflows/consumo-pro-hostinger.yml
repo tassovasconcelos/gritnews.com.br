@@ -61,6 +61,8 @@ jobs:
           CP_SSH_KEY: ${{ secrets.CONSUMO_HOSTINGER_SSH_PRIVATE_KEY }}
           CP_SSH_FINGERPRINT: ${{ secrets.CONSUMO_HOSTINGER_SSH_KNOWN_HOSTS }}
           CP_SSH_PATH: ${{ secrets.CONSUMO_HOSTINGER_DEPLOY_PATH }}
+          CP_API_TOKEN: ${{ secrets.CONSUMO_HOSTINGER_API_TOKEN }}
+          CP_API_USER: ${{ secrets.CONSUMO_HOSTINGER_HOSTING_USERNAME }}
         shell: bash
         run: |
           set -euo pipefail
@@ -74,6 +76,13 @@ jobs:
           else
             printf 'MISSING: %s\n' "${missing[@]}"
             echo "⚠️ Hostinger cannot be published from GitHub until isolated SSH credentials, known_hosts and safe target path are configured." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -n "${CP_API_TOKEN:-}" ] && [ -n "${CP_API_USER:-}" ]; then
+            echo "READY: Hostinger API token and hosting username are available for domain-scoped upload."
+            echo "✅ API upload connection details present; target marker still mandatory." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "MISSING: CP_API_TOKEN or CP_API_USER"
+            echo "⚠️ Alternative Hostinger Files API publishing requires two secrets." >> "$GITHUB_STEP_SUMMARY"
           fi
 
   build:
