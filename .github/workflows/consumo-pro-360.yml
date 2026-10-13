@@ -1,0 +1,77 @@
+name: CONSUMO PRO 360 - Build & Safety
+on:
+  pull_request:
+    paths:
+      - 'apps/consumo-pro-360/**'
+      - '.github/workflows/consumo-pro-360.yml'
+  push:
+    branches:
+      - 'feature/consumo-pro-*'
+    paths:
+      - 'apps/consumo-pro-360/**'
+      - '.github/workflows/consumo-pro-360.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/consumo-pro-360
+    env:
+      VITE_SUPABASE_URL: https://xscxwazanootrdtyrumb.supabase.co
+      # Supabase publishable key is public by design and embedded in the browser; never service_role.
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.CONSUMO_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable__Vi7D5JV9HK651civRcJrg_7_YoosK-' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Travel intelligence regression tests
+        run: npm run test:travel
+      - name: Typecheck and build
+        run: npm run build
+      - name: Validate email templates
+        run: node tests/check-email-templates.mjs
+      - name: Test Hostinger API provisioning safety
+        shell: bash
+        run: |
+          python3 -m unittest discover -s tests -p 'test_hostinger_provision.py' -v
+          python3 -m py_compile scripts/provision_hostinger.py
+          bash -n scripts/verify_hostinger.sh
+      - name: Assert portable Hostinger PWA bundle
+        run: |
+          test -s dist/index.html
+          test -s dist/manifest.webmanifest
+          test -s dist/icon-192.png
+          test -s dist/icon-512.png
+          test -s dist/icon-maskable-512.png
+          test -s dist/sw.js
+          test -s public/.htaccess
+          test -s dist/robots.txt
+          cp -f public/.htaccess dist/.htaccess
+          test -s dist/.htaccess
+      - name: Static controls
+        run: |
+          test -f supabase/migrations/20261010090000_consumo_pro_core.sql
+          test -f supabase/migrations/20261010094000_fiscal_admin_fix.sql
+      - name: Inspect Hostinger subdomain DNS and published shell
+        if: github.event_name == 'push'
+        run: bash scripts/audit-public-hostinger.sh
+      - name: Declare release readiness
+        shell: bash
+        run: |
+          if [ -z "${VITE_SUPABASE_PUBLISHABLE_KEY:-}" ]; then
+            echo "::warning::CI compile passed; no Supabase publishable key configured; do NOT use this build as live app."
+            echo "RELEASE_READY=false" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_READY=true" >> "$GITHUB_ENV"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: env.RELEASE_READY == 'true'
+        with:
+          name: consumo-pro-360-dist
+          path: apps/consumo-pro-360/dist/
+          retention-days: 7

@@ -1,0 +1,119 @@
+/* CONSUMO PRO 360 / GRIT — scoped test & travel intelligence lab */
+.travel-lab,.market-lab{display:grid;gap:18px;padding-bottom:16px;min-width:0}
+.travel-lab h2,.market-lab h2{letter-spacing:-.045em}
+.travel-lab .panel-header h3,.market-lab .panel-header h3{display:flex;align-items:center;gap:9px}
+.travel-hero{background:linear-gradient(120deg,#222b3a,#3e3440 70%,#7f2833);color:#fff;border-radius:16px;
+ padding:26px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.travel-hero h2{font-size:24px;line-height:1.24;margin:8px 0}
+.travel-hero p{max-width:700px;font-size:12.5px;color:#e6e9ee;line-height:1.65}
+.travel-hero .travel-eyebrow{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.1em;font-weight:800;color:#f2b5bf}
+.travel-hero-right{display:grid;gap:12px;justify-items:end;min-width:170px}
+.travel-status{background:#ffffff25;border:1px solid #ffffff33;border-radius:15px;padding:7px 11px;font-size:11px}
+.travel-tabs{display:flex;flex-wrap:wrap;gap:6px;background:#fff;border:1px solid #e7e9ed;border-radius:10px;padding:6px;width:fit-content;max-width:100%}
+.travel-tabs button{border:none;background:transparent;color:#68727e;font-size:12px;font-weight:800;padding:11px 15px;border-radius:8px}
+.travel-tabs button.active{background:#ad2437;color:#fff}
+.travel-settings,.travel-route-card,.travel-comparison,.travel-agent{min-width:0}
+.travel-settings>.panel-header{margin-bottom:16px}
+.travel-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.travel-cost-grid{border-top:1px solid #edeef0;margin-top:18px;padding-top:18px;grid-template-columns:repeat(4,minmax(0,1fr))}
+.travel-warning{background:#fff5ed;border:1px solid #f8deca;color:#885027;padding:11px;border-radius:9px;display:flex;gap:8px;font-size:12px;margin-top:10px}
+.travel-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.travel-stat{border:1px solid #e7e9ec;background:#fff;border-radius:12px;padding:17px;min-width:0;display:grid;gap:7px}
+.travel-stat>span{color:#6f7883;font-size:11px;font-weight:800}
+.travel-stat>b{font:800 19px Manrope,"DM Sans",sans-serif;color:#28323d;letter-spacing:-.04em;overflow-wrap:anywhere}
+.travel-stat>small{color:#8d96a0;font-size:10px}
+.travel-scenario-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.travel-route-card{padding:20px}
+.travel-route-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.travel-route-top small{font-size:10px;color:#9b4756;font-weight:900;letter-spacing:.08em}
+.travel-route-top h3{margin:5px 0 8px;font-size:15px}
+.travel-route-top p{color:#7b8793;font-size:11.5px;line-height:1.65}
+.travel-tag{flex-shrink:0;border:1px solid #e0e4e8;background:#f6f7f8;color:#67737e;font-size:10px;font-weight:800;border-radius:15px;padding:7px 10px}
+.travel-tag.ready{color:#22754c;border-color:#cde6d7;background:#effaf3}
+.travel-route-legs{display:grid;gap:14px}
+.travel-leg{border:1px solid #eceef0;border-radius:10px;padding:12px}
+.travel-leg-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.travel-leg-head>div:nth-child(2){flex:1;min-width:0}
+.travel-leg-head b{display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:#34404d;font-size:12px}
+.travel-leg-head small{display:block;font-size:10px;color:#97a0aa;margin-top:4px}
+.travel-leg-head>a{display:flex;align-items:center;gap:5px;color:#a5273d;font-size:10px;font-weight:800}
+.travel-mode{display:grid;place-items:center;background:#f9ebee;color:#a82b40;border-radius:9px;min-width:35px;height:35px}
+.travel-leg-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.travel-leg-form label{font-size:10px;white-space:nowrap}
+.travel-leg-form input{padding:8px 5px;font-size:11px}
+.travel-source-input{margin-top:10px}
+.travel-source-input input{font-size:11px;padding:8px 9px}
+.travel-route-footer{border-top:1px solid #eceef0;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.travel-route-footer span{color:#a4263a;font-size:13px;font-weight:800}
+.travel-route-footer small{color:#87909a}
+.travel-warnings{display:grid;gap:6px;margin-top:12px}
+.travel-warnings p{display:flex;align-items:flex-start;gap:6px;font-size:11px;line-height:1.5;color:#9b593c}
+.travel-observations{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.travel-observations>small{width:100%;color:#89919a}
+.travel-observations>button{display:flex;gap:6px;align-items:center;border:1px solid #e3e8eb;background:#f9fafb;border-radius:8px;padding:7px 9px;color:#364452;font-size:10px}
+.travel-footnote{font-size:11px;margin-top:12px}
+.travel-agent{border:1px solid #dce8f3}
+.travel-insights{display:grid;gap:11px}
+.travel-insights p{display:flex;gap:10px;align-items:flex-start;color:#526274;font-size:12px;line-height:1.6}
+.travel-insights svg{color:#3e8a75;flex-shrink:0}
+.travel-disclaimer{background:#f7f8f9;border-radius:10px;border:1px solid #e7eaed;
+ font-size:11.5px;line-height:1.6;color:#66727d;padding:15px;display:flex;align-items:flex-start;gap:9px}
+.travel-disclaimer svg{flex-shrink:0;color:#bd6540}
+.travel-hint{margin:0 0 20px;font-size:12px;color:#77818d;line-height:1.6}
+.travel-actions{display:flex;gap:11px;justify-content:flex-end;margin-top:15px;flex-wrap:wrap}
+.travel-lab .panel>label{margin-top:15px}
+.travel-lab .panel>label textarea{width:100%}
+.travel-empty{display:grid;justify-items:center;text-align:center;gap:10px;padding:24px 15px;color:#8d99a6}
+.travel-empty svg{color:#afb6bf}
+.travel-empty b{color:#526071;font-size:13px}
+.travel-empty p{max-width:500px;font-size:12px;line-height:1.6}
+.travel-lab .table-scroll a{display:inline-flex;align-items:center;gap:5px;color:#a6273a;font-weight:700}
+.travel-saved{display:grid;gap:10px}
+.travel-saved-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e7eaee;padding:13px;border-radius:10px}
+.travel-saved-row>div{display:grid;gap:7px}
+.travel-saved-row b{color:#36414c;font-size:12px}
+.travel-saved-row small{color:#8f9aa5;font-size:11px}
+.market-lab .travel-hero{background:linear-gradient(115deg,#1e3442,#3b495a 70%,#853346)}
+.market-agent-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.market-agent{padding:16px;border:1px solid #e3e7ed;background:#fff;border-radius:11px;display:grid;gap:8px}
+.market-agent svg{color:#b12940}
+.market-agent b{font-size:13px;color:#374353}
+.market-agent p{font-size:11px;line-height:1.6;color:#7b8995}
+.market-risks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.market-risks>div{border-radius:10px;border:1px solid #e5e8ee;padding:14px}
+.market-risks b{font-size:13px}
+.market-risks p{font-size:11px;line-height:1.6;color:#83909a;margin-top:8px}
+.market-test-actions{display:flex;gap:11px;justify-content:flex-end;align-items:center;margin-top:15px}
+@media(max-width:1140px){.travel-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.travel-cost-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.travel-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+.market-agent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:860px){.travel-scenario-grid{grid-template-columns:1fr}
+.travel-leg-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+.travel-hero{flex-direction:column;align-items:stretch;padding:22px}
+.travel-hero-right{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.travel-tabs{width:100%}.travel-tabs button{flex:1}
+.market-risks{grid-template-columns:1fr}}
+@media(max-width:500px){.travel-hero h2{font-size:20px}.travel-form-grid{grid-template-columns:1fr 1fr;gap:10px}
+.travel-cost-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.travel-leg-head{flex-wrap:wrap}.travel-leg-head>a{margin-left:auto}
+.travel-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.travel-stat{padding:12px}.travel-stat>b{font-size:15px}
+.travel-form-grid input,.travel-form-grid select{font-size:13px}
+.travel-saved-row{flex-direction:column;align-items:stretch}
+.market-agent-grid{grid-template-columns:1fr}}
+
+.travel-api-block{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;
+ margin-top:18px;background:#f3f7fa;border:1px solid #dfe9f1;border-radius:12px}
+.travel-api-block>div{display:grid;gap:8px}
+.travel-api-block b{display:flex;align-items:center;gap:8px;font-size:12px;color:#34465a}
+.travel-api-block p{font-size:11px;color:#6d7d8b;line-height:1.55}
+.travel-api-block button{flex-shrink:0}
+.travel-live{margin-top:14px;border:1px solid #dce8ed;padding:16px;border-radius:11px;background:#fff}
+.travel-live h4{font-size:13px;color:#345166;margin-bottom:8px}
+.travel-live>p{font-size:11px;color:#738594;line-height:1.6;margin-bottom:14px}
+@media(max-width:700px){.travel-api-block{flex-direction:column;align-items:stretch}.travel-api-block button{width:100%}}
+
+.travel-trend-filter{display:flex;align-items:flex-end;gap:16px;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+.travel-trend-filter>label{width:260px;max-width:100%}
+.travel-trend-filter>small{color:#8c97a1}
+.travel-trend-chart{height:246px;width:100%;min-width:0}

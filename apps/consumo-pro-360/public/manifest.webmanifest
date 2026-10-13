@@ -1,0 +1,65 @@
+{
+  "name": "CONSUMO PRO 360 | Grupo Prohospital",
+  "short_name": "Consumo Pro",
+  "description": "Solicite materiais e acompanhe seus pedidos no Grupo Prohospital",
+  "start_url": "/app",
+  "display": "standalone",
+  "theme_color": "#aa2030",
+  "background_color": "#f7f8fa",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "scope": "/",
+  "id": "/consumo-pro-360",
+  "shortcuts": [
+    {
+      "name": "Solicitar materiais",
+      "short_name": "Solicitar",
+      "description": "Registrar uma nova solicitação",
+      "url": "/app",
+      "icons": [
+        {
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Meus pedidos",
+      "short_name": "Pedidos",
+      "description": "Acompanhar minhas requisições",
+      "url": "/app?screen=orders",
+      "icons": [
+        {
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
