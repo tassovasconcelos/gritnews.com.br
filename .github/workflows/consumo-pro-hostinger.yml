@@ -43,6 +43,34 @@ jobs:
       - name: Verify and provision only the isolated subdomain
         run: python3 apps/consumo-pro-360/scripts/provision_hostinger.py --apply
 
+  connection_check:
+    name: Check Hostinger publishing access (read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: consumo-pro-hostinger
+    steps:
+      - name: Check required credentials without exposing them
+        env:
+          CP_SSH_HOST: ${{ secrets.CONSUMO_HOSTINGER_SSH_HOST }}
+          CP_SSH_USER: ${{ secrets.CONSUMO_HOSTINGER_SSH_USER }}
+          CP_SSH_KEY: ${{ secrets.CONSUMO_HOSTINGER_SSH_PRIVATE_KEY }}
+          CP_SSH_FINGERPRINT: ${{ secrets.CONSUMO_HOSTINGER_SSH_KNOWN_HOSTS }}
+          CP_SSH_PATH: ${{ secrets.CONSUMO_HOSTINGER_DEPLOY_PATH }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          for name in CP_SSH_HOST CP_SSH_USER CP_SSH_KEY CP_SSH_FINGERPRINT CP_SSH_PATH; do
+            if [ -z "${!name:-}" ]; then missing+=("$name"); fi
+          done
+          if (( ${#missing[@]} == 0 )); then
+            echo "READY: All required Hostinger publishing secrets are set; no server connection was attempted."
+            echo "✅ Hostinger SSH configuration present; upload still needs marker and destination verification." >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf 'MISSING: %s\n' "${missing[@]}"
+            echo "⚠️ Hostinger cannot be published from GitHub until isolated SSH credentials, known_hosts and safe target path are configured." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   build:
     name: Validate and package PWA
     runs-on: ubuntu-latest
