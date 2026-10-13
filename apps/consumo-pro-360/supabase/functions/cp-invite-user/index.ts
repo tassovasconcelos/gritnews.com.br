@@ -10,7 +10,8 @@ function response(body:unknown,status:number,origin:string){
 const now=()=>new Date().toISOString();
 Deno.serve(async(req)=>{
  const origin=req.headers.get("origin")||"";
- const allowed=(Deno.env.get("APP_ALLOWED_ORIGINS")||projectOrigin).split(",").map(x=>x.trim()).filter(Boolean);
+ const corporateOrigin="https://consumo.gritnews.com.br";
+ const allowed=(Deno.env.get("APP_ALLOWED_ORIGINS")||[corporateOrigin,projectOrigin].join(",")).split(",").map(x=>x.trim()).filter(Boolean);
  // Authorization is enforced by JWT and org role; CORS is not used as an authorization boundary.
  const allowedPreview=/^https:\/\/consumo-pro-360-grit-[a-z0-9-]+-tassos-projects-167133f0\.vercel\.app$/.test(origin);
  if(origin&&!allowed.includes(origin)&&!allowedPreview)return response({error:"Origem não autorizada para administração"},403,"");
