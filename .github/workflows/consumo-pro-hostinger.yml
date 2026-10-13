@@ -147,7 +147,9 @@ jobs:
           test -s dist/robots.txt
           test -f dist/.htaccess || cp public/.htaccess dist/.htaccess
           test -s dist/.htaccess
-          node -e "const fs=require('node:fs'); const m=JSON.parse(fs.readFileSync('dist/manifest.webmanifest','utf8')); if(m.start_url!=='/solicitar'||m.display!=='standalone') process.exit(1)"
+          node -e "const fs=require('node:fs'); const m=JSON.parse(fs.readFileSync('dist/manifest.webmanifest','utf8')); if(m.start_url!=='/app'||m.display!=='standalone') process.exit(1)"
+          test -s dist/offline.html
+          test -s dist/offline.css
           node -e "const fs=require('node:fs'); fs.writeFileSync('dist/release.json',JSON.stringify({application:'consumo-pro-360',commit:process.env.GITHUB_SHA,releaseTarget:'hostinger'},null,2)+'\n')"
       - name: Store installable release archive
         if: env.RELEASE_READY == 'true'
