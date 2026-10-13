@@ -10,7 +10,7 @@ Deno.serve(async(req)=>{
  const corporateOrigin="https://consumo.gritnews.com.br";
  const origins=(Deno.env.get("APP_ALLOWED_ORIGINS")||[corporateOrigin,projectOrigin].join(",")).split(",").map(s=>s.trim());
  const allowedPreview=/^https:\/\/consumo-pro-360-grit-[a-z0-9-]+-tassos-projects-167133f0\.vercel\.app$/.test(origin);
- if(origin&&!origins.includes(origin)&&!allowedPreview)return reply({error:"Origem não autorizada"},403,"");
+ if(origin&&!origins.includes(origin)&&origin!==corporateOrigin&&!allowedPreview)return reply({error:"Origem não autorizada"},403,"");
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{
   "Access-Control-Allow-Origin":origin,
   "Access-Control-Allow-Headers":req.headers.get("access-control-request-headers")||"authorization,apikey,content-type,x-client-info",
