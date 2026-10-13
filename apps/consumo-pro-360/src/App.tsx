@@ -12,6 +12,7 @@ import TravelIntelligence from "./TravelIntelligence";
 import MarketLab from "./MarketLab";
 import AdminRegistry from "./AdminRegistry";
 import RequestComposer from "./RequestComposer";
+import MobileRequestPortal from "./MobileRequestPortal";
 import { readNFe, type FiscalLine } from "./lib/nfe";
 
 type View = "overview"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"lab"|"travel"|"audit"|"admin";
@@ -76,6 +77,7 @@ export default function App(){
   if(parts[0]==="gestao"&&nav.some(n=>n.id===parts[1]))return parts[1] as View;
   return "overview";
  });
+ const [mobilePortal,setMobilePortal]=useState(()=>window.location.pathname==="/app");
  const [menuOpen,setMenuOpen]=useState(false);
  const [busy,setBusy]=useState(false);
  const [loading,setLoading]=useState(false);
@@ -191,6 +193,7 @@ export default function App(){
    const segment=window.location.pathname.split("/").filter(Boolean);
    const next:View=segment[0]==="solicitar"?"requests":nav.some(n=>n.id===segment[1])?segment[1] as View:"overview";
    setView(next);
+   setMobilePortal(window.location.pathname==="/app");
   };
   window.addEventListener("popstate",onBack);
   return ()=>window.removeEventListener("popstate",onBack);
@@ -204,7 +207,7 @@ export default function App(){
  const canControl=hasRole(["controller","group_admin","director","finance","buyer","grit_superadmin"]);
 
  const reload=useCallback(async()=>{
-  if(!db||!companyId||!orgId)return;
+  if(!db||!companyId||!orgId||!user)return;
   setLoading(true);
   const cfg:[string,string,string?][]=[
    ["cp_departments","company_id",companyId],["cp_products","organization_id",orgId],
@@ -214,7 +217,12 @@ export default function App(){
    ["cp_quote_batches","company_id",companyId],["cp_stock_events","company_id",companyId],
    ["cp_audit_events","company_id",companyId]
   ];
-  const result=await Promise.all(cfg.map(async([table,key,value])=>db!.from(table).select("*").eq(key,value!).limit(1000)));
+  const result=await Promise.all(cfg.map(async([table,key,value])=>{
+   if(mobilePortal&&!["cp_departments","cp_products","cp_requests"].includes(table))return {data:[],error:null};
+   let query=db!.from(table).select("*").eq(key,value!);
+   if(mobilePortal&&table==="cp_requests")query=query.eq("created_by",user!.id).order("created_at",{ascending:false});
+   return query.limit(1000);
+  }));
   const data=result.map((r)=>r.data||[]);
   setDepartments(data[0]);setProducts(data[1]);setWarehouses(data[2]);setStock(data[3]);setCosts(data[4]);
   setRequests(data[5]);setInvoices(data[6]);setSuppliers(data[7]);setQuotes(data[8]);setEvents(data[9]);setAudit(data[10]);
@@ -226,7 +234,7 @@ export default function App(){
   const fatal=result.find((r)=>r.error&&r.error.code!=="42501");
   if(fatal?.error)setNotice("Falha de consulta: "+fatal.error.message);
   setLoading(false);
- },[companyId,orgId]);
+ },[companyId,orgId,mobilePortal,user?.id]);
  useEffect(()=>{void reload();},[reload]);
  // Keep open management and request screens synchronized while they are visible.
  // This is foreground monitoring, not background push notification delivery.
@@ -495,6 +503,7 @@ export default function App(){
   <small>Tecnologia e desenvolvimento: GRIT Soluções e Negócios</small>
  </div>;
 
+ if(mobilePortal)return <MobileRequestPortal key={companyId} logo={brandLogo} email={user.email||""} company={selectedCompany?.name||"Sua empresa"} companies={companies as {id:string;name:string}[]} companyId={companyId} onCompany={id=>{setCompanyId(id);setOrgId(companies.find(c=>c.id===id)?.organization_id||"");}} products={products as {id:string;name:string;sku:string;unit:string;active:boolean}[]} departments={permittedDepartments as {id:string;name:string}[]} requests={requests.filter(r=>r.created_by===user.id) as {id:string;code:string;department_id:string;status:string;created_at:string;updated_at:string}[]} lines={requestLines as {id:string;request_id:string;product_id:string;quantity:number}[]} department={reqDepartment} setDepartment={setReqDepartment} items={reqItems} setItems={setReqItems} busy={busy} loading={loading} notice={notice} composing={modal==="new-request"} onCompose={()=>{setNotice("");setModal("new-request");}} onClose={()=>{if(!busy)setModal("");}} submit={submitReq} refresh={()=>void reload()} logout={()=>void logout()}/>;
  return <div className="app-shell">
   <aside className={"sidebar "+(menuOpen?"visible":"")}>
    <div className="sidebar-brand"><div className="brand-square">CP<span>360</span></div><div><b>CONSUMO PRO</b>{brandLogo?<img className="official-logo" src={brandLogo} alt="Marca original do Grupo Prohospital"/>:<small>GRUPO PROHOSPITAL</small>}</div></div>
@@ -521,6 +530,7 @@ export default function App(){
      <h1>{nav.find((n)=>n.id===view)?.label}</h1>
      <p>{view==="overview"?"Visibilidade financeira e operacional do consumo corporativo.":view==="nexo"?"Recomendações objetivas com evidências verificáveis.":view==="lab"?"Novas práticas, hipóteses testáveis e aprendizados auditados.":view==="travel"?"Pesquisa de tarifas, roteiros e custo total das viagens corporativas.":"Operação conectada a empresas, setores e responsáveis."}</p></div>
      <div className="heading-actions">
+      {(view==="overview"||view==="requests")&&<a className="btn secondary" href="/app">App de solicitações</a>}
       {view==="overview"&&<button className="btn secondary" onClick={exportCsv}><BarChart3 size={17}/> Exportar setor</button>}
       {view==="requests"&&<button className="btn primary" onClick={()=>setModal("new-request")}><Plus size={17}/> Nova solicitação</button>}
       {view==="products"&&isAdmin&&<button className="btn primary" onClick={()=>setModal("product")}><Plus size={17}/> Novo produto</button>}
