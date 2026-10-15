@@ -1,0 +1,95 @@
+name: Link Uniao - FTPS Auto Deploy
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/link-uniao/index.html'
+      - 'apps/link-uniao/acesso.html'
+      - 'apps/link-uniao/.htaccess'
+      - 'apps/link-uniao/robots.txt'
+      - 'apps/link-uniao/health.json'
+      - '.github/workflows/link-uniao-ftps-deploy.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: link-uniao-hostinger
+  cancel-in-progress: false
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validar credenciais de deploy
+        env:
+          FTP_HOST: ${{ secrets.UNIAO_FTPS_HOST }}
+          FTP_USER: ${{ secrets.UNIAO_FTPS_USER }}
+          FTP_PASSWORD: ${{ secrets.UNIAO_FTPS_PASSWORD }}
+          FTP_DIR: ${{ secrets.UNIAO_FTPS_DIR }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          [[ -n "$FTP_HOST" ]] || missing+=(UNIAO_FTPS_HOST)
+          [[ -n "$FTP_USER" ]] || missing+=(UNIAO_FTPS_USER)
+          [[ -n "$FTP_PASSWORD" ]] || missing+=(UNIAO_FTPS_PASSWORD)
+          [[ -n "$FTP_DIR" ]] || missing+=(UNIAO_FTPS_DIR)
+          if (( ${#missing[@]} )); then
+            echo "::error::Credenciais Hostinger FTPS do subdominio ainda nao configuradas no GitHub."
+            printf "Ausente: %s\n" "${missing[@]}"
+            exit 1
+          fi
+          case "$FTP_DIR" in
+            public_html/uniao/|/public_html/uniao/|uniao/|/uniao/|/)
+              echo "Pasta restrita e explicitamente indicada."
+              ;;
+            *)
+              echo "::error::Diretorio invalido. Configure UNIAO_FTPS_DIR exclusivamente para public_html/uniao."
+              exit 1
+              ;;
+          esac
+      - name: Validar a aplicacao e preparar os cinco arquivos
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          for f in index.html acesso.html .htaccess health.json robots.txt; do
+            test -s "apps/link-uniao/$f"
+            cp "apps/link-uniao/$f" "release/$f"
+          done
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          for(const f of ['index.html','acesso.html']){
+            const html=fs.readFileSync('release/'+f,'utf8');
+            const m=html.match(/<script>([\s\S]*?)<\/script>/);
+            if(!m)throw Error('Script ausente '+f);
+            new vm.Script(m[1]);
+          }
+          console.log('Scripts validados.');
+          NODE
+      - name: Publicar automaticamente por FTPS na pasta dedicada
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.UNIAO_FTPS_HOST }}
+          username: ${{ secrets.UNIAO_FTPS_USER }}
+          password: ${{ secrets.UNIAO_FTPS_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./release/
+          server-dir: ${{ secrets.UNIAO_FTPS_DIR }}
+          dangerous-clean-slate: false
+          log-level: minimal
+      - name: Verificar publicacao real
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in health login admin equipe; do
+            code=$(curl -L --connect-timeout 8 --max-time 18 -sS -o /tmp/link-uniao-verify -w '%{http_code}' "https://uniao.gritnews.com.br/$route" || true)
+            echo "/$route HTTP $code"
+            test "$code" = "200" || exit 1
+          done
+          echo "Dominio e paginas publicados."
