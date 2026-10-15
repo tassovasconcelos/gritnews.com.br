@@ -1,0 +1,76 @@
+name: Link União — pacote Hostinger
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/link-uniao/**'
+      - '.github/workflows/link-uniao-hostinger-package.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Gerar ZIP para public_html/uniao
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar frontend, autenticação e rotas
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in index.html acesso.html .htaccess robots.txt health.json; do
+            test -s "apps/link-uniao/$f" || { echo "Arquivo ausente: $f"; exit 1; }
+          done
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          for (const file of ['index.html','acesso.html']) {
+            const html = fs.readFileSync('apps/link-uniao/'+file,'utf8');
+            const match=html.match(/<script>([\s\S]*?)<\/script>/i);
+            if (!match) throw new Error('JS indisponível '+file);
+            new vm.Script(match[1], {filename: file});
+            if (!html.includes('link-uniao-surveys')) throw new Error('Backend não conectado: '+file);
+            console.log('JavaScript válido:',file);
+          }
+          const main=fs.readFileSync('apps/link-uniao/index.html','utf8');
+          if(!main.includes("location.pathname==='/admin'")) throw Error('Rota ADM inválida');
+          if(!main.includes("location.pathname==='/equipe'")) throw Error('Rota Equipe inválida');
+          const login=fs.readFileSync('apps/link-uniao/acesso.html','utf8');
+          if(!login.includes("const DASH='/admin'"))throw Error('Destino do login inválido');
+          if(!login.includes('admin_status'))throw Error('Controle administrativo ausente');
+          console.log('Rotas e controle administrativo verificados.');
+          NODE
+          python3 -m json.tool apps/link-uniao/health.json >/dev/null
+      - name: Criar arquivo ZIP pronto para extração
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          (
+            cd apps/link-uniao
+            zip -q -9 -j ../../release/grit-link-uniao-hostinger.zip index.html acesso.html .htaccess robots.txt health.json
+          )
+          unzip -Z -1 release/grit-link-uniao-hostinger.zip | tee /tmp/filelist
+          for f in index.html acesso.html .htaccess robots.txt health.json; do
+            grep -Fxq "$f" /tmp/filelist
+          done
+          sha256sum release/grit-link-uniao-hostinger.zip
+          echo "Destino de extração: public_html/uniao"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grit-link-uniao-hostinger
+          path: release/grit-link-uniao-hostinger.zip
+          retention-days: 30
+      - name: Teste não bloqueante do domínio público
+        shell: bash
+        run: |
+          set +e
+          echo "Situação pública antes do upload em public_html/uniao:"
+          for p in /health /login /admin /equipe; do
+            curl -L -sS -o /tmp/probe -w "$p HTTP %{http_code} SSL-verify=%{ssl_verify_result}\n" --connect-timeout 8 --max-time 15 "https://uniao.gritnews.com.br$p"
+            head -c 80 /tmp/probe | tr '\n' ' '
+            echo
+          done
