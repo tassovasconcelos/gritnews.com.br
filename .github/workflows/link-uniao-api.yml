@@ -26,7 +26,7 @@ jobs:
           assert r['ok'] is True, r
           print('Campaign open:',r['open'])
           PY
-          for op in '{"action":"staff_submit","ratings":{"A1":5,"A2":4,"A3":3,"B1":2,"B2":5,"B3":4}}' '{"action":"admin_status"}' '{"action":"owner_load","token":"invalid"}'; do
+          for op in '{"action":"admin_status"}' '{"action":"owner_load","token":"invalid"}'; do
             code=$(curl -sS --connect-timeout 8 --max-time 18 -o /tmp/response.json -w '%{http_code}' -H 'Content-Type: application/json' --data "$op" "$END")
             echo "POST code=$code $(cat /tmp/response.json)"
             case "$code" in
@@ -34,3 +34,6 @@ jobs:
               *) echo "Blocked request expected 403; got $code"; exit 1 ;;
             esac
           done
+          code=$(curl -sS --connect-timeout 8 --max-time 18 -o /tmp/response.json -w '%{http_code}' -H 'Content-Type: application/json' --data '{"action":"staff_submit","consent":false,"ratings":{"A1":5,"A2":4,"A3":3,"B1":2,"B2":5,"B3":4}}' "$END")
+          echo "POST sem consentimento HTTP $code"
+          test "$code" = "400"
