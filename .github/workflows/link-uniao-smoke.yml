@@ -1,0 +1,46 @@
+name: Link União — smoke público (sem dados reais)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/pesquisas/link-uniao/**'
+      - '.github/workflows/link-uniao-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirmar publicação da interface
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://gritnews.com.br/pesquisas/link-uniao/index.html'
+          for attempt in $(seq 1 16); do
+            code=$(curl -L -sS -o /tmp/link-uniao.html -w '%{http_code}' --max-time 12 "$BASE?check=$GITHUB_SHA" || true)
+            if [ "$code" = "200" ] && grep -q 'GRIT RADAR 360°' /tmp/link-uniao.html && grep -q 'LINK UNIÃO' /tmp/link-uniao.html; then
+              echo "Página publicada, status 200, conteúdo confirmado"
+              break
+            fi
+            if [ "$attempt" = "16" ]; then echo "Frontend não confirmado"; exit 1; fi
+            sleep 10
+          done
+      - name: Confirmar API e bloqueio de coleta antes de abertura
+        shell: bash
+        run: |
+          set -euo pipefail
+          API='https://pcrwtoddavpvkaxwtstc.supabase.co/functions/v1/link-uniao-surveys'
+          curl -fsSL --max-time 20 "$API" > /tmp/lu-api.json
+          python3 - <<'PY'
+          import json
+          data=json.load(open('/tmp/lu-api.json'))
+          assert data.get('ok') is True, 'API não disponível'
+          assert data.get('open') is False, 'Campanha indevidamente aberta antes da revisão'
+          print('API disponível; campanha fechada até aprovação de privacidade')
+          PY
+          code=$(curl -sS -o /tmp/blocked.json -w '%{http_code}' --max-time 20 -X POST "$API" -H 'Content-Type: application/json' -d '{"action":"staff_submit","ratings":{"A1":5,"A2":5,"A3":5,"B1":5,"B2":5,"B3":5}}')
+          test "$code" = "403"
+          echo "Coleta não autorizada bloqueada (HTTP 403)"
