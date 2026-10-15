@@ -142,6 +142,29 @@ async function startServer() {
     return (forwarded || direct).split(":")[0].toLowerCase();
   };
 
+
+  // GRIT RADAR Link União: frontend exclusivo do subdomínio, banco e autenticação
+  // permanecem no Supabase já existente. Não expomos o painel no site principal.
+  const uniaoDist = path.resolve(process.cwd(), "dist", "uniao");
+  const uniaoIndex = path.join(uniaoDist, "index.html");
+  app.use((req, res, next) => {
+    if (requestHost(req) !== "uniao.gritnews.com.br") return next();
+    res.setHeader("Cache-Control", "no-store, private");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    const ready = fs.existsSync(uniaoIndex);
+    if (req.path === "/health") return res.status(ready ? 200 : 503).json({
+      ok: ready, app: "grit-link-uniao-360", domain: "uniao.gritnews.com.br"
+    });
+    if (!ready) return res.status(503).type("text/plain").send("Aplicativo em implantação");
+    if (req.method !== "GET" && req.method !== "HEAD") return res.status(405).send("Method Not Allowed");
+    const page = (req.path === "/login" || req.path === "/acesso.html") ? "acesso.html" :
+                 (req.path === "/" || req.path === "/admin" || req.path === "/equipe" ||
+                  req.path === "/proprietario" || req.path === "/index.html") ? "index.html" : "";
+    if (!page) return res.status(404).type("text/plain").send("Not Found");
+    return res.sendFile(path.join(uniaoDist, page));
+  });
+
   app.use((req, res, next) => {
     if (requestHost(req) !== "meuespetinho.gritnews.com.br") return next();
 
