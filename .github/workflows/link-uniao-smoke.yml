@@ -51,8 +51,8 @@ jobs:
           data=json.load(open('/tmp/lu-api.json'))
           assert data.get('ok') is True, 'API não disponível'
           assert isinstance(data.get('open'),bool), 'Status de campanha inválido'
-          print('API disponível; campanha fechada até aprovação de privacidade')
+          print('API disponível; status de abertura informado corretamente')
           PY
           code=$(curl -sS -o /tmp/blocked.json -w '%{http_code}' --max-time 20 -X POST "$API" -H 'Content-Type: application/json' -d '{"action":"staff_submit","ratings":{"A1":5,"A2":5,"A3":5,"B1":5,"B2":5,"B3":5}}')
-          echo "Status público recebido: $code"; head -c 500 /tmp/blocked.json; echo; test "$code" = "403"
+          echo "Status público recebido: $code"; head -c 500 /tmp/blocked.json; echo; test "$code" = "400"
           echo "Coleta sem consentimento bloqueada (HTTP 400)"
