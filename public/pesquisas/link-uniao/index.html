@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<title>GRIT RADAR 360° | Diagnóstico Link União</title>
+<meta name="description" content="Diagnóstico Link União — GRIT Soluções e Negócios">
+<style>
+:root{--navy:#132b41;--ink:#1a3046;--cyan:#09a8a3;--aqua:#d6f6f0;--line:#dae6ec;--muted:#5a6e80;--bg:#f4f8fb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);line-height:1.5}
+header{background:linear-gradient(112deg,#102739,#164c63);color:white;padding:22px max(18px,calc((100vw - 1000px)/2));display:flex;justify-content:space-between;gap:18px;align-items:center}
+.brand{font-weight:900;letter-spacing:.03em;font-size:21px}.brand small{display:block;font-weight:450;font-size:11px;color:#a7e6e1;letter-spacing:.16em}
+header .company{text-align:right;font-weight:700;font-size:16px}header .company small{display:block;font-size:11px;color:#c6e8f5;font-weight:400}
+main{max-width:860px;margin:32px auto 90px;padding:0 16px}.box{background:white;border:1px solid var(--line);border-radius:20px;padding:26px 30px;box-shadow:0 14px 34px rgba(16,42,68,.045);margin-bottom:20px}
+h1{font-size:clamp(26px,4vw,36px);line-height:1.12;margin:12px 0 12px}h2{font-size:22px;margin:4px 0 10px}h3{font-size:17px;margin:20px 0 8px}.eyebrow{font-size:12px;color:#078f89;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+p{margin:9px 0 14px}.muted{color:var(--muted)}.small{font-size:13px}.notice{padding:14px;border:1px solid #badfe0;background:#effcfa;border-radius:12px;font-size:13px;color:#254e55;margin:15px 0}.warning{background:#fff7ee;border-color:#f5d0a3;color:#744b19}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.kv{padding:15px;border:1px solid var(--line);border-radius:13px;background:#f9fcff}
+button,.linkbtn{cursor:pointer;border:0;background:var(--navy);color:white;font-weight:700;border-radius:11px;padding:13px 19px;min-height:47px;font-size:14px}
+button:hover,.linkbtn:hover{background:#27627b}button.secondary{background:white;color:#174056;border:1px solid #9dc3cd}button.secondary:hover{background:#edf8fb}button:disabled{opacity:.45;cursor:not-allowed}
+button.turq{background:#078e8a}button.turq:hover{background:#04716e}button.link{border:0;background:transparent;color:#086f77;padding:4px;min-height:unset;text-decoration:underline}
+input,select,textarea{width:100%;border:1px solid #b9cdd6;background:white;padding:12px;border-radius:10px;font:inherit;color:var(--ink);outline-color:var(--cyan)}
+textarea{min-height:100px;resize:vertical}input[type=checkbox]{width:18px;height:18px;vertical-align:middle;margin-right:8px}label{display:block;margin:14px 0 7px;font-weight:650;font-size:14px}
+input[type=radio]{width:18px;height:18px}
+.check{display:flex;align-items:flex-start;gap:8px;line-height:1.45;font-size:14px;font-weight:400}
+.question{padding:13px 0 18px;border-bottom:1px solid #edf1f3}.question:last-child{border-bottom:0}.number{font-size:12px;color:var(--muted);font-weight:700}
+.rating{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.rating label{font-weight:600;margin:0;cursor:pointer;position:relative;display:flex;justify-content:center;align-items:center;min-width:48px;border:1px solid #bfd1d9;border-radius:9px;height:42px;background:#fff}
+.rating input{position:absolute;opacity:0;pointer-events:none}.rating label:has(input:checked){background:var(--aqua);border-color:#119891;color:#096e70;box-shadow:inset 0 0 0 1px #119891}
+.progress{height:8px;background:#dce9ed;border-radius:9px;overflow:hidden;margin:18px 0}.progress span{display:block;height:100%;background:#08a59c;transition:width .3s}
+.buttons{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:24px}
+.pill{display:inline-block;background:#e9f9f8;color:#096c67;border-radius:30px;padding:5px 10px;font-size:12px;font-weight:700}
+.status{border-radius:10px;padding:11px 14px;margin-top:10px;font-weight:600;font-size:13px;background:#ecf5f9}
+.status.error{color:#933922;background:#fff1ed}.status.success{background:#e8fbef;color:#1e7454}
+.qrnote{color:var(--muted);font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px;text-align:left;border-bottom:1px solid var(--line)}th{background:#f4f9fb}.meter{height:9px;background:#e1ecef;border-radius:7px;overflow:hidden}.meter i{height:100%;display:block;background:var(--cyan)}
+footer{color:#617787;text-align:center;padding:24px;font-size:12px}
+@media(max-width:630px){header{padding:19px}header .company{font-size:13px}main{margin:18px auto 60px}.box{padding:18px;border-radius:16px}.grid{grid-template-columns:1fr}.rating label{min-width:42px}.buttons button{flex:1}}
+</style>
+</head>
+<body>
+<header><div class="brand">GRIT <small>SOLUÇÕES E NEGÓCIOS</small></div><div class="company">LINK UNIÃO <small>Transformação e crescimento</small></div></header>
+<main id="app"><section class="box"><p>Carregando a pesquisa…</p></section></main>
+<footer>GRIT Soluções e Negócios · Estratégia, execução, inteligência comercial e desenvolvimento de pessoas.</footer>
+<script>
+(function(){
+'use strict';
+var BASE='https://pcrwtoddavpvkaxwtstc.supabase.co', END=BASE+'/functions/v1/link-uniao-surveys', KEY='sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS';
+var root=document.getElementById('app'),qs=new URLSearchParams(location.search), ownerToken=qs.get('convite')||'',adminPage=qs.has('admin'),staffPage=qs.get('pesquisa')==='equipe';
+var ctx={config:null,step:0,area:'nao_informado',ratings:{},special:{},enps:null,motivation:null,good:'',change:'',answers:{},owner:'',done:false};
+var adminJWT=sessionStorage.getItem('lu_grit_admin_jwt')||'';
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function status(message,type){var e=document.getElementById('feedback');if(e){e.textContent=message;e.className='status '+(type||'')}}
+async function api(p,auth){var r=await fetch(END,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},auth?{'Authorization':'Bearer '+adminJWT}:{}),body:JSON.stringify(p),cache:'no-store'}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Falha de comunicação');return j}
+function nav(content){root.innerHTML=content;window.scrollTo(0,0)}
+function page(title,body,sub){nav('<section class="box"><span class="eyebrow">GRIT RADAR 360°</span><h1>'+esc(title)+'</h1>'+(sub?'<p class="muted">'+sub+'</p>':'')+body+'</section>')}
+function br(){return '<div id="feedback" role="status" aria-live="polite"></div>'}
+function qField(q){var v=ctx.answers[q.id];var id='f_'+q.id;var out='<div class="question"><label for="'+id+'">'+esc(q.text)+'</label>';if(q.hint)out+='<p class="muted small">'+esc(q.hint)+'</p>';
+if(q.kind==='select'){out+='<select id="'+id+'" data-k="'+q.id+'"><option value="">Selecione / Não sei</option>';q.opts.forEach(function(o){out+='<option value="'+esc(o)+'"'+(v===o?' selected':'')+'>'+esc(o)+'</option>'});out+='</select>'}
+else if(q.kind==='rating'){out+='<div class="rating">'+[1,2,3,4,5].map(function(n){return '<label><input type="radio" name="'+q.id+'" value="'+n+'"'+(String(v)===String(n)?' checked':'')+'>'+n+'</label>'}).join('')+'</div><p class="small muted">1 = muito ruim / discordo · 5 = excelente / concordo</p>'}
+else if(q.kind==='textarea')out+='<textarea id="'+id+'" data-k="'+q.id+'" placeholder="Sua resposta (opcional)">'+esc(v||'')+'</textarea>';
+else out+='<input type="'+(q.kind==='number'?'number':'text')+'" id="'+id+'" data-k="'+q.id+'" '+(q.kind==='number'?'min="0" step="any"':'maxlength="350"')+' value="'+esc(v||'')+'" placeholder="'+(q.kind==='number'?'Número aproximado ou deixe em branco':'Sua resposta (opcional)')+'">';
+return out+'</div>'}
+var OWNER_STEPS=[
+{title:'Visão do negócio',intro:'A perspectiva de cada proprietário é importante. Responda com liberdade, inclusive quando discordar da gestão atual.',q:[
+{id:'strength',text:'Qual é a principal força da Link União?',kind:'textarea'},
+{id:'weakness',text:'Quais são os três maiores problemas que limitam o crescimento?',kind:'textarea'},
+{id:'absence',text:'Se você se afastasse por 15 dias, o que provavelmente pararia?',kind:'textarea'},
+{id:'current_direction',text:'As prioridades e responsabilidades da equipe estão claras?',kind:'rating'},
+{id:'strategy',text:'Qual é a visão de crescimento da empresa para os próximos 12 meses?',kind:'textarea'}]},
+{title:'Números e rentabilidade',intro:'Não é uma prova. Deixe em branco o que ainda não é acompanhado; isso ajudará a GRIT a planejar o diagnóstico.',q:[
+{id:'active',text:'Quantos clientes ativos existem hoje?',kind:'number',hint:'Referência do briefing: aproximadamente 1.300 clientes. Confirme o número.'},
+{id:'mrr',text:'Faturamento recorrente mensal aproximado (R$)',kind:'number'},
+{id:'ticket',text:'Ticket médio dos planos (R$)',kind:'number'},
+{id:'debt',text:'Inadimplência vencida há mais de 30 dias (R$)',kind:'number'},
+{id:'installs',text:'Novas instalações por mês',kind:'number'},
+{id:'churn',text:'Cancelamentos por mês',kind:'number'},
+{id:'install_cost',text:'Custo total médio de cada instalação, incluindo equipamentos (R$)',kind:'number'},
+{id:'staff_size',text:'Quantos colaboradores trabalham na empresa?',kind:'number'},
+{id:'equipment',text:'Existe controle do equipamento entregue e recolhido?',kind:'select',opts:['Sim, completo','Parcial','Não','Não sei']},
+{id:'invisible_cost',text:'Que custo ou desperdício mais preocupa?',kind:'textarea'}]},
+{title:'Comercial e jornada do cliente',intro:'Queremos entender desde o primeiro contato até o pagamento e a fidelização.',q:[
+{id:'channels',text:'De onde vêm as vendas atualmente?',kind:'select',opts:['Indicação / boca a boca','WhatsApp','Atendimento presencial','Porta a porta','Parceiros','Publicidade online','Múltiplos canais']},
+{id:'leads',text:'Cada contato e oportunidade de venda é registrado?',kind:'select',opts:['Sim, em sistema','Parcialmente','Não','Não sei']},
+{id:'loss',text:'Em que momento a Link União mais perde clientes?',kind:'select',opts:['Antes da instalação','No agendamento','Após instalação / 1ª fatura','Nos primeiros 90 dias','Por atraso de suporte','Por preço/concorrência','Não sei']},
+{id:'free_install',text:'Como reduzir o prejuízo com instalações gratuitas e clientes que não pagam?',kind:'textarea'},
+{id:'upgrade',text:'Como são identificadas oportunidades de upgrade, renovação e retenção?',kind:'textarea'},
+{id:'comercial_plan',text:'Quais três iniciativas comerciais você testaria nos próximos 90 dias?',kind:'textarea'}]},
+{title:'Atendimento e operação técnica',intro:'Problemas técnicos e comerciais geralmente começam por fluxos incompletos. Vamos localizar os gargalos.',q:[
+{id:'orders',text:'Como são abertas e priorizadas as ordens de serviço?',kind:'textarea'},
+{id:'checklist',text:'Existe checklist padronizado de instalação?',kind:'select',opts:['Sim, obrigatório','Existe, mas nem sempre usado','Não','Não sei']},
+{id:'rework',text:'Há retrabalho técnico com frequência?',kind:'rating'},
+{id:'material_control',text:'Como são controlados roteadores, ONUs, materiais e devoluções?',kind:'textarea'},
+{id:'biggest_technical',text:'Qual a reclamação técnica que mais se repete?',kind:'textarea'},
+{id:'client_care',text:'Como você avalia a integração entre suporte técnico e atendimento?',kind:'rating'}]},
+{title:'Pessoas, liderança e reconhecimento',intro:'A estrutura de incentivos deve reconhecer desempenho e qualidade, sem estimular erros ou conflitos.',q:[
+{id:'leadership',text:'Como definiria a liderança atual em três palavras?',kind:'textarea'},
+{id:'clarity',text:'A equipe sabe exatamente o que fazer e quais são suas metas?',kind:'rating'},
+{id:'cooperation',text:'Como avalia a comunicação entre os setores?',kind:'rating'},
+{id:'recognition',text:'O reconhecimento pelo trabalho é justo?',kind:'rating'},
+{id:'psychsafe',text:'Os colaboradores conseguem apontar problemas sem receio?',kind:'rating'},
+{id:'training',text:'A empresa oferece orientação e treinamento suficientes?',kind:'rating'},
+{id:'commission',text:'Como você gostaria de premiar vendas, instalação, upgrade, retenção, cobrança e recolhimento de equipamentos?',kind:'textarea'},
+{id:'commission_risk',text:'O que mais preocupa na criação de comissões?',kind:'textarea'}]},
+{title:'Prioridades e próximos 90 dias',intro:'As respostas serão usadas para desenhar as primeiras ações da consultoria.',q:[
+{id:'topthree',text:'Escolha três prioridades: comercial, cobrança, retenção, técnica, treinamento, processos, financeiro ou tecnologia',kind:'textarea'},
+{id:'investment',text:'Faixa de investimento mensal disponível para melhorias',kind:'select',opts:['Nenhum por enquanto','Até R$ 1.000','R$ 1.001 a R$ 3.000','R$ 3.001 a R$ 6.000','Mais de R$ 6.000','Prefiro discutir']},
+{id:'priority',text:'Qual problema a GRIT deve atacar primeiro? (obrigatório)',kind:'textarea'},
+{id:'success',text:'Daqui a 12 meses, o que faria você considerar o projeto um sucesso?',kind:'textarea'},
+{id:'staff_perception',text:'O que você acredita que os colaboradores responderiam sobre liderança, reconhecimento e confiança?',kind:'textarea'},
+{id:'decision',text:'Qual decisão depende apenas de você e qual precisa do acordo dos dois sócios?',kind:'textarea'}]}];
+function bindOwner(){document.querySelectorAll('[data-k]').forEach(function(el){el.addEventListener('input',function(){ctx.answers[el.dataset.k]=el.value})});document.querySelectorAll('input[type=radio]').forEach(function(el){el.addEventListener('change',function(){if(el.checked)ctx.answers[el.name]=Number(el.value)})})}
+function ownerRender(){var s=OWNER_STEPS[ctx.step];var body='<p class="pill">Etapa '+(ctx.step+1)+' de '+OWNER_STEPS.length+'</p><div class="progress"><span style="width:'+((ctx.step+1)/OWNER_STEPS.length*100)+'%"></span></div><h2>'+esc(s.title)+'</h2><p class="muted">'+esc(s.intro)+'</p>'+s.q.map(qField).join('')+'<div class="buttons"><button class="secondary" id="back" '+(!ctx.step?'disabled':'')+'>Voltar</button><button class="secondary" id="save">Salvar rascunho</button><button id="next" class="turq">'+(ctx.step===OWNER_STEPS.length-1?'Revisar e enviar':'Próxima etapa')+'</button></div>'+br();page('Pesquisa individual — '+ctx.owner,body,'Suas respostas não são visíveis para o outro proprietário.');bindOwner();
+document.getElementById('back').onclick=function(){ctx.step=Math.max(0,ctx.step-1);ownerRender()};
+document.getElementById('save').onclick=async function(){try{await api({action:'owner_save',token:ownerToken,answers:ctx.answers});status('Rascunho salvo. Você pode retomar pelo mesmo convite.','success')}catch(e){status(e.message,'error')}};
+document.getElementById('next').onclick=async function(){try{await api({action:'owner_save',token:ownerToken,answers:ctx.answers});if(ctx.step<OWNER_STEPS.length-1){ctx.step++;ownerRender()}else ownerReview()}catch(e){status(e.message,'error')}};
+}
+function ownerReview(){var rows=OWNER_STEPS.flatMap(function(s){return s.q}).filter(function(q){return String(ctx.answers[q.id]||'').trim()}).map(function(q){return '<tr><th>'+esc(q.text)+'</th><td>'+esc(ctx.answers[q.id])+'</td></tr>'}).join('');
+page('Revisão antes do envio','<p>Confira o que foi registrado. Depois de concluir, as respostas não poderão ser alteradas por este convite.</p><div style="overflow:auto"><table>'+rows+'</table></div><div class="buttons"><button id="back" class="secondary">Voltar e corrigir</button><button id="finish" class="turq">Enviar respostas</button></div>'+br());
+document.getElementById('back').onclick=function(){ownerRender()};
+document.getElementById('finish').onclick=async function(){if(!String(ctx.answers.priority||'').trim()){status('Responda qual é a prioridade para os próximos 90 dias.','error');return}this.disabled=true;try{await api({action:'owner_submit',token:ownerToken,answers:ctx.answers});page('Obrigado, '+ctx.owner+'!','<p>Suas respostas foram registradas com sucesso. A GRIT consolidará o diagnóstico e discutirá as prioridades individualmente com a direção.</p><div class="notice">Pesquisa concluída com segurança.</div>')}catch(e){this.disabled=false;status(e.message,'error')}};
+}
+async function ownerStart(){try{var r=await api({action:'owner_load',token:ownerToken});ctx.owner=r.person;ctx.answers=r.draft||{};if(r.status==='concluido')return page('Pesquisa concluída','<p>Este convite já foi utilizado. Obrigado por participar.</p>');ownerRender()}catch(e){page('Convite indisponível','<div class="notice warning">'+esc(e.message)+'</div><p>Peça à GRIT um novo link individual, se necessário.</p>')}}
+var ITEMS=[
+['A1','Sei exatamente o que esperam do meu trabalho.'],['A2','Entendo as prioridades da Link União.'],['A3','Sei como meu trabalho contribui para o cliente.'],
+['B1','Tenho os materiais e ferramentas necessários para trabalhar.'],['B2','Os processos me ajudam mais do que atrapalham.'],['B3','Recebo informações completas para concluir minhas tarefas.'],
+['C1','Posso apontar erros sem medo de retaliação.'],['C2','Sou tratado com respeito pela liderança.'],['C3','Recebo orientações e feedback que me ajudam a evoluir.'],
+['D1','Minha dedicação é reconhecida.'],['D2','Os critérios de incentivos e oportunidades são justos.'],['D3','Entendo como posso crescer profissionalmente.'],
+['E1','Atendimento, técnicos e gestão cooperam bem.'],['E2','Problemas são resolvidos entre setores, sem troca de acusações.'],['E3','Quando o cliente tem um problema, sabemos quem deve agir.'],
+['F1','Tenho orgulho do serviço que entregamos.'],['F2','Recomendaria os serviços da Link União a amigos e familiares.'],['F3','A empresa mostra preocupação real com a qualidade do atendimento ao cliente.']];
+var AREAS=[['nao_informado','Prefiro não informar'],['tecnico','Técnico de campo'],['atendimento','Atendimento ao cliente'],['financeiro','Administrativo / financeiro'],['comercial','Comercial'],['misto','Atuo em mais de uma área']];
+var BLOCKS={
+tecnico:['Os dois principais entraves técnicos','OS incompleta, roteiros, equipamentos, segurança, deslocamento ou retrabalho?','O que mais reduziria retrabalho?'],
+atendimento:['Os dois principais entraves do atendimento','Informações, sistema, retorno técnico, cobrança, autonomia, conflito ou treinamento?','O que ajudaria a resolver melhor o problema do cliente?'],
+financeiro:['Os maiores gargalos de gestão financeira','Cobrança, conciliação, cancelamento, dados e automação','Que melhoria daria mais controle ao setor?'],
+comercial:['Os principais desafios para vender','Leads, metas, indicações, preços, abordagem, conversão','O que ajudaria a conquistar mais clientes?'],
+misto:['Os maiores desafios entre setores','Informações, prioridades, divisão de responsabilidades, integração','Que mudança facilitaria a colaboração?']
+};
+function rated(k,t,max){var v=k==='enps'?ctx.enps:k==='motivation'?ctx.motivation:ctx.ratings[k];var a=[];for(var n=(max===10?0:1);n<=max;n++)a.push('<label><input type="radio" name="'+k+'" value="'+n+'" '+(String(v)===String(n)?'checked':'')+'>'+n+'</label>');return '<div class="question"><div class="number">'+esc(k)+'</div><label>'+esc(t)+'</label><div class="rating">'+a.join('')+'</div></div>'}
+function staffRender(){var html='<p class="pill">Etapa '+(ctx.step+1)+' de 4</p><div class="progress"><span style="width:'+((ctx.step+1)*25)+'%"></span></div>';
+if(ctx.step===0){html+='<h2>Um espaço seguro para sua voz</h2><p>Esta pesquisa é <b>voluntária</b>. Não pedimos nome, e-mail, telefone nem matrícula. Os resultados serão apresentados à Link União apenas de forma agrupada, sem recortes com menos de cinco participantes.</p><div class="notice">Evite mencionar nomes, dados de clientes, senhas ou informações que possam identificar alguém nas respostas abertas. O serviço de hospedagem pode manter registros técnicos de acesso.</div><label>Área de atuação (opcional)</label><select id="area">'+AREAS.map(x=>'<option value="'+x[0]+'" '+(ctx.area===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select><label class="check"><input id="consent" type="checkbox" '+(ctx.consent?'checked':'')+'> Quero participar voluntariamente e compreendo a finalidade desta pesquisa.</label>'}
+if(ctx.step===1||ctx.step===2){html+='<h2>'+(ctx.step===1?'Clareza, processos e liderança':'Reconhecimento, colaboração e cliente')+'</h2><p class="muted">1 = Discordo totalmente · 5 = Concordo totalmente. Você pode deixar itens sem resposta.</p>'+ITEMS.slice(ctx.step===1?0:9,ctx.step===1?9:18).map(x=>rated(x[0],x[1],5)).join('')}
+if(ctx.step===3){html+='<h2>Seu olhar sobre a próxima Link União</h2>'+rated('enps','De 0 a 10, quanto recomendaria a Link União como um bom lugar para trabalhar?',10)+rated('motivation','De 0 a 10, quanto está motivado para colaborar com melhorias nos próximos 90 dias?',10);
+var b=BLOCKS[ctx.area];if(b)html+='<h3>'+esc(b[0])+'</h3><p class="small muted">'+esc(b[1])+'</p><textarea id="special" placeholder="Conte, sem citar pessoas ou clientes">'+esc(ctx.special.comment||'')+'</textarea><label>'+esc(b[2])+'</label><textarea id="special2" placeholder="Sua sugestão (opcional)">'+esc(ctx.special.suggestion||'')+'</textarea>';
+html+='<label>Qual é a melhor coisa de trabalhar aqui? (opcional)</label><textarea id="good">'+esc(ctx.good)+'</textarea><label>Se pudesse mudar UMA coisa amanhã, o que seria? (opcional)</label><textarea id="change">'+esc(ctx.change)+'</textarea>'}
+html+='<div class="buttons"><button class="secondary" id="back" '+(!ctx.step?'disabled':'')+'>Voltar</button><button class="turq" id="next">'+(ctx.step===3?'Enviar respostas':'Continuar')+'</button></div>'+br();
+page('Sua voz constrói a próxima Link União',html,'Pesquisa de clima e engajamento · 7–10 minutos');
+document.querySelectorAll('input[type=radio]').forEach(el=>el.onchange=function(){var n=Number(el.value);if(el.name==='enps')ctx.enps=n;else if(el.name==='motivation')ctx.motivation=n;else ctx.ratings[el.name]=n});
+document.getElementById('back').onclick=function(){ctx.step=Math.max(0,ctx.step-1);staffRender()};
+document.getElementById('next').onclick=async function(){
+if(ctx.step===0){ctx.area=document.getElementById('area').value;ctx.consent=document.getElementById('consent').checked;if(!ctx.consent){status('Precisamos da sua confirmação voluntária para continuar.','error');return}}
+if(ctx.step===3){ctx.good=document.getElementById('good').value;ctx.change=document.getElementById('change').value;var a=document.getElementById('special'),b=document.getElementById('special2');if(a)ctx.special.comment=a.value;if(b)ctx.special.suggestion=b.value;this.disabled=true;try{await api({action:'staff_submit',area:ctx.area,ratings:ctx.ratings,special:ctx.special,enps:ctx.enps,motivation:ctx.motivation,comment_good:ctx.good,comment_change:ctx.change});ctx={};page('Obrigado por participar!','<p>Suas respostas foram enviadas. Seus comentários serão considerados no diagnóstico conduzido pela GRIT.</p><div class="notice">O resultado será compartilhado apenas de forma consolidada, sem ranking individual.</div>')}catch(e){this.disabled=false;status(e.message,'error')}return}
+ctx.step++;staffRender()
+}}
+function landing(){page('Construindo a próxima Link União','<p>O seu olhar ajuda a construir um ambiente melhor, uma empresa organizada e um atendimento cada vez mais forte.</p><p>Esta etapa do <b>Programa LINK UNIÃO 360°</b> é conduzida pela GRIT Soluções e Negócios.</p><div class="grid"><div class="kv"><h3>Pesquisa da equipe</h3><p class="muted small">Anônima no questionário, voluntária e com resultados agregados.</p><button id="staff" class="turq">Participar</button></div><div class="kv"><h3>Proprietários</h3><p class="muted small">Naldo e Carla utilizam convites individuais enviados pela consultoria.</p></div></div><div class="notice">O uso de dados para análise depende do aviso de privacidade e da abertura da campanha pela GRIT.</div>');document.getElementById('staff').onclick=function(){location.href='?pesquisa=equipe'}}
+async function adminLogin(email,password){var r=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email:email,password:password})});var j=await r.json();if(!r.ok||!j.access_token)throw Error('Não foi possível autenticar. Confira usuário, senha e permissões.');adminJWT=j.access_token;sessionStorage.setItem('lu_grit_admin_jwt',adminJWT);return j}
+function loginRender(){page('Acesso administrativo GRIT','<p>Área restrita à consultoria para gerenciar a campanha e analisar resultados confidenciais.</p><label>E-mail</label><input id="email" type="email" autocomplete="username" placeholder="Seu e-mail administrativo"><label>Senha</label><input id="password" type="password" autocomplete="current-password"><div class="buttons"><button id="login">Entrar</button></div>'+br());document.getElementById('login').onclick=async function(){this.disabled=true;try{await adminLogin(document.getElementById('email').value,document.getElementById('password').value);await adminRender()}catch(e){this.disabled=false;status(e.message,'error')}}}
+async function adminRender(){try{var s=await api({action:'admin_status'},true);var c=s.campaign;var invitations=(s.invites||[]).map(i=>'<tr><td>'+esc(i.person)+'</td><td>'+esc(i.status)+'</td><td>'+(i.completed_at?'Concluída':'—')+'</td></tr>').join('');
+var html='<div class="notice '+(c.is_open?'':'warning')+'">'+(c.is_open?'Campanha aberta para respostas.':'Campanha fechada: nenhum formulário recebe respostas.')+'</div><div class="grid"><div class="kv"><div class="muted small">Respostas da equipe</div><h2>'+s.count+'</h2></div><div class="kv"><div class="muted small">Convites individuais</div><h2>2 proprietários</h2></div></div>';
+html+='<h3>Configurações da campanha</h3><label>Contato de privacidade para o respondente (obrigatório)</label><input id="pc" value="'+esc(c.privacy_contact)+'" placeholder="E-mail da GRIT para dúvidas sobre a pesquisa"><label class="check"><input type="checkbox" id="review" '+(c.privacy_reviewed?'checked':'')+'> Aviso de privacidade revisado pela GRIT antes de abrir</label><label class="check"><input type="checkbox" id="open" '+(c.is_open?'checked':'')+'> Receber novas respostas (abrir a campanha)</label><label>Total de colaboradores na Link União (opcional)</label><input id="staffcount" type="number" min="0" value="'+esc(c.staff_count==null?'':c.staff_count)+'"><div class="buttons"><button id="saveconfig">Salvar configuração</button><button class="secondary" id="refresh">Atualizar</button></div>';
+html+='<h3>Links de participação</h3><p>O link coletivo pode ser divulgado após a abertura. Os convites de Naldo e Carla são únicos e devem ser enviados individualmente.</p><div class="kv"><b>Equipe:</b> <span id="publiclink">'+esc(location.origin+location.pathname+'?pesquisa=equipe')+'</span><div class="buttons"><button class="secondary" id="copyteam">Copiar link da equipe</button></div></div><div class="grid"><div class="kv"><h3>Naldo</h3><button id="naldo">Gerar convite exclusivo</button></div><div class="kv"><h3>Carla</h3><button id="carla">Gerar convite exclusivo</button></div></div><div id="generated"></div><h3>Status dos convites</h3><table><thead><tr><th>Pessoa</th><th>Status</th><th>Conclusão</th></tr></thead><tbody>'+invitations+'</tbody></table><div class="buttons"><button class="turq" id="viewResults">Ver indicadores consolidados</button><button class="secondary" id="logout">Sair</button></div>'+br();
+page('Painel administrativo — Link União',html,'Acesso restrito à GRIT Soluções e Negócios.');
+document.getElementById('saveconfig').onclick=async function(){try{var data={action:'admin_config',privacy_contact:document.getElementById('pc').value,privacy_reviewed:document.getElementById('review').checked,is_open:document.getElementById('open').checked};var count=document.getElementById('staffcount').value;if(count!=='')data.staff_count=Number(count);await api(data,true);status('Configurações salvas.','success');adminRender()}catch(e){status(e.message,'error')}};
+document.getElementById('copyteam').onclick=()=>navigator.clipboard.writeText(location.origin+location.pathname+'?pesquisa=equipe').then(()=>status('Link copiado.','success'));
+document.getElementById('refresh').onclick=adminRender;
+function generate(person){return async function(){if(!confirm('Gerar novo convite para '+person+'? Convites anteriores dessa pessoa serão revogados.'))return;try{var a=await api({action:'admin_generate_invite',person:person},true);var link=location.origin+location.pathname+'?convite='+a.token;var g=document.getElementById('generated');g.innerHTML='<div class="notice"><b>Convite gerado para '+esc(person)+'</b><p class="small">Copie agora e encaminhe apenas à pessoa correta. O link não poderá ser recuperado, mas pode ser renovado.</p><textarea readonly id="invitelink">'+esc(link)+'</textarea><button class="secondary" id="copyinvite">Copiar convite</button></div>';document.getElementById('copyinvite').onclick=()=>navigator.clipboard.writeText(link).then(()=>status('Convite copiado.','success'));status('Convite criado com segurança.','success')}catch(e){status(e.message,'error')}}}
+document.getElementById('naldo').onclick=generate('Naldo');document.getElementById('carla').onclick=generate('Carla');
+document.getElementById('viewResults').onclick=adminResults;
+document.getElementById('logout').onclick=function(){sessionStorage.removeItem('lu_grit_admin_jwt');adminJWT='';loginRender()}
+}catch(e){sessionStorage.removeItem('lu_grit_admin_jwt');adminJWT='';loginRender()}}
+var NAMES={A:'Clareza e direção',B:'Estrutura e processos',C:'Segurança e liderança',D:'Reconhecimento e carreira',E:'Integração entre setores',F:'Orientação ao cliente'};
+async function adminResults(){try{var a=await api({action:'admin_summary'},true);var html='<div class="grid"><div class="kv"><div class="muted small">Respostas da equipe</div><h2>'+a.staffCount+'</h2></div><div class="kv"><div class="muted small">Proprietários concluídos</div><h2>'+a.respondedOwners+' / 2</h2></div></div>';
+if(!a.staff){html+='<div class="notice warning">'+esc(a.staffPrivacy)+'</div>'}
+else{html+='<h3>Radar de clima (0–100)</h3><p class="muted small">Pontuações consolidadas, somente com pelo menos 5 respondentes. O indicador não representa desempenho individual.</p><table>';Object.keys(a.staff.radar).forEach(function(k){var r=a.staff.radar[k];html+='<tr><th>'+NAMES[k]+'</th><td>'+(r.value==null?'Sem respostas':r.value+' / 100 <div class="meter"><i style="width:'+r.value+'%"></i></div>')+'</td></tr>'});html+='</table><div class="grid"><div class="kv"><b>eNPS</b><h2>'+esc(a.staff.enps==null?'—':a.staff.enps)+'</h2><span class="muted small">Escala de -100 a +100</span></div><div class="kv"><b>Motivação</b><h2>'+esc(a.staff.motivation==null?'—':a.staff.motivation)+'</h2><span class="muted small">Escala de 0 a 10</span></div></div>'}
+html+='<h3>Pesquisa estratégica dos proprietários</h3><div class="notice">Visões individuais da direção são restritas à consultoria GRIT. Os resultados de equipe não incluem comentários literais.</div>';
+(a.ownerResults||[]).forEach(function(p){html+='<div class="kv"><b>'+esc(p.person)+'</b><p class="small muted">Concluída em '+esc(p.completed_at?new Date(p.completed_at).toLocaleDateString('pt-BR'):'—')+'</p><details><summary>Respostas estratégicas</summary><table>'+Object.keys(p.answers||{}).map(function(k){return '<tr><th>'+esc(k)+'</th><td>'+esc(p.answers[k])+'</td></tr>'}).join('')+'</table></details></div>'});
+html+='<div class="buttons"><button class="secondary" id="backAdmin">Voltar à gestão</button><button id="exportSummary">Exportar resumo JSON</button></div>'+br();page('Resultados — Diagnóstico Link União',html,'Base real de respostas recebidas. Nenhum valor é simulado.');
+document.getElementById('backAdmin').onclick=adminRender;document.getElementById('exportSummary').onclick=function(){var out={gerado_em:new Date().toISOString(),numero_participantes:a.staffCount,clima:a.staff,convites_proprietarios:a.respondedOwners};var b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});var u=URL.createObjectURL(b);var el=document.createElement('a');el.href=u;el.download='link-uniao-radar-agregado.json';el.click();URL.revokeObjectURL(u)}
+}catch(e){status(e.message,'error')}}
+async function main(){try{var r=await fetch(END,{cache:'no-store'});ctx.config=await r.json();if(adminPage)return adminJWT?adminRender():loginRender();if(!ctx.config.open){page('Diagnóstico em preparação','<div class="notice warning">A GRIT está revisando os formulários e o aviso de privacidade. A coleta ainda não foi aberta.</div><p>Quando a campanha estiver disponível, você poderá responder pelo link recebido.</p>');return}if(ownerToken)return ownerStart();if(staffPage)return staffRender();landing()}catch(e){page('Conexão indisponível','<p>Não foi possível confirmar o estado da pesquisa. Não envie informações por canais alternativos sem orientação da GRIT.</p>')}}
+main();
+})();
+</script>
+</body>
+</html>
