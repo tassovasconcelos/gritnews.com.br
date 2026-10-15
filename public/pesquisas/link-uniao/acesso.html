@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>GRIT — Acesso Link União 360°</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f3f7fa;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#163045}header{background:#112d40;color:white;padding:20px 6vw;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:800;letter-spacing:.03em}header small{font-weight:500;color:#bce9e7}.wrap{max-width:530px;margin:6vh auto;padding:0 18px}article{background:white;border:1px solid #d4e3e9;border-radius:22px;box-shadow:0 18px 65px #12304613;padding:32px}h1{margin:3px 0 10px;font-size:29px;line-height:1.15}p{line-height:1.5;color:#586a7b}label{display:block;font-size:14px;font-weight:750;margin:18px 0 8px}input{border:1px solid #aabdc7;border-radius:10px;width:100%;font:inherit;padding:14px;outline-color:#04a6a0}button{font:inherit;cursor:pointer;background:#0b8d86;border:0;border-radius:11px;color:white;padding:13px 16px;font-weight:750;min-height:48px}button:disabled{opacity:.5;cursor:wait}.secondary{background:#eaf6f6;color:#135b62}.buttons{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 6px}.buttons button{flex:1;min-width:180px}.hint{background:#edf8f7;border:1px solid #c2e8e5;padding:14px;border-radius:10px;font-size:13px;color:#235964;margin-top:18px}.error{color:#8b2e21;background:#fff1ee}.success{color:#166546;background:#e8fbef}.msg{font-size:13px;padding:12px;border-radius:9px;display:none;margin:18px 0 0}.small{font-size:12px}.hidden{display:none}footer{text-align:center;margin:25px 0;font-size:12px;color:#6a7f8c}@media(max-width:520px){article{padding:23px}h1{font-size:25px}}</style></head>
+<body><header><span>GRIT <small> SOLUÇÕES E NEGÓCIOS</small></span><span>LINK UNIÃO 360°</span></header>
+<div class="wrap"><article><div style="font-size:12px;font-weight:850;letter-spacing:.1em;color:#028984">ACESSO EXCLUSIVO À CONSULTORIA</div><h1 id="heading">Painel administrativo</h1>
+<p id="explain">Utilize a conta GRIT cadastrada no sistema da pesquisa. As credenciais não são compartilhadas com a Link União.</p>
+<section id="login"><label for="email">E-mail administrativo</label><input id="email" type="email" autocomplete="username" value="gritsolucoes@gmail.com"><label for="password">Senha desta conta no Supabase</label><input id="password" type="password" autocomplete="current-password" placeholder="Digite sua senha"><div class="buttons"><button id="enter">Entrar no painel</button><button class="secondary" id="forgot">Recuperar por e-mail</button></div></section>
+<section class="hidden" id="reset"><label for="newPass">Nova senha (mínimo 12 caracteres)</label><input id="newPass" type="password" autocomplete="new-password"><label for="confirmPass">Confirme a nova senha</label><input id="confirmPass" type="password" autocomplete="new-password"><div class="buttons"><button id="update">Salvar nova senha</button></div></section>
+<div id="message" class="msg" aria-live="polite" role="status"></div><div class="hint">A campanha está protegida. Apenas usuários autorizados pela GRIT têm acesso às respostas e ao painel. Se você esquecer a senha, solicite o link de recuperação, enviado exclusivamente ao e-mail cadastrado.</div>
+</article><footer>GRIT Soluções e Negócios × Link União · Diagnóstico de gestão e pessoas</footer></div>
+<script>
+(function(){
+'use strict';
+const BASE='https://pcrwtoddavpvkaxwtstc.supabase.co';
+const KEY='sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS';
+const END=BASE+'/functions/v1/link-uniao-surveys';
+const DASH='index.html?admin=1';
+const $=id=>document.getElementById(id);
+const msg=(t,type='error')=>{const el=$('message');el.textContent=t;el.className='msg '+type;el.style.display='block'};
+const busy=(el,v)=>{el.disabled=v;el.style.opacity=v?'.6':'1'};
+const params=new URLSearchParams(location.hash.replace(/^#/,''));
+let recoveryToken=params.get('access_token')||'';
+if(params.get('type')==='recovery'&&recoveryToken){history.replaceState(null,'',location.pathname);$('login').classList.add('hidden');$('reset').classList.remove('hidden');$('heading').textContent='Definir nova senha';$('explain').textContent='Recebemos sua solicitação de recuperação. Defina uma nova senha exclusiva para a conta administrativa.'}
+async function login(){
+const email=$('email').value.trim(),password=$('password').value;
+if(!email||!password){msg('Preencha o e-mail e a senha.');return}
+busy($('enter'),true);msg('Conferindo credenciais e permissões…','success');
+try{
+ const res=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email,password})});
+ const body=await res.json().catch(()=>({}));
+ if(!res.ok||!body.access_token)throw new Error(res.status===400?'Senha incorreta para esta conta. Use Recuperar por e-mail.':(res.status===429?'Muitas tentativas. Aguarde e utilize recuperação de senha.':'Falha na autenticação (HTTP '+res.status+').'));
+ const auth=await fetch(END,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+body.access_token},body:JSON.stringify({action:'admin_status'})});
+ const a=await auth.json().catch(()=>({}));
+ if(!auth.ok||!a.ok)throw new Error(auth.status===403?'Esta conta está autenticada, mas não possui autorização administrativa GRIT.':'Acesso autenticado, mas o painel não conseguiu consultar a API (HTTP '+auth.status+').');
+ sessionStorage.setItem('lu_grit_admin_jwt',body.access_token);msg('Autenticado com sucesso. Abrindo o painel…','success');
+ location.replace(DASH);
+}catch(e){msg(e.message||'Não foi possível entrar.')}finally{busy($('enter'),false)}
+}
+async function recover(){
+const email=$('email').value.trim();if(!email||!email.includes('@'))return msg('Informe seu e-mail administrativo válido.');
+busy($('forgot'),true);msg('Solicitando a mensagem de recuperação…','success');
+try{
+const target=location.origin+location.pathname;
+const r=await fetch(BASE+'/auth/v1/recover?redirect_to='+encodeURIComponent(target),{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email})});
+if(!r.ok){const b=await r.json().catch(()=>({}));throw new Error(r.status===429?'Limite temporário de envios atingido. Tente pelo painel do Supabase.':'Falha na solicitação de recuperação (HTTP '+r.status+'). '+String(b.msg||b.error_description||''))}
+msg('Solicitação aceita. Confira o e-mail cadastrado (incluindo Spam). Abra a mensagem no mesmo navegador e siga as orientações.','success');
+}catch(e){msg(e.message||'Falha ao solicitar recuperação.')}finally{busy($('forgot'),false)}
+}
+async function reset(){
+const pass=$('newPass').value;
+if(pass.length<12)return msg('A nova senha deve ter pelo menos 12 caracteres.');
+if(pass!==$('confirmPass').value)return msg('As senhas digitadas não coincidem.');
+busy($('update'),true);try{
+const r=await fetch(BASE+'/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+recoveryToken},body:JSON.stringify({password:pass})});
+if(!r.ok)throw new Error('Seu link de recuperação pode ter expirado. Solicite um novo.');
+recoveryToken='';$('newPass').value='';$('confirmPass').value='';$('reset').classList.add('hidden');$('login').classList.remove('hidden');$('heading').textContent='Painel administrativo';$('explain').textContent='Senha atualizada. Entre usando a nova senha.';msg('Senha atualizada com sucesso! Faça seu login.','success');
+}catch(e){msg(e.message||'Falha ao salvar senha.')}finally{busy($('update'),false)}
+}
+$('enter').addEventListener('click',login);
+$('password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+$('forgot').addEventListener('click',recover);
+$('update').addEventListener('click',reset);
+})();
+</script></body></html>
