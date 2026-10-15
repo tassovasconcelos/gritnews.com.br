@@ -1,0 +1,36 @@
+name: Link União — API e segurança
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/link-uniao-api.yml'
+      - 'public/pesquisas/link-uniao/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Verificar disponibilidade e bloqueio inicial
+        shell: bash
+        run: |
+          set -euo pipefail
+          END="https://pcrwtoddavpvkaxwtstc.supabase.co/functions/v1/link-uniao-surveys"
+          code=$(curl -fsSL --connect-timeout 8 --max-time 18 -o /tmp/status.json -w '%{http_code}' "$END")
+          echo "GET code=$code"
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/status.json'))
+          assert r['ok'] is True, r
+          print('Campaign open:',r['open'])
+          PY
+          for op in '{"action":"staff_submit","ratings":{"A1":5,"A2":4,"A3":3,"B1":2,"B2":5,"B3":4}}' '{"action":"admin_status"}' '{"action":"owner_load","token":"invalid"}'; do
+            code=$(curl -sS --connect-timeout 8 --max-time 18 -o /tmp/response.json -w '%{http_code}' -H 'Content-Type: application/json' --data "$op" "$END")
+            echo "POST code=$code $(cat /tmp/response.json)"
+            case "$code" in
+              403) ;;
+              *) echo "Blocked request expected 403; got $code"; exit 1 ;;
+            esac
+          done
