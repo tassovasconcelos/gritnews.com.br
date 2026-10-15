@@ -150,8 +150,59 @@ if(ctx.step===3){ctx.good=document.getElementById('good').value;ctx.change=docum
 ctx.step++;staffRender()
 }}
 function landing(){page('Construindo a próxima Link União','<p>O seu olhar ajuda a construir um ambiente melhor, uma empresa organizada e um atendimento cada vez mais forte.</p><p>Esta etapa do <b>Programa LINK UNIÃO 360°</b> é conduzida pela GRIT Soluções e Negócios.</p><div class="grid"><div class="kv"><h3>Pesquisa da equipe</h3><p class="muted small">Anônima no questionário, voluntária e com resultados agregados.</p><button id="staff" class="turq">Participar</button></div><div class="kv"><h3>Proprietários</h3><p class="muted small">Naldo e Carla utilizam convites individuais enviados pela consultoria.</p></div></div><div class="notice">O uso de dados para análise depende do aviso de privacidade e da abertura da campanha pela GRIT.</div>');document.getElementById('staff').onclick=function(){location.href='?pesquisa=equipe'}}
-async function adminLogin(email,password){var r=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email:email,password:password})});var j=await r.json();if(!r.ok||!j.access_token)throw Error('Não foi possível autenticar. Confira usuário, senha e permissões.');adminJWT=j.access_token;sessionStorage.setItem('lu_grit_admin_jwt',adminJWT);return j}
-function loginRender(){page('Acesso administrativo GRIT','<p>Área restrita à consultoria para gerenciar a campanha e analisar resultados confidenciais.</p><label>E-mail</label><input id="email" type="email" autocomplete="username" placeholder="Seu e-mail administrativo"><label>Senha</label><input id="password" type="password" autocomplete="current-password"><div class="buttons"><button id="login">Entrar</button></div>'+br());document.getElementById('login').onclick=async function(){this.disabled=true;try{await adminLogin(document.getElementById('email').value,document.getElementById('password').value);await adminRender()}catch(e){this.disabled=false;status(e.message,'error')}}}
+async function adminLogin(email,password){
+var r=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email:email,password:password})});
+var j=await r.json().catch(()=>({}));
+if(!r.ok||!j.access_token){
+ if(r.status===400)throw Error('E-mail ou senha não reconhecidos. Use “Recuperar acesso” para definir uma nova senha.');
+ if(r.status===429)throw Error('Muitas tentativas. Aguarde e utilize o fluxo de recuperação de acesso.');
+ throw Error('Falha ao autenticar na plataforma. Verifique a conexão e tente novamente.');
+}
+adminJWT=j.access_token;sessionStorage.setItem('lu_grit_admin_jwt',adminJWT);return j;
+}
+function loginRender(){
+page('Acesso administrativo GRIT',
+ '<p>Área restrita à consultoria para gerenciar os convites e analisar resultados. Use a conta GRIT cadastrada no Supabase; a senha pode ser diferente da Hostinger.</p>'
+ +'<label for="email">E-mail</label><input id="email" type="email" autocomplete="username" value="gritsolucoes@gmail.com">'
+ +'<label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" placeholder="Senha desta conta no Supabase">'
+ +'<div class="buttons"><button id="login">Entrar</button><button id="recover" class="secondary">Recuperar acesso por e-mail</button></div>'
+ +'<p class="muted small">Nunca informe sua senha pelo WhatsApp ou neste chat. A recuperação usa um link enviado pelo sistema de autenticação para o e-mail cadastrado.</p>'+br());
+document.getElementById('login').onclick=async function(){
+ const b=this;b.disabled=true;status('Verificando as credenciais…');
+ try{await adminLogin(document.getElementById('email').value.trim(),document.getElementById('password').value);await adminRender()}
+ catch(e){b.disabled=false;status(e.message||'Erro de autenticação','error')}
+};
+document.getElementById('recover').onclick=async function(){
+ var email=document.getElementById('email').value.trim();
+ if(!email||!email.includes('@'))return status('Informe o e-mail administrativo cadastrado.','error');
+ this.disabled=true;
+ try{
+  var ret=location.origin+location.pathname+'?admin=1';
+  var rr=await fetch(BASE+'/auth/v1/recover?redirect_to='+encodeURIComponent(ret),{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email:email})});
+  if(!rr.ok){var e=await rr.json().catch(()=>({}));throw Error('Não foi possível solicitar a recuperação ('+rr.status+'). Confirme o e-mail e as URLs de redirecionamento no Supabase.')}
+  status('Se o e-mail estiver cadastrado e o envio estiver habilitado, você receberá uma mensagem com as instruções. Confira a caixa de entrada e o spam.','success');
+ }catch(e){status(e.message,'error')}finally{this.disabled=false}
+};
+}
+function recoveryRender(token){
+history.replaceState({},'',location.pathname+'?admin=1');
+page('Definir nova senha GRIT',
+ '<div class="notice">Você chegou pelo link de recuperação de acesso. Cadastre uma nova senha exclusiva, com pelo menos 12 caracteres.</div>'
+ +'<label for="newpass">Nova senha</label><input id="newpass" type="password" autocomplete="new-password" minlength="12">'
+ +'<label for="confirm">Repita a nova senha</label><input id="confirm" type="password" autocomplete="new-password" minlength="12">'
+ +'<div class="buttons"><button id="change" class="turq">Atualizar senha</button></div>'+br());
+document.getElementById('change').onclick=async function(){
+var p=document.getElementById('newpass').value,c=document.getElementById('confirm').value;
+if(p.length<12)return status('A senha precisa ter pelo menos 12 caracteres.','error');
+if(p!==c)return status('As duas senhas não coincidem.','error');
+this.disabled=true;
+try{
+var rr=await fetch(BASE+'/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+token},body:JSON.stringify({password:p})});
+if(!rr.ok)throw Error('O link pode ter expirado. Solicite uma nova recuperação de acesso.');
+loginRender();status('Senha atualizada. Entre com a nova senha.','success');
+}catch(e){this.disabled=false;status(e.message,'error')}
+};
+}
 async function adminRender(){try{var s=await api({action:'admin_status'},true);var c=s.campaign;var invitations=(s.invites||[]).map(i=>'<tr><td>'+esc(i.person)+'</td><td>'+esc(i.status)+'</td><td>'+(i.completed_at?'Concluída':'—')+'</td></tr>').join('');
 var html='<div class="notice '+(c.is_open?'':'warning')+'">'+(c.is_open?'Campanha aberta para respostas.':'Campanha fechada: nenhum formulário recebe respostas.')+'</div><div class="grid"><div class="kv"><div class="muted small">Respostas da equipe</div><h2>'+s.count+'</h2></div><div class="kv"><div class="muted small">Convites individuais</div><h2>2 proprietários</h2></div></div>';
 html+='<h3>Configurações da campanha</h3><label>Contato de privacidade para o respondente (obrigatório)</label><input id="pc" value="'+esc(c.privacy_contact)+'" placeholder="E-mail da GRIT para dúvidas sobre a pesquisa"><label class="check"><input type="checkbox" id="review" '+(c.privacy_reviewed?'checked':'')+'> Aviso de privacidade revisado pela GRIT antes de abrir</label><label class="check"><input type="checkbox" id="open" '+(c.is_open?'checked':'')+'> Receber novas respostas (abrir a campanha)</label><label>Total de colaboradores na Link União (opcional)</label><input id="staffcount" type="number" min="0" value="'+esc(c.staff_count==null?'':c.staff_count)+'"><div class="buttons"><button id="saveconfig">Salvar configuração</button><button class="secondary" id="refresh">Atualizar</button></div>';
@@ -174,7 +225,25 @@ html+='<h3>Pesquisa estratégica dos proprietários</h3><div class="notice">Vis�
 html+='<div class="buttons"><button class="secondary" id="backAdmin">Voltar à gestão</button><button id="exportSummary">Exportar resumo JSON</button></div>'+br();page('Resultados — Diagnóstico Link União',html,'Base real de respostas recebidas. Nenhum valor é simulado.');
 document.getElementById('backAdmin').onclick=adminRender;document.getElementById('exportSummary').onclick=function(){var out={gerado_em:new Date().toISOString(),numero_participantes:a.staffCount,clima:a.staff,convites_proprietarios:a.respondedOwners};var b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});var u=URL.createObjectURL(b);var el=document.createElement('a');el.href=u;el.download='link-uniao-radar-agregado.json';el.click();URL.revokeObjectURL(u)}
 }catch(e){status(e.message,'error')}}
-async function main(){try{var r=await fetch(END,{cache:'no-store'});ctx.config=await r.json();if(adminPage)return adminJWT?adminRender():loginRender();if(!ctx.config.open){page('Diagnóstico em preparação','<div class="notice warning">A GRIT está revisando os formulários e o aviso de privacidade. A coleta ainda não foi aberta.</div><p>Quando a campanha estiver disponível, você poderá responder pelo link recebido.</p>');return}if(ownerToken)return ownerStart();if(staffPage)return staffRender();landing()}catch(e){page('Conexão indisponível','<p>Não foi possível confirmar o estado da pesquisa. Não envie informações por canais alternativos sem orientação da GRIT.</p>')}}
+async function main(){
+ try{
+  if(adminPage){
+   var h=new URLSearchParams(location.hash.replace(/^#/,''));
+   if(h.get('type')==='recovery'&&h.get('access_token'))return recoveryRender(h.get('access_token'));
+   return adminJWT?adminRender():loginRender();
+  }
+  var r=await fetch(END,{cache:'no-store'});
+  if(!r.ok)throw Error('A campanha não pôde ser consultada.');
+  ctx.config=await r.json();
+  if(!ctx.config.open){
+   page('Diagnóstico em preparação','<div class="notice warning">A GRIT está revisando os formulários e o aviso de privacidade. A coleta ainda não foi aberta.</div><p>Quando a campanha estiver disponível, você poderá responder pelo link recebido.</p>');
+   return;
+  }
+  if(ownerToken)return ownerStart();
+  if(staffPage)return staffRender();
+  landing();
+ }catch(e){page('Conexão indisponível','<p>Não foi possível confirmar o estado da pesquisa. A área administrativa pode ser acessada pelo link próprio.</p><p class="small muted">'+esc(e.message||'Tente novamente')+'</p>')}
+}
 main();
 })();
 </script>
