@@ -4,9 +4,9 @@
 <body><header><span>GRIT <small> SOLUÇÕES E NEGÓCIOS</small></span><span>LINK UNIÃO 360°</span></header>
 <div class="wrap"><article><div style="font-size:12px;font-weight:850;letter-spacing:.1em;color:#028984">ACESSO EXCLUSIVO À CONSULTORIA</div><h1 id="heading">Painel administrativo</h1>
 <p id="explain">Utilize a conta GRIT cadastrada no sistema da pesquisa. As credenciais não são compartilhadas com a Link União.</p>
-<section id="login"><label for="email">E-mail administrativo</label><input id="email" type="email" autocomplete="username" value="gritsolucoes@gmail.com"><label for="password">Senha desta conta no Supabase</label><input id="password" type="password" autocomplete="current-password" placeholder="Digite sua senha"><div class="buttons"><button id="enter">Entrar no painel</button><button class="secondary" id="forgot">Recuperar por e-mail</button></div></section>
+<section id="login"><label for="email">E-mail administrativo</label><input id="email" type="email" autocomplete="username" value="gritsolucoes@gmail.com"><label for="password">Senha desta conta no Supabase</label><input id="password" type="password" autocomplete="current-password" placeholder="Digite sua senha"><div class="buttons"><button id="enter">Entrar no painel</button></div></section>
 <section class="hidden" id="reset"><label for="newPass">Nova senha (mínimo 12 caracteres)</label><input id="newPass" type="password" autocomplete="new-password"><label for="confirmPass">Confirme a nova senha</label><input id="confirmPass" type="password" autocomplete="new-password"><div class="buttons"><button id="update">Salvar nova senha</button></div></section>
-<div id="message" class="msg" aria-live="polite" role="status"></div><div class="hint">A campanha está protegida. Apenas usuários autorizados pela GRIT têm acesso às respostas e ao painel. Se você esquecer a senha, solicite o link de recuperação, enviado exclusivamente ao e-mail cadastrado.</div>
+<div id="message" class="msg" aria-live="polite" role="status"></div><div class="hint">A campanha está protegida. Apenas usuários autorizados pela GRIT têm acesso às respostas e ao painel. Entre com as credenciais administrativas já cadastradas no Supabase.</div>
 </article><footer>GRIT Soluções e Negócios × Link União · Diagnóstico de gestão e pessoas</footer></div>
 <script>
 (function(){
@@ -58,7 +58,7 @@ recoveryToken='';$('newPass').value='';$('confirmPass').value='';$('reset').clas
 }
 $('enter').addEventListener('click',login);
 $('password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-$('forgot').addEventListener('click',recover);
+
 $('update').addEventListener('click',reset);
 })();
 </script></body></html>
