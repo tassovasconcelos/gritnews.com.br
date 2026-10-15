@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/login",
+      "destination": "/acesso.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/index.html?admin=1"
+    },
+    {
+      "source": "/equipe",
+      "destination": "/index.html?pesquisa=equipe"
+    },
+    {
+      "source": "/proprietario",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/inicio",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
+  ]
+}
