@@ -12,3 +12,16 @@ if (/[/\\]pnpm\.(?:cjs|js)$/i.test(manager)) {
   execFileSync(process.execPath,[manager,'run','build'],{cwd,stdio:'inherit',env});
 }
 
+
+// GRIT Link União survey: copy the isolated static application into the
+// deployed runtime so that the hostname router serves the right files.
+import { cpSync, mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
+const projectRoot = fileURLToPath(new URL('../', import.meta.url));
+const surveyOut = resolve(projectRoot, 'dist', 'uniao');
+mkdirSync(surveyOut, { recursive: true });
+for (const page of ['index.html', 'acesso.html']) {
+  cpSync(resolve(projectRoot, 'apps', 'link-uniao', page), resolve(surveyOut, page));
+}
+console.log('GRIT Link União survey assets copied to dist/uniao');
