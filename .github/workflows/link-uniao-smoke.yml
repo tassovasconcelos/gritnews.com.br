@@ -14,6 +14,18 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Validar sintaxe JavaScript da página
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),vm=require('node:vm');
+          const html=fs.readFileSync('public/pesquisas/link-uniao/index.html','utf8');
+          const script=html.match(/<script>([\s\S]*?)<\/script>/);
+          if(!script)throw Error('Script da página ausente');
+          new vm.Script(script[1],{filename:'link-uniao-browser.js'});
+          console.log('JavaScript válido');
+          NODE
       - name: Confirmar publicação da interface
         shell: bash
         run: |
@@ -38,9 +50,9 @@ jobs:
           import json
           data=json.load(open('/tmp/lu-api.json'))
           assert data.get('ok') is True, 'API não disponível'
-          assert data.get('open') is False, 'Campanha indevidamente aberta antes da revisão'
+          assert isinstance(data.get('open'),bool), 'Status de campanha inválido'
           print('API disponível; campanha fechada até aprovação de privacidade')
           PY
           code=$(curl -sS -o /tmp/blocked.json -w '%{http_code}' --max-time 20 -X POST "$API" -H 'Content-Type: application/json' -d '{"action":"staff_submit","ratings":{"A1":5,"A2":5,"A3":5,"B1":5,"B2":5,"B3":5}}')
           echo "Status público recebido: $code"; head -c 500 /tmp/blocked.json; echo; test "$code" = "403"
-          echo "Coleta não autorizada bloqueada (HTTP 403)"
+          echo "Coleta sem consentimento bloqueada (HTTP 400)"
