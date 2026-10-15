@@ -1,0 +1,65 @@
+name: Link União — acesso administrativo (teste único)
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/link-uniao-access-once.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verificar página de login isolada
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://gritnews.com.br/pesquisas/link-uniao/acesso.html'
+          for n in $(seq 1 12); do
+            code=$(curl -L -sS --connect-timeout 7 --max-time 12 -o /tmp/access.html -w '%{http_code}' "$BASE?verify=$GITHUB_SHA" || true)
+            if [ "$code" = '200' ] && grep -q 'ACESSO EXCLUSIVO À CONSULTORIA' /tmp/access.html && grep -q 'Recuperar por e-mail' /tmp/access.html; then
+              echo "Nova página de acesso publicada e com formulário correto."
+              break
+            fi
+            if [ "$n" = '12' ]; then echo "Página não confirmou publicação."; exit 1; fi
+            sleep 12
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path('/tmp/access.html').read_text()
+          assert "sessionStorage.setItem('lu_grit_admin_jwt'" in html
+          assert "admin_status" in html
+          assert "recoveryToken" in html
+          k=re.search(r"KEY='(sb_publishable_[^']+)'",html)
+          assert k, 'publishable key ausente'
+          Path('/tmp/public-key').write_text(k.group(1))
+          print('Autenticação, checagem de papel e recuperação presentes.')
+          PY
+      - name: Verificar autenticação Supabase sem credenciais reais
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEY=$(cat /tmp/public-key)
+          URL='https://pcrwtoddavpvkaxwtstc.supabase.co'
+          code=$(curl -sS --connect-timeout 7 --max-time 20 -o /tmp/auth.json -w '%{http_code}' \
+            -H "apikey: $KEY" -H 'Content-Type: application/json' \
+            -H 'Origin: https://gritnews.com.br' \
+            --data '{"email":"nobody-test@example.invalid","password":"invalid-credential-probe"}' \
+            "$URL/auth/v1/token?grant_type=password")
+          echo "Serviço de autenticação: HTTP $code"
+          test "$code" = "400" -o "$code" = "422"
+      - name: Solicitar recuperação de senha para o administrador GRIT
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEY=$(cat /tmp/public-key)
+          REDIRECT='https://gritnews.com.br/pesquisas/link-uniao/acesso.html'
+          REDIRECT_ENC=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1],safe=''))" "$REDIRECT")
+          code=$(curl -sS --connect-timeout 7 --max-time 25 -o /tmp/recovery.json -w '%{http_code}' \
+            -H "apikey: $KEY" -H 'Content-Type: application/json' \
+            -H 'Origin: https://gritnews.com.br' \
+            --data '{"email":"gritsolucoes@gmail.com"}' \
+            "https://pcrwtoddavpvkaxwtstc.supabase.co/auth/v1/recover?redirect_to=$REDIRECT_ENC")
+          echo "Solicitação de recuperação: HTTP $code"
+          if [ "$code" = "200" ]; then echo 'Solicitação aceita. Entrega e redirecionamento do e-mail ainda dependem da configuração do Supabase.'; else echo 'Serviço não aceitou a solicitação. Nenhum link foi afirmado como enviado.'; exit 1; fi
