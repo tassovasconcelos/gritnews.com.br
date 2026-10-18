@@ -28,8 +28,8 @@ test('valid stock baseline is persisted with the Shopping company and exact valu
 test('returned password recovery error does not show success',async()=>{
  const c=client();await c.window.cipResetPassword();assert.match(c.elements.loginMessage.textContent,/indisponível/);
 });
-test('recovery uses the allowlisted GRIT password update page',async()=>{
+test('recovery uses the dedicated GRIT password update page',async()=>{
  const c=client({},false);await c.window.cipResetPassword();
- assert.equal(c.resets[0].redirectTo,'https://gritnews.com.br/?view=admin&recovery=1');
+ assert.equal(c.resets[0].redirectTo,'https://cip.gritnews.com.br/recuperar.html');
  assert.match(c.elements.loginMessage.textContent,/recuperação GRIT/);
 });
