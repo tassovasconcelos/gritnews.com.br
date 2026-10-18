@@ -1,9 +1,10 @@
+AddType text/javascript .mjs
 Options -Indexes
 <IfModule mod_headers.c>
  Header always set X-Content-Type-Options "nosniff"
  Header always set Referrer-Policy "strict-origin-when-cross-origin"
  Header always set X-Frame-Options "DENY"
- <FilesMatch "\.(html|js|json)$">
+ <FilesMatch "\.(html|js|mjs|json)$">
   Header always set Cache-Control "no-cache, must-revalidate"
   Header always unset Expires
  </FilesMatch>
