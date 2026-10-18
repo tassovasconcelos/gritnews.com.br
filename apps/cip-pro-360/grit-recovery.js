@@ -33,12 +33,13 @@ $('recoveryForm').addEventListener('submit',async event=>{
   const {data,error}=await client.auth.getUser();
   if(error||!data?.user){ready=false;throw Error('expired');}
   const result=await client.auth.updateUser({password});
-  if(result.error)throw Error('rejected');
+  const alreadyCurrent=result.error?.code==='same_password';
+  if(result.error&&!alreadyCurrent)throw Error('rejected');
   $('newPassword').value='';$('confirmPassword').value='';ready=false;
   $('recoveryForm').classList.add('hidden');
   $('returnLink').classList.remove('hidden');
-  $('message').textContent='Senha GRIT atualizada. Volte ao CIP e entre com a nova senha.';
-  await client.auth.signOut({scope:'local'});
+  $('message').textContent=alreadyCurrent?'Essa já é sua senha atual. Volte ao CIP e entre com ela.':'Senha GRIT atualizada. Volte ao CIP e entre com a nova senha.';
+  await client.auth.signOut({scope:'local'}).catch(()=>{});
  }catch{
   $('newPassword').value='';$('confirmPassword').value='';
   $('message').textContent=ready?'Não foi possível salvar. Confira os requisitos da senha e tente novamente.':'O link expirou. Solicite uma nova recuperação.';

@@ -9,7 +9,7 @@ async function fixture(hash='#type=recovery',reject=false){
   const classes=new Set(id==='recoveryForm'||id==='returnLink'?['hidden']:[]);
   elements[id]={value:'',textContent:'',classList:{add:c=>classes.add(c),remove:c=>classes.delete(c),contains:c=>classes.has(c)},addEventListener(_name,handler){this.submit=handler;}};
  }
- const client={auth:{getSession:async()=>({}),getUser:async()=>({data:{user:{id:'unit-user'}}}),updateUser:async input=>{updates.push(input);return {error:reject?{message:'rejected'}:null};},signOut:async input=>signouts.push(input)}};
+ const client={auth:{getSession:async()=>({}),getUser:async()=>({data:{user:{id:'unit-user'}}}),updateUser:async input=>{updates.push(input);return {error:reject?{message:'rejected',code:typeof reject==='string'?reject:undefined}:null};},signOut:async input=>signouts.push(input)}};
  await vm.runInNewContext(`(async()=>{${source}\n})()`,{createClient:()=>client,URLSearchParams,location:{hash,pathname:'/recuperar.html'},history:{replaceState:(_a,_b,url)=>urls.push(url)},document:{getElementById:id=>elements[id]}});
  return {elements,updates,signouts,urls,submit:()=>elements.recoveryForm.submit({preventDefault(){}})};
 }
@@ -26,4 +26,9 @@ test('mismatched confirmation never submits a password update',async()=>{
 });
 test('rejected update does not claim success or reveal entered passwords',async()=>{
  const f=await fixture('#type=recovery',true);f.elements.newPassword.value=f.elements.confirmPassword.value='unit-test-password-2026';await f.submit();assert.match(f.elements.message.textContent,/Não foi possível/);assert.equal(f.elements.newPassword.value,'');assert.equal(f.signouts.length,0);
+});
+test('same current password directs the user to login without claiming a change',async()=>{
+ const f=await fixture('#type=recovery','same_password');f.elements.newPassword.value=f.elements.confirmPassword.value='unit-test-password-2026';await f.submit();
+ assert.match(f.elements.message.textContent,/já é sua senha atual/);assert.doesNotMatch(f.elements.message.textContent,/atualizada/);
+ assert.equal(f.elements.returnLink.classList.contains('hidden'),false);assert.equal(f.elements.recoveryForm.classList.contains('hidden'),true);assert.equal(f.elements.newPassword.value,'');assert.equal(f.signouts[0].scope,'local');
 });
