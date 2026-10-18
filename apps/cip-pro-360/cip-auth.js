@@ -119,12 +119,48 @@ async function reloadScenarios(){
  if(error){el.textContent="Histórico indisponível.";return;}
  el.innerHTML=(data||[]).map(x=>'<p>'+escape(new Date(x.created_at).toLocaleDateString("pt-BR"))+' · '+escape(x.target_days)+' dias · Estoque '+money(x.stock_value)+'</p>').join("")||"Nenhuma simulação salva.";
 }
+
+async function reloadPriceReviews(){
+ const host=$("cipPriceRows");if(!host)return;
+ const {data,error}=await supabase.from("cip_price_reviews").select("id,sku,product,cost,current_price,expense_pct,target_margin_pct,reference_price,status").eq("company_id",V).order("created_at",{ascending:false}).limit(100);
+ if(error){host.textContent="Falha ao consultar simulações de preços.";return;}
+ if(!data?.length){host.textContent="Nenhuma revisão de preço cadastrada.";return;}
+ const rows=data.map(x=>{
+  const current=x.current_price>0?(1-x.cost/x.current_price-x.expense_pct/100)*100:null;
+  const denominator=1-(Number(x.expense_pct)+Number(x.target_margin_pct))/100;
+  const floor=denominator>0?x.cost/denominator:null;
+  const warn=current!==null&&current<x.target_margin_pct?'<span class="pill">MARGEM EM RISCO</span>':'<span class="pill ok">EM FAIXA</span>';
+  const opts=["em_analise","aprovado","rejeitado"].map(k=>'<option '+(x.status===k?'selected':'')+' value="'+k+'">'+k+'</option>').join('');
+  return '<tr><td>'+escape(x.sku)+' · '+escape(x.product)+'</td><td>'+money(x.current_price)+'</td><td>'+(current===null?'—':current.toFixed(1)+'%')+'</td><td>'+(floor===null?'Inviável':money(floor))+'</td><td>'+(x.reference_price===null?'—':money(x.reference_price))+'</td><td>'+warn+'</td><td><select class="cip-price-status" data-rowid="'+escape(x.id)+'">'+opts+'</select></td></tr>';
+ }).join("");
+ host.innerHTML='<div class="tablewrap"><table><thead><tr><th>SKU / Produto</th><th>Preço atual</th><th>Margem simulada</th><th>Preço teórico alvo</th><th>Referência manual</th><th>Diagnóstico</th><th>Revisão</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+ host.querySelectorAll(".cip-price-status").forEach(el=>el.addEventListener("change",()=>window.cipPriceReviewStatus(el.dataset.rowid,el.value)));
+}
+window.cipPriceReviewStatus=async(id,status)=>{
+ const {error}=await supabase.from("cip_price_reviews").update({status,updated_at:new Date().toISOString()}).eq("id",id).eq("company_id",V);
+ if(error)alert("Atualização não permitida.");reloadPriceReviews();
+};
+window.cipSavePriceReview=async()=>{
+ const sku=$("priceSku")?.value.trim(),product=$("priceProduct")?.value.trim(),
+  cost=Number($("priceCost")?.value),current_price=Number($("priceCurrent")?.value),
+  expense_pct=Number($("priceExpense")?.value),target_margin_pct=Number($("priceTarget")?.value),
+  referenceRaw=$("priceReference")?.value?.trim(),reference_price=referenceRaw?Number(referenceRaw):null;
+ if(!sku||!product||!Number.isFinite(cost)||cost<0||!Number.isFinite(current_price)||current_price<=0||!Number.isFinite(expense_pct)||expense_pct<0||!Number.isFinite(target_margin_pct)||target_margin_pct<0||expense_pct+target_margin_pct>=100){
+   alert("Informe SKU, produto, custos/preço e percentuais válidos. Despesas + margem devem ser inferiores a 100%.");return;
+ }
+ const {error}=await supabase.from("cip_price_reviews").insert({company_id:V,created_by:user.id,sku,product,cost,current_price,expense_pct,target_margin_pct,reference_price});
+ if(error){alert("Revisão não registrada: confira suas permissões.");return;}
+ for(const id of ["priceSku","priceProduct","priceCost","priceCurrent","priceReference"])$(id).value="";
+ reloadPriceReviews();
+};
+
 window.cipLoadPage=(page)=>{
  if(!user)return;
  if(page==="cronograma")reloadMilestones();
  if(page==="cotacoes")reloadQuoteRows();
  if(page==="caderninho")reloadDemandRows();
  if(page==="estoque")reloadScenarios();
+ if(page==="precos")reloadPriceReviews();
 };
 window.addEventListener("cip:navigate",e=>window.cipLoadPage(e.detail.page));
 supabase.auth.onAuthStateChange((_event,session)=>{if(!session && user)toLogin();});
