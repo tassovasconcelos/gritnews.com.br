@@ -1,3 +1,12 @@
+## Estado consolidado — publicação e evolução (18/10/2026)
+**A versão inicial do CIP já foi publicada e conferida no domínio `https://cip.gritnews.com.br/`** pela execução manual FTPS `39145361980`, commit `fc41b2343de691521c8bc31ecb9fca08c964c6e5`; todos os arquivos retornaram HTTPS 200 e SHA-256 esperado, com logo oficial preservado. As referências abaixo a “não publicado” descrevem etapas anteriores e **não são mais o status vigente**.
+
+**Evolução desta rodada:** navegação mobile com sobreposição, botão acessível, fechamento por Escape/toque fora e limpeza no logout; Doquita lê somente o histórico **manual** das empresas autorizadas, produz alertas explicáveis de revisão de preços, cotações e procuras não atendidas com próxima ação humana. Novo módulo `doquita-insights.mjs` incluído no manifesto e nos testes. **Sem integração com Procfit, sem execução autônoma ou dados reais de ERP.** Novo pacote aguardando validação e verificação FTPS de publicação.
+
+**Pendências críticas:** homologação autenticada em navegador (login, logout, RLS entre perfis restritos, responsividade em aparelhos reais), Procfit/BI, gestão de usuários, aprovação de preço com alçadas e comprovação das fontes operacionais.
+
+---
+
 # CIP PRO 360° — Shopping Prohospital + Distribuidora Prohospital
 
 
