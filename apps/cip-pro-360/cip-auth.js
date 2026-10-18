@@ -54,7 +54,7 @@ window.cipLogin=async e=>{
 window.cipResetPassword=async()=>{
  const email=$("email")?.value?.trim();
  if(!email){note("Informe primeiro seu e-mail.");return;}
- try { await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});note("Se o endereço estiver habilitado, receberá instruções de recuperação."); }
+ try { const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;note("Se o endereço estiver habilitado, receberá instruções de recuperação."); }
  catch(e){note("Solicitação indisponível. Contate o administrador.");}
 };
 window.cipSignOut=async()=>{await supabase.auth.signOut();toLogin();note("Sessão encerrada.");};
@@ -79,6 +79,11 @@ async function reloadQuoteRows(){
 }
 window.cipQuoteStatus=async(id,status)=>{
  const patch={status};if(status!=="perdida")patch.loss_reason=null;
+ if(status==="perdida"){
+   const reason=prompt("Informe o motivo da perda (até 500 caracteres):");
+   if(reason===null||!reason.trim()||reason.trim().length>500){reloadQuoteRows();return;}
+   patch.loss_reason=reason.trim();
+ }
  const {error}=await supabase.from("cip_quotes").update(patch).eq("id",id).eq("company_id",B);
  if(error)alert("Sem permissão para alterar esta cotação.");reloadQuoteRows();
 };
@@ -110,8 +115,14 @@ window.cipSaveDemand=async()=>{
 };
 window.cipSaveScenario=async()=>{
  const obj={company_id:V,user_id:user.id,stock_value:Number($("stock")?.value),revenue_monthly:Number($("sales")?.value),cmv_pct:Number($("cmv")?.value),target_days:Number($("days")?.value)};
+ const m=$("scenarioMessage");
+ const validMoney=n=>Number.isFinite(n)&&n>=0&&n<1e14;
+ if(!["stock","sales","cmv","days"].every(id=>$(id)?.value?.trim())||!validMoney(obj.stock_value)||!validMoney(obj.revenue_monthly)||!Number.isFinite(obj.cmv_pct)||obj.cmv_pct<0||obj.cmv_pct>100||!Number.isInteger(obj.target_days)||obj.target_days<1||obj.target_days>365){
+   if(m)m.textContent="Informe valores válidos: estoque e vendas entre 0 e 99 trilhões, CMV de 0 a 100% e cobertura de 1 a 365 dias.";return;
+ }
  const {error}=await supabase.from("cip_scenarios").insert(obj);
- const m=$("scenarioMessage");if(m)m.textContent=error?"Não foi possível registrar a simulação.":"Simulação registrada em seu histórico.";
+ if(m)m.textContent=error?"Não foi possível registrar a simulação.":"Simulação registrada em seu histórico.";
+ if(!error)reloadScenarios();
 };
 async function reloadScenarios(){
  const el=$("cipScenarioHistory");if(!el)return;

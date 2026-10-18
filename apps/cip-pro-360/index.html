@@ -92,6 +92,14 @@ function navigate(page){
  else if(page==='doquita'){h=header('Doquita · Inteligência executiva','Alertas com evidência, responsável, prazo e resultado, não relatórios sem ação.')+'<div class="insight"><b>Primeiro desafio do Doquita</b><p>Validar os R$ 6 milhões de estoque e a cobertura indicada; diagnosticar capital parado, produtos de ruptura e oportunidades entre varejo e B2B.</p><span class="pill neutral">HIPÓTESE · SEM DADOS CONECTADOS</span></div>'+coming('Recomendações automáticas e tarefas')}
  else if(page==='integracoes'){h=header('Integrações e acessos','Segurança e dados segregados por empresa desde a fundação.')+'<div class="grid2"><div class="card"><h3>Administração</h3><p>Superadm designado: <b>gritsolucoes@gmail.com</b></p><span class="pill">PERFIL CIP ATIVO</span><p class="mini">Autenticação corporativa e permissões por empresa habilitadas. Gestão de convites e papéis pela interface ainda pendente.</p></div><div class="card"><h3>ERP Procfit / BI</h3><p>Fonte transacional prevista com acesso homologado somente leitura.</p><span class="pill">NÃO CONECTADO</span><p class="mini">Requer TI, views, catálogo, filiais, custos, vendas, preços e cotações.</p></div></div><div class="section card"><h3>Arquitetura alvo</h3><p class="muted">Procfit/BI → conector seguro → dados organizados por empresa → estoque/preços/cotações → Doquita → decisão e auditoria.</p></div>'}
  document.getElementById('content').innerHTML=h;
+ if(page==='inicio'){
+   const allowed=window.cipAuth.allowedRoutes;
+   document.querySelectorAll('#content .company').forEach(company=>{
+     const route=company.textContent.includes('Shopping Prohospital')?'varejo':'b2b';
+     if(!allowed.includes(route))company.closest('.card').remove();
+   });
+   if(!allowed.includes('estoque'))document.querySelector('#content .section .card')?.remove();
+ }
  window.dispatchEvent(new CustomEvent('cip:navigate',{detail:{page}}));
  if(page==='estoque'){const r=()=>{const s=Number(document.getElementById('stock').value),v=Number(document.getElementById('sales').value),c=Number(document.getElementById('cmv').value)/100,d=Number(document.getElementById('days').value),target=v*c*d/30,release=s-target;const fmt=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});document.getElementById('result').innerHTML=metric('Estoque-alvo teórico',fmt(target),'Base: vendas × CMV × dias / 30')+metric(release>=0?'Capital potencialmente liberável':'Estoque adicional necessário',fmt(Math.abs(release)),'Não equivale a caixa realizado')};document.querySelectorAll('#stock,#sales,#cmv,#days').forEach(el=>el.addEventListener('input',r));r();}
 }

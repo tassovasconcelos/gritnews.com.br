@@ -31,6 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           node apps/cip-pro-360/release-check.test.mjs
+          node apps/cip-pro-360/cip-auth.test.mjs
           node apps/cip-pro-360/release-check.mjs prepare apps/cip-pro-360 release "$GITHUB_SHA"
           node --input-type=module --check < release/cip-auth.js
           node - <<'NODE'
@@ -86,6 +87,12 @@ jobs:
           : "${CIP_FTPS_PASSWORD:?Missing CIP_FTPS_PASSWORD}"
           : "${CIP_FTPS_DIR:?Missing CIP_FTPS_DIR}"
           case "$CIP_FTPS_DIR" in
+            public_html/|/public_html/)
+              case "$CIP_FTPS_USER" in
+                *.cip.gritnews.com.br) echo "Dedicated CIP website account and document root verified" ;;
+                *) echo "::error::CIP document root requires its dedicated website FTP account." ; exit 1;;
+              esac
+              ;;
             public_html/cip/|/public_html/cip/|domains/gritnews.com.br/public_html/cip/|/domains/gritnews.com.br/public_html/cip/)
               echo "FTPS directory scoped to CIP-only folder"
               ;;

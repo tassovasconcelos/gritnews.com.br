@@ -21,6 +21,14 @@ A tela de login, navegação e favicon do CIP foram adaptados à identidade **ve
 - Inserção de análise de preço em transação revertida gerou 1 registro de auditoria; nada persistiu.
 - Scripts de interface e módulo auth passaram na validação sintática. **Não substitui teste real de login com navegador.**
 
+## Retomada em 18/10/2026
+- Confirmados no Supabase existente: nove tabelas CIP com RLS ativo, 22 políticas, duas empresas, seis marcos e perfil superadm ativo com e-mail confirmado. Isso não substitui login real.
+- hPanel lista CIP como site separado. A conta FTP dedicada informa pasta de upload `public_html`, sob `domains/cip.gritnews.com.br`. SSL Lifetime ativo no painel. O workflow admite essa raiz somente com conta FTP dedicada ao site CIP, mantendo os caminhos anteriores.
+- Dispatch manual na branch funcionou sem alterar main: validação `39132324388`, commit `98e4cd35c60d7da1d49225be164d7d9c0f18dee1`, publicação desativada.
+- Environment `cip-production` criado com três parâmetros FTPS. Falta cadastrar a senha existente diretamente no segredo; nenhuma senha foi lida ou redefinida.
+- Corrigidos cartões de empresas, motivo de cotação perdida, erro de recuperação e limites de simulações. Três testes unitários adicionais não substituem homologação real.
+- DNS autoritativo respondeu ao CIP; resolvedor local e navegador ainda retornaram nome não resolvido durante a verificação. HTTP 200, conteúdo publicado, login, segregação real e mobile seguem pendentes.
+
 ## Escopo
 - **Shopping Prohospital:** estoque inteligente, cobertura, simulação de capital e marca-passo de preços. Baseline de Rufino permanece estimativa **não conciliada**.
 - **Distribuidora Prohospital:** cotações manuais com fluxo de status, Caderninho Inteligente e análise futura de perdas e conversão.
