@@ -2,9 +2,9 @@
 
 
 ## Identidade oficial — atualização de 18/10/2026
-A tela de login, navegação e favicon do CIP foram adaptados à identidade **vermelho/amarelo/branco do Grupo Prohospital** e passam a usar `./logo-grupo-prohospital.jpg` no lugar do símbolo provisório. A imagem foi fornecida diretamente pelo usuário. Para preservar a marca e evitar redesenho, a cópia exata do arquivo original foi empacotada para instalação, com SHA-256 `a2978ce838d0cb9014dc982fb2c3b23933cb055885ad36d3f2187b5383da9981`.
+A tela de login, navegação e favicon do CIP foram adaptados à identidade **vermelho/amarelo/branco do Grupo Prohospital** e passam a usar `./logo-grupo-prohospital.jpg` no lugar do símbolo provisório. A imagem oficial foi reenviada diretamente pelo usuário em 18/10/2026 e incorporada byte a byte em `apps/cip-pro-360/logo-grupo-prohospital.jpg`, sem edição ou redesenho, com SHA-256 `1bdf5e051a137268d2aad2a6db750f53faecf1e590e673c9ed5d3a4e87c29d79`.
 
-**ATENÇÃO: a imagem binária ainda precisa ser adicionada ao repositório no caminho `apps/cip-pro-360/logo-grupo-prohospital.jpg`.** O arquivo acompanha o pacote de entrega da conversa. O workflow GitHub valida o código da branch e informa aviso enquanto faltar a imagem; impede o deploy de produção sem o logo. A versão ainda **não foi publicada em `cip.gritnews.com.br`**. Work/hPanel precisam configurar o subdomínio e enviar arquivos. Não declarar identidade publicada antes da confirmação.
+**Logomarca original incorporada à branch:** JPG de 61.775 bytes, preservado sem alteração. O hash acima corresponde ao arquivo reenviado nesta conversa e substitui a referência de hash da entrega anterior. O workflow exige esse arquivo exato para publicar. A publicação em `cip.gritnews.com.br` continua **não confirmada**; hPanel/DNS/SSL/FTPS e homologação real seguem pendentes.
 
 ## Estado verificável (18/10/2026)
 **Frontend:** login ligado ao Supabase GRIT, navegação com sessão autenticada, módulos Varejo/B2B segregados por perfil; telas de simulação, análises manuais de preços, cadastro de cotações e Caderninho e cronograma. Projeto ainda não publicado em `cip.gritnews.com.br`: Hostinger hPanel / subdomínio / FTPS pendentes.
@@ -37,7 +37,7 @@ A tela de login, navegação e favicon do CIP foram adaptados à identidade **ve
 
 ### Verificação da release
 - O workflow deve publicar somente a branch `feat/cip-pro360-shopping-distribuidora`, com execução manual `publish=true`, usando o environment `cip-production`.
-- A preparação gera `release-manifest.json` com SHA completo do commit e SHA-256 de cada arquivo. O publish exige o JPG original com SHA-256 `a2978ce838d0cb9014dc982fb2c3b23933cb055885ad36d3f2187b5383da9981`; outro JPEG não atende ao aceite.
+- A preparação gera `release-manifest.json` com SHA completo do commit e SHA-256 de cada arquivo. O publish exige o JPG original com SHA-256 `1bdf5e051a137268d2aad2a6db750f53faecf1e590e673c9ed5d3a4e87c29d79`; outro JPEG não atende ao aceite.
 - O teste após upload exige TLS válido, HTTP 200 sem redirecionamento e os mesmos bytes da release para HTML, JavaScript, JPG, health, robots e manifesto. `.htaccess` é incluído no pacote, mas seu conteúdo não deve ser servido publicamente.
 - Esses testes comprovam os arquivos publicados. Login, autorização por empresa, persistência e mobile exigem homologação real de navegador, separadamente.
 - No hPanel, registrar o document root exclusivo e conciliar `CIP_FTPS_DIR` com o diretório inicial da conta FTPS. A lista de caminhos do workflow não comprova esse mapeamento sozinha. Configurar os quatro segredos no environment `cip-production`, sem incluí-los em arquivos ou comandos com valores literais.
@@ -56,7 +56,8 @@ A tela de login, navegação e favicon do CIP foram adaptados à identidade **ve
 - [ ] Habilitar configuração de redirecionamento Supabase Auth para recuperação de senha.
 - [ ] Provisionar fluxo seguro de convites e papéis de outros usuários no módulo Administração.
 - [x] Adaptar código HTML/CSS ao logotipo e às cores oficiais do Grupo Prohospital.
-- [ ] Adicionar binário original `logo-grupo-prohospital.jpg` à branch (preparado no pacote ZIP entregue ao usuário); validar renderização e só depois publicar.
+- [x] Adicionar binário original `logo-grupo-prohospital.jpg` à branch, preservando os bytes do anexo reenviado.
+- [ ] Validar renderização da logomarca no navegador e no domínio publicado.
 - [ ] Criar/verificar subdomínio, SSL e pasta isolada na Hostinger.
 - [ ] Configurar secrets FTPS e publicar; apresentar evidência pública real.
 - [ ] Conectar Procfit/BI e reconciliar dados de estoque, precificação e conversão.

@@ -5,7 +5,7 @@ import https from 'node:https';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
-export const OFFICIAL_LOGO_SHA256 = 'a2978ce838d0cb9014dc982fb2c3b23933cb055885ad36d3f2187b5383da9981';
+export const OFFICIAL_LOGO_SHA256 = '1bdf5e051a137268d2aad2a6db750f53faecf1e590e673c9ed5d3a4e87c29d79';
 export const TARGET = 'https://cip.gritnews.com.br';
 const REQUIRED_FILES = ['index.html', 'cip-auth.js', '.htaccess', 'robots.txt', 'health.json'];
 const LOGO = 'logo-grupo-prohospital.jpg';
