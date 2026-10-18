@@ -11,7 +11,7 @@ function fixture(t) {
   t.after(() => fs.rmSync(root, {recursive: true, force: true}));
   const source = path.join(root, 'source'), output = path.join(root, 'release');
   fs.mkdirSync(source);
-  for (const name of ['index.html', 'cip-auth.js', 'recuperar.html', 'grit-recovery.js', '.htaccess', 'robots.txt', 'health.json']) fs.writeFileSync(path.join(source, name), `fixture:${name}\n`);
+  for (const name of ['index.html', 'cip-auth.js', 'doquita-insights.mjs', 'recuperar.html', 'grit-recovery.js', '.htaccess', 'robots.txt', 'health.json']) fs.writeFileSync(path.join(source, name), `fixture:${name}\n`);
   return {source, output};
 }
 
@@ -19,7 +19,7 @@ test('creates deterministic manifest with commit, byte sizes and hashes', t => {
   const {source, output} = fixture(t);
   const manifest = prepareRelease(source, output, COMMIT);
   assert.equal(manifest.commit_sha, COMMIT);
-  assert.equal(Object.keys(manifest.files).length, 7);
+  assert.equal(Object.keys(manifest.files).length, 8);
   assert.match(manifest.files['index.html'].sha256, /^[a-f0-9]{64}$/);
   assert.equal(validatePackage(output, COMMIT, false).commit_sha, COMMIT);
 });
