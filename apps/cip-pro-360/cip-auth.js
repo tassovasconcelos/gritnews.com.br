@@ -1,6 +1,7 @@
 // CIP PRO 360° authentication and business data client.
 // Public publishable key only; permissions and segregation enforced by Supabase RLS.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm";
+import {summarizeDoquita} from "./doquita-insights.mjs";
 const supabase = createClient("https://pcrwtoddavpvkaxwtstc.supabase.co", "sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS", {
   auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}
 });
@@ -165,8 +166,44 @@ window.cipSavePriceReview=async()=>{
  reloadPriceReviews();
 };
 
+// Doquita interpreta APENAS registros manuais aos quais o usuário já tem acesso.
+ // Não liga Procfit, não aciona comunicação ou altera propostas.
+async function doquitaSource(table,company,columns){
+ const {data,error,count}=await supabase.from(table).select(columns,{count:"exact"})
+   .eq("company_id",company).order("created_at",{ascending:false}).limit(150);
+ return error?{error:true,rows:[],total:0}:{rows:data||[],total:Number(count??(data||[]).length)};
+}
+const doquitaSanitize=s=>escape(String(s??""));
+async function loadDoquita(){
+ const host=$("cipDoquitaBoard");if(!host||!user||!profile)return;
+ const currentUser=user.id;
+ host.textContent="Consultando os registros manuais permitidos…";
+ try{
+  const retail=companies.has(V),b2b=companies.has(B);
+  const [prices,quotes,demands]=await Promise.all([
+   retail?doquitaSource("cip_price_reviews",V,"status,cost,current_price,expense_pct,target_margin_pct"):Promise.resolve(null),
+   b2b?doquitaSource("cip_quotes",B,"status,loss_reason"):Promise.resolve(null),
+   b2b?doquitaSource("cip_demands",B,"status"):Promise.resolve(null)
+  ]);
+  if(!user||user.id!==currentUser||!$("cipDoquitaBoard"))return;
+  const board=summarizeDoquita({companies:[...companies],prices,quotes,demands});
+  if(!board.available){host.textContent=board.reason;return;}
+  const metricCards=board.metrics.map(m=>'<div class="card metric"><span class="label">'+doquitaSanitize(m.label)+'</span><b>'+doquitaSanitize(m.value)+'</b><small>'+doquitaSanitize(m.detail)+'</small></div>').join("");
+  const recommendations=board.signals.length?board.signals.map(x=>{
+   const allowed=window.cipAuth?.allowedRoutes?.includes(x.route);
+   return '<article class="card doquita-recommendation"><div class="row"><span class="pill '+(x.priority==="MEDIA"?"neutral":"")+'">'+doquitaSanitize(x.priority)+'</span><span class="mini">'+doquitaSanitize(x.source)+'</span></div><h3>'+doquitaSanitize(x.title)+'</h3><p>'+doquitaSanitize(x.detail)+'</p><div class="doquita-action"><strong>Próxima ação sugerida</strong><p>'+doquitaSanitize(x.action)+'</p></div>'+(allowed?'<button class="btn secondary" type="button" data-doquita-route="'+doquitaSanitize(x.route)+'">Revisar no módulo →</button>':"")+'</article>';
+  }).join(""):'<div class="empty"><strong>Sem novos sinais nesta amostra</strong><span>Isso não confirma ausência de riscos. Confira o ERP e os fluxos operacionais.</span></div>';
+  host.innerHTML='<div class="cards doquita-metrics">'+metricCards+'</div><div class="row section"><h3>Próximas melhores ações</h3><span class="pill neutral">REVISÃO HUMANA</span></div><div class="grid2 doquita-grid">'+recommendations+'</div><p class="foot">'+doquitaSanitize(board.dataScope)+' '+doquitaSanitize(board.limitations)+'</p>';
+  host.querySelectorAll("[data-doquita-route]").forEach(button=>button.addEventListener("click",()=>{
+    if(window.cipAuth?.allowedRoutes?.includes(button.dataset.doquitaRoute))window.navigate(button.dataset.doquitaRoute);
+  }));
+ }catch(e){if($("cipDoquitaBoard"))host.textContent="Não foi possível analisar os registros no momento. Nenhuma decisão foi executada.";}
+}
+window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquita"))loadDoquita();};
+
 window.cipLoadPage=(page)=>{
  if(!user)return;
+ if(page==="doquita")loadDoquita();
  if(page==="cronograma")reloadMilestones();
  if(page==="cotacoes")reloadQuoteRows();
  if(page==="caderninho")reloadDemandRows();
