@@ -54,7 +54,7 @@ window.cipLogin=async e=>{
 window.cipResetPassword=async()=>{
  const email=$("email")?.value?.trim();
  if(!email){note("Informe primeiro seu e-mail.");return;}
- try { const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;note("Se o endereço estiver habilitado, receberá instruções de recuperação."); }
+ try { const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:"https://gritnews.com.br/?view=admin&recovery=1"});if(error)throw error;note("Se o endereço estiver habilitado, receberá instruções de recuperação GRIT."); }
  catch(e){note("Solicitação indisponível. Contate o administrador.");}
 };
 window.cipSignOut=async()=>{await supabase.auth.signOut();toLogin();note("Sessão encerrada.");};

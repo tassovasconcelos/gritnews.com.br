@@ -22,6 +22,8 @@ A tela de login, navegação e favicon do CIP foram adaptados à identidade **ve
 - Scripts de interface e módulo auth passaram na validação sintática. **Não substitui teste real de login com navegador.**
 
 ## Retomada em 18/10/2026
+- Recuperação corrigida para a página GRIT existente `https://gritnews.com.br/?view=admin&recovery=1`, que permite definir a nova senha. Essa URL foi adicionada à allowlist do Supabase, preservando Site URL e callback do Meu Espetinho. Assunto compartilhado alterado para `Redefinição de senha | GRIT`. Links anteriores podem continuar levando ao destino anterior; solicitar novo e-mail após a configuração.
+- O CDN do CIP transformava a logo, embora a origem mantivesse o arquivo original. Compressão WebP e otimização inteligente foram desativadas somente no CIP para preservar os bytes públicos; a comparação HTTPS continua bloqueando qualquer transformação.
 - Após atualização privada da senha, o FTPS autenticou, mas o publicador antigo interrompeu no canal de dados (`ECONNRESET`). Sua dependência basic-ftp 5.0.5 precede correções de retomada TLS para Node atual. O workflow agora usa basic-ftp 6.2.3 com versão e integridade fixadas em `deploy/package-lock.json`, TLS validado pelo certificado Hostinger, destino conferido por `PWD`, upload temporário e releitura de bytes antes da substituição. Não exclui arquivos ou pastas; HTML e manifesto são substituídos por último. A homologação HTTPS permanece obrigatória após o envio.
 - Confirmados no Supabase existente: nove tabelas CIP com RLS ativo, 22 políticas, duas empresas, seis marcos e perfil superadm ativo com e-mail confirmado. Isso não substitui login real.
 - hPanel lista CIP como site separado. A conta FTP dedicada informa pasta de upload `public_html`, sob `domains/cip.gritnews.com.br`. SSL Lifetime ativo no painel. O workflow admite essa raiz somente com conta FTP dedicada ao site CIP, mantendo os caminhos anteriores.
@@ -42,7 +44,7 @@ A tela de login, navegação e favicon do CIP foram adaptados à identidade **ve
 4. Configurar, **em segredos do GitHub**, `CIP_FTPS_HOST`, `CIP_FTPS_USER`, `CIP_FTPS_PASSWORD`, `CIP_FTPS_DIR`. O último deve apontar estritamente para a pasta CIP, uma das opções autorizadas no workflow. Jamais escrever credenciais no código, issue, chat ou log.
 5. Executar manualmente o workflow `.github/workflows/cip-pro360.yml` com parâmetro `publish=true` **apenas após** DNS, SSL, permissões e aprovação da equipe responsável. O workflow recusa caminhos FTP fora da pasta CIP e não executa limpeza.
 6. Homologar: HTTP 200 no site e `/health.json`; login real com `gritsolucoes@gmail.com` e senha da identidade GRIT já existente, sem compartilhar a senha; acesso às duas empresas, consulta a etapas e teste de criação/edição B2B. Depois testar usuário sem perfil CIP e comportamento mobile.
-7. Habilitar `https://cip.gritnews.com.br/**` em **Supabase Auth → URL Configuration → Redirect URLs**, para recuperação de senha. Não alterar o `Site URL` principal do projeto GRIT sem análise de impacto.
+7. A recuperação usa `https://gritnews.com.br/?view=admin&recovery=1`, já habilitada em **Supabase Auth → URL Configuration → Redirect URLs**. Essa página GRIT existente oferece o formulário de nova senha. Não alterar o `Site URL` principal compartilhado.
 
 ### Verificação da release
 - O workflow deve publicar somente a branch `feat/cip-pro360-shopping-distribuidora`, com execução manual `publish=true`, usando o environment `cip-production`.
@@ -62,7 +64,7 @@ A tela de login, navegação e favicon do CIP foram adaptados à identidade **ve
 - [x] Workflow de validação e publicação manual Hostinger, com diretório permitido.
 - [ ] Validar login por navegador no domínio publicado.
 - [ ] Verificar responsividade mobile por teste de navegação real.
-- [ ] Habilitar configuração de redirecionamento Supabase Auth para recuperação de senha.
+- [x] Habilitar rota GRIT de recuperação no Supabase e direcionar o CIP ao formulário existente.
 - [ ] Provisionar fluxo seguro de convites e papéis de outros usuários no módulo Administração.
 - [x] Adaptar código HTML/CSS ao logotipo e às cores oficiais do Grupo Prohospital.
 - [x] Adicionar binário original `logo-grupo-prohospital.jpg` à branch, preservando os bytes do anexo reenviado.
