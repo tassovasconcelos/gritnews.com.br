@@ -1,40 +1,59 @@
 # CIP PRO 360° — Shopping Prohospital + Distribuidora Prohospital
 
-## Estado de implantação
-Versão **fundação visual navegável** (prévia, sem dados corporativos). A aplicação está isolada em `apps/cip-pro-360` numa branch de desenvolvimento. **Não existe autenticação real, banco, conta de superadmin ou integração ERP nesta versão**: o login é demonstrativo e nunca valida credenciais. Não colocar dados confidenciais no frontend.
+## Estado verificável (18/10/2026)
+**Frontend:** login ligado ao Supabase GRIT, navegação com sessão autenticada, módulos Varejo/B2B segregados por perfil; telas de simulação, cadastro manual de cotações e Caderninho e cronograma. Projeto ainda não publicado em `cip.gritnews.com.br`: Hostinger hPanel / subdomínio / FTPS pendentes.
 
-## Publicação pretendida
-`cip.gritnews.com.br` — requer criação/vinculação do subdomínio em Hostinger, SSL ativo e upload dos arquivos em pasta exclusiva do CIP. Não substituir `gritnews.com.br` nem `public_html` da raiz do portal.
+**Backend:** conectado ao projeto existente Supabase `gritnews` (ref `pcrwtoddavpvkaxwtstc`) como provedor de identidade compartilhado; a autenticação com senha preexistente usa Supabase Auth, **não armazena nem replica credenciais no CIP**. Banco isolado por tabelas prefixadas `cip_`, com políticas RLS por empresa. O usuário `gritsolucoes@gmail.com` já foi confirmado como `superadm` na tabela CIP por correspondência exata de conta Supabase existente e verificada.
 
-## Duas empresas e primeiros módulos
-- **Shopping Prohospital (varejo)**: estoque, cobertura, capital de giro, marca-passo de preços.
-- **Distribuidora Prohospital (B2B)**: cotações, conversão, perdas, Caderninho Inteligente, demanda não atendida.
-- **Grupo**: Doquita, cronograma, acessos e integrações.
+**Banco criado:** 8 tabelas, 18 políticas RLS, 2 empresas, 6 marcos. Migrações registradas no Supabase como `cip_pro_360_foundation_shopping_distribuidora` (20261018071944) e `cip_restrict_company_and_authorship_mutations`. Acesso `anon` revogado das tabelas CIP. Usuário sem perfil CIP não consulta empresas. Autoria e identificador de empresa são imutáveis após criação de cotações/demandas.
 
-## Identidade
-Cores de interface inspiradas na família vinho/vermelho da operação; substitua o símbolo provisório `P+` pela arte oficial fornecida pelo Grupo, sem recriá-la. Rodapé de desenvolvimento: GRIT Soluções e Negócios.
+**Testes de banco concluídos:** 
+- Autenticação simulada no SQL com papel `authenticated`, em transação revertida: superadm acessa ambas empresas, 2 empresas e 6 etapas.
+- Outra identidade sem autorização CIP: 0 empresas visíveis, acesso negado a Varejo e B2B.
+- `anon`: SELECT negado por falta de privilégio (esperado).
+- Inserção de cotação B2B em transação revertida gerou 1 registro de auditoria na transação; nada persistiu.
+- Scripts de interface e módulo auth passaram na validação sintática. **Não substitui teste real de login com navegador.**
 
-## Requisitos obrigatórios antes de abrir o login
-1. Escolher/provisionar backend próprio e provedor Auth corporativo; convidar `gritsolucoes@gmail.com` com perfil `superadm` via fluxo seguro de ativação.
-2. Nenhuma senha existente deve ser reutilizada por cópia; reutilização só via autenticação federada ou senha definida pelo titular.
-3. Tabelas separadas por `empresa_id`; RLS/back-end para impedir acesso cruzado. Log de auditoria, rate limiting, anti-CSRF, gestão de sessão.
-4. Conector Procfit/BI homologado de leitura; inventário e preços por empresa/filial; histórico, reconciliação de valores de Rufino. Não escrever diretamente no ERP.
-5. Módulos de proposta e Caderninho com banco, CRUD autenticado e controle de perfis.
-6. Teste de aceitação de permissão, financeiro, responsividade, segurança e disponibilidade.
+## Escopo
+- **Shopping Prohospital:** estoque inteligente, cobertura, simulação de capital e marca-passo de preços. Baseline de Rufino permanece estimativa **não conciliada**.
+- **Distribuidora Prohospital:** cotações manuais com fluxo de status, Caderninho Inteligente e análise futura de perdas e conversão.
+- **Transversal:** cronograma, Doquita, administração e integração Procfit/BI somente leitura no futuro.
 
-## Cronograma-alvo
-- 18–24/10/2026: Fundação visual, login a integrar, módulos, cronograma.
-- 25/10–07/11: Dados Procfit/BI.
-- 08–21/11: Estoque + Marca-passo.
-- 22/11–05/12: Conversão B2B e Caderninho.
-- 06–19/12: Doquita.
-- 20/12/2026–16/01/2027: piloto, validações.
+## Domínio Hostinger — instruções objetivas para Work
+1. Entrar no hPanel do domínio `gritnews.com.br`; verificar o plano correto e nomes de servidores.
+2. Criar o subdomínio **cip** com pasta exclusiva **cip**, sem alterar o diretório raiz do portal nem outros subdomínios.
+3. Confirmar DNS e certificado SSL ativo em `cip.gritnews.com.br`.
+4. Configurar, **em segredos do GitHub**, `CIP_FTPS_HOST`, `CIP_FTPS_USER`, `CIP_FTPS_PASSWORD`, `CIP_FTPS_DIR`. O último deve apontar estritamente para a pasta CIP, uma das opções autorizadas no workflow. Jamais escrever credenciais no código, issue, chat ou log.
+5. Executar manualmente o workflow `.github/workflows/cip-pro360.yml` com parâmetro `publish=true` **apenas após** DNS, SSL, permissões e aprovação da equipe responsável. O workflow recusa caminhos FTP fora da pasta CIP e não executa limpeza.
+6. Homologar: HTTP 200 no site e `/health.json`; login real com `gritsolucoes@gmail.com` e senha da identidade GRIT já existente, sem compartilhar a senha; acesso às duas empresas, consulta a etapas e teste de criação/edição B2B. Depois testar usuário sem perfil CIP e comportamento mobile.
+7. Habilitar `https://cip.gritnews.com.br/**` em **Supabase Auth → URL Configuration → Redirect URLs**, para recuperação de senha. Não alterar o `Site URL` principal do projeto GRIT sem análise de impacto.
 
-## Simulação informada por Rufino
-Estoque: R$ 6 milhões, vendas médias: R$ 3 milhões/mês, CMV: 47%. Cobertura aproximada de 128 dias. Para 90 dias, estoque alvo teórico R$ 4,23 milhões e potencial de liberação R$ 1,77 milhão. São **hipóteses não conciliadas**, nunca saldo real de uma empresa.
+**Importante:** os botões de aplicação usam o Supabase público (publishable key), mas **autorização é sempre validada no backend por RLS**. O cliente não contém `service_role`, token privado, senha ou chaves de FTP.
 
-## Deploy Hostinger
-É um app HTML estático na fase atual: publicar `index.html` em diretório dedicado ao subdomínio CIP. Em SPA, utilizar o `.htaccess` deste diretório; para esta versão de uma página, não há dependências de build. Não publicar arquivos de desenvolvimento com credenciais.
+## Prioridades e pendências
+- [x] Branch e PR draft isolados sem merge no portal existente.
+- [x] Bancos CIP, superadm e segregação com testes RLS transacionais.
+- [x] Telas operacionais para os dois módulos e navegação após login, cronograma e simulação.
+- [x] Cadastro e leitura manual de cotações e demandas no frontend, condicionados à autenticação.
+- [x] Workflow de validação e publicação manual Hostinger, com diretório permitido.
+- [ ] Validar login por navegador no domínio publicado.
+- [ ] Verificar responsividade mobile por teste de navegação real.
+- [ ] Habilitar configuração de redirecionamento Supabase Auth para recuperação de senha.
+- [ ] Provisionar fluxo seguro de convites e papéis de outros usuários no módulo Administração.
+- [ ] Instalar **arquivo original aprovado** do logotipo oficial Grupo Prohospital; não redesenhar a marca.
+- [ ] Criar/verificar subdomínio, SSL e pasta isolada na Hostinger.
+- [ ] Configurar secrets FTPS e publicar; apresentar evidência pública real.
+- [ ] Conectar Procfit/BI e reconciliar dados de estoque, precificação e conversão.
+- [ ] Implementar preço por SKU, monitoração e aprovação; hoje é só interface.
+- [ ] Homologar com usuários reais e critérios executivos.
 
-## Validação visual manual
-Abra `index.html`: deve exibir login; ao clicar em "Conhecer cronograma e a interface" abre navegação da prévia; clique em Shopping, Distribuidora, Estoque, Marca-passo, Cotações e Cronograma; ajuste a cobertura no simulador; clique "Sair da prévia". Nenhum dado corporativo é persistido na prévia.
+## Cronograma
+18–24/out/2026: Fundação, autenticação e documentação;
+25/out–07/nov: contrato Procfit e conciliação;
+08–21/nov: Estoque e Marca-passo;
+22/nov–05/dez: funil B2B;
+06–19/dez: Doquita;
+20/dez–16/jan/2027: piloto e homologação.
+
+## Política de números
+Estoque informado R$ 6 mi; vendas médias R$ 3 mi/mês; CMV 47%; cobertura estimada 128 dias; 90 dias equivale a estoque teórico de R$ 4,23 mi e capital teoricamente liberável de R$ 1,77 mi. **São valores informados e não validados por ERP**. No app devem permanecer rotulados como simulação, jamais dado operacional confirmado.
