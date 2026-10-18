@@ -10,7 +10,9 @@ function client(values={},resetError=true){
  elements.scenarioMessage={};elements.loginMessage={};
  const writes=[],resets=[];
  const db={auth:{onAuthStateChange(){},resetPasswordForEmail:async(email,options)=>{resets.push({email,...options});return {error:resetError?{message:'rejected'}:null};}},from(table){return {insert:async value=>{writes.push({table,value});return {error:null};}};}};
- const context={supabase:db,window:{addEventListener(){}},document:{getElementById:id=>elements[id]},location:{origin:'https://example.invalid',pathname:'/'},alert(){}};
+ db.auth.signInWithPassword=async()=>({data:null,error:{code:'invalid_credentials'}});
+ const submit={disabled:false};
+ const context={supabase:db,window:{addEventListener(){}},document:{getElementById:id=>elements[id],querySelector:()=>submit},location:{origin:'https://example.invalid',pathname:'/'},alert(){}};
  const code=original.slice(original.indexOf('const V=')).replace('await verify();','user={id:"test-user"};');
  vm.runInNewContext(code,context);
  return {window:context.window,elements,writes,resets};
@@ -32,4 +34,11 @@ test('recovery uses the dedicated GRIT password update page',async()=>{
  const c=client({},false);await c.window.cipResetPassword();
  assert.equal(c.resets[0].redirectTo,'https://cip.gritnews.com.br/recuperar.html');
  assert.match(c.elements.loginMessage.textContent,/recuperação GRIT/);
+});
+test('invalid credentials are distinguished from authorization and entered password is cleared',async()=>{
+ const c=client({password:'unit-test-only'});
+ await c.window.cipLogin({preventDefault(){}});
+ assert.match(c.elements.loginMessage.textContent,/E-mail ou senha não conferem/);
+ assert.equal(c.elements.password.value,'');
+ assert.equal(c.elements.password.type,'password');
 });

@@ -75,7 +75,7 @@ html{scroll-behavior:smooth}
  <div><span class="pill" style="background:#ffffff24;color:white">CENTRO DE INTELIGÊNCIA</span><h1>Decisões melhores. Resultados reais.</h1><p>Estoque, preços e inteligência comercial. Shopping Prohospital e Distribuidora Prohospital conectadas à mesma visão estratégica.</p></div>
  <div class="footer">CIP PRO 360° · Tecnologia e desenvolvimento: GRIT Soluções e Negócios</div></div>
  <div class="login-side"><div class="login-card"><span class="eyebrow">Ambiente corporativo</span><h2>Bem-vindo ao CIP.</h2><p class="muted">Entre com sua conta autorizada para consultar os módulos do Grupo Prohospital.</p>
- <form id="loginForm" class="fields"><label>E-mail<input id="email" type="email" autocomplete="username" required placeholder="seu.email@empresa.com.br"></label><label>Senha<input id="password" type="password" autocomplete="current-password" minlength="8" required placeholder="••••••••"></label><button class="btn" type="submit">Acessar ambiente seguro →</button></form>
+ <form id="loginForm" class="fields"><label>E-mail<input id="email" type="email" autocomplete="username" required placeholder="seu.email@empresa.com.br"></label><label>Senha<input id="password" type="password" autocomplete="current-password" minlength="8" required placeholder="••••••••"></label><button id="togglePassword" class="link" type="button" aria-pressed="false" onclick="window.cipTogglePassword?.()">Mostrar senha</button><button class="btn" type="submit">Acessar ambiente seguro →</button></form>
  <div class="form-message" id="loginMessage" aria-live="polite"></div>
  <div class="notice">Acesso restrito a usuários autorizados. O CIP utiliza a autenticação corporativa já existente na infraestrutura GRIT; suas permissões são independentes por empresa.</div>
  <div class="row"><button class="link" onclick="window.cipResetPassword?.()" type="button">Recuperar acesso por e-mail →</button><span class="social">Ambiente seguro</span></div>
@@ -158,5 +158,5 @@ function navigate(page){
 document.querySelectorAll('[data-route]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.route)));
 document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();window.cipLogin?.(e)});
 </script>
-<script type="module" src="./cip-auth.js?v=grit-recovery-20261018"></script>
+<script type="module" src="./cip-auth.js?v=grit-login-20261018"></script>
 </body></html>

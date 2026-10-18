@@ -12,6 +12,7 @@ async function initialize(){
   if(!isRecovery)throw Error('invalid');
   const {data,error}=await client.auth.getUser();
   if(error||!data?.user)throw Error('invalid');
+  $('recoveryAccount').textContent='Conta validada: '+data.user.email;
   ready=true;
   $('message').textContent='Link validado. Informe e confirme sua nova senha.';
   $('recoveryForm').classList.remove('hidden');

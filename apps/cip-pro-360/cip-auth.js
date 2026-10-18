@@ -30,6 +30,7 @@ async function enter(){
   document.querySelectorAll(".whoami").forEach(el=>el.textContent=user.email+" · "+profile.role);
   window.showPreview();
   window.navigate("inicio");
+  return true;
 }
 async function verify(){
   try{
@@ -38,19 +39,28 @@ async function verify(){
     user=data.user;await enter();
   }catch(e){toLogin();note("Erro ao validar acesso. Verifique sua conexão.");}
 }
+window.cipTogglePassword=()=>{
+ const field=$("password"),button=$("togglePassword");if(!field||!button)return;
+ const visible=field.type!=="text";field.type=visible?"text":"password";
+ button.textContent=visible?"Ocultar senha":"Mostrar senha";button.setAttribute("aria-pressed",String(visible));
+};
 window.cipLogin=async e=>{
  e.preventDefault();const btn=document.querySelector("#loginForm button[type=submit]");if(btn)btn.disabled=true;
  note("Validando acesso...");
  try{
-   const email=$("email")?.value?.trim(),password=$("password")?.value;
+   const email=$("email")?.value?.trim().toLowerCase(),password=$("password")?.value;
    if(!email||!password)throw Error("Preencha e-mail e senha.");
    const {data,error}=await supabase.auth.signInWithPassword({email,password});
    $("password").value="";
-   if(error||!data?.user)throw Error("E-mail ou senha inválidos, ou acesso indisponível.");
-   user=data.user;await enter();
-   note("");
- }catch(e){note(e.message==="Preencha e-mail e senha."?e.message:"Não foi possível autorizar o acesso. Verifique credenciais ou procure o administrador.");}
- finally{if(btn)btn.disabled=false;}
+   if(error?.code==="invalid_credentials"){note("E-mail ou senha não conferem. Verifique a conta informada e use Mostrar senha para conferir a digitação.");return;}
+   if(error||!data?.user)throw Error("authentication_unavailable");
+   user=data.user;if(await enter())note("");
+ }catch(e){note(e.message==="Preencha e-mail e senha."?e.message:"Não foi possível concluir o acesso. Verifique sua conexão ou tente novamente mais tarde.");}
+ finally{
+  const field=$("password"),toggle=$("togglePassword");if(field){field.value="";field.type="password";}
+  if(toggle){toggle.textContent="Mostrar senha";toggle.setAttribute("aria-pressed","false");}
+  if(btn)btn.disabled=false;
+ }
 };
 window.cipResetPassword=async()=>{
  const email=$("email")?.value?.trim();
