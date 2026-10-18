@@ -33,6 +33,40 @@
  .login-brand .brand-kicker small{font-size:9px}
  .login-art{min-height:295px}
 }
+
+/* CIP PRO 360 · release usability: focused navigation, evidence-driven Doquita */
+html{scroll-behavior:smooth}
+.navitem:focus-visible,.mobile-menu:focus-visible,.btn:focus-visible,.link:focus-visible{outline:3px solid var(--brand-yellow);outline-offset:3px}
+.navitem{min-height:43px;transition:background .15s,color .15s}
+.main{min-height:calc(100vh - 76px)}
+.topnav{gap:12px;min-height:69px}
+.status-chip{font-size:11px;font-weight:800;letter-spacing:.03em;border:1px solid #e7d5c5;background:#fff7e8;color:#875c25;border-radius:12px;padding:7px 10px}
+.mobile-backdrop[hidden]{display:none!important}
+.mobile-backdrop{display:none}
+.doquita-recommendation{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.doquita-recommendation h3{margin:2px 0 0;font-size:18px}
+.doquita-recommendation p{margin:0;color:var(--muted);font-size:13px}
+.doquita-recommendation>.btn{margin-top:auto}
+.doquita-action{width:100%;background:#fff5f6;border-left:3px solid var(--red);border-radius:0 10px 10px 0;padding:12px}
+.doquita-action strong{font-size:12px;color:var(--deep)}
+.doquita-action p{margin:5px 0 0}
+.doquita-metrics{margin:15px 0 20px}
+@media(max-width:780px){
+ .mobile-backdrop{display:block;position:fixed;inset:0;background:#0a1524ad;z-index:7;backdrop-filter:blur(2px)}
+ .side{width:min(330px,88vw);left:-110vw;overflow:auto;overscroll-behavior:contain}
+ .side.open{left:0;box-shadow:10px 0 32px #070f2070}
+ .nav-open{overflow:hidden}
+ .navitem{min-height:47px}
+ .topnav{padding:9px 12px}
+ .topnav .row{gap:8px}
+ .topnav .status-chip{font-size:9px;max-width:118px;line-height:1.25;text-align:center}
+ #crumb{font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .topnav .btn{font-size:11px;padding:10px}
+ .mobile-menu{min-width:44px;min-height:44px}
+ .main{padding:20px 13px}
+ .doquita-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.navitem,.side{transition:none!important}}
 </style>
 </head>
 <body>
@@ -48,7 +82,8 @@
  </div></div>
 </section>
 <div id="interface" class="app hide">
- <aside id="side" class="side">
+ <div id="menuBackdrop" class="mobile-backdrop" hidden></div>
+ <aside id="side" class="side" aria-label="Navegação do CIP PRO 360">
    <div class="brand side-brand"><div class="logo-official"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial do Grupo Prohospital"></div><div><strong>CIP PRO 360°</strong><small>GRUPO PROHOSPITAL</small></div></div>
    <div><h6>VISÃO ESTRATÉGICA</h6><button class="navitem active" data-route="inicio">◈ Visão Geral</button><button class="navitem" data-route="cronograma">◷ Cronograma</button><button class="navitem" data-route="doquita">✧ Doquita</button></div>
    <div><h6>SHOPPING PROHOSPITAL</h6><button class="navitem" data-route="varejo">▦ Visão Varejo</button><button class="navitem" data-route="estoque">▤ Estoque inteligente</button><button class="navitem" data-route="precos">▥ Marca-passo de preços</button></div>
@@ -57,7 +92,7 @@
    <div style="margin-top:auto"><span class="pill neutral whoami">Sessão corporativa</span><button style="margin-top:10px" class="navitem" onclick="window.cipSignOut?.()">← Encerrar sessão</button></div>
  </aside>
  <div class="shell">
-  <header class="topnav"><div class="row"><button class="mobile-menu" onclick="toggleMenu()">☰</button><strong id="crumb">Visão Geral</strong></div><div class="row"><span class="pill">ERP NÃO INTEGRADO</span><span class="mini" style="display:none">Superadm</span><button class="btn secondary" onclick="window.cipSignOut?.()">Sair</button></div></header>
+  <header class="topnav"><div class="row"><button id="mobileMenuButton" class="mobile-menu" onclick="toggleMenu()" type="button" aria-controls="side" aria-expanded="false" aria-label="Abrir menu de navegação">☰</button><strong id="crumb">Visão Geral</strong></div><div class="row"><span class="status-chip" title="Publicação técnica ativa; Procfit ainda não integrado">ERP PENDENTE</span><span class="mini" style="display:none">Superadm</span><button class="btn secondary" onclick="window.cipSignOut?.()">Sair</button></div></header>
   <main id="content" class="main"></main>
  </div>
 </div>
@@ -76,12 +111,28 @@ const metric=(label,value,sub)=>'<div class="card metric"><span class="label">'+
 const coming=(title)=>'<div class="section">'+empty(title,'Aguardando autenticação, fontes homologadas e implantação da etapa correspondente.')+'</div>';
 function showPreview(){document.getElementById('login').classList.add('hide');document.getElementById('interface').classList.remove('hide');navigate('cronograma')}
 function backToLogin(){document.getElementById('interface').classList.add('hide');document.getElementById('login').classList.remove('hide')}
-function toggleMenu(){document.getElementById('side').classList.toggle('open')}
+function closeMenu({returnFocus=false}={}){
+ const side=document.getElementById('side'),backdrop=document.getElementById('menuBackdrop'),button=document.getElementById('mobileMenuButton');
+ const wasOpen=side.classList.contains('open');
+ side.classList.remove('open');backdrop.hidden=true;document.body.classList.remove('nav-open');
+ button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','Abrir menu de navegação');
+ if(returnFocus&&wasOpen)button.focus();
+}
+function toggleMenu(){
+ const side=document.getElementById('side'),backdrop=document.getElementById('menuBackdrop'),button=document.getElementById('mobileMenuButton');
+ if(side.classList.contains('open'))return closeMenu({returnFocus:true});
+ side.classList.add('open');backdrop.hidden=false;document.body.classList.add('nav-open');
+ button.setAttribute('aria-expanded','true');button.setAttribute('aria-label','Fechar menu de navegação');
+ side.querySelector('.navitem:not(.hide)')?.focus();
+}
+document.getElementById('menuBackdrop').addEventListener('click',()=>closeMenu({returnFocus:true}));
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu({returnFocus:true})});
+window.matchMedia('(min-width: 781px)').addEventListener('change',event=>{if(event.matches)closeMenu()});
 function navigate(page){
  if(!window.cipAuth || !window.cipAuth.allowedRoutes.includes(page))return;
  document.querySelectorAll('[data-route]').forEach(b=>b.classList.toggle('active',b.dataset.route===page));
- document.getElementById('side').classList.remove('open');document.getElementById('crumb').textContent=names[page];let h='';
- if(page==='cronograma'){h=header('Cronograma de implantação','Seis marcos de desenvolvimento, sujeitos a homologação técnica e disponibilização do ERP.')+'<div class="two"><div class="card"><h3>Roadmap prioritário</h3><div class="timeline" id="cipTimeline">'+phases.map((x,i)=>'<div class="milestone"><span class="pill neutral">'+x[0]+'</span><h3>'+String(i+1).padStart(2,'0')+'. '+x[1]+'</h3><p>'+x[2]+'</p><span class="mini">Status: planejamento • responsável a designar</span></div>').join('')+'</div></div><div><div class="card"><h3>Portas de homologação</h3><p class="muted">A publicação visual não equivale a integração nem a acesso corporativo homologado.</p>'+['Autenticação e superadm','Segregação efetiva por empresa','Conciliação dos números de Rufino','Integração read-only Procfit','Testes, auditoria e segurança'].map(t=>'<p>□ '+t+'</p>').join('')+'</div><div class="card section"><h3>Publicação definitiva</h3><p class="muted">Domínio solicitado: <b>cip.gritnews.com.br</b></p><span class="pill">HOMOLOGAÇÃO DA PUBLICAÇÃO PENDENTE</span></div></div></div>'}
+ closeMenu();document.getElementById('crumb').textContent=names[page];let h='';
+ if(page==='cronograma'){h=header('Cronograma de implantação','Seis marcos de desenvolvimento, sujeitos a homologação técnica e disponibilização do ERP.')+'<div class="two"><div class="card"><h3>Roadmap prioritário</h3><div class="timeline" id="cipTimeline">'+phases.map((x,i)=>'<div class="milestone"><span class="pill neutral">'+x[0]+'</span><h3>'+String(i+1).padStart(2,'0')+'. '+x[1]+'</h3><p>'+x[2]+'</p><span class="mini">Status: planejamento • responsável a designar</span></div>').join('')+'</div></div><div><div class="card"><h3>Portas de homologação</h3><p class="muted">A publicação visual não equivale a integração nem a acesso corporativo homologado.</p>'+['Autenticação e superadm','Segregação efetiva por empresa','Conciliação dos números de Rufino','Integração read-only Procfit','Testes, auditoria e segurança'].map(t=>'<p>□ '+t+'</p>').join('')+'</div><div class="card section"><h3>Publicação definitiva</h3><p class="muted">Domínio solicitado: <b>cip.gritnews.com.br</b></p><span class="pill">SITE PUBLICADO · HOMOLOGAÇÃO DE LOGIN PENDENTE</span></div></div></div>'}
  else if(page==='inicio'){h=header('Visão Geral','Duas empresas. Uma camada de inteligência. Governança centralizada.')+'<div class="grid2"><div class="card"><div class="company"><span class="company-icon">▦</span><div><h3>Shopping Prohospital</h3><p>Varejo · estoque, giro e preços</p></div><button class="btn secondary" onclick="navigate(\'varejo\')">Abrir</button></div></div><div class="card"><div class="company"><span class="company-icon">▤</span><div><h3>Distribuidora Prohospital</h3><p>B2B · cotações e vendas recuperadas</p></div><button class="btn secondary" onclick="navigate(\'b2b\')">Abrir</button></div></div></div><div class="section grid2"><div class="card"><h3>Prioridade de Rufino</h3><p>Reduzir capital parado, corrigir disponibilidade e competitividade, capturar demanda não atendida e aumentar conversão.</p><button class="btn secondary" onclick="navigate(\'estoque\')">Explorar estoque</button></div><div class="card"><h3>Próxima entrega</h3><p>Fundação técnica, autenticação e cronograma. Integrações reais seguem condicionadas às views Procfit homologadas.</p><button class="btn secondary" onclick="navigate(\'cronograma\')">Ver plano</button></div></div>'}
  else if(page==='varejo'){h=header('Shopping Prohospital','Foco no varejo: estoque, capital de giro, ruptura e marca-passo.')+'<div class="cards">'+metric('Saldo real ERP','—','Integração pendente')+metric('Giro por SKU','—','Integração pendente')+metric('Rupturas','—','Integração pendente')+metric('Alertas de margem','—','Integração pendente')+'</div><div class="section grid2"><div class="card"><h3>Estoque Inteligente</h3><p class="muted">Acompanhamento por loja, filial, SKU e fornecedor.</p><button class="btn" onclick="navigate(\'estoque\')">Abrir módulo</button></div><div class="card"><h3>Marca-passo</h3><p class="muted">Preço vigente × custo × concorrência × margem autorizada.</p><button class="btn" onclick="navigate(\'precos\')">Abrir módulo</button></div></div>'}
  else if(page==='estoque'){h=header('Estoque Inteligente','Simule coberturas com o relato de Rufino, sem confundir projeções com capital liberado.')+'<div class="cards">'+metric('Estoque informado','R$ 6,00 mi','Não reconciliado')+metric('Venda média informada','R$ 3,00 mi','Por mês')+metric('CMV informado','47%','Base do relato')+metric('Cobertura estimada','128 dias','Mês de 30 dias')+'</div><div class="section card"><div class="row"><h3>Simulador de capital de giro</h3><span class="pill neutral">CENÁRIOS TEÓRICOS</span></div><div class="fieldrow"><label>Estoque atual (R$)<input id="stock" type="number" min="0" value="6000000"></label><label>Vendas mensais (R$)<input id="sales" type="number" min="0" value="3000000"></label><label>CMV (%)<input id="cmv" type="number" min="0" max="100" value="47"></label><label>Cobertura-alvo (dias)<select id="days"><option value="60">60 dias</option><option value="75">75 dias</option><option value="90" selected>90 dias</option><option value="120">120 dias</option></select></label></div><div id="result" class="section grid2"></div><p class="note">Exclui sazonalidade, lead time, segurança, validade, filiais e demanda por SKU. Não é recomendação de corte linear.</p><div class="row"><button class="btn" onclick="window.cipSaveScenario?.()">Salvar simulação</button><span class="mini" id="scenarioMessage"></span></div><h3>Meu histórico</h3><div id="cipScenarioHistory" class="mini">Carregando...</div></div>'+coming('Giro, transferências e cobertura por produto')}
@@ -89,9 +140,10 @@ function navigate(page){
  else if(page==='b2b'){h=header('Distribuidora Prohospital','Inteligência para hospitais, clínicas, institutos e fornecimento sob encomenda.')+'<div class="cards">'+metric('Cotações no mês','—','Procfit pendente')+metric('Vendas ganhas','—','Procfit pendente')+metric('Conversão','—','Procfit pendente')+metric('Oportunidade por falta','—','Captura pendente')+'</div><div class="section grid2"><div class="card"><h3>Funil de conversão</h3><p>Quanto foi cotado, vendido, perdido e por qual motivo?</p><button class="btn secondary" onclick="navigate(\'cotacoes\')">Ver cotações</button></div><div class="card"><h3>Caderninho Inteligente</h3><p>O que pediram e hoje não temos em casa?</p><button class="btn secondary" onclick="navigate(\'caderninho\')">Ver procuras</button></div></div>'}
  else if(page==='cotacoes'){h=header('Cotações e conversão','Cadastro manual CIP; não representa cotações nem faturamento do ERP.')+'<div class="card"><div class="row"><h3>Nova cotação manual</h3><span class="pill neutral">REGISTRO CIP · SEM ERP</span></div><div class="fieldrow quote-fields"><label>Cliente<input id="quoteCustomer" type="text" maxlength="150" placeholder="Clínica ou instituição"></label><label>Valor estimado R$<input id="quoteValue" type="number" min="0" step="0.01" placeholder="0,00"></label><label>Registrar<br><button class="btn" onclick="window.cipSaveQuote?.()" style="margin-top:6px">Salvar cotação</button></label></div></div><div class="card section"><h3>Histórico das cotações manuais</h3><p class="mini">Conversão será calculada apenas sobre registros confirmados no CIP até integração homologada com Procfit.</p><div id="cipQuoteRows">Carregando...</div></div>'}
  else if(page==='caderninho'){h=header('Caderninho Inteligente','Hoje não tenho, mas amanhã eu vou ter. Registro de procura não atendida.')+'<div class="card"><div class="row"><h3>Registrar procura</h3><span class="pill neutral">CADASTRO MANUAL CIP</span></div><div class="fieldrow demand-fields"><label>Produto ou especificação<input id="demandProduct" maxlength="250" placeholder="Produto procurado"></label><label>Cliente ou instituição<input id="demandCustomer" maxlength="200" placeholder="Cliente"></label><label>Quantidade<input id="demandQty" type="number" min="0.001" step="0.001" value="1"></label><label>Registrar<br><button class="btn" onclick="window.cipSaveDemand?.()" style="margin-top:6px">Salvar procura</button></label></div></div><div class="card section"><h3>Demandas e acompanhamento</h3><div id="cipDemandRows">Carregando...</div></div>'}
- else if(page==='doquita'){h=header('Doquita · Inteligência executiva','Alertas com evidência, responsável, prazo e resultado, não relatórios sem ação.')+'<div class="insight"><b>Primeiro desafio do Doquita</b><p>Validar os R$ 6 milhões de estoque e a cobertura indicada; diagnosticar capital parado, produtos de ruptura e oportunidades entre varejo e B2B.</p><span class="pill neutral">HIPÓTESE · SEM DADOS CONECTADOS</span></div>'+coming('Recomendações automáticas e tarefas')}
+ else if(page==='doquita'){h=header('Doquita · Inteligência executiva','Uma leitura orientada dos registros manuais do CIP, com recomendações que exigem validação humana.')+'<div class="insight"><div class="row"><div><b>Doquita · observatório operacional</b><p>Localize riscos de margem, cotações em aberto e procuras não atendidas com base no que já foi registrado.</p></div><button class="btn secondary" type="button" onclick="window.cipRefreshDoquita?.()">Atualizar análise</button></div><span class="pill neutral">DADOS MANUAIS CIP · NÃO É ERP</span></div><section id="cipDoquitaBoard" class="section" aria-live="polite">Consultando registros autorizados…</section>'}
  else if(page==='integracoes'){h=header('Integrações e acessos','Segurança e dados segregados por empresa desde a fundação.')+'<div class="grid2"><div class="card"><h3>Administração</h3><p>Superadm designado: <b>gritsolucoes@gmail.com</b></p><span class="pill">PERFIL CIP ATIVO</span><p class="mini">Autenticação corporativa e permissões por empresa habilitadas. Gestão de convites e papéis pela interface ainda pendente.</p></div><div class="card"><h3>ERP Procfit / BI</h3><p>Fonte transacional prevista com acesso homologado somente leitura.</p><span class="pill">NÃO CONECTADO</span><p class="mini">Requer TI, views, catálogo, filiais, custos, vendas, preços e cotações.</p></div></div><div class="section card"><h3>Arquitetura alvo</h3><p class="muted">Procfit/BI → conector seguro → dados organizados por empresa → estoque/preços/cotações → Doquita → decisão e auditoria.</p></div>'}
  document.getElementById('content').innerHTML=h;
+ document.getElementById('content').scrollIntoView({behavior:'instant',block:'start'});
  if(page==='inicio'){
    const allowed=window.cipAuth.allowedRoutes;
    document.querySelectorAll('#content .company').forEach(company=>{
