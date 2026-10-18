@@ -32,6 +32,7 @@ jobs:
           set -euo pipefail
           node apps/cip-pro-360/release-check.test.mjs
           node apps/cip-pro-360/cip-auth.test.mjs
+          node apps/cip-pro-360/deploy/upload.test.mjs
           node apps/cip-pro-360/release-check.mjs prepare apps/cip-pro-360 release "$GITHUB_SHA"
           node --input-type=module --check < release/cip-auth.js
           node - <<'NODE'
@@ -101,18 +102,15 @@ jobs:
       - name: Verify CIP HTTPS before uploading
         shell: bash
         run: node apps/cip-pro-360/release-check.mjs preflight
+      - name: Install pinned FTPS client
+        run: npm ci --prefix apps/cip-pro-360/deploy --ignore-scripts --omit=dev --no-audit --no-fund
       - name: Publish isolated CIP folder
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.CIP_FTPS_HOST }}
-          username: ${{ secrets.CIP_FTPS_USER }}
-          password: ${{ secrets.CIP_FTPS_PASSWORD }}
-          protocol: ftps
-          port: 21
-          local-dir: ./release/
-          server-dir: ${{ secrets.CIP_FTPS_DIR }}
-          dangerous-clean-slate: false
-          log-level: minimal
+        env:
+          CIP_FTPS_HOST: ${{ secrets.CIP_FTPS_HOST }}
+          CIP_FTPS_USER: ${{ secrets.CIP_FTPS_USER }}
+          CIP_FTPS_PASSWORD: ${{ secrets.CIP_FTPS_PASSWORD }}
+          CIP_FTPS_DIR: ${{ secrets.CIP_FTPS_DIR }}
+        run: node apps/cip-pro-360/deploy/upload.mjs release "$GITHUB_SHA"
       - name: Verify real address
         shell: bash
         run: |

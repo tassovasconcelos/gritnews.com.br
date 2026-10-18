@@ -22,6 +22,7 @@ A tela de login, navegação e favicon do CIP foram adaptados à identidade **ve
 - Scripts de interface e módulo auth passaram na validação sintática. **Não substitui teste real de login com navegador.**
 
 ## Retomada em 18/10/2026
+- Após atualização privada da senha, o FTPS autenticou, mas o publicador antigo interrompeu no canal de dados (`ECONNRESET`). Sua dependência basic-ftp 5.0.5 precede correções de retomada TLS para Node atual. O workflow agora usa basic-ftp 6.2.3 com versão e integridade fixadas em `deploy/package-lock.json`, TLS validado pelo certificado Hostinger, destino conferido por `PWD`, upload temporário e releitura de bytes antes da substituição. Não exclui arquivos ou pastas; HTML e manifesto são substituídos por último. A homologação HTTPS permanece obrigatória após o envio.
 - Confirmados no Supabase existente: nove tabelas CIP com RLS ativo, 22 políticas, duas empresas, seis marcos e perfil superadm ativo com e-mail confirmado. Isso não substitui login real.
 - hPanel lista CIP como site separado. A conta FTP dedicada informa pasta de upload `public_html`, sob `domains/cip.gritnews.com.br`. SSL Lifetime ativo no painel. O workflow admite essa raiz somente com conta FTP dedicada ao site CIP, mantendo os caminhos anteriores.
 - Dispatch manual na branch funcionou sem alterar main: validação `39132324388`, commit `98e4cd35c60d7da1d49225be164d7d9c0f18dee1`, publicação desativada.
