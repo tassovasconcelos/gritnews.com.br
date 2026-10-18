@@ -1,0 +1,104 @@
+name: CIP PRO 360 - Validate and optional Hostinger deploy
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publicar em cip.gritnews.com.br após configurar DNS, SSL e FTPS?'
+        required: true
+        type: boolean
+        default: false
+  push:
+    branches:
+      - feat/cip-pro360-shopping-distribuidora
+    paths:
+      - 'apps/cip-pro-360/**'
+      - '.github/workflows/cip-pro360.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cip-pro360-deploy
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Prepare isolated static app
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          for f in index.html cip-auth.js .htaccess robots.txt health.json; do
+            test -s "apps/cip-pro-360/$f"
+            cp "apps/cip-pro-360/$f" "release/$f"
+          done
+          node --input-type=module --check < release/cip-auth.js
+          node - <<'NODE'
+          const fs=require('node:fs'),vm=require('node:vm');
+          const html=fs.readFileSync('release/index.html','utf8');
+          const m=html.match(/<script>([\s\S]*?)<\/script>/);
+          if(!m)throw Error('Inline script missing');
+          new vm.Script(m[1]);
+          for(const value of ['cip-auth.js','cipQuoteRows','cipDemandRows','cipTimeline','cipSaveScenario']){
+            if(!html.includes(value))throw Error('Required element missing: '+value);
+          }
+          if(html.includes('onclick="showPreview()"'))throw Error('Public unauthenticated preview must be disabled');
+          console.log('CIP static app checks passed');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cip-pro360-static
+          path: release/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+  publish:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: cip-production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: cip-pro360-static
+          path: release/
+      - name: Validate isolated Hostinger target
+        env:
+          CIP_FTPS_HOST: ${{ secrets.CIP_FTPS_HOST }}
+          CIP_FTPS_USER: ${{ secrets.CIP_FTPS_USER }}
+          CIP_FTPS_PASSWORD: ${{ secrets.CIP_FTPS_PASSWORD }}
+          CIP_FTPS_DIR: ${{ secrets.CIP_FTPS_DIR }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${CIP_FTPS_HOST:?Missing CIP_FTPS_HOST}"
+          : "${CIP_FTPS_USER:?Missing CIP_FTPS_USER}"
+          : "${CIP_FTPS_PASSWORD:?Missing CIP_FTPS_PASSWORD}"
+          : "${CIP_FTPS_DIR:?Missing CIP_FTPS_DIR}"
+          case "$CIP_FTPS_DIR" in
+            public_html/cip/|/public_html/cip/|domains/gritnews.com.br/public_html/cip/|/domains/gritnews.com.br/public_html/cip/)
+              echo "FTPS directory scoped to CIP-only folder"
+              ;;
+            *) echo "::error::Refusing to deploy: directory not CIP-specific." ; exit 1;;
+          esac
+      - name: Publish isolated CIP folder
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CIP_FTPS_HOST }}
+          username: ${{ secrets.CIP_FTPS_USER }}
+          password: ${{ secrets.CIP_FTPS_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./release/
+          server-dir: ${{ secrets.CIP_FTPS_DIR }}
+          dangerous-clean-slate: false
+          log-level: minimal
+      - name: Verify real address
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20 https://cip.gritnews.com.br/health.json | grep -q '"app": "cip-pro360"'
+          curl --fail --silent --show-error --max-time 20 https://cip.gritnews.com.br/ | grep -q 'CIP PRO 360'
+          echo "Verified CIP endpoint"
