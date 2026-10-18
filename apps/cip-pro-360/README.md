@@ -1,17 +1,18 @@
 # CIP PRO 360° — Shopping Prohospital + Distribuidora Prohospital
 
 ## Estado verificável (18/10/2026)
-**Frontend:** login ligado ao Supabase GRIT, navegação com sessão autenticada, módulos Varejo/B2B segregados por perfil; telas de simulação, cadastro manual de cotações e Caderninho e cronograma. Projeto ainda não publicado em `cip.gritnews.com.br`: Hostinger hPanel / subdomínio / FTPS pendentes.
+**Frontend:** login ligado ao Supabase GRIT, navegação com sessão autenticada, módulos Varejo/B2B segregados por perfil; telas de simulação, análises manuais de preços, cadastro de cotações e Caderninho e cronograma. Projeto ainda não publicado em `cip.gritnews.com.br`: Hostinger hPanel / subdomínio / FTPS pendentes.
 
 **Backend:** conectado ao projeto existente Supabase `gritnews` (ref `pcrwtoddavpvkaxwtstc`) como provedor de identidade compartilhado; a autenticação com senha preexistente usa Supabase Auth, **não armazena nem replica credenciais no CIP**. Banco isolado por tabelas prefixadas `cip_`, com políticas RLS por empresa. O usuário `gritsolucoes@gmail.com` já foi confirmado como `superadm` na tabela CIP por correspondência exata de conta Supabase existente e verificada.
 
-**Banco criado:** 8 tabelas, 18 políticas RLS, 2 empresas, 6 marcos. Migrações registradas no Supabase como `cip_pro_360_foundation_shopping_distribuidora` (20261018071944) e `cip_restrict_company_and_authorship_mutations`. Acesso `anon` revogado das tabelas CIP. Usuário sem perfil CIP não consulta empresas. Autoria e identificador de empresa são imutáveis após criação de cotações/demandas.
+**Banco criado:** 9 tabelas, 22 políticas RLS, 2 empresas, 6 marcos. Migrações registradas no Supabase como `cip_pro_360_foundation_shopping_distribuidora` (20261018071944) e `cip_restrict_company_and_authorship_mutations`, além de `cip_shopping_marca_passo_manual_reviews`. Acesso `anon` revogado das tabelas CIP. Usuário sem perfil CIP não consulta empresas. Autoria e identificador de empresa são imutáveis após criação de cotações/demandas.
 
 **Testes de banco concluídos:** 
 - Autenticação simulada no SQL com papel `authenticated`, em transação revertida: superadm acessa ambas empresas, 2 empresas e 6 etapas.
 - Outra identidade sem autorização CIP: 0 empresas visíveis, acesso negado a Varejo e B2B.
 - `anon`: SELECT negado por falta de privilégio (esperado).
 - Inserção de cotação B2B em transação revertida gerou 1 registro de auditoria na transação; nada persistiu.
+- Inserção de análise de preço em transação revertida gerou 1 registro de auditoria; nada persistiu.
 - Scripts de interface e módulo auth passaram na validação sintática. **Não substitui teste real de login com navegador.**
 
 ## Escopo
@@ -44,7 +45,8 @@
 - [ ] Criar/verificar subdomínio, SSL e pasta isolada na Hostinger.
 - [ ] Configurar secrets FTPS e publicar; apresentar evidência pública real.
 - [ ] Conectar Procfit/BI e reconciliar dados de estoque, precificação e conversão.
-- [ ] Implementar preço por SKU, monitoração e aprovação; hoje é só interface.
+- [x] Registrar e consultar análises manuais do Marca-passo por SKU, custo, despesa%, margem-alvo, referência e status, sem alterar ERP.
+- [ ] Integrar tabelas reais de preço/custo/tributos e workflow de aprovação com alçadas.
 - [ ] Homologar com usuários reais e critérios executivos.
 
 ## Cronograma
