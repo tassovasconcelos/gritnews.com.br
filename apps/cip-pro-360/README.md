@@ -1,5 +1,11 @@
 # CIP PRO 360° — Shopping Prohospital + Distribuidora Prohospital
 
+
+## Identidade oficial — atualização de 18/10/2026
+A tela de login, navegação e favicon do CIP foram adaptados à identidade **vermelho/amarelo/branco do Grupo Prohospital** e passam a usar `./logo-grupo-prohospital.jpg` no lugar do símbolo provisório. A imagem foi fornecida diretamente pelo usuário. Para preservar a marca e evitar redesenho, a cópia exata do arquivo original foi empacotada para instalação, com SHA-256 `a2978ce838d0cb9014dc982fb2c3b23933cb055885ad36d3f2187b5383da9981`.
+
+**ATENÇÃO: a imagem binária ainda precisa ser adicionada ao repositório no caminho `apps/cip-pro-360/logo-grupo-prohospital.jpg`.** O arquivo acompanha o pacote de entrega da conversa. O workflow GitHub valida o código da branch e informa aviso enquanto faltar a imagem; impede o deploy de produção sem o logo. A versão ainda **não foi publicada em `cip.gritnews.com.br`**. Work/hPanel precisam configurar o subdomínio e enviar arquivos. Não declarar identidade publicada antes da confirmação.
+
 ## Estado verificável (18/10/2026)
 **Frontend:** login ligado ao Supabase GRIT, navegação com sessão autenticada, módulos Varejo/B2B segregados por perfil; telas de simulação, análises manuais de preços, cadastro de cotações e Caderninho e cronograma. Projeto ainda não publicado em `cip.gritnews.com.br`: Hostinger hPanel / subdomínio / FTPS pendentes.
 
@@ -41,7 +47,8 @@
 - [ ] Verificar responsividade mobile por teste de navegação real.
 - [ ] Habilitar configuração de redirecionamento Supabase Auth para recuperação de senha.
 - [ ] Provisionar fluxo seguro de convites e papéis de outros usuários no módulo Administração.
-- [ ] Instalar **arquivo original aprovado** do logotipo oficial Grupo Prohospital; não redesenhar a marca.
+- [x] Adaptar código HTML/CSS ao logotipo e às cores oficiais do Grupo Prohospital.
+- [ ] Adicionar binário original `logo-grupo-prohospital.jpg` à branch (preparado no pacote ZIP entregue ao usuário); validar renderização e só depois publicar.
 - [ ] Criar/verificar subdomínio, SSL e pasta isolada na Hostinger.
 - [ ] Configurar secrets FTPS e publicar; apresentar evidência pública real.
 - [ ] Conectar Procfit/BI e reconciliar dados de estoque, precificação e conversão.
