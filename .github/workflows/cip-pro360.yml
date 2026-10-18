@@ -30,13 +30,17 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release
-          for f in index.html cip-auth.js logo-grupo-prohospital.jpg .htaccess robots.txt health.json; do
+          for f in index.html cip-auth.js .htaccess robots.txt health.json; do
             test -s "apps/cip-pro-360/$f"
             cp "apps/cip-pro-360/$f" "release/$f"
           done
-          # The official uploaded image must be present in the CIP folder, not just referenced in HTML.
-          test "$(stat -c%s release/logo-grupo-prohospital.jpg)" -gt 20000
-          file release/logo-grupo-prohospital.jpg | grep -q JPEG
+          # Allow nonproduction code validation before branding asset is added.
+          if test -s apps/cip-pro-360/logo-grupo-prohospital.jpg; then
+            cp apps/cip-pro-360/logo-grupo-prohospital.jpg release/
+            file release/logo-grupo-prohospital.jpg | grep -q JPEG
+          else
+            echo "::warning::Official Grupo Prohospital logo file not committed yet; production publish blocked."
+          fi
           node --input-type=module --check < release/cip-auth.js
           node - <<'NODE'
           const fs=require('node:fs'),vm=require('node:vm');
@@ -67,6 +71,13 @@ jobs:
         with:
           name: cip-pro360-static
           path: release/
+      - name: Ensure official brand asset included
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s release/logo-grupo-prohospital.jpg || { echo "::error::Upload the supplied official logo to apps/cip-pro-360/logo-grupo-prohospital.jpg first."; exit 1; }
+          test "$(stat -c%s release/logo-grupo-prohospital.jpg)" -gt 20000
+          file release/logo-grupo-prohospital.jpg | grep -q JPEG
       - name: Validate isolated Hostinger target
         env:
           CIP_FTPS_HOST: ${{ secrets.CIP_FTPS_HOST }}
