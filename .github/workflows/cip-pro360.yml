@@ -21,6 +21,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -29,18 +30,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p release
-          for f in index.html cip-auth.js .htaccess robots.txt health.json; do
-            test -s "apps/cip-pro-360/$f"
-            cp "apps/cip-pro-360/$f" "release/$f"
-          done
-          # Allow nonproduction code validation before branding asset is added.
-          if test -s apps/cip-pro-360/logo-grupo-prohospital.jpg; then
-            cp apps/cip-pro-360/logo-grupo-prohospital.jpg release/
-            file release/logo-grupo-prohospital.jpg | grep -q JPEG
-          else
-            echo "::warning::Official Grupo Prohospital logo file not committed yet; production publish blocked."
-          fi
+          node apps/cip-pro-360/release-check.test.mjs
+          node apps/cip-pro-360/release-check.mjs prepare apps/cip-pro-360 release "$GITHUB_SHA"
           node --input-type=module --check < release/cip-auth.js
           node - <<'NODE'
           const fs=require('node:fs'),vm=require('node:vm');
@@ -62,22 +53,25 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   publish:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/feat/cip-pro360-shopping-distribuidora' }}
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: cip-production
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
       - uses: actions/download-artifact@v4
         with:
           name: cip-pro360-static
           path: release/
-      - name: Ensure official brand asset included
+      - name: Verify release manifest and original official logo
         shell: bash
         run: |
           set -euo pipefail
-          test -s release/logo-grupo-prohospital.jpg || { echo "::error::Upload the supplied official logo to apps/cip-pro-360/logo-grupo-prohospital.jpg first."; exit 1; }
-          test "$(stat -c%s release/logo-grupo-prohospital.jpg)" -gt 20000
-          file release/logo-grupo-prohospital.jpg | grep -q JPEG
+          node apps/cip-pro-360/release-check.mjs validate release "$GITHUB_SHA"
       - name: Validate isolated Hostinger target
         env:
           CIP_FTPS_HOST: ${{ secrets.CIP_FTPS_HOST }}
@@ -97,6 +91,9 @@ jobs:
               ;;
             *) echo "::error::Refusing to deploy: directory not CIP-specific." ; exit 1;;
           esac
+      - name: Verify CIP HTTPS before uploading
+        shell: bash
+        run: node apps/cip-pro-360/release-check.mjs preflight
       - name: Publish isolated CIP folder
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -113,6 +110,5 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --max-time 20 https://cip.gritnews.com.br/health.json | grep -q '"app": "cip-pro360"'
-          curl --fail --silent --show-error --max-time 20 https://cip.gritnews.com.br/ | grep -q 'CIP PRO 360'
-          echo "Verified CIP endpoint"
+          node apps/cip-pro-360/release-check.mjs smoke release "$GITHUB_SHA"
+

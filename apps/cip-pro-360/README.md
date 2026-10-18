@@ -35,6 +35,14 @@ A tela de login, navegação e favicon do CIP foram adaptados à identidade **ve
 6. Homologar: HTTP 200 no site e `/health.json`; login real com `gritsolucoes@gmail.com` e senha da identidade GRIT já existente, sem compartilhar a senha; acesso às duas empresas, consulta a etapas e teste de criação/edição B2B. Depois testar usuário sem perfil CIP e comportamento mobile.
 7. Habilitar `https://cip.gritnews.com.br/**` em **Supabase Auth → URL Configuration → Redirect URLs**, para recuperação de senha. Não alterar o `Site URL` principal do projeto GRIT sem análise de impacto.
 
+### Verificação da release
+- O workflow deve publicar somente a branch `feat/cip-pro360-shopping-distribuidora`, com execução manual `publish=true`, usando o environment `cip-production`.
+- A preparação gera `release-manifest.json` com SHA completo do commit e SHA-256 de cada arquivo. O publish exige o JPG original com SHA-256 `a2978ce838d0cb9014dc982fb2c3b23933cb055885ad36d3f2187b5383da9981`; outro JPEG não atende ao aceite.
+- O teste após upload exige TLS válido, HTTP 200 sem redirecionamento e os mesmos bytes da release para HTML, JavaScript, JPG, health, robots e manifesto. `.htaccess` é incluído no pacote, mas seu conteúdo não deve ser servido publicamente.
+- Esses testes comprovam os arquivos publicados. Login, autorização por empresa, persistência e mobile exigem homologação real de navegador, separadamente.
+- No hPanel, registrar o document root exclusivo e conciliar `CIP_FTPS_DIR` com o diretório inicial da conta FTPS. A lista de caminhos do workflow não comprova esse mapeamento sozinha. Configurar os quatro segredos no environment `cip-production`, sem incluí-los em arquivos ou comandos com valores literais.
+- Conferir que o workflow está disponível para execução manual pelo GitHub. Não adicionar arquivos em `main` apenas para habilitar o dispatch: o workflow `auto-deploy.yml` do portal dispara em pushes para `main` e pode publicar outro site.
+
 **Importante:** os botões de aplicação usam o Supabase público (publishable key), mas **autorização é sempre validada no backend por RLS**. O cliente não contém `service_role`, token privado, senha ou chaves de FTP.
 
 ## Prioridades e pendências
