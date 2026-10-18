@@ -32,6 +32,8 @@ jobs:
           set -euo pipefail
           node apps/cip-pro-360/release-check.test.mjs
           node apps/cip-pro-360/cip-auth.test.mjs
+          node apps/cip-pro-360/doquita-insights.test.mjs
+          node --check apps/cip-pro-360/doquita-insights.mjs
           node apps/cip-pro-360/grit-recovery.test.mjs
           node apps/cip-pro-360/deploy/upload.test.mjs
           node apps/cip-pro-360/release-check.mjs prepare apps/cip-pro-360 release "$GITHUB_SHA"
