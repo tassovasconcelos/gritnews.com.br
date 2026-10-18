@@ -4,5 +4,9 @@
   "source": "github",
   "auth": "Supabase integration",
   "procfit": "pending",
-  "updated_at": "2026-10-18"
+  "updated_at": "2026-10-18",
+  "release": "cip-2026-10-18-doquita-ux",
+  "doquita": "manual-records-readonly",
+  "mobile_navigation": "improved",
+  "authenticated_browser_homologation": "pending"
 }
