@@ -12,7 +12,7 @@ const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const note=(s)=>{const el=$("loginMessage");if(el)el.textContent=s;};
-function toLogin(){user=null;profile=null;companies=new Set();window.cipAuth=null;$("interface")?.classList.add("hide");$("login")?.classList.remove("hide");}
+function toLogin(){window.closeMenu?.();user=null;profile=null;companies=new Set();window.cipAuth=null;$("interface")?.classList.add("hide");$("login")?.classList.remove("hide");}
 async function enter(){
   if(!user)return toLogin();
   const p=await supabase.from("cip_profiles").select("role,active").eq("user_id",user.id).maybeSingle();
