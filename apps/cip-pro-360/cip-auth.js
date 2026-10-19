@@ -1,3 +1,4 @@
+import {stockReferenceFrame,mountStockReference} from './stock-reference.mjs';
 import {pricingFrame,mountPricing} from './pricing-ui.mjs';
 import {erpFrame,mountERP} from './erp-ui.mjs';
 import {processFrame,mountProcesses} from './process-ui.mjs';
@@ -20,6 +21,7 @@ window.cipRenderAdmin=()=>adminFrame();
 window.cipRenderProcesses=()=>processFrame();
 window.cipRenderBot=()=>botFrame();
 window.cipRenderERP=()=>erpFrame();
+window.cipRenderStock=compact=>stockReferenceFrame({compact});
 window.cipRenderPricing=()=>pricingFrame();
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g","precos"] };
 const $=id=>document.getElementById(id);
@@ -99,8 +101,9 @@ window.cipResetPassword=async()=>{
 };
 window.cipSignOut=async()=>{await supabase.auth.signOut();toLogin();note("Sessão encerrada.");};
 async function reloadMilestones(){
-  if(!$("cipTimeline"))return;
+  const timeline=$("cipTimeline");if(!timeline)return;
   const {data,error}=await supabase.from("cip_milestones").select("id,title,date_range,detail,status").order("id");
+  if(!timeline.isConnected||timeline!==$("cipTimeline"))return;
   if(error){$("cipTimeline").textContent="Não foi possível carregar as etapas.";return;}
   $("cipTimeline").innerHTML=(data||[]).map((r,i)=>'<div class="milestone"><span class="pill neutral">'+escape(r.date_range)+'</span><h3>'+String(i+1).padStart(2,"0")+'. '+escape(r.title)+'</h3><p>'+escape(r.detail)+'</p><span class="mini">Status: '+escape(r.status)+'</span>'+(profile.role==="superadm"?'<div><select onchange="cipUpdateMilestone(\''+escape(r.id)+'\',this.value)"><option '+(r.status==="planejada"?"selected":"")+' value="planejada">Planejada</option><option '+(r.status==="em_andamento"?"selected":"")+' value="em_andamento">Em andamento</option><option '+(r.status==="bloqueada"?"selected":"")+' value="bloqueada">Bloqueada</option><option '+(r.status==="homologada"?"selected":"")+' value="homologada">Homologada</option></select></div>':"")+'</div>').join("");
 }
@@ -270,6 +273,7 @@ window.cipLoadPage=(page)=>{
  if(page==='processos'&&window.cipAuth?.allowedRoutes?.includes(page))mountProcesses({db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==='mensageiro'&&window.cipAuth?.allowedRoutes?.includes(page))mountBot({db:supabase,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==='procfit'&&['superadm','diretoria'].includes(profile?.role))mountERP({db:supabase,user,canManage:profile.role==='superadm',companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
+ if(['estoque','varejo','doquita'].includes(page)&&companies.has(V)&&window.cipAuth?.allowedRoutes?.includes(page))mountStockReference({db:supabase,root:document.getElementById('content'),companies:[...companies],isAlive:()=>!!user,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};},autoLoad:true,onOpen:()=>{if(window.cipAuth?.allowedRoutes?.includes('estoque'))window.navigate('estoque');}});
  if(page==="doquita")loadDoquita();
  if(page==="cronograma")reloadMilestones();
  if(page==="cotacoes")reloadQuoteRows();

@@ -1,5 +1,13 @@
 # Shopping — cargas provisórias de CD e lojas
 
+## Integração aos módulos — 19/10/2026
+
+Correção após retorno do usuário: a consulta estava isolada em Procfit & relatórios, enquanto Estoque Inteligente continuava apresentando apenas o simulador manual inicial. Agora Estoque Inteligente, Visão Varejo e Doquita montam a mesma consulta privada, com carga automática e troca de origem. Acesso exige empresa Shopping; políticas do banco continuam sendo a autoridade. Descarte na navegação invalida respostas pendentes. Falha na recarga oculta resultados anteriores.
+
+Estoque Inteligente apresenta totais do filtro, composição por grupo/marca/unidade, concentração das dez maiores linhas SKU/unidade e pauta de conferência. Cálculos determinísticos sobre o arquivo; não representam análise comercial validada por IA. Relatório CSV contém somente linhas filtradas, origem/hash, situação não conciliada e campos ausentes vazios; texto é protegido contra fórmulas de planilha. Simulador de redução do custo usa centavos e o mesmo filtro; exporta JSON com premissas, origem e limitações. Não calcula receita, lucro, caixa, idade, giro ou cobertura inexistentes. Simulador manual de cobertura anterior fica recolhido e identificado como cenário independente, sem misturar suas premissas com as cargas.
+
+128 testes locais passaram. Navegação com módulos reais, identidade sintética e adaptador privado somente leitura validou CD, lojas, loja 5, filtro de SKU, cenário de 20%, exportação de relatório, resumos na Visão Varejo e Doquita. Nenhuma gravação/credencial de produção utilizada no adaptador. Layout sem rolagem horizontal global e sessão local nova sem erro no console. Screenshot privado: evidencias/cip-estoque-dashboard-integrado.png. Produção disponível para esta sessão estava no login; não equivale a homologação autenticada em produção.
+
 ## CD 100 recebido em 19/10/2026
 
 Usuário identificou Estoque CD100.xlsx como CD 100 Shopping Prohospital. Origem privada: Planilha1, A1:I625; SHA256 `3be471067b79a254d4c7a89504bed89faf23da59a4e66c38b1be082ead0b9f15`. São 624 linhas/SKUs únicos, somente empresa 100. Quantidade × custo unitário confere com custo total; sem duplicidades ou custo zero. Valores financeiros e registros permanecem fora do Git e pacote estático.

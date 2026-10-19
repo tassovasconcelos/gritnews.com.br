@@ -1,5 +1,11 @@
 # CIP 360 — memória operacional
 
+## Estoques, relatórios, cenários e análises integrados — 19/10/2026
+
+Usuário apontou que as importações não refletiam nos módulos. Causa confirmada: Estoque Inteligente ainda exibia apenas simulador de Rufino e a consulta estava isolada em Procfit. Corrigido: Estoque Inteligente, Visão Varejo e Doquita agora consultam automaticamente as cargas privadas por origem, mediante acesso Shopping. Relatórios por grupo/marca/unidade, concentração de custo, filtro SKU, CSV do filtro e cenário de redução de custo com exportação JSON de premissas/hash. Análises determinísticas, sem afirmar validação por IA. Não há cálculo de vendas/giro/cobertura/margem sem dados. Simulador anterior recolhido, explicitamente independente das cargas.
+
+128 testes locais passaram; módulos reais de navegação/autenticação testados com identidade sintética e adaptador privado de leitura, sem uso de credenciais ou gravações de produção. Conferidos troca CD/lojas, loja5, SKU, cenário, exportação, Varejo e Doquita. Corrigida também resposta tardia do cronograma após navegação. Produção nesta sessão estava no login; uso autenticado não homologado. Dados financeiros não foram incorporados aos arquivos públicos. Detalhes em SHOPPING-STOCK-REFERENCE.md.
+
 ## CD 100 Shopping — carga distinta recebida em 19/10/2026
 
 Estoque CD100.xlsx identificado pelo usuário como CD 100 Shopping Prohospital. Importados 624 registros/SKUs únicos em lote privado cd100_partial, separado das lojas. SHA256 3be471067b79a254d4c7a89504bed89faf23da59a4e66c38b1be082ead0b9f15. Não há duplicidades, custos zero ou divergências quantidade×custo. Sem preço de venda, data do saldo, últimas movimentações, dias sem movimento, unidade, reservas ou validade. Ausências NULL, nunca zero; não classificar CD como +180 dias nem inventário completo. Dados e totais financeiros fora do Git/publicação estática. Migração complementar stock-reference-cd100.sql mantém RLS/grants anteriores. Authenticated sem empresa vê zero registros.
