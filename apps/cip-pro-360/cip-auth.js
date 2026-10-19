@@ -1,6 +1,7 @@
 // CIP PRO 360° authentication and business data client.
 // Public publishable key only; permissions and segregation enforced by Supabase RLS.
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm";
+import { createClient } from "./supabase-js-2.57.0.mjs";
+import {adminFrame,mountAdmin} from "./admin-ui.mjs";
 import {knowledgeContext} from "./academy-engine.mjs";
 import {summarizeDoquita} from "./doquita-insights.mjs";
 import {renderSquadPage,mountSquad} from "./agents-ui.mjs";
@@ -11,6 +12,7 @@ const V="shopping_prohospital", B="distribuidora_prohospital";
 let user=null,profile=null,companies=new Set();
 let disposeSquad=()=>{};
 window.cipRenderSquad=page=>renderSquadPage(page);
+window.cipRenderAdmin=()=>adminFrame();
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g"] };
 const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -256,6 +258,7 @@ window.cipLoadPage=(page)=>{
  disposeSquad();disposeSquad=()=>{};
  if(!user)return;
  if(["quartel","escola","radar-b2g"].includes(page)&&window.cipAuth?.allowedRoutes?.includes(page))mountSquad(page,{db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
+ if(page==="integracoes"&&profile?.role==="superadm")mountAdmin({db:supabase,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==="doquita")loadDoquita();
  if(page==="cronograma")reloadMilestones();
  if(page==="cotacoes")reloadQuoteRows();

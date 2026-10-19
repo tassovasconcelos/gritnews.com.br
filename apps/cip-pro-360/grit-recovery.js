@@ -1,4 +1,4 @@
-import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm';
+import {createClient} from './supabase-js-2.57.0.mjs';
 const params=new URLSearchParams(location.hash.slice(1));
 const isRecovery=params.get('type')==='recovery'&&!params.has('error');
 const client=createClient('https://pcrwtoddavpvkaxwtstc.supabase.co','sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS',{

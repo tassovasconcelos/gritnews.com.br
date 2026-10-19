@@ -9,7 +9,13 @@ on:
         default: false
   push:
     branches:
-      - feat/cip-pro360-shopping-distribuidora
+      - cip/main
+    paths:
+      - 'apps/cip-pro-360/**'
+      - '.github/workflows/cip-pro360.yml'
+  pull_request:
+    branches:
+      - cip/main
     paths:
       - 'apps/cip-pro-360/**'
       - '.github/workflows/cip-pro360.yml'
@@ -35,6 +41,10 @@ jobs:
           node apps/cip-pro-360/doquita-insights.test.mjs
           node apps/cip-pro-360/agents.test.mjs
           node --test apps/cip-pro-360/academy.test.mjs
+          node --test apps/cip-pro-360/admin.test.mjs
+          node --check apps/cip-pro-360/admin-ui.mjs
+          node --check apps/cip-pro-360/cip-activation.js
+          node --test apps/cip-pro-360/security-headers.test.mjs
           npm ci --prefix apps/cip-pro-360/ingestion --ignore-scripts --no-audit --no-fund
           node --test apps/cip-pro-360/ingestion/extract.test.mjs
           node --check apps/cip-pro-360/academy-ui.mjs
@@ -68,7 +78,7 @@ jobs:
   publish:
     # Explicit release commit allows audited deployment without changing unrelated sites.
     # Routine pushes continue to validate only.
-    if: ${{ github.ref == 'refs/heads/feat/cip-pro360-shopping-distribuidora' && ((github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[cip:publish]'))) }}
+    if: ${{ github.ref == 'refs/heads/cip/main' && ((github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[cip:publish]'))) }}
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 10
