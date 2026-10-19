@@ -1,3 +1,4 @@
+import {ERP_KINDS,renderERP} from './erp-reports.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {configureBot,telegramApi} from './setup.mjs';
 import {classify,transcribe,validAIKey} from './ai.mjs';
@@ -10,17 +11,20 @@ const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{sta
 const configured=(token:string,secret:string)=>/^\d+:[A-Za-z0-9_-]{20,}$/.test(token)&&/^[A-Za-z0-9_-]{32,256}$/.test(secret);
 async function credentials(){const r=await db.rpc('cip_bot_config_read');if(r.error)throw Error('configuration_unavailable');return r.data??{token:Deno.env.get('CIP_TELEGRAM_BOT_TOKEN')??'',secret:Deno.env.get('CIP_TELEGRAM_WEBHOOK_SECRET')??'',username:null};}
 async function ensureInteractive(cfg:any){
- if(!configured(cfg.token,cfg.secret)||cfg.interaction_version===2)return;
+ if(!configured(cfg.token,cfg.secret)||cfg.interaction_version===3)return;
  try{await telegramApi(cfg.token,'setWebhook',{url:url+'/functions/v1/cip-telegram',secret_token:cfg.secret,allowed_updates:['message','callback_query'],max_connections:5});
- await telegramApi(cfg.token,'setMyCommands',{commands:[{command:'menu',description:'Abrir menu do Doquita'},{command:'empresas',description:'Escolher empresa ou todas autorizadas'},{command:'resumo',description:'Resumo do cadastro atual'},{command:'missoes',description:'Missões por estado'},{command:'processos',description:'Mapas de processos'},{command:'conhecimento',description:'Buscar orientação revisada'},{command:'sair',description:'Revogar meu vínculo'}]});
+ await telegramApi(cfg.token,'setMyCommands',{commands:[{command:'menu',description:'Abrir menu do Doquita'},{command:'empresas',description:'Escolher empresa ou todas autorizadas'},{command:'resumo',description:'Resumo do cadastro atual'},{command:'missoes',description:'Missões por estado'},{command:'processos',description:'Mapas de processos'},{command:'conhecimento',description:'Buscar orientação revisada'},{command:'vendas',description:'Venda líquida do mês na base aprovada'},{command:'estoque',description:'Custo do estoque na base aprovada'},{command:'parados',description:'Entrada acima de 180 dias'},{command:'semvendas',description:'Janela de 180 dias sem venda'},{command:'giro',description:'Prioridades de giro e preços'},{command:'sair',description:'Revogar meu vínculo'}]});
  await db.rpc('cip_bot_interaction_ready',{p_bot_id:cfg.bot_id});}catch{}
 }
 function secretMatches(value:string,secret:string){if(value.length!==secret.length)return false;let difference=0;for(let i=0;i<value.length;i++)difference|=value.charCodeAt(i)^secret.charCodeAt(i);return difference===0;}
 const hash=async(s:string)=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
 async function body(req:Request){const reader=req.body?.getReader();if(!reader)throw Error('body');const chunks:Uint8Array[]=[];let size=0;while(true){const r=await reader.read();if(r.done)break;size+=r.value.length;if(size>32768){await reader.cancel();throw Error('size');}chunks.push(r.value);}const all=new Uint8Array(size);let offset=0;for(const chunk of chunks){all.set(chunk,offset);offset+=chunk.length;}return JSON.parse(new TextDecoder().decode(all));}
 async function send(chat:string,text:string,token:string,keyboard:any=null){
- const res=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chat,text:text.slice(0,3900),protect_content:true,...(keyboard?{reply_markup:keyboard}:{}),link_preview_options:{is_disabled:true}}),signal:AbortSignal.timeout(12000)});
- if(!res.ok)throw Error('delivery');const data=await res.json();if(!data.ok)throw Error('delivery');
+ const chunks:string[]=[];let remaining=text;while(remaining.length>3800){let end=remaining.lastIndexOf('\n',3800);if(end<1000)end=3800;const code=remaining.charCodeAt(end-1);if(code>=0xd800&&code<=0xdbff)end--;chunks.push(remaining.slice(0,end));remaining=remaining.slice(end).replace(/^\n/,'');}chunks.push(remaining);
+ for(let i=0;i<chunks.length;i++){
+  const res=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chat,text:chunks[i],protect_content:true,...(keyboard&&i===chunks.length-1?{reply_markup:keyboard}:{}),link_preview_options:{is_disabled:true}}),signal:AbortSignal.timeout(12000)});
+  if(!res.ok)throw Error('delivery');const data=await res.json();if(!data.ok)throw Error('delivery');
+ }
 }
 const companies:Record<string,string>={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
 function render(data:any,intent:any){
@@ -98,8 +102,13 @@ Deno.serve(async(req:Request)=>{
      else if(intent.kind==='companies'){text='Escolha o escopo das próximas consultas. Seu vínculo não expira.';keyboard=companyMenu(allowed);}
      else if(intent.kind==='revoke'){const r=await db.rpc('cip_bot_read',{p_telegram:message.user,p_chat:message.chat,p_kind:'revoke',p_query:''});if(r.error)throw Error('revoke');text='Vínculo revogado. Para voltar, gere outro código no CIP.';keyboard=null;}
      else if(intent.kind==='blocked')text='Este canal é somente leitura. Alterações e aprovações devem ser feitas no CIP com a alçada responsável.';
-     else if(intent.kind==='erp_unavailable')text='Procfit ainda não conectado: não tenho faturamento, vendas, margens ou saldos reais de produtos. Posso consultar o cadastro atual de missões e processos ou buscar orientações na Escola.';
+     else if(intent.kind==='erp_unavailable')text='Essa consulta transacional ainda não está habilitada. Posso consultar venda líquida do mês, custo de estoque e itens antigos somente quando houver uma base importada e aprovada em Procfit & relatórios. Use /vendas, /estoque ou /parados.';
      else if(intent.kind==='clarification')text=intent.question==='period'?'Os relatórios disponíveis representam o cadastro atual de todos os períodos; ainda não há filtro histórico. Deseja consultar esse resumo? Toque em Resumo abaixo.':'Me diga o que deseja consultar: resumo, missões, processos ou um tema da base de conhecimento. Você também pode escolher a empresa no menu.';
+     else if(ERP_KINDS.includes(intent.kind)){
+      const targets=scope==='all'?allowed:[scope],answers=[];
+      for(const company of targets){const r=await db.rpc('cip_bot_erp_get',{p_telegram:message.user,p_chat:message.chat,p_company:company});if(r.error)throw Error('erp_scope');answers.push(COMPANY_NAMES[company]+'\n'+renderERP(r.data,intent.kind));}
+      text=answers.join('\n\n────────\n\n');await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:''});
+     }
      else if(intent.kind==='help')text=HELP;
      else if(intent.kind==='knowledge'&&(!intent.query||intent.query.length<3))text='Qual tema você quer pesquisar na Escola? Exemplo: /conhecimento reposição. A consulta usa somente fontes aprovadas e vigentes.';
      else if(intent.kind==='knowledge'&&scope==='all'){text='Para manter as fontes separadas, escolha uma empresa antes de pesquisar conhecimento.';keyboard=companyMenu(allowed);}

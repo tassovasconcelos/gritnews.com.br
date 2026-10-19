@@ -28,3 +28,6 @@ Nenhuma nova expansão de módulos até validar o núcleo. Manter escola, ingest
 - Assistente de ativação Telegram no próprio CIP: token protegido, validação de identidade, configuração automática do webhook e armazenamento criptografado no Vault; uso restrito ao superadm. A conexão real depende do token inserido pelo titular e do teste /resumo.
 
 - Vínculo Telegram explicitamente permanente; seleção persistente de empresa/todas no menu; voz e interpretação estruturada preparadas com IA opt-in, chave API no Vault, limites e respostas vinculadas ao cadastro real. Ativação de IA depende da chave própria e de teste real de texto/voz.
+
+- Implementado: importação manual JSON/CSV em rascunho, conciliação por totais independentes, bases aprovadas por empresa, relatórios de venda líquida do mês/estoque/entrada >180 dias/ausência de venda na janela e propostas de giro/Marca-passo. Menu Procfit & relatórios exclusivo do superadm; bot usa somente base aprovada.
+- Pendente: primeira exportação real do Procfit, conferência da TI/Financeiro e ativação da chave de IA pelo titular. Integração SQL Server direta e escalonamento além dos limites do piloto ainda não executados. Nenhum número de produção foi criado.
