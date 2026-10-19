@@ -6,6 +6,8 @@ Rota `apresentacao`, última opção de módulos antes de encerrar sessão. Menu
 
 16 capítulos: visão, prioridades, dados, 14 agentes, Marca-passo, estoque, jornadas por canal, Quartel, Escola, Processos vivos, Telegram, B2G, indicadores, cronograma, escala e decisão. Roteiro manual por capítulos e teclado, passagem automática opcional de 14 segundos, modo palco, tela cheia e pausa das animações. A preferência do sistema por redução de movimento é respeitada. Todos os temporizadores e eventos do guia são descartados ao sair.
 
+O guia inicia em modo palco para usar a largura da tela e retirar a navegação operacional da projeção. Sair do modo palco ou pressionar Escape retorna à moldura normal; sair para uma tela real também restaura a navegação. Tela cheia é opcional e depende do navegador.
+
 Interações: seleção de especialista, prioridades de Rufino, quatro jornadas (B2B, varejo, ecommerce e B2G), caminhos completo/incompleto de processo, cálculo de cobertura com campos inicialmente vazios, cenário didático de capacidade e cronograma em piloto/expansão/aceite. Simulações não gravam dados, não executam ações, não chamam IA e não comprovam ganho realizado.
 
 Prévias usam os renderizadores dos módulos atuais, em região `inert` e sem montar consultas ou eventos. São explicitamente identificadas como componente real sem dados. O botão Abrir tela real navega ao módulo permitido, mantendo uma faixa de retorno ao capítulo. É operação normal do módulo: ações e gravações ainda dependem do usuário e das regras existentes. Ecommerce não apresenta botão para uma integração inexistente. Nenhum screenshot privado é servido como arquivo público.

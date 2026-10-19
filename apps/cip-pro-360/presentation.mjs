@@ -49,7 +49,8 @@ export function mountPresentation({root,role,allowedRoutes=[],onOpen=()=>{},onDi
  const host=root.querySelector('[data-presentation]');
  if(!host||!PRESENTATION_ROLES.includes(role)||!allowedRoutes.includes('apresentacao'))return;
  const abort=new AbortController(),signal=abort.signal;
- let index=Math.min(savedSlide,CHAPTERS.length-1),playing=false,cinema=false,motionPaused=false,selectedAgent='doquita',journey='b2b',period='piloto',branch='normal',focus=0;
+ let index=Math.min(savedSlide,CHAPTERS.length-1),playing=false,cinema=true,motionPaused=false,selectedAgent='doquita',journey='b2b',period='piloto',branch='normal',focus=0;
+ document.body.classList.add('cip-presentation-stage');
  const panels=[
   ['Marca-passo','Definir custo, despesas, contribuição mínima e alçada antes de rever o preço.'],
   ['Estoque','Separar excesso, falta e validade por produto e unidade; reconciliar antes de agir.'],
@@ -113,6 +114,7 @@ export function mountPresentation({root,role,allowedRoutes=[],onOpen=()=>{},onDi
  const timer=setInterval(()=>{if(playing&&!document.hidden){if(index<CHAPTERS.length-1){index++;draw();}else{playing=false;draw();}}},14000);
  onDispose(()=>{abort.abort();clearInterval(timer);document.body.classList.remove('cip-presentation-stage');});
  draw();
+ host.scrollIntoView({block:'start',behavior:'instant'});
 }
 
 export function presentationReturn(root,onReturn){

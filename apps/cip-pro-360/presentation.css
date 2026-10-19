@@ -16,3 +16,4 @@
 .show-motion-paused *,.show-motion-paused *:before,.show-motion-paused *:after{animation-play-state:paused!important}
 @media(max-width:1000px){.show-top{flex-wrap:wrap}.show-top-actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}}
 @media(max-width:800px){.show-chapters{position:static;max-height:none;overflow-y:hidden}.show-chapters button{min-height:38px}.show-controls{bottom:5px}}
+.main:has(.showcase){scroll-margin-top:85px}.cip-presentation-stage .main:has(.showcase){scroll-margin-top:0}
