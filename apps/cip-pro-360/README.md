@@ -62,3 +62,8 @@ Testes transacionais de banco com rollback: papéis e empresas, suspensão com s
 ## Política dos números
 
 R$ 6 mi de estoque, R$ 3 mi/mês de vendas, CMV 47%, cobertura estimada de 128 dias, alvo de 90 dias e capital potencial de R$ 1,77 mi são informações de simulação, não valores conciliados nem economia realizada.
+
+
+### Competências, processos e Doquita no Telegram
+
+O Quartel e a Escola apresentam planos avançados dos 14 agentes. O módulo **Processos vivos** permite desenhar, conectar, simular, auditar e versionar mapas por empresa. O primeiro modelo do **Doquita no Telegram** oferece consultas limitadas em chat privado do superadm; a ativação externa requer criar o bot e configurar token/webhook. Veja `PROCESSES-AND-TELEGRAM.md` para operação, limites e homologação.

@@ -42,6 +42,9 @@ jobs:
           node apps/cip-pro-360/agents.test.mjs
           node --test apps/cip-pro-360/academy.test.mjs
           node --test apps/cip-pro-360/admin.test.mjs
+          node --test apps/cip-pro-360/process-engine.test.mjs apps/cip-pro-360/telegram/intents.test.mjs
+          node --check apps/cip-pro-360/process-ui.mjs
+          node --check apps/cip-pro-360/bot-ui.mjs
           node --check apps/cip-pro-360/admin-ui.mjs
           node --check apps/cip-pro-360/cip-activation.js
           node --test apps/cip-pro-360/security-headers.test.mjs

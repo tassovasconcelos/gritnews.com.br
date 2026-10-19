@@ -16,3 +16,11 @@
 | P2 | Avaliação 30/60/90 dias | Medir adesão, margem, giro, ruptura, estoque antigo e capital contra lojas de controle |
 
 Nenhuma nova expansão de módulos até validar o núcleo. Manter escola, ingestão e squad já existentes, sem tratar atividade visual como execução autônoma.
+
+
+## Evolução de 19/10 — competências, processos e mensageiro
+
+- Implementados: planos avançados dos mesmos 14 especialistas; editor Processos vivos com histórico e auditoria por regras; primeiro modelo do Doquita no Telegram com vínculo seguro e consultas limitadas.
+- Pendente de ativação externa: bot BotFather, segredos e webhook; não houve conversa real homologada.
+- Próximos gates: validação dos processos com donos, testes por habilidade, piloto Telegram privado, Procfit conciliado e pesquisa atual de tendências com evidência.
+- Documentação: `PROCESSES-AND-TELEGRAM.md`.
