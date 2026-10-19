@@ -31,3 +31,12 @@ Nenhuma nova expansão de módulos até validar o núcleo. Manter escola, ingest
 
 - Implementado: importação manual JSON/CSV em rascunho, conciliação por totais independentes, bases aprovadas por empresa, relatórios de venda líquida do mês/estoque/entrada >180 dias/ausência de venda na janela e propostas de giro/Marca-passo. Menu Procfit & relatórios exclusivo do superadm; bot usa somente base aprovada.
 - Pendente: primeira exportação real do Procfit, conferência da TI/Financeiro e ativação da chave de IA pelo titular. Integração SQL Server direta e escalonamento além dos limites do piloto ainda não executados. Nenhum número de produção foi criado.
+
+## Diretoria e preparação do Marca-passo
+- [x] Pareamento Telegram de diretores após aceite, com escopo verificado por pedido.
+- [x] Somente bases aprovadas para diretoria; importação/conciliação e credenciais exclusivas do superadm.
+- [x] Fila por SKU/loja, capital antigo, cobertura com histórico suficiente e travas de contribuição/alçada no simulador.
+- [x] Testes de isolamento, suspensão, remoção de membership e replay do vínculo com rollback.
+- [ ] Homologação individual dos dois diretores e validação financeira da primeira carga.
+- [ ] Matriz real de despesas/alçadas por canal e decisões de preço persistidas com vigência e resultado.
+- [ ] Monitoramento p95/erros/custos, recuperação ensaiada e carga incremental; detalhes em PLATFORM-EVOLUTION.md.

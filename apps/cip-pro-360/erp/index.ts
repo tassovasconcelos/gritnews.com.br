@@ -1,3 +1,4 @@
+import {buildPriceQueue} from '../pricing-engine.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {normalizePacket,buildERPReport,decimal,DataError,COMPANIES} from '../erp-engine.mjs';
 const url=Deno.env.get('SUPABASE_URL')!,db=createClient(url,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false}}),origin='https://cip.gritnews.com.br';
@@ -22,6 +23,11 @@ Deno.serve(async(req:Request)=>{
    if(p.data.role!=='superadm'||req.headers.get('origin')!==origin)return reply(403,{error:'superadmin_required'});
    const inventory=decimal(body.inventory_total,2,'canonical',true),sales=decimal(body.sales_total,2);if(inventory===null||sales===null||body.confirmed!==true)return reply(400,{error:'reconciliation_required'});
    const r=await db.rpc('cip_erp_approve',{p_actor:actor,p_id:body.id,p_inventory:inventory,p_sales:sales,p_note:body.note});return r.error?reply(409,{error:'reconciliation_not_approved'}):reply(200,{approved:r.data===true});
+  }
+  if(body.action==='pricing'){
+   if(!COMPANIES.includes(body.company))return reply(400,{error:'invalid_company'});
+   const r=await db.rpc('cip_erp_get',{p_actor:actor,p_company:body.company,p_id:null});if(r.error)return reply(403,{error:'financial_access_required'});
+   return reply(200,{queue:buildPriceQueue(r.data,new Date(),body.offset)});
   }
   if(body.action==='report'){
    if(!COMPANIES.includes(body.company)||!['sales_mtd','inventory','aged_stock','no_sales_stock','growth_actions'].includes(body.kind))return reply(400,{error:'invalid_report'});

@@ -66,8 +66,12 @@ R$ 6 mi de estoque, R$ 3 mi/mês de vendas, CMV 47%, cobertura estimada de 128 d
 
 ### Competências, processos e Doquita no Telegram
 
-O Quartel e a Escola apresentam planos avançados dos 14 agentes. O módulo **Processos vivos** permite desenhar, conectar, simular, auditar e versionar mapas por empresa. O primeiro modelo do **Doquita no Telegram** oferece consultas limitadas em chat privado do superadm; a ativação externa requer criar o bot e configurar token/webhook. Veja `PROCESSES-AND-TELEGRAM.md` para operação, limites e homologação.
+O Quartel e a Escola apresentam planos avançados dos 14 agentes. O módulo **Processos vivos** permite desenhar, conectar, simular, auditar e versionar mapas por empresa. O primeiro modelo do **Doquita no Telegram** oferece consultas limitadas em chat privado de superadm e diretores ativos; cada diretor vincula sua própria conta após aceitar o convite; somente o superadm configura token/webhook. Veja `PROCESSES-AND-TELEGRAM.md` para operação, limites e homologação.
 
 ### Procfit & relatórios
 
 Superadm pode importar JSON/CSV, conferir rascunho, conciliar totais independentes e liberar uma referência para relatórios no app/Telegram. `/vendas`, `/estoque`, `/parados`, `/semvendas` e `/giro` usam cálculo determinístico e origem explícita; sem base aprovada os valores ficam indisponíveis. Não há conexão direta ao ERP nesta entrega. Consulte `ERP-REPORTS.md`.
+
+## Diretoria e Marca-passo avançado
+
+Diretores consultam bases aprovadas nas empresas autorizadas pelo CIP e pelo Telegram. Marca-passo traz fila por SKU/loja e simulador de contribuição, piso, alçada e referência com origem. Veja `PLATFORM-EVOLUTION.md` para entrega, limites e prioridades. As análises aguardam a carga real; nenhuma alteração automática de preço.

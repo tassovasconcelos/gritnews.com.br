@@ -1,3 +1,4 @@
+import {buildPriceQueue} from '../pricing-engine.mjs';
 import {buildERPReport,formatMoney} from '../erp-engine.mjs';
 import {COMPANY_NAMES} from './conversation.mjs';
 export const ERP_KINDS=['sales_mtd','inventory','aged_stock','no_sales_stock','growth_actions'];
@@ -18,7 +19,7 @@ export function renderERP(snapshot,kind,now=new Date()){
  else{
   lines.push('',`Custo do estoque ${p.inventory_basis==='available'?'disponível':'físico'}: ${money(r.inventory.total)}${r.inventory.complete?'':' (cobertura incompleta).'}`,r.aging.available?`Saldo com entrada original acima de 180 dias: ${money(r.aging.total)}`:`Idade >180 dias não comprovada para todo o saldo. Linhas sem entrada por lote: ${r.aging.unknown_rows}. Valor antigo confirmado apenas nos lotes conhecidos: ${money(r.aging.known_aged_total)}.`);
   if(kind!=='inventory'){lines.push('',`Primeiras ${Math.min(5,r.top.length)} de ${r.page.total} linhas SKU/loja deste filtro:`);for(const x of r.top.slice(0,5))lines.push(`${x.sku} · ${x.description.slice(0,100)} · loja ${x.store_id}\nSaldo: ${x.quantity} ${x.unit} · valor: ${money(x.value)}\n>180 dias por entrada: ${x.old_quantity} ${x.unit} · ${money(x.old_value)}${x.unknown_age?' (idade parcialmente desconhecida)':''}${kind==='no_sales_stock'?' · última venda: '+(x.last_sale_date??'nenhuma positiva na janela coberta'):''}`);if(!r.top.length)lines.push('Nenhum item confirmado neste filtro; ausência de comprovação não significa estoque zerado.');}
-  if(kind==='growth_actions')lines.push('',...r.actions.map(a=>a.title+': '+a.detail));
+  if(kind==='growth_actions'){const queue=buildPriceQueue(snapshot,now);lines.push('', 'Marca-passo · prioridades para revisão:',...queue.items.slice(0,5).map(x=>`${x.sku} · loja ${x.store_id}: ${x.reasons.join('; ')||'Conferir contribuição e demanda'}${x.coverage_days!==null?' · cobertura observada '+x.coverage_days.toFixed(1)+' dias':''}`),'Não sugerir desconto antes de conferir custo, despesas, contribuição mínima e alçada. Use o simulador Marca-passo no CIP.',...r.actions.map(a=>a.title+': '+a.detail));}
  }
  lines.push('','Estoque antigo e ausência de vendas são critérios distintos. Confira a lista paginada e registre propostas no CIP: https://cip.gritnews.com.br/');return lines.join('\n');
 }

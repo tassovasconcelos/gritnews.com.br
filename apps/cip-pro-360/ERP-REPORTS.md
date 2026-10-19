@@ -46,3 +46,7 @@ Empresas: `shopping_prohospital`, `distribuidora_prohospital`. Produtos: chave e
 `ops/procfit-export.ps1` continua SELECT-only, com TLS e credencial em prompt. Não foi executado; PowerShell e rede Procfit não estão disponíveis aqui. A TI deve criar e homologar as views propostas. Parâmetros `SalesFrom`/`SalesThrough` filtram o período por parâmetros SQL. Sem `IncludeLotAging`, exporta v1 e não comprova idade. Com esse switch, depende da view proposta `cip.vw_inventory_lots` com `quantity_remaining_physical`, `average_cost`, `stock_value`, `lot_id`, `original_receipt_date`, `last_positive_sale_date`, além de empresa/loja/SKU. Não há criação automática de view, inferência de credenciais ou escrita no ERP.
 
 A importação manual não agenda transferência de dados nem liga a rede/VPN. O conector automático continua dependendo da TI, do isolamento planejado, das alçadas e da conciliação formal. A chave OpenAI só habilita interpretação/transcrição e nunca dá acesso ao banco Procfit.
+
+### Ampliação para diretoria
+
+A revisão `schema/director-reports.sql` permite consultas autenticadas às bases aprovadas nas empresas de membership ativa. O acesso direto a metadados dos snapshots continua exclusivo do superadm. `schema/director-reports.test.sql` verifica as negações com rollback. Diretoria não importa nem concilia. O novo Marca-passo utiliza a mesma base aprovada e não escreve preços no ERP.

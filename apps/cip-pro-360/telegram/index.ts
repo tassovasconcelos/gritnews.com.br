@@ -50,7 +50,7 @@ Deno.serve(async(req:Request)=>{
     catch(e){const allowed=['invalid_configuration','invalid_bot_token','invalid_bot_identity','configuration_busy','webhook_not_confirmed','configuration_not_saved'];const code=e instanceof Error&&allowed.includes(e.message)?e.message:'telegram_unavailable';return reply(400,{error:code});}
    }
    const cfg=await credentials();
-   if(b.action==='status'){if(p.data.role==='superadm')await ensureInteractive(cfg);return reply(200,{configured:configured(cfg.token,cfg.secret),pilot_allowed:p.data.role==='superadm',username:cfg.username??null,ai_enabled:cfg.ai_enabled===true,ai_state:aiState(cfg)});}
+   if(b.action==='status'){if(p.data.role==='superadm')await ensureInteractive(cfg);return reply(200,{configured:configured(cfg.token,cfg.secret),pilot_allowed:['superadm','diretoria'].includes(p.data.role),admin_allowed:p.data.role==='superadm',username:cfg.username??null,ai_enabled:cfg.ai_enabled===true,ai_state:aiState(cfg)});}
    if(b.action==='configure_ai'){
     if(p.data.role!=='superadm'||req.headers.get('origin')!==origin)return reply(403,{error:'superadmin_required'});
     if(b.enabled===false){const r=await db.rpc('cip_bot_ai_save',{p_actor:u.data.user.id,p_key:null,p_enabled:false});return r.error?reply(503,{error:'ai_not_saved'}):reply(200,{ai_enabled:false});}
@@ -60,7 +60,7 @@ Deno.serve(async(req:Request)=>{
    }
    if(b.action==='pair'){
     if(!configured(cfg.token,cfg.secret))return reply(409,{error:'channel_not_configured'});
-    if(p.data.role!=='superadm')return reply(403,{error:'pilot_superadmin_required'});
+    if(!['superadm','diretoria'].includes(p.data.role))return reply(403,{error:'director_access_required'});
     const r=await db.rpc('cip_bot_pair_code',{p_user:u.data.user.id,p_company:b.company});return r.error?reply(409,{error:'pair_not_created'}):reply(200,r.data);
    }
    if(b.action==='revoke'){const r=await db.rpc('cip_bot_revoke',{p_user:u.data.user.id});return r.error?reply(503,{error:'revoke_not_confirmed'}):reply(200,{revoked:true});}
@@ -78,7 +78,7 @@ Deno.serve(async(req:Request)=>{
   if(message.callback){try{await fetch(`https://api.telegram.org/bot${cfg.token}/answerCallbackQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callback_query_id:message.callback}),signal:AbortSignal.timeout(5000)});}catch{}}
   let intent:any=message.intent??interpret(message.text),text='',keyboard:any=null;
   if(intent.kind==='pair'){
-   const r=await db.rpc('cip_bot_bind',{p_hash:await hash(intent.code),p_telegram:message.user,p_chat:message.chat});if(r.error)throw Error('pair');text=r.data?'Vínculo confirmado, sem prazo de expiração. Sou o Doquita. Escolha a empresa para começar.':'Código inválido, expirado, utilizado ou conta não autorizada. O código de ativação dura 10 minutos; o vínculo concluído não expira.';if(r.data)keyboard=companyMenu(['shopping_prohospital','distribuidora_prohospital']);
+   const r=await db.rpc('cip_bot_bind',{p_hash:await hash(intent.code),p_telegram:message.user,p_chat:message.chat});if(r.error)throw Error('pair');text=r.data?'Vínculo confirmado, sem prazo de expiração. Sou o Doquita. Escolha a empresa para começar.':'Código inválido, expirado, utilizado ou conta não autorizada. O código de ativação dura 10 minutos; o vínculo concluído não expira.';if(r.data){const c=await db.rpc('cip_bot_context',{p_telegram:message.user,p_chat:message.chat});keyboard=companyMenu(c.data?.companies??[]);}
   }else{
    const getContext=()=>db.rpc('cip_bot_context',{p_telegram:message.user,p_chat:message.chat});
    let context=await getContext();if(context.error)throw Error('context');
@@ -97,9 +97,10 @@ Deno.serve(async(req:Request)=>{
      const directCompany=message.intent?.company??companyIn(message.text);
      if(aiAllowed&&!message.intent){try{const routed=await classify(message.text,{key:cfg.ai_key,context:{company:context.data.all?'all':context.data.company,last_kind:context.data.last_kind,last_query:context.data.last_query}});if(intent.kind!=='blocked'&&intent.kind!=='erp_unavailable')intent=routed;}catch{aiError=true;}}
      const chosen=directCompany??(intent.company&&intent.company!=='current'?intent.company:null);
-     if(chosen){const change=await db.rpc('cip_bot_choose_company',{p_telegram:message.user,p_chat:message.chat,p_company:chosen});if(change.error||change.data!==true)throw Error('scope');context=await getContext();if(!context.data?.authorized)throw Error('scope');}
+     if(chosen){const change=await db.rpc('cip_bot_choose_company',{p_telegram:message.user,p_chat:message.chat,p_company:chosen});if(change.error)throw Error('scope');if(change.data!==true){text='Esta empresa não está autorizada para sua conta. Selecione uma das empresas disponíveis.';keyboard=companyMenu(allowed);}else{context=await getContext();if(!context.data?.authorized)throw Error('scope');}}
      const scope=context.data.all?'all':context.data.company;
-     if(intent.kind==='choose_company'||chosen&&intent.kind==='help')text='Empresa selecionada: '+COMPANY_NAMES[scope]+'. O vínculo continua ativo. Escolha uma consulta abaixo.';
+     if(text){}
+     else if(intent.kind==='choose_company'||chosen&&intent.kind==='help')text='Empresa selecionada: '+COMPANY_NAMES[scope]+'. O vínculo continua ativo. Escolha uma consulta abaixo.';
      else if(intent.kind==='companies'){text='Escolha o escopo das próximas consultas. Seu vínculo não expira.';keyboard=companyMenu(allowed);}
      else if(intent.kind==='revoke'){const r=await db.rpc('cip_bot_read',{p_telegram:message.user,p_chat:message.chat,p_kind:'revoke',p_query:''});if(r.error)throw Error('revoke');text='Vínculo revogado. Para voltar, gere outro código no CIP.';keyboard=null;}
      else if(intent.kind==='blocked')text='Este canal é somente leitura. Alterações e aprovações devem ser feitas no CIP com a alçada responsável.';
