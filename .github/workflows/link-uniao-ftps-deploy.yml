@@ -88,8 +88,11 @@ jobs:
         run: |
           set -euo pipefail
           for route in health login admin equipe; do
-            code=$(curl -L --connect-timeout 8 --max-time 18 -sS -o /tmp/link-uniao-verify -w '%{http_code}' "https://uniao.gritnews.com.br/$route" || true)
+            code=$(curl -L -A 'Mozilla/5.0' --connect-timeout 8 --max-time 18 -sS -o /tmp/link-uniao-verify -w '%{http_code}' "https://uniao.gritnews.com.br/$route" || true)
             echo "/$route HTTP $code"
             test "$code" = "200" || exit 1
           done
+          curl -fLSs -A 'Mozilla/5.0' --connect-timeout 8 --max-time 18 https://uniao.gritnews.com.br/login > /tmp/uniao-login-live.html
+          grep -Fq 'const AUTH_BASE=BASE;' /tmp/uniao-login-live.html
+          echo "Página pública autenticando no mesmo projeto Supabase do Radar."
           echo "Dominio e paginas publicados."
