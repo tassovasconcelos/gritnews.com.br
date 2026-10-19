@@ -1,7 +1,7 @@
 import {REFERENCE_KINDS,referenceArgs,renderReference} from './stock-reference.mjs';
 import {checkAIReadiness,aiState} from './ai-readiness.mjs';
 import {ERP_KINDS} from './erp-reports.mjs';
-import {renderExecutive} from './executive-reports.mjs';
+import {renderExecutive,renderShoppingPosition} from './executive-reports.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {configureBot,telegramApi,BOT_COMMANDS} from './setup.mjs';
 import {classify,transcribe,validAIKey} from './ai.mjs';
@@ -30,6 +30,12 @@ async function send(chat:string,text:string,token:string,keyboard:any=null){
  }
 }
 const companies:Record<string,string>={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
+async function stockReference(user:string,chat:string,company:string,intent:any,text=''){
+ const args=referenceArgs(intent,text),current=await db.rpc('cip_bot_shopping_stock',{p_telegram:user,p_chat:chat,p_company:company,p_scope:args.p_scope==='cd100_partial'?'cd':args.p_scope==='stores_only_partial'?'stores':'all',p_query:args.p_query,p_store:args.p_store,p_alert:''});
+ if(current.error)throw Error('shopping_position_unavailable');
+ if(current.data?.available)return {...current.data,source_kind:'shopping_position'};
+ const legacy=await db.rpc('cip_bot_stock_reference',{p_telegram:user,p_chat:chat,p_company:company,...args});if(legacy.error)throw Error('stock_reference');return legacy.data;
+}
 function render(data:any,intent:any){
  const header=`Doquita · ${companies[data.company]??'CIP'}\nConsulta: ${new Date(data.generated_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})} (Brasília)\nFonte: cadastro CIP atual\n\n`;
  if(intent.kind==='knowledge')return header+(data.knowledge?.length?data.knowledge.map((m:any)=>`${m.title}\nLocalizador: ${m.locator??'Documento'}\nExtração: ${m.date}\n${m.content}`).join('\n\n'):'Nenhum trecho aprovado, extraído e vigente encontrado para essa busca. Tente /conhecimento seguido de um termo específico.')+'\n\nTrechos de referência, sem síntese gerada por IA. Confira a orientação completa na Escola: https://cip.gritnews.com.br/';
@@ -46,8 +52,8 @@ Deno.serve(async(req:Request)=>{
   const claims=await db.rpc('cip_bot_stock_daily_claim');if(claims.error)return reply(503,{error:'daily_queue_unavailable'});
   let sent=0,failed=0;for(const target of claims.data??[]){try{
    const state=await db.rpc('cip_bot_stock_subscribe',{p_telegram:target.telegram_id,p_chat:target.chat_id,p_enabled:null});if(state.error||state.data?.enabled!==true)throw Error('subscription_inactive');
-   const r=await db.rpc('cip_bot_stock_reference',{p_telegram:target.telegram_id,p_chat:target.chat_id,p_company:'shopping_prohospital',...referenceArgs({kind:'stock_priorities'})});if(r.error)throw Error('reference_unavailable');
-   await send(target.chat_id,'Briefing diário da Shopping · referências disponíveis\nUse /rotina desativar para interromper.\n\n'+renderReference(r.data),cfg.token,menu(['shopping_prohospital']));
+   const reference=await stockReference(target.telegram_id,target.chat_id,'shopping_prohospital',{kind:'stock_priorities'});
+   await send(target.chat_id,'Briefing diário da Shopping · referências disponíveis\nUse /rotina desativar para interromper.\n\n'+(reference.source_kind==='shopping_position'?renderShoppingPosition(reference,'stock_priorities'):renderReference(reference)),cfg.token,menu(['shopping_prohospital']));
    await db.rpc('cip_bot_stock_daily_finish',{p_telegram:target.telegram_id,p_success:true});sent++;
   }catch{await db.rpc('cip_bot_stock_daily_finish',{p_telegram:target.telegram_id,p_success:false});failed++;}}
   return reply(200,{sent,failed});
@@ -128,11 +134,11 @@ Deno.serve(async(req:Request)=>{
      }
      else if(REFERENCE_KINDS.includes(intent.kind)){
       if(intent.kind==='stock_product'&&!intent.query?.trim())text='Qual produto? Envie /produto seguido do SKU, descrição ou marca. Exemplo: /produto cadeira. Pode incluir loja 5.';
-      else {const targets=scope==='all'?allowed:[scope],entries=[];for(const company of targets){const r=await db.rpc('cip_bot_stock_reference',{p_telegram:message.user,p_chat:message.chat,p_company:company,...referenceArgs(intent,message.text)});if(r.error)throw Error('stock_reference');entries.push({company,reference:r.data});}text=renderExecutive(entries,intent.kind);}
+      else {const targets=scope==='all'?allowed:[scope],entries=[];for(const company of targets){const reference=await stockReference(message.user,message.chat,company,intent,message.text);entries.push({company,reference});}text=renderExecutive(entries,intent.kind);}
      }
      else if(ERP_KINDS.includes(intent.kind)){
       const targets=scope==='all'?allowed:[scope],entries=[];
-      for(const company of targets){const r=await db.rpc('cip_bot_erp_get',{p_telegram:message.user,p_chat:message.chat,p_company:company});if(r.error)throw Error('erp_scope');let reference=null;if(!r.data&&['inventory','aged_stock','growth_actions'].includes(intent.kind)){const fallback={kind:({inventory:'stock_sources',aged_stock:'stock_stores',growth_actions:'stock_priorities'})[intent.kind]};const ref=await db.rpc('cip_bot_stock_reference',{p_telegram:message.user,p_chat:message.chat,p_company:company,...referenceArgs(fallback,message.text)});if(ref.error)throw Error('stock_reference');reference=ref.data;}entries.push({company,snapshot:r.data,reference});}
+      for(const company of targets){const r=await db.rpc('cip_bot_erp_get',{p_telegram:message.user,p_chat:message.chat,p_company:company});if(r.error)throw Error('erp_scope');let reference=null;if(!r.data&&['inventory','aged_stock','growth_actions'].includes(intent.kind)){const fallback={kind:({inventory:'stock_sources',aged_stock:'stock_stores',growth_actions:'stock_priorities'})[intent.kind]};reference=await stockReference(message.user,message.chat,company,fallback,message.text);}entries.push({company,snapshot:r.data,reference});}
       text=renderExecutive(entries,intent.kind);await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:''});
      }
      else if(intent.kind==='help')text=HELP;

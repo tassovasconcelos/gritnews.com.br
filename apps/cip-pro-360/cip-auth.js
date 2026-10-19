@@ -1,3 +1,4 @@
+import {shoppingPositionFrame,mountShoppingPosition} from './shopping-position.mjs';
 import {stockReferenceFrame,mountStockReference} from './stock-reference.mjs';
 import {presentationFrame,mountPresentation,presentationReturn,PRESENTATION_ROLES} from './presentation.mjs';
 import {pricingFrame,mountPricing} from './pricing-ui.mjs';
@@ -22,7 +23,7 @@ window.cipRenderAdmin=()=>adminFrame();
 window.cipRenderProcesses=()=>processFrame();
 window.cipRenderBot=()=>botFrame();
 window.cipRenderERP=()=>erpFrame();
-window.cipRenderStock=compact=>stockReferenceFrame({compact});
+window.cipRenderStock=compact=>shoppingPositionFrame()+'<details class="section card"><summary>Referências históricas parciais · não somar à posição geral</summary>'+stockReferenceFrame({compact})+'</details>';
 window.cipRenderPricing=()=>pricingFrame();
 window.cipRenderPresentation=()=>presentationFrame();
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g","precos"] };
@@ -278,12 +279,13 @@ window.cipLoadPage=(page)=>{
  if(page==='mensageiro'&&window.cipAuth?.allowedRoutes?.includes(page))mountBot({db:supabase,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==='procfit'&&['superadm','diretoria'].includes(profile?.role))mountERP({db:supabase,user,canManage:profile.role==='superadm',companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(['estoque','varejo','doquita'].includes(page)&&companies.has(V)&&window.cipAuth?.allowedRoutes?.includes(page))mountStockReference({db:supabase,root:document.getElementById('content'),companies:[...companies],isAlive:()=>!!user,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};},autoLoad:true,onOpen:()=>{if(window.cipAuth?.allowedRoutes?.includes('estoque'))window.navigate('estoque');}});
+ if(['estoque','varejo','doquita'].includes(page)&&companies.has(V)&&window.cipAuth?.allowedRoutes?.includes(page))mountShoppingPosition({db:supabase,canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==="doquita")loadDoquita();
  if(page==="cronograma")reloadMilestones();
  if(page==="cotacoes")reloadQuoteRows();
  if(page==="caderninho")reloadDemandRows();
  if(page==="estoque")reloadScenarios();
- if(page==='precos'&&window.cipAuth?.allowedRoutes?.includes(page))mountPricing({db:supabase,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
+ if(page==='precos'&&window.cipAuth?.allowedRoutes?.includes(page))mountPricing({db:supabase,companies:[...companies],canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
 };
 window.addEventListener("cip:navigate",e=>window.cipLoadPage(e.detail.page));
 supabase.auth.onAuthStateChange((_event,session)=>{if(!session && user)toLogin();});

@@ -1,5 +1,17 @@
 # CIP 360 — memória operacional
 
+## Marca-passo e posição geral Shopping — 19/10/2026
+
+Nova posição privada em cip_shopping_stock_batches/rows: 28.187 registros, 5.421 SKUs, 18 lojas e CD100. Data-base da origem 19/10/2026. Contagens e totais monetários conferidos com extração independente; valores reservados não registrados neste repositório. Código11 não consta da nova carga; não inferir cobertura de toda a rede. XLSX original e evidências fora do Git em ../evidencias. Não somar esta posição às referências históricas parciais de lojas/CD, que se sobrepõem.
+
+Tasso confirmou A como alto giro e E como baixo giro. Período da curva não confirmado; sem relatório de vendas/cobertura. Última venda mais recente informada termina em08/04/2025: usuário pediu ponto de alerta, preservado na tela e Telegram. Não classificar ausência de giro atual nem idade dos lotes a partir desse campo. Bases de valorização variam; contábil e potencial ao preço cadastrado não viram receita/lucro.
+
+shopping-position.mjs no Marca-passo, Estoque, Shopping e Doquita: filtros de produto/marca/referência, unidade, lojas/CD, Curva A/E e alertas; totais de todo o filtro e fila paginada. pricing-intelligence.mjs calcula prioridades e contribuição compatível com concorrência manual validada por fonte/equivalência/data. Pendências de origem ou saldo A abaixo do mínimo válido bloqueiam encaminhamento do cenário. Diretoria/superadm autorizados registram análises com autoria em log append-only; não é aprovação ou execução de preço. Regras e limites em apps/cip-pro-360/SHOPPING-POSITION.md.
+
+Telegram prefere a nova posição datada como referência quando não há base Procfit aprovada; nunca soma os arquivos sobrepostos. Atalho /marcapasso consulta prioridades. Mantém autorização por vínculo/empresa e briefing por adesão já existente; nenhuma inscrição, campanha ou envio real de teste. Fonte atual indisponível por erro não cai silenciosamente em arquivo antigo.
+
+Banco aplicado: criação das tabelas/RLS/RPC e ampliação dos filtros A/E. Carga ativada como reference_unreconciled após conferência; não representa ERP aprovado ou atualização automática. Testes no banco confirmaram negação sem acesso Shopping, sem SELECT anônimo ou gravação da origem pelo cliente, sem substituição de autoria, leitura autorizada, soma por escopo, filtros e log com rollback. Publicação e homologação visual desta evolução serão registradas após concluídas.
+
 ## Apresentação executiva viva — 19/10/2026
 
 Guia interativo em presentation.mjs/presentation.css, último item do menu, rota apresentacao apenas para diretoria/superadm. 16 capítulos sobre capacidades, prioridades de Rufino, agentes, jornadas e implantação. Modo palco/tela cheia, animações com pausa/redução de movimento, roteiro opcional, cenários locais de cobertura/capacidade, caminhos de exceção e cronograma por critérios de aceite. Componentes reais em prévia sem dados e acesso ao módulo autorizado com retorno ao capítulo. Sem screenshots privados, números do orçamento reservado, chamadas de IA ou novos acessos ao banco.

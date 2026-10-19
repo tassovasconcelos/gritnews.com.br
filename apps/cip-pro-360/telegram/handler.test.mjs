@@ -13,7 +13,7 @@ import * as intents from './intents.mjs';
 const src=stripTypeScriptTypes(readFileSync(new URL('./index.ts',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,''));
 const company='shopping_prohospital',other='distribuidora_prohospital',secret='x'.repeat(32);
 const ref={available:true,company,kind:'summary',sources:[{scope:'cd100_partial',source:'SYNTHETIC',reference_date:null,loaded_at:'2026-10-19T12:00:00Z',summary:{rows:1,skus:1,cost:'10.00',cost_review:0,zero_cost:0},items:[],units:[]}]};
-async function invoke(text,{authorized=true,scope='all',rpcError=false,header=secret,audio=false}={}){
+async function invoke(text,{authorized=true,scope='all',rpcError=false,header=secret,audio=false,current=false,currentError=false}={}){
  const messages=[],calls=[];let handler;
  const db={rpc:async(name,args)=>{calls.push({name,args});
   if(name==='cip_bot_config_read')return {data:{token:'123:'+ 'a'.repeat(24),secret,interaction_version:4,ai_enabled:audio,ai_key:audio?'sk-'+ 'a'.repeat(30):null}};
@@ -22,6 +22,7 @@ async function invoke(text,{authorized=true,scope='all',rpcError=false,header=se
   if(name==='cip_bot_ai_claim')return {data:true};
   if(name==='cip_bot_choose_company')return {data:true};
   if(name==='cip_bot_erp_get')return {data:null};
+  if(name==='cip_bot_shopping_stock')return currentError?{error:{}}:{data:current&&args.p_company===company?{available:true,source_kind:'shopping_position',company,scope:args.p_scope,query:args.p_query,store:args.p_store,batch:{source_hash:'a'.repeat(64),status:'reference_unreconciled',as_of:'2026-10-19',source_file:'SYNTHETIC.xlsx',summary:{last_sale_max:'2025-04-08'}},summary:{rows:1,skus:1,stores:1,declared_cost:'22.01',declared_accounting:'21.00',declared_potential:'50.00'},alerts:{protect_stock:1},items:[],units:[]}:{available:false}};
   if(name==='cip_bot_stock_reference')return rpcError?{error:{}}:{data:args.p_company===company?ref:{available:false}};
   return {data:true};},from:()=>({update:()=>({eq:async()=>({})})})};
  const dependencies={...reference,...readiness,...erp,...executive,...setup,...ai,...conversation,...intents,transcribe:async()=>text,classify:async()=>({kind:'inventory',company:'current'}),Deno:{env:{get:()=> 'synthetic'},serve:fn=>handler=fn},createClient:()=>db,fetch:async(url,opts)=>{messages.push(JSON.parse(opts.body));return new Response(JSON.stringify({ok:true}));}};
@@ -44,4 +45,11 @@ test('reference RPC failure never produces partial successful financial message'
 });
 test('sales does not substitute provisional stock',async()=>{
  const r=await invoke('/vendas');assert.equal(r.response.status,200);assert.match(r.messages[0].text,/Não há informação validada/);assert.ok(!r.calls.some(c=>c.name==='cip_bot_stock_reference'));
+});
+
+test('current dated position wins for text and voice, never adds old Shopping references',async()=>{
+ for(const audio of [false,true]){const r=await invoke('/marcapasso',{current:true,audio,scope:company});assert.equal(r.response.status,200);assert.match(r.messages[0].text,/^Estoque valorizado no filtro: R\$ 22,01/);assert.match(r.messages[0].text,/2025-04-08/);assert.ok(!r.calls.some(c=>c.name==='cip_bot_stock_reference'));}
+});
+test('failed current source does not silently answer from an older workbook',async()=>{
+ const r=await invoke('/bases',{currentError:true});assert.equal(r.response.status,503);assert.equal(r.messages.length,0);assert.ok(!r.calls.some(c=>c.name==='cip_bot_stock_reference'));
 });

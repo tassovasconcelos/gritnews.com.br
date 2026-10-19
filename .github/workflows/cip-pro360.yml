@@ -50,6 +50,8 @@ jobs:
           node --test apps/cip-pro-360/telegram/executive-reports.test.mjs
           node --test apps/cip-pro-360/telegram/handler.test.mjs
           node --check apps/cip-pro-360/pricing-ui.mjs
+          node --check apps/cip-pro-360/shopping-position.mjs
+          node --test apps/cip-pro-360/pricing-intelligence.test.mjs
           node --test apps/cip-pro-360/pricing-engine.test.mjs
           node --check apps/cip-pro-360/procfit-status-ui.mjs
           node --test apps/cip-pro-360/procfit-gateway/*.test.mjs

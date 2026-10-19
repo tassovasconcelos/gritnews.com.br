@@ -11,6 +11,15 @@ export const cents=value=>{
 export const amount=value=>(value<0n?'-':'')+(value<0n?-value:value)/100n+'.'+((value<0n?-value:value)%100n).toString().padStart(2,'0');
 const total=values=>amount(values.reduce((n,v)=>n+cents(v),0n));
 
+export function renderShoppingPosition(data,kind='inventory'){
+ if(data?.company!=='shopping_prohospital'||!data.available||data.batch?.status!=='reference_unreconciled')throw Error('invalid_shopping_position');
+ const s=data.summary,lines=[`Estoque valorizado no filtro: ${formatMoney(s.declared_cost)}.`,`Shopping Prohospital · posição ${data.batch.as_of} · ${s.rows} registros, ${s.skus} produtos distintos, ${s.stores} unidades.`,`Referência importada, sujeita a conferência; não é base Procfit conciliada.`,`⚠ Última venda mais recente informada: ${data.batch.summary.last_sale_max||'ausente'}. Campo desatualizado: não comprova falta de giro atual.`,`Curva A = alto giro; E = baixo giro, conforme origem confirmada. Cobertura e velocidade aguardam vendas.`, '', 'Prioridades para decisão',`Proteger disponibilidade: ${data.alerts.protect_stock||0} registros A ou com venda recente abaixo do mínimo válido.`,`Conferir preço: ${data.alerts.below_cost||0} abaixo do custo, ${data.alerts.missing_price||0} sem preço positivo.`,`Revisar cadastro: ${data.alerts.stock_rules||0} parâmetros inconsistentes; ${data.alerts.cost_review||0} pendências de custo/dados.`,`Alertas podem se sobrepor; não alteram preços nem comprovam ruptura.`, '', 'Composição e memória de cálculo',`Soma do valor de estoque declarado em todas as ${s.rows} linhas do filtro, não apenas o ranking. Bases de custo variam por produto.`,`Contábil: ${formatMoney(s.declared_accounting)}. Potencial ao preço cadastrado: ${formatMoney(s.declared_potential)}; não é faturamento nem lucro.`,`Fonte: ${data.batch.source_file} · lote ${data.batch.source_hash.slice(0,12)}.`,`Escopo: ${data.scope==='cd'?'CD100':data.scope==='stores'?'lojas':'lojas + CD100'}${data.store?' · unidade '+data.store:''}${data.query?' · busca '+data.query:''}. As cargas históricas não foram somadas novamente.`];
+ if(kind==='stock_units')for(const u of data.units.filter(u=>(!data.store||u.store_code===data.store)&&(data.scope==='all'||data.scope==='cd'&&u.store_code==='100'||data.scope==='stores'&&u.store_code!=='100')))lines.push(`${u.store_code} · ${u.name}: ${formatMoney(u.cost)}.`);
+ else for(const x of data.items.slice(0,3))lines.push(`${x.sku} · ${x.description.slice(0,65)} · unidade ${x.store_code} · curva ${x.curve||'ausente'}: ${x.quantity} ${x.unit}; preço ${formatMoney(x.sale_price)}; custo ${formatMoney(x.unit_cost)} (${x.cost_basis}).`);
+ if(kind==='aged_stock')lines.push('Idade dos lotes acima de 180 dias não comprovada nesta posição.');
+ lines.push('Próxima ação: validar saldo, custo de reposição e parâmetros; Prisma calcula contribuição e concorrência datada no Marca-passo. Sem previsão de aumento de vendas.','Detalhes: https://cip.gritnews.com.br/');return lines.join('\n');
+}
+
 // Inputs must come from the existing binding-authorized RPCs, never model output.
 export function renderExecutive(entries,kind,now=new Date()){
  if(!entries.length||new Set(entries.map(e=>e.company)).size!==entries.length)throw Error('invalid_report_scope');
@@ -56,7 +65,7 @@ export function renderExecutive(entries,kind,now=new Date()){
   if(refs.length)lines.push('','Referências adicionais abaixo não entram na soma conciliada.');
  }
  if(!reports.length&&refs.length&&kind==='aged_stock')lines.push('Valor do saldo acima de 180 dias por lote: não comprovado. A referência das lojas abaixo usa outro critério de movimento.','');
- for(const e of refs)lines.push(renderReference(e.reference));
+ for(const e of refs)lines.push(e.reference.source_kind==='shopping_position'?renderShoppingPosition(e.reference,kind):renderReference(e.reference));
  if(missing.length)lines.push('',...missing.map(e=>`${COMPANY_NAMES[e.company]}: sem base adequada para esta consulta; não foi considerada como zero.`));
  if(!reports.length&&!refs.length)lines.unshift('Não há informação validada para calcular este indicador.');
  if(reports.length)lines.push('','Próxima ação: '+(kind==='sales_mtd'?'conferir a conversão das cotações e a contribuição por item no mesmo período.':'Giro e Cifra devem conferir os maiores saldos; Prisma valida despesas e contribuição antes de qualquer preço. Registrar responsável e resultado no CIP.'),'Detalhes: https://cip.gritnews.com.br/');

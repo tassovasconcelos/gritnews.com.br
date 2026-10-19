@@ -12,7 +12,7 @@ export function referenceIntent(text){
  else if(/^\/cd\b/.test(q)||/\b(estoque|custo|saldo|produtos?)\b.*\bcd\s*100?\b|\bcd\s*100?\b.*\b(estoque|custo|saldo|produtos?)\b/.test(q)||/\b(estoque|custo|saldo)\b.*\bcd\b/.test(q))kind='stock_cd';
  else if(/^\/lojas\b/.test(q)||/\b(estoque|custo|saldo)\b.*\b(lojas|filiais|filial|loja)\b/.test(q))kind='stock_stores';
  else if(/^\/conferencia\b/.test(q)||/custo.*(zero|divergen)|divergen.*custo/.test(q))kind='stock_quality';
- else if(/^\/prioridades\b/.test(q))kind='stock_priorities';
+ else if(/^\/(?:prioridades|marcapasso)\b/.test(q)||/marca[ -]?passo/.test(q))kind='stock_priorities';
  else if(/^\/unidades\b/.test(q))kind='stock_units';
  if(!kind)return null;
  const store=q.match(/\b(?:loja|filial|unidade)\s*(\d{1,8})\b/)?.[1]??'';
