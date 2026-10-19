@@ -1,5 +1,19 @@
 # CIP 360 — memória operacional
 
+## Giro histórico varejo, B2B por lote e ações supervisionadas — 19/10/2026
+
+Novas fontes privadas em ../evidencias: Estoque_geral_base_dados_piloto_IA_24-09-2026.xlsx e Estoque Atual da Prohospital - 19-10-26.xlsx. Originais preservados. Piloto contém posição geral117.433linhas (inclusive zeros e nove negativos), giro33.477linhas/33.359chaves, venda histórica141.131linhas sem data e compras pendentes1.358linhas sem ETA. Usuário orientou seguir sem informar período de demanda diária/venda histórica. Não inventar janela mensal, venda atual ou cobertura observada. Giro tem118chaves duplicadas e duas datas futuras; não geram transferências. Posição geral/pedidos podem conter códigos além da carga atual e não comprovam saldo disponível atual.
+
+33359 métricas históricas Shopping cruzadas com a posição de19/10, com26.764chaves correspondentes e6.595sem linha atual. 970 destes casos têm demanda histórica positiva e geram conferência, sem chamar ausência de linha de ruptura ou saldo zero. A posição de outubro e seu alerta de última venda antiga permanecem; o giro de setembro não corrige o campo de outubro automaticamente. Estoques de datas/origens sobrepostas nunca se somam.
+
+Distribuidora:4.382linhas de lote,2.716produtos, C.Estoque1000 próprio (não é CD100 Shopping). Cinco linhas vencidas,27com validade até90dias na data da posição,813datas ausentes/sentinela para conferência,31custos zero e lacunas/divergências de custo tributado. Fonte não tem preço de venda, unidade, reservas ou histórico comercial B2B. Valores monetários conferidos e mantidos apenas no banco/evidências privados.
+
+Engine gerou2.975propostas sugeridas: Shopping50redistribuições entre lojas,1.769campanhas dirigidas para revisão,3revisões de preço e1.090conferências; B2B13campanhas e50conferências. Nenhuma aprovada ou executada automaticamente. Reserva do doador e teto por destino/unidade evitam dupla alocação; testes no banco encontraram zero violações da reserva. Política piloto14/30/60/90dias é premissa para aprovação, não meta validada. Fonte com janela desconhecida impede tratar cenário como previsão. Regras, escopo e critérios futuros em apps/cip-pro-360/STOCK-ACTIONS.md.
+
+Tabelas cip_stock_intelligence_batches/rows, cip_stock_actions/events, consulta privada e transição com autoria/versão/RLS. Aprovação comercial exige conferências, responsável/prazo/quantidade e atualidade da fonte; campanhas/preços exigem também custo, despesas, piso de contribuição, preço e alçada verificados no servidor. Não aceita custo menor ou preço vigente diferente da origem sem atualizar a base; prazo respeita validade conhecida. Conclusão registra quantidade/evidência e, quando aplicável, valores manuais não negativos; transferência não é receita/caixa. Histórico permanece nas cargas seguintes. Nada executa ERP, publica campanhas, inscreve destinatários, habilita autonomia ou treina modelo OpenAI.
+
+Importação privada ativada após conciliação de contagens e custo B2B. Testes transacionais de aprovação, campos obrigatórios, teto, versão, evidência, preço abaixo do piso e baseline alterado passaram com rollback. Funções negaram leitura sem permissão; sem SELECT anônimo, edição direta de ações ou inserção de eventos pelo cliente. Validação local passou; publicação e homologação visual serão registradas ao concluir.
+
 ## Marca-passo e posição geral Shopping — 19/10/2026
 
 Nova posição privada em cip_shopping_stock_batches/rows: 28.187 registros, 5.421 SKUs, 18 lojas e CD100. Data-base da origem 19/10/2026. Contagens e totais monetários conferidos com extração independente; valores reservados não registrados neste repositório. Código11 não consta da nova carga; não inferir cobertura de toda a rede. XLSX original e evidências fora do Git em ../evidencias. Não somar esta posição às referências históricas parciais de lojas/CD, que se sobrepõem.

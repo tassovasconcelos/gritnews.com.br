@@ -31,9 +31,13 @@ async function send(chat:string,text:string,token:string,keyboard:any=null){
 }
 const companies:Record<string,string>={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
 async function stockReference(user:string,chat:string,company:string,intent:any,text=''){
+ if(company==='distribuidora_prohospital'){
+  const scoped=referenceArgs(intent,text);if(scoped.p_scope!=='both')return {available:false};
+  const intelligence=await db.rpc('cip_bot_stock_intelligence',{p_telegram:user,p_chat:chat,p_company:company,p_query:scoped.p_query,p_store:scoped.p_store});if(intelligence.error)throw Error('b2b_inventory_unavailable');if(intelligence.data?.available)return {...intelligence.data,company,source_kind:'inventory_intelligence'};
+ }
  const args=referenceArgs(intent,text),current=await db.rpc('cip_bot_shopping_stock',{p_telegram:user,p_chat:chat,p_company:company,p_scope:args.p_scope==='cd100_partial'?'cd':args.p_scope==='stores_only_partial'?'stores':'all',p_query:args.p_query,p_store:args.p_store,p_alert:''});
  if(current.error)throw Error('shopping_position_unavailable');
- if(current.data?.available)return {...current.data,source_kind:'shopping_position'};
+ if(current.data?.available){let intelligence=null;if(intent.kind==='stock_priorities'){const r=await db.rpc('cip_bot_stock_intelligence',{p_telegram:user,p_chat:chat,p_company:company,p_query:args.p_query,p_store:args.p_store});if(r.error)throw Error('retail_intelligence_unavailable');if(r.data?.available)intelligence=r.data;}return {...current.data,intelligence,source_kind:'shopping_position'};}
  const legacy=await db.rpc('cip_bot_stock_reference',{p_telegram:user,p_chat:chat,p_company:company,...args});if(legacy.error)throw Error('stock_reference');return legacy.data;
 }
 function render(data:any,intent:any){

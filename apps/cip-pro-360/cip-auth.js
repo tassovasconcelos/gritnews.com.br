@@ -1,3 +1,4 @@
+import {stockActionsFrame,mountStockActions} from './stock-actions-ui.mjs';
 import {shoppingPositionFrame,mountShoppingPosition} from './shopping-position.mjs';
 import {stockReferenceFrame,mountStockReference} from './stock-reference.mjs';
 import {presentationFrame,mountPresentation,presentationReturn,PRESENTATION_ROLES} from './presentation.mjs';
@@ -23,7 +24,8 @@ window.cipRenderAdmin=()=>adminFrame();
 window.cipRenderProcesses=()=>processFrame();
 window.cipRenderBot=()=>botFrame();
 window.cipRenderERP=()=>erpFrame();
-window.cipRenderStock=compact=>shoppingPositionFrame()+'<details class="section card"><summary>Referências históricas parciais · não somar à posição geral</summary>'+stockReferenceFrame({compact})+'</details>';
+window.cipRenderStockActions=()=>stockActionsFrame();
+window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPositionFrame()+'<details class="section card"><summary>Referências históricas parciais · não somar à posição geral</summary>'+stockReferenceFrame({compact})+'</details>':'');
 window.cipRenderPricing=()=>pricingFrame();
 window.cipRenderPresentation=()=>presentationFrame();
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g","precos"] };
@@ -280,6 +282,7 @@ window.cipLoadPage=(page)=>{
  if(page==='procfit'&&['superadm','diretoria'].includes(profile?.role))mountERP({db:supabase,user,canManage:profile.role==='superadm',companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(['estoque','varejo','doquita'].includes(page)&&companies.has(V)&&window.cipAuth?.allowedRoutes?.includes(page))mountStockReference({db:supabase,root:document.getElementById('content'),companies:[...companies],isAlive:()=>!!user,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};},autoLoad:true,onOpen:()=>{if(window.cipAuth?.allowedRoutes?.includes('estoque'))window.navigate('estoque');}});
  if(['estoque','varejo','doquita'].includes(page)&&companies.has(V)&&window.cipAuth?.allowedRoutes?.includes(page))mountShoppingPosition({db:supabase,canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
+ if(['estoque','varejo','doquita','b2b'].includes(page)&&window.cipAuth?.allowedRoutes?.includes(page))mountStockActions({db:supabase,companies:page==='b2b'?[B]:[...companies],canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==="doquita")loadDoquita();
  if(page==="cronograma")reloadMilestones();
  if(page==="cotacoes")reloadQuoteRows();
