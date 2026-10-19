@@ -1,5 +1,15 @@
 # Doquita no Telegram — estoque de referência e briefing opcional
 
+## Resposta executiva unificada
+
+Atualização de 19/10/2026: resultados de estoque começam pelo custo declarado das referências consultadas, com qualificação imediata de parcial e não conciliado. A composição por CD/lojas, datas, identificação dos lotes e memória de cálculo vêm em seguida; o ranking global exibe até cinco linhas entre as fontes, mantendo o denominador de todas as linhas do filtro. Não somar quantidades sem unidade de fornecimento nem contagens de SKUs entre fontes. Pedido que menciona CD e lojas consulta ambas as origens. /unidades preserva a estratificação por código.
+
+`telegram/executive-reports.mjs` reúne respostas autorizadas por empresa, distingue base aprovada de referência e explicita empresas sem dados. Uma referência não complementa o saldo de uma base aprovada da mesma empresa; não entra no total conciliado de outra empresa. Estoques aprovados somente são somados quando captura e base de valorização coincidem; vendas exigem o mesmo período. Cobertura parcial nunca vira total da empresa. Não se soma um ranking limitado para inferir valor de todo o estoque sem vendas. Ausência de idade por lote permanece indisponível mesmo quando existe recorte antigo da planilha.
+
+A próxima ação responde às pendências encontradas: conferir custos quando há divergências ou zeros; caso contrário, validar saldo, embalagem, reservas e demanda dos maiores itens antes de preço/transferência. Marca passo mantém os motivos de prioridade da base ERP. Não houve mudança de permissões, aprovação de fontes ou inscrição em rotina. O briefing já autorizado usa o novo formato; sem novos destinatários ou disparos de teste.
+
+Verificação desta evolução: 159 testes locais passaram, incluindo handler com rede simulada para texto, áudio transcrito, fallback, segredo inválido, vínculo revogado e falha de leitura. Consulta autorizada em leitura às fontes reais conferiu resposta e memória de cálculo em arquivo reservado fora do repositório. A renderização do conteúdo real coube em uma mensagem; não comprova entrega em aparelho ou nova transcrição real. Dados e valores privados não foram adicionados ao código público.
+
 ## Entrega
 Consultas privadas disponíveis para superadm e diretoria, revalidadas por empresa a cada pedido. CD e lojas permanecem fontes separadas; somente Shopping possui estas cargas nesta revisão. Acesso à Distribuidora não concede acesso à Shopping. Arquivos, linhas, custos e valores reais permanecem no banco privado, fora do Git e do pacote estático.
 

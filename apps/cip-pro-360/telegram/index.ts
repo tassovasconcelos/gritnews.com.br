@@ -1,6 +1,7 @@
 import {REFERENCE_KINDS,referenceArgs,renderReference} from './stock-reference.mjs';
 import {checkAIReadiness,aiState} from './ai-readiness.mjs';
-import {ERP_KINDS,renderERP} from './erp-reports.mjs';
+import {ERP_KINDS} from './erp-reports.mjs';
+import {renderExecutive} from './executive-reports.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {configureBot,telegramApi,BOT_COMMANDS} from './setup.mjs';
 import {classify,transcribe,validAIKey} from './ai.mjs';
@@ -127,12 +128,12 @@ Deno.serve(async(req:Request)=>{
      }
      else if(REFERENCE_KINDS.includes(intent.kind)){
       if(intent.kind==='stock_product'&&!intent.query?.trim())text='Qual produto? Envie /produto seguido do SKU, descrição ou marca. Exemplo: /produto cadeira. Pode incluir loja 5.';
-      else {const targets=scope==='all'?allowed:[scope],answers=[];for(const company of targets){const r=await db.rpc('cip_bot_stock_reference',{p_telegram:message.user,p_chat:message.chat,p_company:company,...referenceArgs(intent,message.text)});if(r.error)throw Error('stock_reference');answers.push(COMPANY_NAMES[company]+'\n'+renderReference(r.data));}text=answers.join('\n\n────────\n\n');}
+      else {const targets=scope==='all'?allowed:[scope],entries=[];for(const company of targets){const r=await db.rpc('cip_bot_stock_reference',{p_telegram:message.user,p_chat:message.chat,p_company:company,...referenceArgs(intent,message.text)});if(r.error)throw Error('stock_reference');entries.push({company,reference:r.data});}text=renderExecutive(entries,intent.kind);}
      }
      else if(ERP_KINDS.includes(intent.kind)){
-      const targets=scope==='all'?allowed:[scope],answers=[];
-      for(const company of targets){const r=await db.rpc('cip_bot_erp_get',{p_telegram:message.user,p_chat:message.chat,p_company:company});if(r.error)throw Error('erp_scope');if(!r.data&&['inventory','aged_stock','growth_actions'].includes(intent.kind)){const fallback={kind:({inventory:'stock_sources',aged_stock:'stock_stores',growth_actions:'stock_priorities'})[intent.kind]};const ref=await db.rpc('cip_bot_stock_reference',{p_telegram:message.user,p_chat:message.chat,p_company:company,...referenceArgs(fallback,message.text)});if(ref.error)throw Error('stock_reference');answers.push(COMPANY_NAMES[company]+'\nNão há base financeira conciliada. Consulta disponível nas referências abaixo:\n'+renderReference(ref.data));}else answers.push(COMPANY_NAMES[company]+'\n'+renderERP(r.data,intent.kind));}
-      text=answers.join('\n\n────────\n\n');await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:''});
+      const targets=scope==='all'?allowed:[scope],entries=[];
+      for(const company of targets){const r=await db.rpc('cip_bot_erp_get',{p_telegram:message.user,p_chat:message.chat,p_company:company});if(r.error)throw Error('erp_scope');let reference=null;if(!r.data&&['inventory','aged_stock','growth_actions'].includes(intent.kind)){const fallback={kind:({inventory:'stock_sources',aged_stock:'stock_stores',growth_actions:'stock_priorities'})[intent.kind]};const ref=await db.rpc('cip_bot_stock_reference',{p_telegram:message.user,p_chat:message.chat,p_company:company,...referenceArgs(fallback,message.text)});if(ref.error)throw Error('stock_reference');reference=ref.data;}entries.push({company,snapshot:r.data,reference});}
+      text=renderExecutive(entries,intent.kind);await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:''});
      }
      else if(intent.kind==='help')text=HELP;
      else if(intent.kind==='knowledge'&&(!intent.query||intent.query.length<3))text='Qual tema você quer pesquisar na Escola? Exemplo: /conhecimento reposição. A consulta usa somente fontes aprovadas e vigentes.';
@@ -144,7 +145,7 @@ Deno.serve(async(req:Request)=>{
       await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:intent.query??''});
      }
      if(aiError)text+='\n\nA interpretação por IA está indisponível agora; usei as consultas básicas. Use /menu se precisar.';
-     if(!['companies','choose_company','revoke'].includes(intent.kind))text='Escopo: '+COMPANY_NAMES[scope]+'\n\n'+text;
+     if(!['companies','choose_company','revoke',...REFERENCE_KINDS,...ERP_KINDS].includes(intent.kind))text='Escopo: '+COMPANY_NAMES[scope]+'\n\n'+text;
     }
    }
   }

@@ -1,5 +1,13 @@
 # CIP 360 — memória operacional
 
+## Telegram com resposta executiva unificada — 19/10/2026
+
+Recuperada e incorporada a versão remota 8182713, com consultas de estoque e briefing diário opcional, antes de evoluir o serviço. Novo formato: informação disponível primeiro, alcance e validade explícitos, composição por empresa/origem, memória do cálculo sobre todas as linhas do filtro, ranking conjunto e próxima ação de conferência. CD e lojas podem ser consultados juntos; soma dos arquivos continua parcial, não conciliada e sem data de posição comum. Nunca chamar essa soma de inventário total ou de caixa liberado. Quantidades e contagens de SKUs entre fontes não são somadas. Ausência da Distribuidora não vira zero.
+
+Bases aprovadas somente se somam com captura/base de custo compatíveis ou período de vendas igual; cobertura parcial permanece explícita. Referência provisória não é adicionada a base aprovada, evitando sobreposição. Valor de todo o filtro sem vendas não é inferido do ranking limitado. Novo módulo telegram/executive-reports.mjs; RPCs de autorização e dados anteriores preservadas. Sem alterações de credenciais, inscrições, alçadas ou banco.
+
+159 testes locais passaram, com casos de centavos, datas incompatíveis, empresa incorreta, fontes repetidas, ausência de dados e handler texto/voz com rede simulada. Leitura autorizada das fontes reais conferiu cálculo completo e texto em uma mensagem; evidências reservadas em ../evidencias. Nenhum envio real ou áudio real nesta verificação; confirmação em aparelho permanece fora deste teste. Documentação em TELEGRAM-STOCK-REPORTS.md.
+
 ## Consultoria de processos por briefing — 19/10/2026
 
 Pedido do usuário: processo interativo e consultivo para comercial/financeiro/cobrança/giro, desenho por prompt, riscos, indicadores, expectativas e validação. Implementado em process-consultant.mjs/process-ui.mjs e serviço cip-process-assistant. Proposta OpenAI estruturada em separado; aplicação deliberada cria mapa local novo; versão/histórico anteriores preservados. Modelos guiados sem IA claramente identificados. Laboratório verifica percursos/cobertura; responsável registra resultado/evidência real. Não trata simulação como comprovação de negócio. Editar mapa invalida observações anteriores; captura de evidência durante digitação evita perda na navegação.
