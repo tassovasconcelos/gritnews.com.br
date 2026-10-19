@@ -50,7 +50,7 @@ jobs:
           node --test apps/cip-pro-360/pricing-engine.test.mjs
           node --check apps/cip-pro-360/procfit-status-ui.mjs
           node --test apps/cip-pro-360/procfit-gateway/*.test.mjs
-          node --test apps/cip-pro-360/process-engine.test.mjs apps/cip-pro-360/telegram/intents.test.mjs apps/cip-pro-360/telegram/setup.test.mjs apps/cip-pro-360/telegram/conversation.test.mjs apps/cip-pro-360/telegram/ai-readiness.test.mjs
+          node --test apps/cip-pro-360/process-engine.test.mjs apps/cip-pro-360/telegram/intents.test.mjs apps/cip-pro-360/telegram/setup.test.mjs apps/cip-pro-360/telegram/conversation.test.mjs apps/cip-pro-360/telegram/ai-readiness.test.mjs apps/cip-pro-360/telegram/stock-reference.test.mjs
           node --test apps/cip-pro-360/process-consultant.test.mjs apps/cip-pro-360/process-assistant.test.mjs
           node --check apps/cip-pro-360/process-ui.mjs
           node --check apps/cip-pro-360/bot-ui.mjs

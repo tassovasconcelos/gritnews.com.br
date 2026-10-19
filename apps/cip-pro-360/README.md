@@ -83,3 +83,7 @@ Em Integrações & acessos, o superadm pode prorrogar convites prontos por mais 
 ## Radar B2G nacional por produto
 
 Pesquisa oficial por família PDM/CATMAT, Brasil/UF, período e filtros de marca/fornecedor nas páginas carregadas. Referências distinguem vencedor conferido no PNCP, porte e datas de origem; histórico mensal separa produto, embalagem e marca. Leia `B2G-PRODUCT-INTELLIGENCE.md` para uso, cobertura e limitações.
+
+### Estoque no Telegram
+
+Doquita consulta as referências privadas de CD100 e lojas por /bases, /cd, /lojas, /produto, /unidades, /conferencia e /prioridades. Não confunde estas planilhas com inventário completo ou financeiro aprovado. /rotina permite briefing diário opcional da Shopping; ninguém foi inscrito automaticamente. Operação e limites: `TELEGRAM-STOCK-REPORTS.md`.

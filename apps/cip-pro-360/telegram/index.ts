@@ -1,7 +1,8 @@
+import {REFERENCE_KINDS,referenceArgs,renderReference} from './stock-reference.mjs';
 import {checkAIReadiness,aiState} from './ai-readiness.mjs';
 import {ERP_KINDS,renderERP} from './erp-reports.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
-import {configureBot,telegramApi} from './setup.mjs';
+import {configureBot,telegramApi,BOT_COMMANDS} from './setup.mjs';
 import {classify,transcribe,validAIKey} from './ai.mjs';
 import {parseUpdate,menu,companyMenu,companyIn,COMPANY_NAMES} from './conversation.mjs';
 import {interpret,HELP} from './intents.mjs';
@@ -12,9 +13,9 @@ const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{sta
 const configured=(token:string,secret:string)=>/^\d+:[A-Za-z0-9_-]{20,}$/.test(token)&&/^[A-Za-z0-9_-]{32,256}$/.test(secret);
 async function credentials(){const r=await db.rpc('cip_bot_config_read');if(r.error)throw Error('configuration_unavailable');return r.data??{token:Deno.env.get('CIP_TELEGRAM_BOT_TOKEN')??'',secret:Deno.env.get('CIP_TELEGRAM_WEBHOOK_SECRET')??'',username:null};}
 async function ensureInteractive(cfg:any){
- if(!configured(cfg.token,cfg.secret)||cfg.interaction_version===3)return;
+ if(!configured(cfg.token,cfg.secret)||cfg.interaction_version===4)return;
  try{await telegramApi(cfg.token,'setWebhook',{url:url+'/functions/v1/cip-telegram',secret_token:cfg.secret,allowed_updates:['message','callback_query'],max_connections:5});
- await telegramApi(cfg.token,'setMyCommands',{commands:[{command:'menu',description:'Abrir menu do Doquita'},{command:'empresas',description:'Escolher empresa ou todas autorizadas'},{command:'resumo',description:'Resumo do cadastro atual'},{command:'missoes',description:'Missões por estado'},{command:'processos',description:'Mapas de processos'},{command:'conhecimento',description:'Buscar orientação revisada'},{command:'vendas',description:'Venda líquida do mês na base aprovada'},{command:'estoque',description:'Custo do estoque na base aprovada'},{command:'parados',description:'Entrada acima de 180 dias'},{command:'semvendas',description:'Janela de 180 dias sem venda'},{command:'giro',description:'Prioridades de giro e preços'},{command:'sair',description:'Revogar meu vínculo'}]});
+ await telegramApi(cfg.token,'setMyCommands',{commands:BOT_COMMANDS});
  await db.rpc('cip_bot_interaction_ready',{p_bot_id:cfg.bot_id});}catch{}
 }
 function secretMatches(value:string,secret:string){if(value.length!==secret.length)return false;let difference=0;for(let i=0;i<value.length;i++)difference|=value.charCodeAt(i)^secret.charCodeAt(i);return difference===0;}
@@ -33,10 +34,23 @@ function render(data:any,intent:any){
  if(intent.kind==='knowledge')return header+(data.knowledge?.length?data.knowledge.map((m:any)=>`${m.title}\nLocalizador: ${m.locator??'Documento'}\nExtração: ${m.date}\n${m.content}`).join('\n\n'):'Nenhum trecho aprovado, extraído e vigente encontrado para essa busca. Tente /conhecimento seguido de um termo específico.')+'\n\nTrechos de referência, sem síntese gerada por IA. Confira a orientação completa na Escola: https://cip.gritnews.com.br/';
  if(intent.kind==='processes')return header+`${data.processes} mapas salvos. O desenho e a simulação estão em Processos vivos: https://cip.gritnews.com.br/`;
  const labels:Record<string,string>={queued:'Na fila',in_progress:'Em andamento pelo time',review:'Em revisão',done:'Concluídas pelo time',cancelled:'Canceladas'};
- return header+'Missões cadastradas (todos os períodos):\n'+Object.entries(labels).map(([k,v])=>`${v}: ${Number(data.missions?.[k]??0)}`).join('\n')+(intent.kind==='summary'?`\n\nMapas de processos: ${data.processes}\nMateriais aprovados dentro da revisão: ${data.materials}`:'')+'\n\nEstados registrados pelo time; não comprovam execução autônoma. Vendas e estoque: integração Procfit pendente. https://cip.gritnews.com.br/';
+ return header+'Missões cadastradas (todos os períodos):\n'+Object.entries(labels).map(([k,v])=>`${v}: ${Number(data.missions?.[k]??0)}`).join('\n')+(intent.kind==='summary'?`\n\nMapas de processos: ${data.processes}\nMateriais aprovados dentro da revisão: ${data.materials}`:'')+'\n\nEstados registrados pelo time; não comprovam execução autônoma. Estoque de referência disponível: /bases, /cd, /lojas e /produto. Vendas realizadas dependem de carga conciliada. https://cip.gritnews.com.br/';
 }
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});if(req.method!=='POST')return reply(405,{error:'method_not_allowed'});
+ const dailySecret=req.headers.get('X-CIP-Stock-Daily-Secret');
+ if(dailySecret!==null){
+  let cfg:any;try{cfg=await credentials();}catch{return reply(503,{error:'configuration_unavailable'});}
+  if(!configured(cfg.token,cfg.secret)||!secretMatches(dailySecret,cfg.secret))return reply(401,{error:'invalid_daily_secret'});
+  const claims=await db.rpc('cip_bot_stock_daily_claim');if(claims.error)return reply(503,{error:'daily_queue_unavailable'});
+  let sent=0,failed=0;for(const target of claims.data??[]){try{
+   const state=await db.rpc('cip_bot_stock_subscribe',{p_telegram:target.telegram_id,p_chat:target.chat_id,p_enabled:null});if(state.error||state.data?.enabled!==true)throw Error('subscription_inactive');
+   const r=await db.rpc('cip_bot_stock_reference',{p_telegram:target.telegram_id,p_chat:target.chat_id,p_company:'shopping_prohospital',...referenceArgs({kind:'stock_priorities'})});if(r.error)throw Error('reference_unavailable');
+   await send(target.chat_id,'Briefing diário da Shopping · referências disponíveis\nUse /rotina desativar para interromper.\n\n'+renderReference(r.data),cfg.token,menu(['shopping_prohospital']));
+   await db.rpc('cip_bot_stock_daily_finish',{p_telegram:target.telegram_id,p_success:true});sent++;
+  }catch{await db.rpc('cip_bot_stock_daily_finish',{p_telegram:target.telegram_id,p_success:false});failed++;}}
+  return reply(200,{sent,failed});
+ }
  const webhook=req.headers.get('X-Telegram-Bot-Api-Secret-Token');
  if(webhook===null){
   if(req.headers.get('origin')&&req.headers.get('origin')!==origin)return reply(403,{error:'origin_not_allowed'});
@@ -87,7 +101,7 @@ Deno.serve(async(req:Request)=>{
     const allowed=context.data.companies;keyboard=menu(allowed);let aiError=false;
     const isAI=cfg.ai_enabled&&validAIKey(cfg.ai_key);
     let aiAllowed=false;
-    if(isAI&&(message.audio||!message.intent&&!message.text.startsWith('/'))){const a=await db.rpc('cip_bot_ai_claim',{p_update:message.update_id,p_telegram:message.user,p_chat:message.chat});aiAllowed=!a.error&&a.data===true;}
+    if(isAI&&(message.audio||!message.intent&&!message.text.startsWith('/')&&!REFERENCE_KINDS.includes(intent.kind)&&intent.kind!=='stock_routine')){const a=await db.rpc('cip_bot_ai_claim',{p_update:message.update_id,p_telegram:message.user,p_chat:message.chat});aiAllowed=!a.error&&a.data===true;}
     if(message.audio){
      if(!isAI)text=aiState(cfg)==='missing_key'?'Recebi seu áudio, mas ainda não há chave OpenAI API configurada. No CIP, abra Doquita no Telegram → Texto e voz com IA e cadastre a chave no campo protegido. Não envie a chave ao bot. Depois de ativar, reenvie o áudio.':'Recebi seu áudio, mas a IA está desativada. O superadm pode habilitar Texto e voz com IA no CIP. Depois de ativar, reenvie o áudio.';
      else if(!aiAllowed)text='O limite de 100 solicitações com IA por dia foi atingido. Use os botões ou os comandos de texto.';
@@ -95,7 +109,7 @@ Deno.serve(async(req:Request)=>{
     }
     if(!text){
      const directCompany=message.intent?.company??companyIn(message.text);
-     if(aiAllowed&&!message.intent){try{const routed=await classify(message.text,{key:cfg.ai_key,context:{company:context.data.all?'all':context.data.company,last_kind:context.data.last_kind,last_query:context.data.last_query}});if(intent.kind!=='blocked'&&intent.kind!=='erp_unavailable')intent=routed;}catch{aiError=true;}}
+     if(aiAllowed&&!message.intent&&!REFERENCE_KINDS.includes(intent.kind)&&intent.kind!=='stock_routine'){try{const routed=await classify(message.text,{key:cfg.ai_key,context:{company:context.data.all?'all':context.data.company,last_kind:context.data.last_kind,last_query:context.data.last_query}});if(intent.kind!=='blocked'&&intent.kind!=='erp_unavailable')intent=routed;}catch{aiError=true;}}
      const chosen=directCompany??(intent.company&&intent.company!=='current'?intent.company:null);
      if(chosen){const change=await db.rpc('cip_bot_choose_company',{p_telegram:message.user,p_chat:message.chat,p_company:chosen});if(change.error)throw Error('scope');if(change.data!==true){text='Esta empresa não está autorizada para sua conta. Selecione uma das empresas disponíveis.';keyboard=companyMenu(allowed);}else{context=await getContext();if(!context.data?.authorized)throw Error('scope');}}
      const scope=context.data.all?'all':context.data.company;
@@ -106,9 +120,18 @@ Deno.serve(async(req:Request)=>{
      else if(intent.kind==='blocked')text='Este canal é somente leitura. Alterações e aprovações devem ser feitas no CIP com a alçada responsável.';
      else if(intent.kind==='erp_unavailable')text='Essa consulta transacional ainda não está habilitada. Posso consultar venda líquida do mês, custo de estoque e itens antigos somente quando houver uma base importada e aprovada em Procfit & relatórios. Use /vendas, /estoque ou /parados.';
      else if(intent.kind==='clarification')text=intent.question==='period'?'Os relatórios disponíveis representam o cadastro atual de todos os períodos; ainda não há filtro histórico. Deseja consultar esse resumo? Toque em Resumo abaixo.':'Me diga o que deseja consultar: resumo, missões, processos ou um tema da base de conhecimento. Você também pode escolher a empresa no menu.';
+     else if(intent.kind==='stock_routine'){
+      const r=await db.rpc('cip_bot_stock_subscribe',{p_telegram:message.user,p_chat:message.chat,p_enabled:intent.enabled??null});
+      if(r.error)text='A rotina exige acesso ativo à Shopping Prohospital.';
+      else{ text='Briefing diário da Shopping: '+(r.data.enabled?'ATIVADO':'DESATIVADO')+'. Envio a partir das 08h de Brasília (verificação a cada 10 minutos, até 19h59). Cada fonte permanece separada e não conciliada. A primeira ativação durante essa janela pode receber o briefing no próximo ciclo. Uma tentativa por dia; falha de entrega fica registrada e não gera repetição automática. Use /bases para consultar quando quiser. Escolha abaixo:';keyboard={inline_keyboard:[[{text:'Ativar briefing diário · Shopping',callback_data:'stock_daily_on'}],[{text:'Desativar briefing diário',callback_data:'stock_daily_off'}],[{text:'Menu',callback_data:'help'}]]};}
+     }
+     else if(REFERENCE_KINDS.includes(intent.kind)){
+      if(intent.kind==='stock_product'&&!intent.query?.trim())text='Qual produto? Envie /produto seguido do SKU, descrição ou marca. Exemplo: /produto cadeira. Pode incluir loja 5.';
+      else {const targets=scope==='all'?allowed:[scope],answers=[];for(const company of targets){const r=await db.rpc('cip_bot_stock_reference',{p_telegram:message.user,p_chat:message.chat,p_company:company,...referenceArgs(intent,message.text)});if(r.error)throw Error('stock_reference');answers.push(COMPANY_NAMES[company]+'\n'+renderReference(r.data));}text=answers.join('\n\n────────\n\n');}
+     }
      else if(ERP_KINDS.includes(intent.kind)){
       const targets=scope==='all'?allowed:[scope],answers=[];
-      for(const company of targets){const r=await db.rpc('cip_bot_erp_get',{p_telegram:message.user,p_chat:message.chat,p_company:company});if(r.error)throw Error('erp_scope');answers.push(COMPANY_NAMES[company]+'\n'+renderERP(r.data,intent.kind));}
+      for(const company of targets){const r=await db.rpc('cip_bot_erp_get',{p_telegram:message.user,p_chat:message.chat,p_company:company});if(r.error)throw Error('erp_scope');if(!r.data&&['inventory','aged_stock','growth_actions'].includes(intent.kind)){const fallback={kind:({inventory:'stock_sources',aged_stock:'stock_stores',growth_actions:'stock_priorities'})[intent.kind]};const ref=await db.rpc('cip_bot_stock_reference',{p_telegram:message.user,p_chat:message.chat,p_company:company,...referenceArgs(fallback,message.text)});if(ref.error)throw Error('stock_reference');answers.push(COMPANY_NAMES[company]+'\nNão há base financeira conciliada. Consulta disponível nas referências abaixo:\n'+renderReference(ref.data));}else answers.push(COMPANY_NAMES[company]+'\n'+renderERP(r.data,intent.kind));}
       text=answers.join('\n\n────────\n\n');await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:''});
      }
      else if(intent.kind==='help')text=HELP;
