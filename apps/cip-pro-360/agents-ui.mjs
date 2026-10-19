@@ -17,7 +17,7 @@ export function mountSquad(page,{db,user,companies,onDispose=()=>{}}){
  const available=agentsFor(companies),isAlive=()=>alive&&root.isConnected&&window.cipAuth?.allowedRoutes?.includes(page);
  const current=()=>document.getElementById('squadRoot')===root;
  const dispose=()=>{alive=false;currentAbort?.abort();};onDispose(dispose);
- if(page==='radar-b2g'){mountRadar(root,isAlive,onDispose);return;}
+ if(page==='radar-b2g'){mountRadar(root,isAlive,onDispose,{db,user});return;}
  const company=root.querySelector('#squadCompany');company.innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(COMPANIES[c]??c)}</option>`).join('');
  const list=root.querySelector('#missionList');
  async function load(){
@@ -73,7 +73,7 @@ export function mountSquad(page,{db,user,companies,onDispose=()=>{}}){
  }));
  if(current())load();
 }
-function mountRadar(root,isAlive,onDispose){
+function mountRadar(root,isAlive,onDispose,{db,user}){
  let snapshot=null,abort=null,loading=false;
  onDispose(()=>abort?.abort());
  const msg=root.querySelector('#b2gStatus'),results=root.querySelector('#b2gResults'),meta=root.querySelector('#b2gMeta'),refresh=root.querySelector('#refreshB2g'),awardButton=root.querySelector('#refreshAwards');
@@ -81,10 +81,19 @@ function mountRadar(root,isAlive,onDispose){
  function draw(){
   if(!isAlive()||!snapshot)return;
   const q=root.querySelector('#b2gSearch').value,mode=root.querySelector('#b2gView').value,rows=correlate(mode==='awards'?snapshot.awards:snapshot.purchases,q);
-  meta.textContent=`Coleta: ${date(snapshot.collected_at)} · ${snapshot.scanned} publicações consultadas de ${snapshot.total} no recorte · ${snapshot.purchases.length} candidatas por texto · ${snapshot.awards.length} resultados homologados na amostra. ${snapshot.scope}`;
+  meta.textContent=`Coleta: ${date(snapshot.collected_at)} · ${snapshot.scanned} publicações consultadas de ${snapshot.total} no recorte · ${snapshot.purchases.length} candidatas por texto · ${snapshot.awards.length} resultados homologados na amostra (coleta: ${date(snapshot.awards_collected_at??snapshot.collected_at)}). ${snapshot.scope}`;
   const latest=mode==='awards'?latestInSample(rows):null;
   const latestBox=latest?`<div class="b2g-latest"><strong>Resultado mais recente neste filtro e nesta amostra</strong><p>${money(latest.unit_price)} / ${esc(latest.unit)} · ${esc(latest.supplier)} · ${esc(latest.date)}</p><small>Não é o último preço global nem comprova equivalência com seu SKU. Valide descrição, embalagem, edital e condições.</small></div>`:'';
-  results.innerHTML=latestBox+(rows.length?`<div class="b2g-grid">${rows.slice(0,40).map(r=>mode==='awards'?`<article class="b2g-card"><span class="mission-state done">Homologado · fonte PNCP</span><h3>${esc(r.description)}</h3><div class="award-price">${money(r.unit_price)} <small>/ ${esc(r.unit)}</small></div><dl><dt>Fornecedor informado</dt><dd>${esc(r.supplier)}</dd><dt>CNPJ</dt><dd>${esc(r.supplier_id)}</dd><dt>Data do resultado</dt><dd>${esc(r.date)}</dd><dt>Quantidade homologada</dt><dd>${esc(r.quantity)}</dd><dt>Compra · item</dt><dd>${esc(r.purchase_id)} · ${esc(r.item)}</dd></dl><p class="mini">Correspondência textual para investigação; catálogo ERP e validação técnica ainda pendentes.</p><a href="${url(r.source)}" target="_blank" rel="noopener noreferrer">Evidência do resultado ↗</a> · <a href="${url(r.url)}" target="_blank" rel="noopener noreferrer">Contratação ↗</a></article>`:`<article class="b2g-card"><div class="row"><span class="mission-state review">${esc(r.status)}</span><small>${esc(r.city)} · ${esc(r.state)}</small></div><h3>${esc(r.object)}</h3><p>${esc(r.buyer)}</p><small>${esc(r.unit)}</small><dl><dt>Publicação</dt><dd>${esc(date(r.published))}</dd><dt>Encerramento informado</dt><dd>${esc(date(r.closes))}</dd></dl><p class="mini">Situação informada na fonte na coleta. Confirme vigência e retificações antes de agir.</p><a href="${url(r.url)}" target="_blank" rel="noopener noreferrer">Abrir contratação oficial ↗</a></article>`).join('')}</div>${rows.length>40?'<p>Mostrando os primeiros 40 registros deste filtro. Refine o produto.</p>':''}`:'<div class="squad-empty">Nenhum registro encontrado nesta amostra. Isso não significa ausência de licitações ou resultados no mercado.</div>');
+  results.innerHTML=latestBox+(rows.length?`<div class="b2g-grid">${rows.slice(0,40).map(r=>mode==='awards'?`<article class="b2g-card"><span class="mission-state done">Homologado · fonte PNCP</span><h3>${esc(r.description)}</h3><div class="award-price">${money(r.unit_price)} <small>/ ${esc(r.unit)}</small></div><dl><dt>Fornecedor informado</dt><dd>${esc(r.supplier)}</dd><dt>CNPJ</dt><dd>${esc(r.supplier_id)}</dd><dt>Data do resultado</dt><dd>${esc(r.date)}</dd><dt>Quantidade homologada</dt><dd>${esc(r.quantity)}</dd><dt>Compra · item</dt><dd>${esc(r.purchase_id)} · ${esc(r.item)}</dd></dl><p class="mini">Correspondência textual para investigação; catálogo ERP e validação técnica ainda pendentes.</p><a href="${url(r.source)}" target="_blank" rel="noopener noreferrer">Evidência do resultado ↗</a> · <a href="${url(r.url)}" target="_blank" rel="noopener noreferrer">Contratação ↗</a></article>`:`<article class="b2g-card"><div class="row"><span class="mission-state review">${esc(r.status)}</span><small>${esc(r.city)} · ${esc(r.state)}</small></div><h3>${esc(r.object)}</h3><p>${esc(r.buyer)}</p><small>${esc(r.unit)}</small><dl><dt>Publicação</dt><dd>${esc(date(r.published))}</dd><dt>Encerramento informado</dt><dd>${esc(date(r.closes))}</dd></dl><p class="mini">Situação informada na fonte na coleta. Confirme vigência e retificações antes de agir.</p><a href="${url(r.url)}" target="_blank" rel="noopener noreferrer">Abrir contratação oficial ↗</a><p><button type="button" class="btn secondary" data-b2g-mission="${esc(r.id)}">Criar missão de revisão</button><span class="work-status" role="status"></span></p></article>`).join('')}</div>${rows.length>40?'<p>Mostrando os primeiros 40 registros deste filtro. Refine o produto.</p>':''}`:'<div class="squad-empty">Nenhum registro encontrado nesta amostra. Isso não significa ausência de licitações ou resultados no mercado.</div>');
+  nodes(results,'[data-b2g-mission]').forEach(button=>button.addEventListener('click',()=>createMission(button)));
+ }
+ async function createMission(button){
+  const record=snapshot.purchases.find(p=>p.id===button.dataset.b2gMission);if(!record||!isAlive())return;
+  button.disabled=true;const message=button.parentElement.querySelector('[role=status]');message.textContent='Registrando revisão no Quartel…';
+  const payload={company_id:'distribuidora_prohospital',created_by:user.id,agent_id:'b2g',kind:'task',title:`Revisar contratação ${record.id}`,status:'review',notes:`Fonte: ${record.url}\nÓrgão: ${record.buyer}\nObjeto: ${record.object.slice(0,1800)}\nPróximos passos: conferir edital e itens; validar especificação, embalagem e unidade; correlacionar SKU; pesquisar resultados e condições; revisar custo, margem, capacidade e prazo com o responsável B2G. Não autoriza proposta ou lance.`};
+  const {data,error}=await db.from('cip_agent_work').insert(payload).select('id');
+  if(!isAlive())return;
+  if(error||!data?.length){button.disabled=false;message.textContent='Não foi possível registrar. Confira permissão e conexão.';}else{message.textContent='Missão salva na Distribuidora. Consulte o Quartel; aguarda revisão humana.';}
  }
  async function run(action){
   if(loading)return;loading=true;abort=new AbortController();refresh.disabled=awardButton.disabled=true;root.classList.add('radar-working');
@@ -109,7 +118,7 @@ function mountRadar(root,isAlive,onDispose){
    }catch{failed++;}
   }
   if(!isAlive())return;
-  if(collected.length){snapshot.awards=collected;root.querySelector('#b2gView').value='awards';draw();}
+  if(collected.length){snapshot.awards=collected;snapshot.awards_collected_at=new Date().toISOString();root.querySelector('#b2gView').value='awards';draw();}
   msg.textContent=`Consulta encerrada: ${collected.length} resultados homologados confirmados agora; ${failed} contratação(ões) não puderam ser verificadas. Consulta limitada a 4 contratações e 3 itens por contratação; não é histórico completo. ${collected.length?'':'A coleta anterior foi mantida.'}`;
  }));
  root.querySelector('#b2gSearch').addEventListener('input',draw);root.querySelector('#b2gView').addEventListener('change',draw);
