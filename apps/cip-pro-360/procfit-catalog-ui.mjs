@@ -13,7 +13,7 @@ export function mountCatalog({db,root,onDispose}){
    offset=r.offset;const s=r.summary;const stale=Date.now()-Date.parse(r.captured_at)>86400000;
    $('[data-catalog-origin]').textContent=`${fmt(s.products)} produtos · ${fmt(s.eans)} registros EAN · ${fmt(s.brands)} marcas · ${fmt(s.brand_groups)} grupos de marca. Leitura da origem: ${new Date(r.captured_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})} (Brasília).${stale?' Carga com mais de 24 horas.':''}`;
    form.elements.brand.innerHTML='<option value="">Todas as marcas</option>'+r.brands.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');form.elements.brand.value=brand;
-   $('[data-catalog-status]').textContent=`${fmt(r.total)} produtos encontrados. Qualidade da carga: ${fmt(s.missing_brand)} sem marca, ${fmt(s.missing_ncm)} sem NCM e ${fmt(s.missing_unit)} sem unidade.`;
+   $('[data-catalog-status]').textContent=`${fmt(r.total)} produtos encontrados. Campos vazios: ${fmt(s.missing_brand)} marcas, ${fmt(s.missing_ncm)} NCMs e ${fmt(s.missing_unit)} unidades. Revisar na origem: ${fmt(s.placeholder_brand)} marcas e ${fmt(s.placeholder_group)} grupos com indicação provisória (como “A DEFINIR” ou “NULO”).`;
    $('[data-catalog-results]').innerHTML=r.rows.length?catalogCards(r.rows):'<p>Nenhum produto encontrado neste filtro.</p>';
    $('[data-catalog-page]').textContent=r.rows.length?`${fmt(offset+1)}–${fmt(offset+r.rows.length)} de ${fmt(r.total)}`:'0 resultados';
    $('[data-catalog-prev]').disabled=offset===0;$('[data-catalog-next]').disabled=offset+r.rows.length>=r.total;

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """CIP product master snapshot. Read-only SQL; signed CIP-only destination."""
-import base64,datetime as dt,decimal,fcntl,hashlib,json,os,subprocess,tempfile,time,uuid,urllib.request
+import argparse,base64,datetime as dt,decimal,fcntl,hashlib,json,os,subprocess,tempfile,time,uuid,urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import pyodbc
 DEST='https://pcrwtoddavpvkaxwtstc.supabase.co/functions/v1/cip-procfit-catalog'
@@ -43,17 +44,22 @@ def send(p):
         except Exception:
             if attempt==3:raise RuntimeError('delivery_failed') from None
             time.sleep(2**attempt)
-def run():
+def run(resume=None,product_offset=0,ean_offset=0):
     captured=dt.datetime.now(dt.timezone.utc).isoformat()
-    data=collect();batch=str(uuid.uuid4())
+    batch=str(uuid.UUID(resume)) if resume else str(uuid.uuid4())
+    snapshot=ROOT/('catalog-'+batch+'.json')
+    data=json.loads(snapshot.read_text()) if resume else collect()
     base={'schema':'cip-procfit-catalog-v1','batch_id':batch}
     # Private source capture for reconciliation, never shipped with the public site.
-    snapshot=ROOT/('catalog-'+batch+'.json')
-    snapshot.write_text(json.dumps(data,ensure_ascii=False,separators=(',',':')));os.chmod(snapshot,0o600)
+    if not resume:
+        snapshot.write_text(json.dumps(data,ensure_ascii=False,separators=(',',':')));os.chmod(snapshot,0o600)
     send(dict(base,action='begin',captured_at=captured,products=len(data['products']),eans=len(data['eans'])))
     for kind,rows in data.items():
-        for offset in range(0,len(rows),500):
-            send(dict(base,action=kind,rows=rows[offset:offset+500]))
+        start=product_offset if kind=='products' else ean_offset
+        if start<0 or start>len(rows):raise ValueError('invalid_resume_offset')
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            futures=[pool.submit(send,dict(base,action=kind,rows=rows[offset:offset+500])) for offset in range(start,len(rows),500)]
+            for f in futures:f.result()
         print(json.dumps({'dataset':kind,'sent':len(rows)}),flush=True)
     result=send(dict(base,action='finish'))
     if not result.get('published'):raise RuntimeError('publication_failed')
@@ -61,10 +67,11 @@ def run():
     target=ROOT/'catalog-status.json';target.write_text(json.dumps(status));os.chmod(target,0o600)
     print(json.dumps(status),flush=True)
 if __name__=='__main__':
+    parser=argparse.ArgumentParser();parser.add_argument('--resume');parser.add_argument('--product-offset',type=int,default=0);parser.add_argument('--ean-offset',type=int,default=0);args=parser.parse_args()
     ROOT.mkdir(parents=True,exist_ok=True)
     with open(ROOT/'catalog.lock','w') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        try:run()
+        try:run(args.resume,args.product_offset,args.ean_offset)
         except Exception as e:
             print(json.dumps({'published':False,'error_type':type(e).__name__}),flush=True)
             raise SystemExit(1)

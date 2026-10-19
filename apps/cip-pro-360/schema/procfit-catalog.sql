@@ -66,7 +66,9 @@ begin
    'brand_groups',count(distinct nullif(btrim(brand_group),'')),
    'missing_brand',count(*) filter(where nullif(btrim(brand),'') is null),
    'missing_ncm',count(*) filter(where nullif(btrim(data->>'NCM'),'') is null),
-   'missing_unit',count(*) filter(where nullif(btrim(data->>'UNIDADE_MEDIDA'),'') is null)) into result
+   'missing_unit',count(*) filter(where nullif(btrim(data->>'UNIDADE_MEDIDA'),'') is null),
+   'placeholder_brand',count(*) filter(where upper(btrim(brand)) in ('NULO','A DEFINIR','SEM MARCA','NAO INFORMADO','NÃO INFORMADO')),
+   'placeholder_group',count(*) filter(where upper(btrim(data->>'GRUPO_PRODUTO')) in ('NULO','A DEFINIR','NAO INFORMADO','NÃO INFORMADO'))) into result
    from public.cip_procfit_catalog_products where batch_id=b.id;
   update public.cip_procfit_catalog_batches set active=false where active;
   update public.cip_procfit_catalog_batches set status='published',active=true,summary=result where id=b.id;
