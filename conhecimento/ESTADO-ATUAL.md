@@ -1,5 +1,15 @@
 # CIP 360 — memória operacional
 
+## Retomada e integração posterior em 19/10/2026
+
+Este bloco substitui os estados anteriores quando divergirem. Incorporado `origin/cip/main` commit `b816c0b`, que já publicou importação Procfit e relatórios no painel e bot: `erp-engine.mjs`, `erp-ui.mjs`, `erp/index.ts`, `telegram/erp-reports.mjs`, `schema/erp.sql` e `ERP-REPORTS.md`. Esse é o caminho integrado de relatórios. `operational-analytics.mjs` permanece um protótipo local de cálculo anterior; não ligar em paralelo nem manter duas fontes de números.
+
+Diagnóstico direto no servidor: `ai_enabled=false`, `has_ai_key=false`, interaction_version=2. Isso explica a voz indisponível; não havia chave salva. O usuário pediu orientação para criar a chave. Instruções fornecidas com link oficial para API Keys e campo protegido no CIP. Nenhuma credencial foi solicitada no chat.
+
+Correção de ativação: `ai-readiness.mjs` testa interpretação e acesso à transcrição usando um segundo de silêncio WAV sintético. A ativação somente salva a chave quando ambos respondem corretamente. O teste de acesso não comprova acurácia em português nem o caminho real Telegram. Falhas distinguem chave inválida, crédito/cota, permissão, modelo e indisponibilidade sem revelar mensagens do provedor. Status distingue chave ausente de IA desativada; bot orienta ativar e reenviar áudio.
+
+Serviço `cip-telegram` publicado na versão 8 em 19/10; autenticação por segredo do webhook e sessão/perfil no painel preservada. 102 testes automatizados passaram. Chamada real de transcrição com chave do cliente e áudio Telegram ainda pendente; não declarar voz homologada antes disso. Código e tela encaminhados à publicação Hostinger pelo workflow do CIP; conferir execução e bytes antes de confirmar a tela publicada.
+
 Atualizado em 19/10/2026, America/Sao_Paulo. Registro durável para continuidade; não altera pesos ou treinamento de modelos.
 
 ## Fonte atual

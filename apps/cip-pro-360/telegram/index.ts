@@ -1,3 +1,4 @@
+import {checkAIReadiness,aiState} from './ai-readiness.mjs';
 import {ERP_KINDS,renderERP} from './erp-reports.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {configureBot,telegramApi} from './setup.mjs';
@@ -49,12 +50,12 @@ Deno.serve(async(req:Request)=>{
     catch(e){const allowed=['invalid_configuration','invalid_bot_token','invalid_bot_identity','configuration_busy','webhook_not_confirmed','configuration_not_saved'];const code=e instanceof Error&&allowed.includes(e.message)?e.message:'telegram_unavailable';return reply(400,{error:code});}
    }
    const cfg=await credentials();
-   if(b.action==='status'){if(p.data.role==='superadm')await ensureInteractive(cfg);return reply(200,{configured:configured(cfg.token,cfg.secret),pilot_allowed:p.data.role==='superadm',username:cfg.username??null,ai_enabled:cfg.ai_enabled===true});}
+   if(b.action==='status'){if(p.data.role==='superadm')await ensureInteractive(cfg);return reply(200,{configured:configured(cfg.token,cfg.secret),pilot_allowed:p.data.role==='superadm',username:cfg.username??null,ai_enabled:cfg.ai_enabled===true,ai_state:aiState(cfg)});}
    if(b.action==='configure_ai'){
     if(p.data.role!=='superadm'||req.headers.get('origin')!==origin)return reply(403,{error:'superadmin_required'});
     if(b.enabled===false){const r=await db.rpc('cip_bot_ai_save',{p_actor:u.data.user.id,p_key:null,p_enabled:false});return r.error?reply(503,{error:'ai_not_saved'}):reply(200,{ai_enabled:false});}
     if(!validAIKey(b.key)||b.consent!==true)return reply(400,{error:'ai_key_and_consent_required'});
-    try{await classify('Ajuda',{key:b.key});}catch{return reply(400,{error:'ai_key_or_access_invalid'});}
+    const readiness=await checkAIReadiness({key:b.key});if(!readiness.text_ready||!readiness.voice_ready)return reply(400,readiness);
     const r=await db.rpc('cip_bot_ai_save',{p_actor:u.data.user.id,p_key:b.key,p_enabled:true});return r.error?reply(503,{error:'ai_not_saved'}):reply(200,{ai_enabled:true});
    }
    if(b.action==='pair'){
@@ -88,7 +89,7 @@ Deno.serve(async(req:Request)=>{
     let aiAllowed=false;
     if(isAI&&(message.audio||!message.intent&&!message.text.startsWith('/'))){const a=await db.rpc('cip_bot_ai_claim',{p_update:message.update_id,p_telegram:message.user,p_chat:message.chat});aiAllowed=!a.error&&a.data===true;}
     if(message.audio){
-     if(!isAI)text='Recebi seu áudio. Para transcrever e interpretar, o superadm precisa habilitar Texto e voz com IA na tela Doquita no Telegram do CIP. Por enquanto, envie o pedido escrito ou use os botões.';
+     if(!isAI)text=aiState(cfg)==='missing_key'?'Recebi seu áudio, mas ainda não há chave OpenAI API configurada. No CIP, abra Doquita no Telegram → Texto e voz com IA e cadastre a chave no campo protegido. Não envie a chave ao bot. Depois de ativar, reenvie o áudio.':'Recebi seu áudio, mas a IA está desativada. O superadm pode habilitar Texto e voz com IA no CIP. Depois de ativar, reenvie o áudio.';
      else if(!aiAllowed)text='O limite de 100 solicitações com IA por dia foi atingido. Use os botões ou os comandos de texto.';
      else try{message.text=await transcribe(message.audio,{botToken:cfg.token,key:cfg.ai_key});intent=interpret(message.text);}catch(e){text=e instanceof Error&&e.message==='audio_limit'?'Envie um áudio de até 3 minutos e 10 MB.':'Não consegui transcrever com segurança. Tente um áudio mais curto ou escreva seu pedido.';}
     }

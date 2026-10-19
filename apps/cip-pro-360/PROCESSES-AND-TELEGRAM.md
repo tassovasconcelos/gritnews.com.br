@@ -1,5 +1,13 @@
 # Processos vivos, competências e Doquita no Telegram
 
+## Atualização de diagnóstico e ativação — 19/10/2026
+
+A ativação da chave agora exige dois testes: interpretação de texto e acesso à API de transcrição com um segundo de silêncio WAV sintético. Esse segundo teste usa a API faturada e não contém áudio ou dados do usuário. Um sucesso confirma acesso aos dois serviços; compreensão de voz e download do Telegram exigem teste real posterior. Se qualquer teste falhar, a chave nova não é salva e não se declara ativação. Erros distinguem chave inválida, crédito/cota insuficiente, permissões, modelo indisponível e falha temporária, sem conteúdo bruto do provedor.
+
+No diagnóstico desta retomada a configuração estava sem chave e com IA desativada. O superadm precisa criar sua chave em https://platform.openai.com/api-keys e cadastrá-la somente no campo protegido do CIP, autorizando o uso da API. O Telegram orienta reenviar o áudio depois da ativação. Nunca enviar a chave em mensagens. Orientação oficial: https://developers.openai.com/api/docs/quickstart; formatos/transcrição: https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create.
+
+Relatórios de venda/estoque agora possuem caminho integrado por base importada e aprovada; veja `ERP-REPORTS.md`. Isso não estabelece sincronização em tempo real nem garante que já exista base real aprovada. As seções de implantação inicial abaixo são históricas quando descrevem essas consultas como ausentes.
+
 Release de 19/10/2026. Grafia oficial: **Doquita**. Preservados os IDs e os 14 agentes existentes. As imagens enviadas inspiram a clareza de funções e entregas; não incorporamos suas alegações de desempenho.
 
 ## Competências e educação continuada
