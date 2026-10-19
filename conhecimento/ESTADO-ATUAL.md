@@ -8,6 +8,8 @@ Bases aprovadas somente se somam com captura/base de custo compatíveis ou perí
 
 159 testes locais passaram, com casos de centavos, datas incompatíveis, empresa incorreta, fontes repetidas, ausência de dados e handler texto/voz com rede simulada. Leitura autorizada das fontes reais conferiu cálculo completo e texto em uma mensagem; evidências reservadas em ../evidencias. Nenhum envio real ou áudio real nesta verificação; confirmação em aparelho permanece fora deste teste. Documentação em TELEGRAM-STOCK-REPORTS.md.
 
+Publicação concluída: cip-telegram v12 ativo, todos os 11 arquivos recuperados do serviço iguais ao pacote local (normalização de quebras de linha). Endpoint sem sessão/segredo respondeu 401. Código 51a07d5 enviado à cip/main; workflow39290469229 com validação aprovada. Publicação estática não necessária nesta rodada; alteração ativa no backend do Telegram. Entrega real em aparelho permanece não verificada nesta evolução.
+
 ## Consultoria de processos por briefing — 19/10/2026
 
 Pedido do usuário: processo interativo e consultivo para comercial/financeiro/cobrança/giro, desenho por prompt, riscos, indicadores, expectativas e validação. Implementado em process-consultant.mjs/process-ui.mjs e serviço cip-process-assistant. Proposta OpenAI estruturada em separado; aplicação deliberada cria mapa local novo; versão/histórico anteriores preservados. Modelos guiados sem IA claramente identificados. Laboratório verifica percursos/cobertura; responsável registra resultado/evidência real. Não trata simulação como comprovação de negócio. Editar mapa invalida observações anteriores; captura de evidência durante digitação evita perda na navegação.
