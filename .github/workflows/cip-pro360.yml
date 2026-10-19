@@ -35,6 +35,8 @@ jobs:
           node apps/cip-pro-360/doquita-insights.test.mjs
           node apps/cip-pro-360/agents.test.mjs
           node --test apps/cip-pro-360/academy.test.mjs
+          npm ci --prefix apps/cip-pro-360/ingestion --ignore-scripts --no-audit --no-fund
+          node --test apps/cip-pro-360/ingestion/extract.test.mjs
           node --check apps/cip-pro-360/academy-ui.mjs
           node --check apps/cip-pro-360/agents-ui.mjs
           node --check apps/cip-pro-360/b2g-radar.mjs
