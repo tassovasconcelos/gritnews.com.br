@@ -13,7 +13,7 @@ Deno.serve(async(req:Request)=>{
   const now=Date.now(),id=user.data.user.id;let budget=limits.get(id);if(!budget||now-budget.at>60000){budget={at:now,count:0};limits.set(id,budget);}if(++budget.count>100)return reply(429,{error:'query_limit'});
   const reader=req.body?.getReader();if(!reader)return reply(400,{error:'body_required'});const chunks:Uint8Array[]=[];let size=0;while(true){const r=await reader.read();if(r.done)break;size+=r.value.length;if(size>2048){await reader.cancel();return reply(413,{error:'request_limit'});}chunks.push(r.value);}const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}const raw=new TextDecoder().decode(bytes);const q=validateResearch(JSON.parse(raw)),key=JSON.stringify(q),found=cache.get(key);
   if(found&&now-found.at<600000)return reply(200,found.value);
-  const data=await requestOfficial(q);if(cache.size>100)cache.clear();cache.set(key,{at:now,value:data});if(limits.size>1000)for(const [k,v] of limits)if(now-v.at>60000)limits.delete(k);
+  const data=await requestOfficial(q);if(cache.size>=8)cache.delete(cache.keys().next().value!);cache.set(key,{at:now,value:data});if(limits.size>1000)for(const [k,v] of limits)if(now-v.at>60000)limits.delete(k);
   return reply(200,data);
  }catch(e){const code=e instanceof Error&&['invalid_query','invalid_sphere','invalid_action','invalid_id','invalid_code','invalid_page','invalid_period','invalid_state'].includes(e.message)?e.message:'official_unavailable';return reply(code.startsWith('invalid_')?400:503,{error:code});}
 });

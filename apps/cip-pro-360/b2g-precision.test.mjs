@@ -17,7 +17,7 @@ test('technical matching respects word boundaries, dimensions and common negatio
  assert.equal(technicalMatch({description:'SERINGA CAPACIDADE 20,0 MILILITROS'},'seringa 20 ml').matches,true);
  assert.equal(technicalMatch({description:'LUVA SEM LÁTEX'},'latex').matches,false);
  assert.equal(technicalMatch({description:'LUVA SEM LÁTEX'},'sem latex').matches,true);
- assert.equal(technicalMatch({description:'LUVA TAMANHO M'},'M').matches,true);
+ assert.equal(technicalMatch({description:'LUVA TAMANHO M'},'M').matches,true);assert.equal(technicalMatch({description:'LUVA MATERIAL NITRÍLICO TAMANHO: MÉDIO'},'nitrilica tamanho M').matches,true);
  assert.equal(technicalMatch({description:'LUVA TAMANHO P MATERIAL NITRILO'},'M').matches,false);
 });
 test('technical, supply unit, quantity and confirmed supplier size filters compose',()=>{
