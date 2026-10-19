@@ -79,3 +79,26 @@ Primeira carga: 60 SKUs, 21 categorias de sugestão, tabela cip_b2g_mix. Campos:
 Tela: Nosso mix → selecionar produto → selecionar família oficial e especificação → Brasil ou UF → esfera Federal/Estadual/Municipal → consultar → filtrar pregão declarado no objeto → conferir resultados. Marca e modelo próprios não provam equivalência com item comprado; usuário revisa embalagem/especificação. Filtro federal é remoto (`esfera=F`); filtro pregão é local e explícito (`objetoCompra`), limitado às páginas carregadas. Contagens por UF não agregam preços de produtos diferentes. Não inclui varredura automática nem garantia de cobertura de editais abertos.
 
 Verificado na fonte oficial: PDM423, F, todas UFs, 2025-10-19 a 2026-10-19: 41 referências, 33 com menção a pregão; 13 UFs no recorte textual. Evidência local ../evidencias/cip-b2g-mix-federal.png a partir da raiz do projeto. Gravação de missão não exercitada em produção nesta rodada.
+
+
+## Busca direta e caso de referência — 19/10/2026
+
+O fluxo principal agora recebe produto, marca, CNPJ e UF sem exigir CATMAT. Seleção do mix/cadastro preenche produto e marca; o acesso cadastral continua inalterado. Pesquisa avançada e histórico permanecem disponíveis em seção recolhida.
+
+Três rotas efetivas, sob autorização da Distribuidora no servidor:
+
+- Índice nacional de resultados Compras.gov.br por CNPJ e data. Cada candidato passa pela descrição do item; somente correspondências recebem conferência adicional de resultado ativo, fornecedor, quantidade, preço, órgão e marca declarada na pesquisa de preços. Até 100 itens por rodada, lotes de oito, três trabalhadores; paginação da fonte de 500. Não é cobertura universal dos fornecedores.
+- Contratos PNCP de todos os publicadores, por data de publicação; até 500 por página. Produto/UF/esfera/CNPJ filtram as páginas recebidas. Marca não presumida, preço unitário não inferido do valor global.
+- Contratos estaduais Ceará Transparente, API pública documentada, por assinatura, 100 registros por página. Consulta específica pelo ISN_SIC também disponível. Registros marcados confidenciais não são apresentados. Datas de publicação/DOE e processo licitatório preservados.
+
+Consultas limitadas a 365 dias, até 50 páginas por recorte. APIs de contratos não oferecem busca textual nos parâmetros usados: filtros são explicitamente locais às páginas consultadas. Há rotas complementares de pesquisa web por domínio para Licitaweb, Ceará Transparente, DOE Ceará, TCE municipal e Transparência federal; links não equivalem a rastreadores automáticos, leitura integral de PDFs ou integração desses portais. Brasil é padrão, sem restrição ao Ceará.
+
+Controle de carga: descrição antes do enriquecimento, cache de até 80 respostas públicas/10 minutos e espaçamento de 900 ms no adaptador. 429 interrompe a rodada e permite retomada; não representa ausência de registros. Respostas parciais com falhas não entram no cache de serviço. Captura mais antiga entre evidências mantida, sem renomear cache como coleta nova.
+
+Caso de referência pesquisado, não fixture inserida como resultado: compra 94300105910412024, item 9430010591041202400003, PNCP 07954480000179-1-024072/2024. Governo do Ceará, resultado de 20/10/2025, Prohospital CNPJ 09485574000171, 1.101 unidades a R$ 2.614,00; total R$ 2.878.014,00. Marca declarada exatamente PROCIRURGICA e RIOFL. Família antiga PDM 9639 referencia PDM 30368; o caminho exclusivamente por família perdia esse registro.
+
+Ceará Transparente ISN_SIC 1454263: contrato 747/2026, assinatura 27/08/2026, publicação 01/09/2026, DOE 03/09/2026; R$ 744.843,96 globais, processo de contratação 24001.059494/2026-34. Campo num_spu_licitacao 24001028094202415 vincula ao processo da homologação. Não somar homologação e contrato nem presumir execução/receita. Há divergência técnica entre CATMAT elétrico/hidráulico e objeto contratual por manivelas; conferir anexos, sem certificar equivalência/modelo. A fonte também contém grafia corrompida no nome do credor, preservada; o vínculo usa CNPJ.
+
+Botão de caso real consulta novamente ambas as fontes e só apresenta a relação se os processos coincidirem. É uma referência explícita de conferência rápida; a busca geral continua independente, sem depender desse botão.
+
+Documentação oficial: https://dadosabertos.compras.gov.br/v3/api-docs ; https://pncp.gov.br/api/consulta/v3/api-docs ; https://api-dados-abertos.cearatransparente.ce.gov.br/api-docs/v1/swagger.yaml . Serviço preserva getUser e cip_can_access antes de qualquer consulta/cache; nenhum token, cadastro privado ou saldo incluído no pacote público. Sem alteração ROTA PRO ou Telegram.

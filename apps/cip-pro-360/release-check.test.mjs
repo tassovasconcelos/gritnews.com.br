@@ -11,7 +11,7 @@ function fixture(t) {
   t.after(() => fs.rmSync(root, {recursive: true, force: true}));
   const source = path.join(root, 'source'), output = path.join(root, 'release');
   fs.mkdirSync(source);
-  for (const name of ['index.html', 'cip-auth.js', 'presentation.mjs', 'presentation.css', 'supabase-js-2.57.0.mjs', 'doquita-insights.mjs', 'erp-ui.mjs', 'stock-reference.mjs', 'procfit-status-ui.mjs', 'procfit-catalog-ui.mjs', 'erp-engine.mjs', 'pricing-ui.mjs', 'pricing-engine.mjs', 'pricing-intelligence.mjs', 'shopping-position.mjs', 'stock-action-engine.mjs', 'stock-actions-ui.mjs', 'agent-capabilities.mjs', 'process-engine.mjs', 'process-consultant.mjs', 'process-ui.mjs', 'bot-ui.mjs', 'agents-data.mjs', 'agents-ui.mjs', 'academy-ui.mjs', 'admin-ui.mjs', 'ativar.html', 'cip-activation.js', 'academy-engine.mjs', 'agents.css', 'b2g-radar.mjs', 'b2g-research.mjs', 'b2g-research-ui.mjs', 'b2g-catalog.json', 'b2g-snapshot.json', 'recuperar.html', 'grit-recovery.js', '.htaccess', 'robots.txt', 'health.json']) fs.writeFileSync(path.join(source, name), `fixture:${name}\n`);
+  for (const name of ['index.html', 'cip-auth.js', 'presentation.mjs', 'presentation.css', 'supabase-js-2.57.0.mjs', 'doquita-insights.mjs', 'erp-ui.mjs', 'stock-reference.mjs', 'procfit-status-ui.mjs', 'procfit-catalog-ui.mjs', 'erp-engine.mjs', 'pricing-ui.mjs', 'pricing-engine.mjs', 'pricing-intelligence.mjs', 'shopping-position.mjs', 'stock-action-engine.mjs', 'stock-actions-ui.mjs', 'agent-capabilities.mjs', 'process-engine.mjs', 'process-consultant.mjs', 'process-ui.mjs', 'bot-ui.mjs', 'agents-data.mjs', 'agents-ui.mjs', 'academy-ui.mjs', 'admin-ui.mjs', 'ativar.html', 'cip-activation.js', 'academy-engine.mjs', 'agents.css', 'b2g-radar.mjs', 'b2g-research.mjs', 'b2g-research-ui.mjs', 'b2g-discovery.mjs', 'b2g-discovery-ui.mjs', 'b2g-catalog.json', 'b2g-snapshot.json', 'recuperar.html', 'grit-recovery.js', '.htaccess', 'robots.txt', 'health.json']) fs.writeFileSync(path.join(source, name), `fixture:${name}\n`);
   return {source, output};
 }
 
@@ -19,7 +19,7 @@ test('creates deterministic manifest with commit, byte sizes and hashes', t => {
   const {source, output} = fixture(t);
   const manifest = prepareRelease(source, output, COMMIT);
   assert.equal(manifest.commit_sha, COMMIT);
-  assert.equal(Object.keys(manifest.files).length, 40);
+  assert.equal(Object.keys(manifest.files).length, 42);
   assert.match(manifest.files['index.html'].sha256, /^[a-f0-9]{64}$/);
   assert.equal(validatePackage(output, COMMIT, false).commit_sha, COMMIT);
 });
