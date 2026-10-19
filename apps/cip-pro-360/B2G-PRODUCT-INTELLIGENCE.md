@@ -2,6 +2,22 @@
 
 Entrega de 19/10/2026. A versão incorporou primeiro `e7ef991` (acesso da diretoria pelo Telegram e Marca-passo por contribuição) e acrescentou pesquisa nacional por produto. Nenhuma atualização exige misturar dados do ROTA PRO.
 
+## Evolução de precisão e cobertura — 19/10/2026
+
+Esta seção substitui os limites anteriores de 50 preços, 20 CATMATs e 30 conferências fixas. Cada página de preços solicita até 500 registros na fonte; a ampliação assistida lê até dez páginas (5.000 registros) sob demanda, sem afirmar cobertura integral do Brasil. Cada página de especificações tem até 100 itens. A tela apresenta inicialmente 50 cartões, com mais resultados sob demanda; filtros, CSV e histórico usam toda a amostra carregada.
+
+Busca de família ordena candidatos por termos, abreviações usuais, início do nome e contexto de materiais de saúde, preservando opções inativas para histórico. A busca assistida por descrição consulta até três famílias candidatas e duas páginas de cada, e mostra quantas especificações foram examinadas. O parâmetro textual direto da API retornou zero para a busca de teste; não é usado como prova de ausência de produtos. A busca assistida não estabelece correspondência automática SKU/CATMAT.
+
+Novos filtros locais: termos obrigatórios na especificação, unidade exata, quantidade mínima e porte já conferido, além de marca/fornecedor, UF, esfera e período. Medidas numéricas são mantidas junto da unidade: “20 ml” não é satisfeito por “3 ml + agulha 20 G”. Negação de esterilidade e “sem látex” não viram atributos positivos. São verificações de texto; não certificam equivalência técnica. Filtros de marca, fornecedor, porte e termos continuam restritos à amostra carregada.
+
+O superadm pode pesquisar o cadastro Procfit diretamente pelo filtro do mix (até 25 correspondências por consulta; refinar o termo). Usa a RPC cadastral já protegida, sem ampliar permissões ou presumir que todo produto global pertença à Distribuidora. Outros usuários mantêm o mix autorizado e a consulta oficial. Categoria/marca/grupo de marca e EAN ajudam a orientar a pesquisa; não comprovam saldo nem equivalência.
+
+Conferência PNCP: 30 ou 60 referências por rodada, considerando os filtros atuais, com até três chamadas simultâneas. A checagem pode procurar pendentes mesmo com a visualização “somente conferidos”; falhas continuam indicadas. Histórico compara apenas mesma série CATMAT + apresentação + capacidade + medida + marca. Exibe último resultado **da série carregada**, mediana, faixa, número de observações, fornecedores e UFs; amostras abaixo de cinco observações recebem aviso. Nenhuma estatística geral mistura embalagens ou marcas.
+
+Alterar filtros da origem ou selecionar outro produto limpa o resultado anterior, evitando apresentá-lo como se fosse da nova consulta. Cancelamento ignora respostas atrasadas. O CSV preserva conteúdo textual com neutralização de fórmulas. Não há coleta contínua, lances ou campanhas automáticas.
+
+Verificação pública: PDM30247, Brasil, 19/10/2025 a19/10/2026 retornou 4.421 registros informados e 500 na primeira página (cerca de1MB). PDM423 retornou162 na consulta nacional. Esses números são evidência pontual da fonte, não indicadores atuais da empresa.
+
 ## Fluxo de uso
 
 1. Distribuidora → Radar B2G. Digite produto/família ou informe um código oficial conhecido.

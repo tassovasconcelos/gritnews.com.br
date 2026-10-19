@@ -15,5 +15,5 @@ Deno.serve(async(req:Request)=>{
   if(found&&now-found.at<600000)return reply(200,found.value);
   const data=await requestOfficial(q);if(cache.size>100)cache.clear();cache.set(key,{at:now,value:data});if(limits.size>1000)for(const [k,v] of limits)if(now-v.at>60000)limits.delete(k);
   return reply(200,data);
- }catch(e){const code=e instanceof Error&&['invalid_action','invalid_id','invalid_code','invalid_page','invalid_period','invalid_state'].includes(e.message)?e.message:'official_unavailable';return reply(code.startsWith('invalid_')?400:503,{error:code});}
+ }catch(e){const code=e instanceof Error&&['invalid_query','invalid_sphere','invalid_action','invalid_id','invalid_code','invalid_page','invalid_period','invalid_state'].includes(e.message)?e.message:'official_unavailable';return reply(code.startsWith('invalid_')?400:503,{error:code});}
 });
