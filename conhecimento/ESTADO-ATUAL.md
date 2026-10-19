@@ -1,5 +1,15 @@
 # CIP 360 — memória operacional
 
+## Evolução mais recente — Radar B2G nacional por produto
+
+Recuperada a atualização remota `e7ef991`: acesso da diretoria pelo Telegram e Marca-passo por contribuição (`PLATFORM-EVOLUTION.md`). A confirmação anterior de voz funcional permanece válida; não confundir a ressalva de testes daquela release com revogação da chave ou da confirmação do usuário.
+
+Nova implementação B2G em `b2g-research.mjs`/`b2g-research-ui.mjs`, serviço `cip-b2g`, índice público de 20.443 famílias PDM. Pesquisa por família/CATMAT, Brasil ou UF, período, filtro de marca/empresa nas páginas carregadas, detalhe de produto/embalagem/preço/fornecedor, conferência de vencedor/porte no resultado e evolução mensal separada por produto/embalagem/marca. `B2G-PRODUCT-INTELLIGENCE.md` registra uso, fontes, limites e próximos incrementos.
+
+Somente cruzamentos ativos por item/fornecedor/preço/quantidade são vencedores conferidos. Marca/modelo/porte ausentes não são inventados. Datas divergentes entre pesquisa de preços e resultado PNCP ficam explícitas. IDs de compras de 17 dígitos devem ser lidos sem perda de precisão. As novas publicações gerais deixam de fixar CE; amostra histórica Ceará permanece recolhida e identificada.
+
+Limites: consulta sob demanda, páginas de 50 preços e verificação de 30 por rodada. Filtros de marca/empresa não procuram automaticamente em todo o universo remoto. Curva é descritiva sobre páginas carregadas/conferidas, não histórico nacional completo ou índice de mercado. Próxima evolução: índice persistente, coleta incremental revisável e equivalência CATMAT/SKU validada.
+
 ## Decisão mais recente — origem comum, destino CIP e dez minutos
 
 Tasso determinou reutilizar a mesma view, alimentar diretamente o CIP e atualizar a cada dez minutos, sem misturar com ROTA PRO. Essa cadência substitui a proposta horária anterior para o novo fluxo CIP. A rotina horária do ROTA PRO foi preservada.

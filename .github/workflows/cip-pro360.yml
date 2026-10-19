@@ -60,6 +60,8 @@ jobs:
           node --check apps/cip-pro-360/academy-ui.mjs
           node --check apps/cip-pro-360/agents-ui.mjs
           node --check apps/cip-pro-360/b2g-radar.mjs
+          node --check apps/cip-pro-360/b2g-research-ui.mjs
+          node --test apps/cip-pro-360/b2g-research.test.mjs
           node --check apps/cip-pro-360/doquita-insights.mjs
           node apps/cip-pro-360/grit-recovery.test.mjs
           node apps/cip-pro-360/deploy/upload.test.mjs

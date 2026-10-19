@@ -24,9 +24,10 @@ export async function getJson(url,{signal}={}){
  if(!response.ok)throw Error(`PNCP respondeu ${response.status}`);
  return response.json();
 }
-export async function fetchPublications({start,end,page=1,signal}={}){
+export async function fetchPublications({start,end,page=1,state='',signal}={}){
  if(!/^\d{8}$/.test(start??'')||!/^\d{8}$/.test(end??'')||!Number.isInteger(page)||page<1||page>6)throw Error('Período ou página inválida');
- const url=`${PNCP}/api/consulta/v1/contratacoes/publicacao?dataInicial=${start}&dataFinal=${end}&codigoModalidadeContratacao=6&uf=CE&pagina=${page}&tamanhoPagina=50`;
+ if(state&&!/^(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)$/.test(state))throw Error('Estado inválido');
+ const url=`${PNCP}/api/consulta/v1/contratacoes/publicacao?dataInicial=${start}&dataFinal=${end}&codigoModalidadeContratacao=6${state?'&uf='+state:''}&pagina=${page}&tamanhoPagina=50`;
  const data=await getJson(url,{signal});
  return {purchases:(data.data??[]).filter(relevantPurchase).map(purchaseRecord).filter(Boolean),scanned:(data.data??[]).length,total:Number(data.totalRegistros??0),source:url};
 }
