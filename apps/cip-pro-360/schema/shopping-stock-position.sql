@@ -29,6 +29,8 @@ create table public.cip_price_decision_log(
  foreign key(source_hash,store_code,sku) references public.cip_shopping_stock_rows(source_hash,store_code,sku)
 );
 create index cip_price_decision_latest_idx on public.cip_price_decision_log(source_hash,store_code,sku,created_at desc);
+create index cip_shopping_stock_batch_company_idx on public.cip_shopping_stock_batches(company_id,status,as_of desc);
+create index cip_price_decision_actor_idx on public.cip_price_decision_log(actor,created_at desc);
 alter table public.cip_shopping_stock_batches enable row level security;
 alter table public.cip_shopping_stock_rows enable row level security;
 alter table public.cip_price_decision_log enable row level security;
