@@ -6,6 +6,8 @@ Estoque CD100.xlsx identificado pelo usuário como CD 100 Shopping Prohospital. 
 
 Tela Estoque de referência permite selecionar CD100 ou lojas +180 dias; Radar B2G inclui catálogos por origem, sem custo/saldo. 125 testes locais passaram e troca de fontes foi verificada com adaptador privado de leitura. Produção autenticada não homologada nesta rodada. O comparativo privado anterior à carga do CD deve ser lido com esta atualização. Mais detalhes em apps/cip-pro-360/SHOPPING-STOCK-REFERENCE.md.
 
+Publicado em Hostinger: commit ddc0b6b, workflow39255628127 com validate/publish aprovados. stock-reference.mjs e b2g-research-ui.mjs retornaram HTTP200 e hashes iguais aos locais. Lote CD ativado como reference_unreconciled após conferir publicação, 624 registros, soma e ausência dos campos não fornecidos. Lojas permanecem intactas. RLS habilitada, anon sem SELECT, authenticated somente SELECT e sem empresa retorna zero. Consultor de segurança sem achados para as tabelas stock_reference. Importação pontual; não significa sincronização Procfit de dez minutos.
+
 ## Carga Shopping — somente lojas — 19/10/2026
 
 Usuário corrigiu: Produtos Sem Giro +180 dias.xlsx contém SOMENTE LOJAS; CD100 não faz parte desta carga. Não mapear códigos 1–14,16,32–35 para nomes presumidos. Planilha privada importada em cip_stock_reference_batches/rows: 6.762 registros únicos loja/SKU, 3.295 produtos, 19 códigos. Hash 0e0c8168f496bf52122aac71708f3e765fb1da983d5f69c14e90ae3429a2ba9a. Dados financeiros não estão em Git/publicação estática. Lote provisório, não conciliado, sem alimentar relatórios ERP aprovados ou ROTA PRO.
