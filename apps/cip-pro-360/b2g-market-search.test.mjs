@@ -8,7 +8,8 @@ test('colostomy terminology retrieves intestinal ostomy systems but not urinary 
  const row={description:'Sistema p/ estomia, aplicação intestinal, tipo bolsa com base adesiva',brand:'PROCIRURGICA'};
  assert.equal(discoveryMatch(row,{product:'bolsa de colostomia',brand:'procirúrgica'}),true);
  assert.ok(productCorrespondence(row,'bolsa de colostomia').note);
- for(const description of ['Sistema p/ estomia, aplicação urinária, tipo bolsa','Bolsa para urostomia','Sistema p/ estomia, tipo bolsa','Adjuvante para estomia intestinal, tipo pasta'])assert.equal(discoveryMatch({...row,description},{product:'bolsa de colostomia'}),false);
+ for(const description of ['Sistema p/ estomia, aplicação urinária, tipo bolsa','Bolsa para urostomia','Sistema p/ estomia, tipo bolsa','Adjuvante para estomia intestinal, tipo pasta','Adjuvante p/ estomia, aplicação intestinal, tipo fixador para bolsa','Placa para bolsa de colostomia'])assert.equal(discoveryMatch({...row,description},{product:'bolsa de colostomia'}),false);
+ assert.equal(discoveryMatch({description:'Placa para bolsa de colostomia'},{product:'placa para bolsa de colostomia'}),true);
  assert.equal(discoveryMatch({description:'Bolsas colostomia 57 mm'},{product:'bolsa de colostomia 70 mm'}),false);
  assert.equal(discoveryMatch({description:'Bolsa colostomia'},{product:'bolsa de colostomia'}),true);
 });

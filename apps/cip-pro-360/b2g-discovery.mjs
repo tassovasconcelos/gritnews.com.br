@@ -42,6 +42,8 @@ export function productCorrespondence(row,product=''){
  const hay=' '+discoveryKey([row.description,row.detail,row.object,row.process,row.contract].join(' '))+' ';
  const terms=discoveryKey(product).replace(/\bbolsas\b/g,'bolsa').split(' ').filter(t=>t&&!['de','da','do','das','dos','para','p'].includes(t));
  const normalizedHay=hay.replace(/\bbolsas\b/g,'bolsa');
+ const accessory=/^(?:adjuvante|placa|clipe?|fixador|pasta|cinto)\b/.test(discoveryKey(row.description));
+ if(terms.includes('bolsa')&&accessory&&!terms.some(t=>/^(?:adjuvante|placa|clipe?|fixador|pasta|cinto)$/.test(t)))return {matches:false,expanded:false,note:null};
  const expanded=terms.includes('colostomia')&&!normalizedHay.includes(' colostomia ')&&/\bestomia\b/.test(normalizedHay)&&/\bintestinal\b/.test(normalizedHay)&&!/(?:aplicacao\s+)?urinaria|urostomia/.test(normalizedHay);
  return {matches:terms.every(t=>normalizedHay.includes(' '+t+' ')||(t==='colostomia'&&expanded)),expanded,note:expanded?'Correspondência ampliada: sistema para estomia de aplicação intestinal. Confirmar indicação, modelo, medidas e apresentação; não certifica equivalência técnica.':null};
 }
