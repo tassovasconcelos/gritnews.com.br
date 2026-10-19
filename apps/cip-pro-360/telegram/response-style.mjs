@@ -25,9 +25,12 @@ export function renderBrief(entries,kind,now=new Date()){
   for(const e of reports){const r=buildERPReport(e.snapshot,kind,now),p=r.provenance;
    const v=kind==='sales_mtd'?(r.sales_mtd.available?r.sales_mtd.total:null):kind==='aged_stock'?r.aging.total:kind==='no_sales_stock'?null:r.inventory.total;
    lines.push(`${COMPANY_NAMES[e.company]}: ${v===null?'indicador sem total comprovado':formatMoney(v)} · ${date(p.captured_at)}${r.full_company?'':' · parcial'}${p.stale?' · base antiga':''}.`);
+   if(kind==='sales_mtd')lines.push(`Período: ${date(r.sales_mtd.from)} a ${date(r.sales_mtd.through)}.`);
+   if(kind==='aged_stock'&&!r.aging.available)lines.push(`⚠ Idade do saldo não comprovada em ${r.aging.unknown_rows} linhas.`);
   }
   if(refs.length)lines.push('Referências abaixo não entram no total conciliado.');
  }
+ if(!reports.length&&refs.length&&(kind==='aged_stock'||kind==='no_sales_stock'))lines.push(kind==='aged_stock'?'Estoque acima de 180 dias por lote: não comprovado nesta referência.':'Estoque sem vendas em 180 dias: não comprovado nesta referência.');
  for(const e of refs){const d=e.reference;
   if(d.source_kind==='shopping_position'){
    const s=d.summary;
@@ -46,7 +49,7 @@ export function renderBrief(entries,kind,now=new Date()){
    lines.push(`⚠ ${a.vencido||0} lotes vencidos e ${a.validade_90d||0} com validade em até 90 dias na base completa. Sem vendas/preços confirmados para calcular giro ou margem.`);
    if(kind==='stock_product')for(const x of d.items.slice(0,2))lines.push(`${x.sku} · ${x.description.slice(0,60)} · validade ${x.expiry||'não informada'} · custo ${formatMoney(x.declared_cost)}.`);
   }else{
-   const detail=renderExecutive([e],kind,now);lines.push(detail.split('\n')[0]);
+   const detail=renderExecutive([e],kind==='aged_stock'||kind==='no_sales_stock'?'inventory':kind,now);lines.push(detail.split('\n')[0]);
    lines.push('Shopping Prohospital · referência PARCIAL, não conciliada; datas distintas ou ausentes. Não é o estoque total da empresa.');
    if(kind==='stock_quality')lines.push('Conferência: '+d.sources.map(s=>`${s.scope==='cd100_partial'?'CD100':'Lojas'}: ${s.summary.cost_review} divergências e ${s.summary.zero_cost} custos zero`).join('; ')+'.');
    if(kind==='aged_stock'||kind==='no_sales_stock')lines.push('⚠ Não comprova idade dos lotes ou ausência de vendas atuais.');

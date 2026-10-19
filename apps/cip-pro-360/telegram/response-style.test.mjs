@@ -7,6 +7,7 @@ const reference={available:true,company,kind:'summary',sources:[{scope:'cd100_pa
 test('short result keeps value, partial scope and missing-company caveat without calculation dump',()=>{
  const r=renderBrief([{company,reference},{company:'distribuidora_prohospital'}],'inventory');
  assert.match(r,/^Custo declarado.*R\$ 0,10/);assert.match(r,/PARCIAL, não conciliada/);assert.match(r,/não é o estoque total/i);assert.match(r,/não considerada como zero/);assert.doesNotMatch(r,/Composição e memória|Cálculo:/);assert.ok(r.length<650);
+ assert.match(renderBrief([{company,reference}],'aged_stock').split('\n')[0],/não comprovado/);
 });
 test('follow-up preserves exact filter including long query and CD scope, never restores arbitrary tools',()=>{
  const intent={kind:'stock_product',query:'a'.repeat(200),store:'12345678'};
