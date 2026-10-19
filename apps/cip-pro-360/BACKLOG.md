@@ -24,3 +24,5 @@ Nenhuma nova expansão de módulos até validar o núcleo. Manter escola, ingest
 - Pendente de ativação externa: bot BotFather, segredos e webhook; não houve conversa real homologada.
 - Próximos gates: validação dos processos com donos, testes por habilidade, piloto Telegram privado, Procfit conciliado e pesquisa atual de tendências com evidência.
 - Documentação: `PROCESSES-AND-TELEGRAM.md`.
+
+- Assistente de ativação Telegram no próprio CIP: token protegido, validação de identidade, configuração automática do webhook e armazenamento criptografado no Vault; uso restrito ao superadm. A conexão real depende do token inserido pelo titular e do teste /resumo.

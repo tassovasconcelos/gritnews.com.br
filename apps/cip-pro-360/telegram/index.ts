@@ -1,14 +1,16 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
+import {configureBot} from './setup.mjs';
 import {interpret,privateMessage,HELP} from './intents.mjs';
-const url=Deno.env.get('SUPABASE_URL')!,token=Deno.env.get('CIP_TELEGRAM_BOT_TOKEN')??'',secret=Deno.env.get('CIP_TELEGRAM_WEBHOOK_SECRET')??'';
+const url=Deno.env.get('SUPABASE_URL')!;
 const db=createClient(url,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
 const origin='https://cip.gritnews.com.br',cors={'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
 const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
-const configured=()=>/^\d+:[A-Za-z0-9_-]{20,}$/.test(token)&&/^[A-Za-z0-9_-]{32,256}$/.test(secret);
-function secretMatches(value:string){if(value.length!==secret.length)return false;let difference=0;for(let i=0;i<value.length;i++)difference|=value.charCodeAt(i)^secret.charCodeAt(i);return difference===0;}
+const configured=(token:string,secret:string)=>/^\d+:[A-Za-z0-9_-]{20,}$/.test(token)&&/^[A-Za-z0-9_-]{32,256}$/.test(secret);
+async function credentials(){const r=await db.rpc('cip_bot_config_read');if(r.error)throw Error('configuration_unavailable');return r.data??{token:Deno.env.get('CIP_TELEGRAM_BOT_TOKEN')??'',secret:Deno.env.get('CIP_TELEGRAM_WEBHOOK_SECRET')??'',username:null};}
+function secretMatches(value:string,secret:string){if(value.length!==secret.length)return false;let difference=0;for(let i=0;i<value.length;i++)difference|=value.charCodeAt(i)^secret.charCodeAt(i);return difference===0;}
 const hash=async(s:string)=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
 async function body(req:Request){const reader=req.body?.getReader();if(!reader)throw Error('body');const chunks:Uint8Array[]=[];let size=0;while(true){const r=await reader.read();if(r.done)break;size+=r.value.length;if(size>32768){await reader.cancel();throw Error('size');}chunks.push(r.value);}const all=new Uint8Array(size);let offset=0;for(const chunk of chunks){all.set(chunk,offset);offset+=chunk.length;}return JSON.parse(new TextDecoder().decode(all));}
-async function send(chat:string,text:string){
+async function send(chat:string,text:string,token:string){
  const res=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chat,text:text.slice(0,3900),protect_content:true,link_preview_options:{is_disabled:true}}),signal:AbortSignal.timeout(12000)});
  if(!res.ok)throw Error('delivery');const data=await res.json();if(!data.ok)throw Error('delivery');
 }
@@ -28,9 +30,16 @@ Deno.serve(async(req:Request)=>{
   try{const client=createClient(url,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:req.headers.get('authorization')??''}},auth:{persistSession:false}});const u=await client.auth.getUser();if(u.error||!u.data?.user)return reply(401,{error:'authentication_required'});
    const p=await db.from('cip_profiles').select('active,role').eq('user_id',u.data.user.id).single();if(!p.data?.active)return reply(403,{error:'cip_access_required'});
    const b=await body(req);
-   if(b.action==='status')return reply(200,{configured:configured(),pilot_allowed:p.data.role==='superadm'});
+   if(b.action==='configure'){
+    if(p.data.role!=='superadm')return reply(403,{error:'superadmin_required'});
+    if(req.headers.get('origin')!==origin)return reply(403,{error:'origin_required'});
+    try{const result=await configureBot({db,actor:u.data.user.id,token:typeof b.token==='string'?b.token.trim():null,exclusive:b.exclusive,projectUrl:url,randomSecret:()=>[...crypto.getRandomValues(new Uint8Array(32))].map(v=>v.toString(16).padStart(2,'0')).join('')});return reply(200,result);}
+    catch(e){const allowed=['invalid_configuration','invalid_bot_token','invalid_bot_identity','configuration_busy','webhook_not_confirmed','configuration_not_saved'];const code=e instanceof Error&&allowed.includes(e.message)?e.message:'telegram_unavailable';return reply(400,{error:code});}
+   }
+   const cfg=await credentials();
+   if(b.action==='status')return reply(200,{configured:configured(cfg.token,cfg.secret),pilot_allowed:p.data.role==='superadm',username:cfg.username??null});
    if(b.action==='pair'){
-    if(!configured())return reply(409,{error:'channel_not_configured'});
+    if(!configured(cfg.token,cfg.secret))return reply(409,{error:'channel_not_configured'});
     if(p.data.role!=='superadm')return reply(403,{error:'pilot_superadmin_required'});
     const r=await db.rpc('cip_bot_pair_code',{p_user:u.data.user.id,p_company:b.company});return r.error?reply(409,{error:'pair_not_created'}):reply(200,r.data);
    }
@@ -38,7 +47,8 @@ Deno.serve(async(req:Request)=>{
    return reply(400,{error:'unknown_action'});
   }catch{return reply(400,{error:'invalid_request'});}
  }
- if(!configured())return reply(503,{error:'channel_not_configured'});if(!secretMatches(webhook))return reply(401,{error:'invalid_webhook_secret'});
+ let cfg:any;try{cfg=await credentials();}catch{return reply(503,{error:'configuration_unavailable'});}
+ if(!configured(cfg.token,cfg.secret))return reply(503,{error:'channel_not_configured'});if(!secretMatches(webhook,cfg.secret))return reply(401,{error:'invalid_webhook_secret'});
  let message:any=null;
  try{
   message=privateMessage(await body(req));if(!message)return reply(200,{ignored:true});
@@ -56,7 +66,7 @@ Deno.serve(async(req:Request)=>{
    else if(intent.kind==='help')text=HELP;
    else text=render(r.data,intent);
   }
-  await send(message.chat,text);
+  await send(message.chat,text,cfg.token);
   const done=await db.from('cip_bot_updates').update({state:'done',updated_at:new Date().toISOString()}).eq('update_id',message.update_id);if(done.error)throw Error('ack');
   return reply(200,{accepted:true});
  }catch{if(message)await db.from('cip_bot_updates').update({state:'failed',updated_at:new Date().toISOString()}).eq('update_id',message.update_id);return reply(503,{error:'request_unavailable'});}

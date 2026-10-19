@@ -29,13 +29,17 @@ O modelo inicial interpreta intenções conhecidas em português por regras. Nã
 
 Webhook HTTPS com segredo em cabeçalho; segredo e token somente no servidor. IDs do chat e remetente precisam coincidir e o chat precisa ser privado. Deduplicação de update_id, limite de 12 pedidos/minuto e até 3 tentativas com lease de 90s. Nenhum conteúdo da mensagem fica no log de fila. Na falha ambígua entre envio externo e confirmação local, pode ocorrer resposta duplicada; não prometemos entrega exatamente uma vez. Retenção operacional da fila: limpeza manual pela equipe até configurar política aprovada de retenção.
 
-### Ativação segura
+### Ativação segura pelo próprio CIP
 
-1. No Telegram oficial, abra https://t.me/BotFather e execute `/newbot`. Nome: **Doquita CIP**; username disponível terminado em `bot`. Use bot exclusivo deste projeto. Guarde o token com segurança.
-2. Administrador do projeto executa, em terminal confiável com Node 20+: `node apps/cip-pro-360/ops/setup-telegram.mjs`. As duas credenciais são digitadas sem eco: token BotFather e access token Supabase com acesso ao projeto. O script verifica o bot, grava os segredos na API oficial, configura webhook e comandos e verifica a URL. Segredos não são escritos em disco nem exibidos. Não cole tokens em chats ou no frontend.
-3. Alternativa: configurar `CIP_TELEGRAM_BOT_TOKEN` e `CIP_TELEGRAM_WEBHOOK_SECRET` (32 a 256 caracteres seguros) nos Secrets das Edge Functions; configurar `setWebhook` com a mesma secret_token e a URL `https://pcrwtoddavpvkaxwtstc.supabase.co/functions/v1/cip-telegram`. Se necessário, reimplantar a função após alteração de segredos.
-4. Abra CIP → **Doquita no Telegram**, escolha a empresa e gere o código. Envie `/vincular CODIGO` apenas ao seu bot em chat privado.
-5. Homologue `/resumo`, `/conhecimento termo`, identidade não vinculada, grupo, revogação, perfil suspenso e falhas de entrega. Sem esse teste real, o canal não está homologado.
+1. No Telegram oficial, abra https://t.me/BotFather e execute `/newbot`. Nome: **Doquita CIP**; username disponível terminado em `bot`. Use bot exclusivo deste projeto.
+2. Entre no CIP como superadm e abra **Doquita no Telegram**. Na seção **Validar token e ativar bot**, cole o token no campo protegido, confirme exclusividade e toque em **Validar token e ativar bot**. Não cole em chats. O campo é limpo imediatamente após envio.
+3. O servidor valida `getMe`, configura e verifica a URL do webhook e salva token/segredo com criptografia no Supabase Vault. O segredo do webhook é gerado pelo servidor. Nenhum segredo retorna ao navegador. A configuração exige JWT válido, superadm ativo e origem CIP; SQL de configuração é exclusivo do servidor e usa lease para bloquear operações simultâneas. Troca da identidade do bot revoga vínculos e códigos anteriores.
+4. Escolha a empresa e toque em **Gerar código de vínculo**. Use **Copiar comando de vínculo**, abra o link do seu bot e cole `/vincular CODIGO` na conversa privada.
+5. Envie `/resumo`. Teste `/sair` e gere novo vínculo se necessário. Sem conversa real, o canal não está homologado.
+
+O assistente usa a credencial do Vault quando presente; as antigas variáveis `CIP_TELEGRAM_BOT_TOKEN`/`CIP_TELEGRAM_WEBHOOK_SECRET` são fallback para instalações anteriores. O script `ops/setup-telegram.mjs` é um procedimento legado para ambientes sem configuração no Vault. Depois de usar o assistente, novas trocas de token devem ocorrer pela mesma tela.
+
+A validação usa apenas APIs oficiais do Telegram e não envia mensagens. Se o serviço externo aceitar o webhook e a gravação local falhar, o CIP não confirma ativação: repita a configuração para concluir. Chamadas de configuração falham com mensagens controladas, sem revelar token ou descrições brutas do provedor.
 
 Referências oficiais consultadas: https://core.telegram.org/bots/features#botfather e https://core.telegram.org/bots/api#setwebhook (19/10/2026). WhatsApp fica para fase posterior, com número empresarial, integração e permissões próprias. Não existe envio automático para clientes nesta versão.
 
