@@ -33,6 +33,9 @@ jobs:
           node apps/cip-pro-360/release-check.test.mjs
           node apps/cip-pro-360/cip-auth.test.mjs
           node apps/cip-pro-360/doquita-insights.test.mjs
+          node apps/cip-pro-360/agents.test.mjs
+          node --check apps/cip-pro-360/agents-ui.mjs
+          node --check apps/cip-pro-360/b2g-radar.mjs
           node --check apps/cip-pro-360/doquita-insights.mjs
           node apps/cip-pro-360/grit-recovery.test.mjs
           node apps/cip-pro-360/deploy/upload.test.mjs

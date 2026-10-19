@@ -2,17 +2,20 @@
 // Public publishable key only; permissions and segregation enforced by Supabase RLS.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm";
 import {summarizeDoquita} from "./doquita-insights.mjs";
+import {renderSquadPage,mountSquad} from "./agents-ui.mjs";
 const supabase = createClient("https://pcrwtoddavpvkaxwtstc.supabase.co", "sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS", {
   auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}
 });
 const V="shopping_prohospital", B="distribuidora_prohospital";
 let user=null,profile=null,companies=new Set();
-const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho"] };
+let disposeSquad=()=>{};
+window.cipRenderSquad=page=>renderSquadPage(page);
+const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g"] };
 const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const note=(s)=>{const el=$("loginMessage");if(el)el.textContent=s;};
-function toLogin(){window.closeMenu?.();user=null;profile=null;companies=new Set();window.cipAuth=null;$("interface")?.classList.add("hide");$("login")?.classList.remove("hide");}
+function toLogin(){disposeSquad();window.closeMenu?.();user=null;profile=null;companies=new Set();window.cipAuth=null;$("interface")?.classList.add("hide");$("login")?.classList.remove("hide");}
 async function enter(){
   if(!user)return toLogin();
   const p=await supabase.from("cip_profiles").select("role,active").eq("user_id",user.id).maybeSingle();
@@ -24,7 +27,7 @@ async function enter(){
     if(m.error)throw m.error;
     companies=new Set((m.data||[]).map(x=>x.company_id));
   }
-  const allowedRoutes=["inicio","cronograma","doquita",...(profile.role==="superadm"?["integracoes"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
+  const allowedRoutes=["inicio","cronograma","doquita","quartel","escola",...(profile.role==="superadm"?["integracoes"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
   document.querySelectorAll(".whoami").forEach(el=>el.textContent=user.email+" · "+profile.role);
@@ -227,7 +230,9 @@ async function loadDoquita(){
 window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquita"))loadDoquita();};
 
 window.cipLoadPage=(page)=>{
+ disposeSquad();disposeSquad=()=>{};
  if(!user)return;
+ if(["quartel","escola","radar-b2g"].includes(page)&&window.cipAuth?.allowedRoutes?.includes(page))mountSquad(page,{db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==="doquita")loadDoquita();
  if(page==="cronograma")reloadMilestones();
  if(page==="cotacoes")reloadQuoteRows();

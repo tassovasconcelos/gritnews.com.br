@@ -7,7 +7,7 @@ import {pathToFileURL} from 'node:url';
 
 export const OFFICIAL_LOGO_SHA256 = '1bdf5e051a137268d2aad2a6db750f53faecf1e590e673c9ed5d3a4e87c29d79';
 export const TARGET = 'https://cip.gritnews.com.br';
-const REQUIRED_FILES = ['index.html', 'cip-auth.js', 'doquita-insights.mjs', 'recuperar.html', 'grit-recovery.js', '.htaccess', 'robots.txt', 'health.json'];
+const REQUIRED_FILES = ['index.html', 'cip-auth.js', 'doquita-insights.mjs', 'agents-data.mjs', 'agents-ui.mjs', 'agents.css', 'b2g-radar.mjs', 'b2g-snapshot.json', 'recuperar.html', 'grit-recovery.js', '.htaccess', 'robots.txt', 'health.json'];
 const LOGO = 'logo-grupo-prohospital.jpg';
 const MANIFEST = 'release-manifest.json';
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
