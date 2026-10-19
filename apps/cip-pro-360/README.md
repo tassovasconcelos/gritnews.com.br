@@ -75,3 +75,7 @@ Superadm pode importar JSON/CSV, conferir rascunho, conciliar totais independent
 ## Diretoria e Marca-passo avançado
 
 Diretores consultam bases aprovadas nas empresas autorizadas pelo CIP e pelo Telegram. Marca-passo traz fila por SKU/loja e simulador de contribuição, piso, alçada e referência com origem. Veja `PLATFORM-EVOLUTION.md` para entrega, limites e prioridades. As análises aguardam a carga real; nenhuma alteração automática de preço.
+
+### Prorrogar convites
+
+Em Integrações & acessos, o superadm pode prorrogar convites prontos por mais uma hora. Válidos: uma hora adicional sobre o vencimento atual. Vencidos: uma hora a partir da operação no servidor. Aceitos ou revogados não podem ser prorrogados. O link CIP é preservado e a alteração de prazo é registrada atomicamente no histórico. A prorrogação não renova o token independente de autenticação inicial do provedor; se ele também expirou, usar Preparar novo link. Nenhum convite real foi prorrogado automaticamente nesta implantação.

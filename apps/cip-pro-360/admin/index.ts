@@ -47,6 +47,12 @@ Deno.serve(async(req:Request)=>{
    const r=await db.rpc('cip_admin_apply_access',{p_actor:auth.user.id,p_target:body.user_id,p_role:body.role,p_companies:body.companies,p_active:body.active});
    return r.error?reply(409,{error:'access_not_changed'}):reply(200,{changed:true});
   }
+  if(body.action==='extend_invite'){
+   if(req.headers.get('origin')!==origin)return reply(403,{error:'origin_required'});
+   if(!uuid(body.invite_id))return reply(400,{error:'invalid_invitation'});
+   const r=await db.rpc('cip_admin_extend_invite',{p_actor:auth.user.id,p_invite:body.invite_id});
+   return r.error?reply(409,{error:'invitation_not_extended'}):reply(200,{extended:true,expires_at:r.data});
+  }
   if(body.action==='revoke_invite'){
    if(!uuid(body.invite_id))return reply(400,{error:'invalid_invitation'});
    const r=await db.from('cip_user_invites').update({state:'revoked'}).eq('id',body.invite_id).in('state',['pending','ready']).select('id');if(r.error||!r.data?.length)return reply(409,{error:'invitation_not_revoked'});
