@@ -1,17 +1,25 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
-import {configureBot} from './setup.mjs';
-import {interpret,privateMessage,HELP} from './intents.mjs';
+import {configureBot,telegramApi} from './setup.mjs';
+import {classify,transcribe,validAIKey} from './ai.mjs';
+import {parseUpdate,menu,companyMenu,companyIn,COMPANY_NAMES} from './conversation.mjs';
+import {interpret,HELP} from './intents.mjs';
 const url=Deno.env.get('SUPABASE_URL')!;
 const db=createClient(url,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
 const origin='https://cip.gritnews.com.br',cors={'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
 const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const configured=(token:string,secret:string)=>/^\d+:[A-Za-z0-9_-]{20,}$/.test(token)&&/^[A-Za-z0-9_-]{32,256}$/.test(secret);
 async function credentials(){const r=await db.rpc('cip_bot_config_read');if(r.error)throw Error('configuration_unavailable');return r.data??{token:Deno.env.get('CIP_TELEGRAM_BOT_TOKEN')??'',secret:Deno.env.get('CIP_TELEGRAM_WEBHOOK_SECRET')??'',username:null};}
+async function ensureInteractive(cfg:any){
+ if(!configured(cfg.token,cfg.secret)||cfg.interaction_version===2)return;
+ try{await telegramApi(cfg.token,'setWebhook',{url:url+'/functions/v1/cip-telegram',secret_token:cfg.secret,allowed_updates:['message','callback_query'],max_connections:5});
+ await telegramApi(cfg.token,'setMyCommands',{commands:[{command:'menu',description:'Abrir menu do Doquita'},{command:'empresas',description:'Escolher empresa ou todas autorizadas'},{command:'resumo',description:'Resumo do cadastro atual'},{command:'missoes',description:'Missões por estado'},{command:'processos',description:'Mapas de processos'},{command:'conhecimento',description:'Buscar orientação revisada'},{command:'sair',description:'Revogar meu vínculo'}]});
+ await db.rpc('cip_bot_interaction_ready',{p_bot_id:cfg.bot_id});}catch{}
+}
 function secretMatches(value:string,secret:string){if(value.length!==secret.length)return false;let difference=0;for(let i=0;i<value.length;i++)difference|=value.charCodeAt(i)^secret.charCodeAt(i);return difference===0;}
 const hash=async(s:string)=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
 async function body(req:Request){const reader=req.body?.getReader();if(!reader)throw Error('body');const chunks:Uint8Array[]=[];let size=0;while(true){const r=await reader.read();if(r.done)break;size+=r.value.length;if(size>32768){await reader.cancel();throw Error('size');}chunks.push(r.value);}const all=new Uint8Array(size);let offset=0;for(const chunk of chunks){all.set(chunk,offset);offset+=chunk.length;}return JSON.parse(new TextDecoder().decode(all));}
-async function send(chat:string,text:string,token:string){
- const res=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chat,text:text.slice(0,3900),protect_content:true,link_preview_options:{is_disabled:true}}),signal:AbortSignal.timeout(12000)});
+async function send(chat:string,text:string,token:string,keyboard:any=null){
+ const res=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chat,text:text.slice(0,3900),protect_content:true,...(keyboard?{reply_markup:keyboard}:{}),link_preview_options:{is_disabled:true}}),signal:AbortSignal.timeout(12000)});
  if(!res.ok)throw Error('delivery');const data=await res.json();if(!data.ok)throw Error('delivery');
 }
 const companies:Record<string,string>={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
@@ -37,7 +45,14 @@ Deno.serve(async(req:Request)=>{
     catch(e){const allowed=['invalid_configuration','invalid_bot_token','invalid_bot_identity','configuration_busy','webhook_not_confirmed','configuration_not_saved'];const code=e instanceof Error&&allowed.includes(e.message)?e.message:'telegram_unavailable';return reply(400,{error:code});}
    }
    const cfg=await credentials();
-   if(b.action==='status')return reply(200,{configured:configured(cfg.token,cfg.secret),pilot_allowed:p.data.role==='superadm',username:cfg.username??null});
+   if(b.action==='status'){if(p.data.role==='superadm')await ensureInteractive(cfg);return reply(200,{configured:configured(cfg.token,cfg.secret),pilot_allowed:p.data.role==='superadm',username:cfg.username??null,ai_enabled:cfg.ai_enabled===true});}
+   if(b.action==='configure_ai'){
+    if(p.data.role!=='superadm'||req.headers.get('origin')!==origin)return reply(403,{error:'superadmin_required'});
+    if(b.enabled===false){const r=await db.rpc('cip_bot_ai_save',{p_actor:u.data.user.id,p_key:null,p_enabled:false});return r.error?reply(503,{error:'ai_not_saved'}):reply(200,{ai_enabled:false});}
+    if(!validAIKey(b.key)||b.consent!==true)return reply(400,{error:'ai_key_and_consent_required'});
+    try{await classify('Ajuda',{key:b.key});}catch{return reply(400,{error:'ai_key_or_access_invalid'});}
+    const r=await db.rpc('cip_bot_ai_save',{p_actor:u.data.user.id,p_key:b.key,p_enabled:true});return r.error?reply(503,{error:'ai_not_saved'}):reply(200,{ai_enabled:true});
+   }
    if(b.action==='pair'){
     if(!configured(cfg.token,cfg.secret))return reply(409,{error:'channel_not_configured'});
     if(p.data.role!=='superadm')return reply(403,{error:'pilot_superadmin_required'});
@@ -49,24 +64,57 @@ Deno.serve(async(req:Request)=>{
  }
  let cfg:any;try{cfg=await credentials();}catch{return reply(503,{error:'configuration_unavailable'});}
  if(!configured(cfg.token,cfg.secret))return reply(503,{error:'channel_not_configured'});if(!secretMatches(webhook,cfg.secret))return reply(401,{error:'invalid_webhook_secret'});
+ await ensureInteractive(cfg);
  let message:any=null;
  try{
-  message=privateMessage(await body(req));if(!message)return reply(200,{ignored:true});
+  message=parseUpdate(await body(req));if(!message)return reply(200,{ignored:true});
   const claim=await db.rpc('cip_bot_claim',{p_update:message.update_id,p_telegram:message.user});if(claim.error)return reply(503,{error:'queue_unavailable'});
   if(['done','limited','exhausted'].includes(claim.data))return reply(200,{accepted:true});if(claim.data!=='claimed')return reply(503,{error:'retry_later'});
-  const intent=interpret(message.text);let text='';
+  if(message.callback){try{await fetch(`https://api.telegram.org/bot${cfg.token}/answerCallbackQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callback_query_id:message.callback}),signal:AbortSignal.timeout(5000)});}catch{}}
+  let intent:any=message.intent??interpret(message.text),text='',keyboard:any=null;
   if(intent.kind==='pair'){
-   const r=await db.rpc('cip_bot_bind',{p_hash:await hash(intent.code),p_telegram:message.user,p_chat:message.chat});if(r.error)throw Error('pair');text=r.data?'Vínculo confirmado. Sou o Doquita. Envie /resumo para consultar o cadastro da empresa vinculada. Para trocar de empresa, gere outro código no CIP.':'Código inválido, expirado, utilizado ou conta não autorizada. Gere um novo código em Doquita no Telegram no CIP.';
+   const r=await db.rpc('cip_bot_bind',{p_hash:await hash(intent.code),p_telegram:message.user,p_chat:message.chat});if(r.error)throw Error('pair');text=r.data?'Vínculo confirmado, sem prazo de expiração. Sou o Doquita. Escolha a empresa para começar.':'Código inválido, expirado, utilizado ou conta não autorizada. O código de ativação dura 10 minutos; o vínculo concluído não expira.';if(r.data)keyboard=companyMenu(['shopping_prohospital','distribuidora_prohospital']);
   }else{
-   const r=await db.rpc('cip_bot_read',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:intent.query??''});if(r.error)throw Error('read');
-   if(!r.data?.authorized)text='Para consultar dados, entre no CIP e gere um código em Doquita no Telegram. Use apenas conversa privada com o seu bot.';
-   else if(intent.kind==='revoke')text='Vínculo revogado. Novas consultas exigem outro código gerado no CIP.';
-   else if(intent.kind==='blocked')text='O Doquita no Telegram oferece apenas consultas. Alterações e aprovações devem ocorrer no CIP com a alçada responsável.';
-   else if(intent.kind==='erp_unavailable')text='A integração Procfit ainda está pendente. Não tenho dados reais de vendas, faturamento, margens ou saldo de produtos para responder. Posso consultar missões, mapas de processos e conhecimento aprovado.';
-   else if(intent.kind==='help')text=HELP;
-   else text=render(r.data,intent);
+   const getContext=()=>db.rpc('cip_bot_context',{p_telegram:message.user,p_chat:message.chat});
+   let context=await getContext();if(context.error)throw Error('context');
+   if(!context.data?.authorized)text='Entre no CIP e gere um código em Doquita no Telegram para vincular sua conta. Após ativado, o vínculo não tem prazo de expiração.';
+   else{
+    const allowed=context.data.companies;keyboard=menu(allowed);let aiError=false;
+    const isAI=cfg.ai_enabled&&validAIKey(cfg.ai_key);
+    let aiAllowed=false;
+    if(isAI&&(message.audio||!message.intent&&!message.text.startsWith('/'))){const a=await db.rpc('cip_bot_ai_claim',{p_update:message.update_id,p_telegram:message.user,p_chat:message.chat});aiAllowed=!a.error&&a.data===true;}
+    if(message.audio){
+     if(!isAI)text='Recebi seu áudio. Para transcrever e interpretar, o superadm precisa habilitar Texto e voz com IA na tela Doquita no Telegram do CIP. Por enquanto, envie o pedido escrito ou use os botões.';
+     else if(!aiAllowed)text='O limite de 100 solicitações com IA por dia foi atingido. Use os botões ou os comandos de texto.';
+     else try{message.text=await transcribe(message.audio,{botToken:cfg.token,key:cfg.ai_key});intent=interpret(message.text);}catch(e){text=e instanceof Error&&e.message==='audio_limit'?'Envie um áudio de até 3 minutos e 10 MB.':'Não consegui transcrever com segurança. Tente um áudio mais curto ou escreva seu pedido.';}
+    }
+    if(!text){
+     const directCompany=message.intent?.company??companyIn(message.text);
+     if(aiAllowed&&!message.intent){try{const routed=await classify(message.text,{key:cfg.ai_key,context:{company:context.data.all?'all':context.data.company,last_kind:context.data.last_kind,last_query:context.data.last_query}});if(intent.kind!=='blocked'&&intent.kind!=='erp_unavailable')intent=routed;}catch{aiError=true;}}
+     const chosen=directCompany??(intent.company&&intent.company!=='current'?intent.company:null);
+     if(chosen){const change=await db.rpc('cip_bot_choose_company',{p_telegram:message.user,p_chat:message.chat,p_company:chosen});if(change.error||change.data!==true)throw Error('scope');context=await getContext();if(!context.data?.authorized)throw Error('scope');}
+     const scope=context.data.all?'all':context.data.company;
+     if(intent.kind==='choose_company'||chosen&&intent.kind==='help')text='Empresa selecionada: '+COMPANY_NAMES[scope]+'. O vínculo continua ativo. Escolha uma consulta abaixo.';
+     else if(intent.kind==='companies'){text='Escolha o escopo das próximas consultas. Seu vínculo não expira.';keyboard=companyMenu(allowed);}
+     else if(intent.kind==='revoke'){const r=await db.rpc('cip_bot_read',{p_telegram:message.user,p_chat:message.chat,p_kind:'revoke',p_query:''});if(r.error)throw Error('revoke');text='Vínculo revogado. Para voltar, gere outro código no CIP.';keyboard=null;}
+     else if(intent.kind==='blocked')text='Este canal é somente leitura. Alterações e aprovações devem ser feitas no CIP com a alçada responsável.';
+     else if(intent.kind==='erp_unavailable')text='Procfit ainda não conectado: não tenho faturamento, vendas, margens ou saldos reais de produtos. Posso consultar o cadastro atual de missões e processos ou buscar orientações na Escola.';
+     else if(intent.kind==='clarification')text=intent.question==='period'?'Os relatórios disponíveis representam o cadastro atual de todos os períodos; ainda não há filtro histórico. Deseja consultar esse resumo? Toque em Resumo abaixo.':'Me diga o que deseja consultar: resumo, missões, processos ou um tema da base de conhecimento. Você também pode escolher a empresa no menu.';
+     else if(intent.kind==='help')text=HELP;
+     else if(intent.kind==='knowledge'&&(!intent.query||intent.query.length<3))text='Qual tema você quer pesquisar na Escola? Exemplo: /conhecimento reposição. A consulta usa somente fontes aprovadas e vigentes.';
+     else if(intent.kind==='knowledge'&&scope==='all'){text='Para manter as fontes separadas, escolha uma empresa antes de pesquisar conhecimento.';keyboard=companyMenu(allowed);}
+     else{
+      const targets=scope==='all'?allowed:[scope],answers=[];
+      for(const company of targets){const r=await db.rpc('cip_bot_report',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:intent.query??'',p_company:company});if(r.error||!r.data?.authorized)throw Error('report');answers.push(render(r.data,intent));}
+      text=answers.join('\n\n────────────────\n\n');
+      await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:intent.query??''});
+     }
+     if(aiError)text+='\n\nA interpretação por IA está indisponível agora; usei as consultas básicas. Use /menu se precisar.';
+     if(!['companies','choose_company','revoke'].includes(intent.kind))text='Escopo: '+COMPANY_NAMES[scope]+'\n\n'+text;
+    }
+   }
   }
-  await send(message.chat,text,cfg.token);
+  await send(message.chat,text,cfg.token,keyboard);
   const done=await db.from('cip_bot_updates').update({state:'done',updated_at:new Date().toISOString()}).eq('update_id',message.update_id);if(done.error)throw Error('ack');
   return reply(200,{accepted:true});
  }catch{if(message)await db.from('cip_bot_updates').update({state:'failed',updated_at:new Date().toISOString()}).eq('update_id',message.update_id);return reply(503,{error:'request_unavailable'});}

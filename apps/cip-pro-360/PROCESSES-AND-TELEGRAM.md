@@ -50,3 +50,20 @@ Referências oficiais consultadas: https://core.telegram.org/bots/features#botfa
 3. Ativar e testar o bot privado do superadm; ampliar perfis somente após alçadas e política de dados definidas.
 4. Conectar Procfit somente leitura, conciliar baseline e então adicionar relatórios de SKU, filial e período. Não permitir consulta ampla de SQL pelo mensageiro.
 5. Acrescentar interpretação semântica com ferramentas limitadas e avaliações, evidências atuais de mercado e execução assistida com aprovações específicas. O simulador atual não é um motor de workflow autônomo.
+
+
+## Interação persistente, empresas e voz — 19/10/2026
+
+O vínculo do Telegram não possui vencimento: fica ativo até revogação, suspensão do perfil ou troca da identidade do bot. Os dez minutos pertencem apenas ao código de ativação, que é de uso único. Não é necessário refazer o vínculo para trocar de empresa.
+
+`/menu` e `/empresas` abrem botões. O superadm pode escolher Shopping, Distribuidora ou todas as empresas autorizadas. O escopo escolhido persiste. No modo todas, resumos, missões e processos são apresentados separadamente por empresa; busca de conhecimento solicita uma empresa específica. As funções de leitura conferem vínculo ativo e perfil novamente a cada consulta. Nenhum acesso a outras aplicações GRIT é concedido.
+
+O servidor atualiza uma única vez o menu de comandos e a assinatura de `callback_query`, usando as credenciais já configuradas, na próxima interação ou abertura do painel pelo superadm. Isso não envia mensagens nem muda o vínculo existente.
+
+A seção **Texto e voz com IA** do CIP recebe uma chave própria da OpenAI API em campo protegido. Exige consentimento para transmitir texto/áudio à OpenAI e para uso faturado pela API. A chave é testada com uma chamada curta e guardada no Vault; não retorna ao navegador. O recurso inicia desabilitado e pode ser desligado. O token Telegram e uma assinatura de ChatGPT não são usados como chave dessa integração.
+
+Modelos fixados: `gpt-4.1-mini-2025-04-14` para classificação estruturada e `gpt-4o-mini-transcribe-2025-12-15` para transcrição. Roteamento limitado a consultas permitidas: o modelo não executa SQL, não altera dados, não concede acesso e não fornece números fora do cadastro. Não há síntese financeira gerada livremente. O contexto guarda apenas intenção e termo de busca por 20 minutos; isso não é expiração do vínculo. Não armazenamos arquivo de áudio nem transcrição no banco.
+
+Voz: mensagens de voz ou arquivos de áudio de até 3 minutos e 10 MB, baixados apenas do host oficial Telegram com caminho validado e sem redirecionamentos. Áudio é transcrito e processado pelo mesmo roteamento do texto; a resposta volta em texto, com menu. Erros pedem repetição ou texto sem inventar transcrição. Limite de 100 solicitações com IA por dia/usuário e 12 mensagens por minuto; tentativas transitórias podem repetir chamadas externas. Lease de processamento: 3 minutos, até 3 tentativas. Períodos históricos ainda não suportados exigem esclarecimento.
+
+Referências verificadas em 19/10/2026: https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=chat e https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create. Transcrição e interpretação reais só são homologadas após cadastrar a chave e testar um pedido escrito e um áudio real. O Procfit permanece pendente; nenhum recurso novo inventa estoque ou faturamento.

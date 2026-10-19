@@ -15,10 +15,10 @@ export async function configureBot({db,actor,token,exclusive,projectUrl,fetcher=
  const lease=await db.rpc('cip_bot_config_begin',{p_actor:actor});if(lease.error||!lease.data)throw Error('configuration_busy');
  try{
   const secret=randomSecret(),webhook=projectUrl+'/functions/v1/cip-telegram';
-  const set=await telegramApi(token,'setWebhook',{url:webhook,secret_token:secret,allowed_updates:['message'],max_connections:5},fetcher);if(set!==true)throw Error('webhook_not_confirmed');
+  const set=await telegramApi(token,'setWebhook',{url:webhook,secret_token:secret,allowed_updates:['message','callback_query'],max_connections:5},fetcher);if(set!==true)throw Error('webhook_not_confirmed');
   const info=await telegramApi(token,'getWebhookInfo',{},fetcher);if(info?.url!==webhook)throw Error('webhook_not_confirmed');
   const save=await db.rpc('cip_bot_config_finish',{p_actor:actor,p_lease:lease.data,p_token:token,p_secret:secret,p_bot_id:String(me.id),p_username:username});if(save.error)throw Error('configuration_not_saved');
-  let commands=true;try{await telegramApi(token,'setMyCommands',{commands:[{command:'resumo',description:'Resumo dos registros do CIP'},{command:'missoes',description:'Missões por estado'},{command:'processos',description:'Mapas cadastrados'},{command:'conhecimento',description:'Buscar conhecimento aprovado'},{command:'sair',description:'Revogar meu vínculo'}]},fetcher);}catch{commands=false;}
+  let commands=true;try{await telegramApi(token,'setMyCommands',{commands:[{command:'menu',description:'Abrir menu do Doquita'},{command:'empresas',description:'Escolher empresa ou todas autorizadas'},{command:'resumo',description:'Resumo dos registros do CIP'},{command:'missoes',description:'Missões por estado'},{command:'processos',description:'Mapas cadastrados'},{command:'conhecimento',description:'Buscar conhecimento aprovado'},{command:'sair',description:'Revogar meu vínculo'}]},fetcher);}catch{commands=false;}
   return {configured:true,username,bot_url:'https://t.me/'+username,webhook_verified:true,commands_configured:commands};
  }finally{await db.rpc('cip_bot_config_release',{p_lease:lease.data});}
 }
