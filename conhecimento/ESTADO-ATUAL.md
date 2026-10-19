@@ -8,7 +8,7 @@ Diagnóstico direto no servidor: `ai_enabled=false`, `has_ai_key=false`, interac
 
 Correção de ativação: `ai-readiness.mjs` testa interpretação e acesso à transcrição usando um segundo de silêncio WAV sintético. A ativação somente salva a chave quando ambos respondem corretamente. O teste de acesso não comprova acurácia em português nem o caminho real Telegram. Falhas distinguem chave inválida, crédito/cota, permissão, modelo e indisponibilidade sem revelar mensagens do provedor. Status distingue chave ausente de IA desativada; bot orienta ativar e reenviar áudio.
 
-Serviço `cip-telegram` publicado na versão 8 em 19/10; autenticação por segredo do webhook e sessão/perfil no painel preservada. 102 testes automatizados passaram. Chamada real de transcrição com chave do cliente e áudio Telegram ainda pendente; não declarar voz homologada antes disso. Código e tela encaminhados à publicação Hostinger pelo workflow do CIP; conferir execução e bytes antes de confirmar a tela publicada.
+Serviço `cip-telegram` publicado na versão 8 em 19/10; autenticação por segredo do webhook e sessão/perfil no painel preservada. 102 testes automatizados passaram. Chamada real de transcrição com chave do cliente e áudio Telegram ainda pendente; não declarar voz homologada antes disso. Publicação Hostinger concluída e verificada: workflow 39229182323, commit e8f2093. bot-ui.mjs retorna HTTP 200 e SHA-256 idêntico à cópia local. Consulta ao banco também confirmou zero bases ERP aprovadas nesta retomada: relatórios reais dependem de carga e aprovação.
 
 Atualizado em 19/10/2026, America/Sao_Paulo. Registro durável para continuidade; não altera pesos ou treinamento de modelos.
 
