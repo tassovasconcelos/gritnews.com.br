@@ -88,3 +88,5 @@ Histórico copiado seletivamente em `historico/`: backlog, catálogo, rodadas, i
 Chats consultados: “Continue implantação do CIP PRO 360°” (01a14f39-3d74-7430-a68b-ac91db2e0bcd) e “Atualizar projetos CIP 360” (6ad59911-0ae8-83e9-bcdb-23b097264f13). Nenhuma mensagem foi enviada a outras conversas.
 
 Documentação oficial consultada: https://developers.openai.com/api/docs/guides/function-calling — ferramentas conectam o modelo a funções externas; o servidor executa e controla o acesso. A chave sozinha não fornece dados do Procfit.
+
+Validação e publicação do Radar B2G: 120 testes passaram; navegador local com dados públicos reais confirmou busca por família, CATMAT 619840/SP, filtro de marca e série mensal. Nenhuma gravação no CIP foi feita pelo adaptador local. Endpoint sem autenticação retorna 401; sessão autenticada de produção e criação real de missão permanecem fora dessa verificação. Serviço cip-b2g v2 publicado. Workflow 39243805648 concluiu em sucesso para 3c2fcc8; módulos publicados retornam HTTP 200 com SHA-256 idêntico ao local. Evidência local: ../evidencias/cip-b2g-historico-produto.png.
