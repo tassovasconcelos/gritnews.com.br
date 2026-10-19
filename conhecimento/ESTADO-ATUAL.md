@@ -1,5 +1,13 @@
 # CIP 360 — memória operacional
 
+## Carga Shopping — somente lojas — 19/10/2026
+
+Usuário corrigiu: Produtos Sem Giro +180 dias.xlsx contém SOMENTE LOJAS; CD100 não faz parte desta carga. Não mapear códigos 1–14,16,32–35 para nomes presumidos. Planilha privada importada em cip_stock_reference_batches/rows: 6.762 registros únicos loja/SKU, 3.295 produtos, 19 códigos. Hash 0e0c8168f496bf52122aac71708f3e765fb1da983d5f69c14e90ae3429a2ba9a. Dados financeiros não estão em Git/publicação estática. Lote provisório, não conciliado, sem alimentar relatórios ERP aprovados ou ROTA PRO.
+
+Em todas as linhas, max(última venda,última entrada)+contador implica16/10/2026: data-base/critério deduzidos, não confirmados pelo exportador. Não tratar contador como idade de lote ou dias desde última venda. 50 diferenças de custo total vs quantidade×custo unitário acima deR$0,01 e11 custos unitários zero destacados, preservando origem. Sem unidade, lotes, validade, reservas e vendas completas. Potencial a preço cadastrado não é receita/margem/lucro.
+
+Nova consulta em Procfit & relatórios: carga integral, filtros SKU/marca/loja/grupo/pendência e totais declarados da amostra. Radar permite incluir catálogo Shopping por acesso Shopping adicional, sem campos financeiros; seleção continua sem equivalência CATMAT certificada. RLS/grants conferidos e authenticated sem escopo retorna zero. Teste local com dados reais/adaptador de leitura; sessão autenticada de produção não homologada nesta rodada. Detalhes em apps/cip-pro-360/SHOPPING-STOCK-REFERENCE.md. Publicação da tela pendente de workflow e verificação de bytes.
+
 ## Mix provisório e recorte federal — 19/10/2026
 
 Importados 60 SKUs únicos da planilha Produtos PROCIRURGICA 16102026 Correta.xlsx (Produtos, A1:B61) em `public.cip_b2g_mix`, tabela privada com RLS `cip_can_access(distribuidora_prohospital)`, sem SELECT anon nem INSERT authenticated. SHA256 da origem: 2f669e37fd5c0327259e3e936d24d265a2a6dc9d914753a13111f3fb3839c4fa. Data 16/10 é referência do nome do arquivo, não atualização ERP. Nenhum dado da planilha no repositório público ou arquivos publicados. Custos/preços/saldo/incentivos/formulas excluídos; 48 erros de fórmula preexistentes na coluna L não usados. Uma descrição sem marca; grafias originais preservadas.

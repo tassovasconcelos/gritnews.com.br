@@ -45,6 +45,7 @@ jobs:
           node --test apps/cip-pro-360/admin.test.mjs
           node --test apps/cip-pro-360/erp-engine.test.mjs
           node --check apps/cip-pro-360/erp-ui.mjs
+          node --test apps/cip-pro-360/stock-reference.test.mjs
           node --check apps/cip-pro-360/pricing-ui.mjs
           node --test apps/cip-pro-360/pricing-engine.test.mjs
           node --check apps/cip-pro-360/procfit-status-ui.mjs
