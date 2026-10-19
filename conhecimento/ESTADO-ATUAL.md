@@ -1,5 +1,15 @@
 # CIP 360 — memória operacional
 
+## Decisão mais recente — origem comum, destino CIP e dez minutos
+
+Tasso determinou reutilizar a mesma view, alimentar diretamente o CIP e atualizar a cada dez minutos, sem misturar com ROTA PRO. Essa cadência substitui a proposta horária anterior para o novo fluxo CIP. A rotina horária do ROTA PRO foi preservada.
+
+Verificação ao vivo em 19/10 pelo terminal Hostinger: VPN ativa, view `st.TASS_PRODUTOS_TOMBAMENTOS_LOCACAO` ainda com 45 colunas de locação/tombamento; não recebeu contrato completo de vendas/saldo de todas as filiais. Não inferir receita comercial de TOTAL_GERAL/VALOR_MENSAL nem estoque comercial do CUSTO do tombamento.
+
+Publicado endpoint `cip-procfit-gateway` v1 e tabela RLS `cip_procfit_source_checks`. Instalados diretórios/configuração/assinatura próprios e timer `cip-procfit-sync.timer` com leitura de metadados a cada dez minutos. Primeiro recebimento real no CIP: `contract_pending`, 45 colunas, intervalo 600 segundos, `business_data_received=false`. O estado aparece em Procfit & relatórios. Esse avanço é MONITORAMENTO DE CONTRATO, não sincronização financeira; a tarefa de carga automática permanece pendente da liberação da origem, mapeamento, implementação de ingestão e conciliação.
+
+Código-base da entrega: c57fbe8; workflow 39233392926. 105 testes passaram; autenticação por assinatura, consulta somente superadm e gravação somente serviço. O terminal confirmou agenda enabled e rotina ROTA PRO active. Evidência local em `../evidencias/cip-procfit-agenda-10-minutos.png`. Procedimento e dependências em `apps/cip-pro-360/ops/cip-procfit/README.md`.
+
 ## Atualização mais recente — voz confirmada e expansão Procfit
 
 Em 19/10/2026 o usuário confirmou que a gravação/interpretação de áudio no Telegram funcionou no Android. A IA já havia sido confirmada como habilitada com chave salva. Essa confirmação supera os registros anteriores de chave ausente e teste real pendente. Não registrar áudio nem credencial nesta memória.

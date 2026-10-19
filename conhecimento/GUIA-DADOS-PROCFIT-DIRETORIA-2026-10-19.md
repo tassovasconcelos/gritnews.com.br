@@ -1,5 +1,7 @@
 # CIP 360 — guia de dados Procfit e evolução da inteligência executiva
 
+**Decisão posterior do responsável:** mesma view de origem, destino direto no CIP e cadência financeira-alvo de dez minutos, com configuração/serviços próprios. Não encaminhar dados pelo ROTA PRO. Em verificação ao vivo em 19/10, a view ainda retornou o contrato antigo de 45 colunas; foi instalado verificador de metadados a cada dez minutos. A ingestão financeira aguarda origem ampliada, mapeamento e homologação. As referências horárias abaixo descrevem o legado, não a cadência solicitada para o CIP. Operação atual: `apps/cip-pro-360/ops/cip-procfit/README.md`.
+
 **Data:** 19/10/2026 · **Destinatários:** TI/Procfit, Controladoria, Comercial, Compras, Estoque, Logística e Diretoria.
 
 **Objetivo:** transformar os dados de todas as filiais da Shopping Prohospital e da Distribuidora Prohospital em decisões rápidas, explicáveis e acompanhadas até o resultado. Este documento é uma especificação para alinhamento e homologação; não comprova que os novos dados já foram liberados ou conectados.
