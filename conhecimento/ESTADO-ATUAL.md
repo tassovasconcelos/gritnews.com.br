@@ -1,5 +1,15 @@
 # CIP 360 — memória operacional
 
+## Atualização mais recente — voz confirmada e expansão Procfit
+
+Em 19/10/2026 o usuário confirmou que a gravação/interpretação de áudio no Telegram funcionou no Android. A IA já havia sido confirmada como habilitada com chave salva. Essa confirmação supera os registros anteriores de chave ausente e teste real pendente. Não registrar áudio nem credencial nesta memória.
+
+O usuário informou previsão de liberação, hoje, de dados de todas as filiais Shopping e Distribuidora na mesma view Procfit. Isso é informação de planejamento do usuário, não verificação de acesso ou cobertura. Foi preparado `GUIA-DADOS-PROCFIT-DIRETORIA-2026-10-19.md` e uma solicitação resumida em `SOLICITACAO-TI-PROCFIT-2026-10-19.md`.
+
+Gateway histórico recuperado: VPS/VPN, leitura SQL Server e envio horário para ROTA PRO, anteriormente voltado a locações/tombamentos. Registro de operação preservado em `historico/PROCFIT-GATEWAY-OPERACAO-REGISTRO.md`; não comprova saúde atual. O CIP deve ter contrato e autenticação próprios. Ampliação exige conferir chaves/grãos para não multiplicar vendas por lotes, correspondência empresa/filial, histórico, cancelamentos, lotes remanescentes e conciliação por unidade. Exportador CIP ainda exige quatro lojas e limites atuais de importação/transporte precisam de evolução para carga total.
+
+Prioridade acordada neste guia: acesso/dicionário/amostra → gateway CIP → vendas/estoque/aging → giro/preços/comercial → margem/caixa/serviço → execução assistida. Não prometer todas as análises com a mera liberação de colunas; 14 agentes precisam de ferramentas testadas e evidências, não apenas catálogo.
+
 ## Retomada e integração posterior em 19/10/2026
 
 Este bloco substitui os estados anteriores quando divergirem. Incorporado `origin/cip/main` commit `b816c0b`, que já publicou importação Procfit e relatórios no painel e bot: `erp-engine.mjs`, `erp-ui.mjs`, `erp/index.ts`, `telegram/erp-reports.mjs`, `schema/erp.sql` e `ERP-REPORTS.md`. Esse é o caminho integrado de relatórios. `operational-analytics.mjs` permanece um protótipo local de cálculo anterior; não ligar em paralelo nem manter duas fontes de números.

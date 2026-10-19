@@ -1,5 +1,7 @@
 # Procfit — contrato proposto para homologação com TI e Financeiro
 
+**Ampliação de 19/10/2026:** o pedido para todas as filiais, o gateway existente, o grão de cada conjunto, o histórico e os requisitos dos 14 especialistas estão no [guia de dados para a diretoria](../../conhecimento/GUIA-DADOS-PROCFIT-DIRETORIA-2026-10-19.md). Esse guia é especificação; não comprova liberação da view ou conexão homologada. O exportador abaixo ainda restringe a seleção a quatro lojas e deve ser adaptado antes de prometer cobertura integral.
+
 Estado: preparado; sem acesso ao ERP, sem execução no ambiente Prohospital e sem integração homologada. Nenhum número do simulador é dado real de ERP.
 
 ## Transporte e autorização
