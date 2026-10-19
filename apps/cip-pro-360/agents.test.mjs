@@ -1,9 +1,19 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {AGENTS,agentsFor,validWork,escapeHtml,COURSES} from './agents-data.mjs';
+import {AGENTS,agentsFor,coursesFor,validWork,escapeHtml,COURSES} from './agents-data.mjs';
 import {renderSquadPage} from './agents-ui.mjs';
 import {relevantPurchase,purchaseRecord,activeResults,awardedRecord,correlate,latestInSample,getJson} from './b2g-radar.mjs';
+test('executive role preserves historical identity and learning filters respect company and specialist',()=>{
+ assert.equal(AGENTS.find(a=>a.id==='estrategico').name,'RufasIA');
+ assert.equal(COURSES.length,14);
+ assert.ok(coursesFor('shopping_prohospital','estrategico','diretriz').some(c=>c.id==='diretoria'));
+ assert.ok(coursesFor('shopping_prohospital','estoque').some(c=>c.id==='estoque'));
+ assert.ok(!coursesFor('shopping_prohospital').some(c=>c.id==='b2g'));
+ assert.deepEqual(coursesFor('invalid'),[]);
+ assert.deepEqual(coursesFor('shopping_prohospital','b2g'),[]);
+ for(const agent of AGENTS)assert.ok(coursesFor(agent.companies[0],agent.id).length);
+});
 test('company catalogue excludes B2G for Shopping-only users and work rejects incorrect company',()=>{
  assert.equal(AGENTS.length,14);assert.equal(new Set(AGENTS.map(a=>a.id)).size,14);
  assert.ok(!agentsFor(['shopping_prohospital']).some(a=>a.id==='b2g'));
