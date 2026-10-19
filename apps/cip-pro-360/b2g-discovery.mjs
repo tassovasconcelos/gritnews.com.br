@@ -37,18 +37,31 @@ export function discoveryURL(input){const q=validateDiscovery(input);
  if(q.action==='discover_contracts')return PNCP+'/contratos?'+new URLSearchParams({dataInicial:q.start.replaceAll('-',''),dataFinal:q.end.replaceAll('-',''),pagina:q.page,tamanhoPagina:500,...(q.organ?{cnpjOrgao:q.organ}:{})});
  throw Error('invalid_action');
 }
-export const discoveryKey=s=>textKey(s).replace(/proc[\s-]*irur[\s-]*gica/g,'procirurgica').replace(/\bfawler\b/g,'fowler').replace(/\bcamas\b/g,'cama').replace(/\b(?:hospitalares|hospitalar)\b/g,'hospitalar').replace(/[^a-z0-9]+/g,' ').trim();
+export const discoveryKey=s=>textKey(s).replace(/proc[\s-]*irur[\s-]*gica/g,'procirurgica').replace(/\bfawler\b/g,'fowler').replace(/\bcamas\b/g,'cama').replace(/\bcateteres\b/g,'cateter').replace(/\bhidrofilic[ao]s?\b/g,'hidrofilico').replace(/\b(?:hospitalares|hospitalar)\b/g,'hospitalar').replace(/[^a-z0-9]+/g,' ').trim();
+export function familySearchQueries(product){
+ const key=discoveryKey(product),urinary=/\b(?:uretral|urinario|vesical|hidrofilico|nelaton|tiemann|comfortcath)\b/.test(key),other=/\b(?:periferico|central|venoso|intravenoso|hemodinamica|nasal|arterial|angioplastia|epidural)\b/.test(key);
+ if(!/\bcateter\b/.test(key)||other)return [product];
+ return urinary?['sonda trato urinario','sonda uretral',product]:[product,'sonda trato urinario','sonda uretral'];
+}
 export function productCorrespondence(row,product=''){
  const hay=' '+discoveryKey([row.description,row.detail,row.object,row.process,row.contract].join(' '))+' ';
  const terms=discoveryKey(product).replace(/\bbolsas\b/g,'bolsa').split(' ').filter(t=>t&&!['de','da','do','das','dos','para','p'].includes(t));
  const normalizedHay=hay.replace(/\bbolsas\b/g,'bolsa');
+ if(terms.includes('hidrofilico')&&/\b(?:nao hidrofilico|sem (?:revestimento )?hidrofilico)\b/.test(normalizedHay))return {matches:false,candidate:false,expanded:false,note:null};
+ const urinaryCatheter=terms.includes('cateter')&&/\b(?:sonda|cateter)\b/.test(normalizedHay)&&/\buretral\b/.test(normalizedHay)&&!/\b(?:periferico|central|venoso|intravenoso|hemodinamica|nasal|arterial|angioplastia|epidural)\b/.test(discoveryKey(product));
+ const missing=terms.filter(t=>!normalizedHay.includes(' '+t+' ')&&!(t==='cateter'&&urinaryCatheter));
+ if(urinaryCatheter){const pending=missing.length===1&&missing[0]==='hidrofilico'&&!/\b(?:nao hidrofilico|sem revestimento hidrofilico)\b/.test(normalizedHay);return {matches:missing.length===0,candidate:pending,technical_pending:pending?['Revestimento hidrofílico não comprovado nesta fonte']:[],expanded:true,note:pending?'Produto relacionado: sonda uretral da marca pesquisada. A fonte não comprova revestimento hidrofílico; lubrificação não comprova hidrofilia. Conferir ficha técnica e anexos.':'Correspondência ampliada: cateter descrito na fonte como sonda uretral. Conferir indicação, calibre, comprimento, ponta e revestimento; não certifica equivalência técnica.'};}
  const accessory=/^(?:adjuvante|placa|clipe?|fixador|pasta|cinto)\b/.test(discoveryKey(row.description));
  if(terms.includes('bolsa')&&accessory&&!terms.some(t=>/^(?:adjuvante|placa|clipe?|fixador|pasta|cinto)$/.test(t)))return {matches:false,expanded:false,note:null};
  const expanded=terms.includes('colostomia')&&!normalizedHay.includes(' colostomia ')&&/\bestomia\b/.test(normalizedHay)&&/\bintestinal\b/.test(normalizedHay)&&!/(?:aplicacao\s+)?urinaria|urostomia/.test(normalizedHay);
  return {matches:terms.every(t=>normalizedHay.includes(' '+t+' ')||(t==='colostomia'&&expanded)),expanded,note:expanded?'Correspondência ampliada: sistema para estomia de aplicação intestinal. Confirmar indicação, modelo, medidas e apresentação; não certifica equivalência técnica.':null};
 }
-export function discoveryMatch(row,{product='',brand='',state='',sphere='',supplier=''}={}){
- return (!supplier||row.supplier_id===supplier)&&(!state||row.state===state)&&(!sphere||row.sphere===sphere)&&productCorrespondence(row,product).matches&&(!brand||discoveryKey(row.brand).includes(discoveryKey(brand)));
+export function discoveryMatch(row,{product='',brand='',state='',sphere='',supplier='',allowRelated=false}={}){
+ const match=productCorrespondence(row,product);return (!supplier||row.supplier_id===supplier)&&(!state||row.state===state)&&(!sphere||row.sphere===sphere)&&(match.matches||allowRelated&&match.candidate===true)&&(!brand||discoveryKey(row.brand).includes(discoveryKey(brand)));
+}
+export function mergeMarketBatches(previous,next){
+ if(!previous)return next;const coverage=new Map(previous.coverage.map(c=>[String(c.code),c]));for(const c of next.coverage){const old=coverage.get(String(c.code));coverage.set(String(c.code),{...c,received:(old?.received||0)+c.received,pages:(old?.pages||0)+c.pages});}
+ const rows=[...new Map([...previous.rows,...next.rows].map(r=>[r.id,r])).values()];return {...next,rows,coverage:[...coverage.values()],received:[...coverage.values()].reduce((n,c)=>n+c.received,0),sources:[...new Map([...previous.sources,...next.sources].map(s=>[s.url,s])).values()],failures:next.failures,confirmed:rows.filter(r=>r.status==='award').length,partial:next.next_cursor.length>0||next.partial};
 }
 export function cearaRecord(r,source,collected_at){if(r.confidential===true||r.confidential==='true')return null;return {id:'ceara|'+r.isn_sic,status:'contract',description:r.descricao_objeto||'',object:r.descricao_justificativa||'',buyer:'Governo do Ceará · unidade '+(r.cod_gestora||''),state:'CE',sphere:'E',city:'',supplier:r.descricao_nome_credor||'',supplier_id:r.plain_cpf_cnpj_financiador||String(r.cpf_cnpj_financiador||'').replace(/\D/g,''),brand:null,price:null,quantity:null,total:Number(r.valor_contrato),date:r.data_assinatura?.slice(0,10),publication:r.data_publicacao_portal?.slice(0,10),source,collected_at,url:CEARA+'/'+r.isn_sic,contract:r.num_contrato,kind:r.descricao_tipo,process:r.num_spu,purchase_process:r.num_spu_licitacao,contract_status:r.descricao_situacao,publication_doe:r.data_publicacao_doe?.slice(0,10),evidence:[source]};}
 export function supplierCandidates(data){return data.resultado.filter(r=>r.tipoPessoa==='PJ'&&r.situacaoCompraItemResultadoId===1&&!r.dataCancelamentoPncp).map(r=>({purchase:String(r.idCompra),item:String(r.idCompraItem),date:String(r.dataResultadoPncp??'').slice(0,10),state:r.unidadeOrgaoUfSigla})).sort((a,b)=>b.date.localeCompare(a.date));}

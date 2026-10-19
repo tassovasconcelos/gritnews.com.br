@@ -6,6 +6,11 @@ const q={action:'discover_web',product:'cama',brand:'PROCIRURGICA',state:'SP',sp
 const url='https://www.transparencia.sp.gov.br/documento/123';
 const finding={title:'Cama hospitalar',description:'Aquisição de cama',brand:'PROCIRURGICA',supplier:'Empresa exemplo',supplier_id:null,state:'SP',sphere:'E',date:'2026-05-01',stage:'proposta',value_text:'Proposta de R$ 2.000',quote:'Cama hospitalar marca Procirurgica',url};
 function response(findings=[finding],sources=[{url}]){return {status:'completed',output:[{type:'web_search_call',status:'completed',action:{sources}},{type:'message',content:[{type:'output_text',text:JSON.stringify({limitations:'Amostra indexada; não comprova vitória.',findings})}]}]};}
+test('urethral web discovery retains coating uncertainty and never upgrades candidate to winner',()=>{
+ const f={...finding,title:'Sonda trato urinário',description:'Modelo uretral, lubrificada, 6 French',quote:'Sonda uretral lubrificada marca PROCIRURGICA'};
+ const d=parseWebResponse(response([f]),{...q,product:'cateter hidrofílico'});assert.equal(d.rows.length,1);assert.equal(d.rows[0].status,'document');assert.ok(d.rows[0].technical_pending.length);
+ assert.equal(parseWebResponse(response([{...f,description:'Cateter central venoso',quote:'Cateter central marca PROCIRURGICA'}]),{...q,product:'cateter uretral'}).rows.length,0);
+});
 test('web candidates share intestinal ostomy terminology without accepting urinary bags',()=>{
  const query={...q,product:'bolsa de colostomia'},base={...finding,title:'Sistema p/ estomia',description:'Aplicação intestinal, bolsa com base adesiva',quote:'Sistema p/ estomia de aplicação intestinal com bolsa'};
  const d=parseWebResponse(response([base]),query);assert.equal(d.rows.length,1);assert.equal(d.rows[0].status,'document');assert.ok(d.rows[0].match_note);

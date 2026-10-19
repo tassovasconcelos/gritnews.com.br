@@ -1,6 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {marketFamilies,requestMarketResearch,validateMarketQuery} from './b2g-market-search.mjs';
-import {discoveryMatch,productCorrespondence} from './b2g-discovery.mjs';
+import {discoveryMatch,productCorrespondence,mergeMarketBatches} from './b2g-discovery.mjs';
 const q={action:'discover_market',product:'cama',brand:'PROCIRURGICA',state:'',sphere:'',supplier:'',start:'2025-10-19',end:'2026-10-19'};
 const catalog=[{code:10,name:'Cama hospitalar',group:65,active:true},{code:11,name:'Cama hospitalar (Ver PDM: 10)',group:65,active:false}];
 const price={idCompra:'12345678901234567',idCompraItem:'1234567890123456700001',niFornecedor:'11111111000111',nomeFornecedor:'Outro fornecedor',precoUnitario:100,quantidade:2,dataResultado:'2026-01-01',descricaoItem:'Cama hospitalar',codigoItemCatalogo:123,marca:'PROCIRURGICA',siglaUnidadeFornecimento:'UN',estado:'SP',esfera:'E'};
@@ -22,8 +22,32 @@ test('brand results beyond the first page remain discoverable and municipality s
  assert.equal(d.received,501);assert.equal(d.rows.length,1);assert.equal(d.rows[0].city,'OLINDA');assert.equal(d.rows[0].sphere,'M');assert.equal(d.coverage[0].pages,2);assert.equal(d.partial,false);assert.equal(calls[0].state,'PE');assert.equal(calls[0].sphere,'M');
 });
 test('page cap reports partial coverage instead of claiming complete absence',async()=>{
- const d=await requestMarketResearch(q,{catalog:catalog.slice(0,1),official:async()=>({resultado:[{...price,marca:'OUTRA'}],totalRegistros:100,source:'https://dadosabertos.compras.gov.br/prices'})});
+ const d=await requestMarketResearch(q,{catalog:catalog.slice(0,1),official:async()=>({resultado:Array.from({length:500},()=>({...price,marca:'OUTRA'})),totalRegistros:3500,source:'https://dadosabertos.compras.gov.br/prices'})});
  assert.equal(d.coverage[0].pages,6);assert.equal(d.partial,true);assert.equal(d.rows.length,0);
+ assert.deepEqual(d.next_cursor,[{code:'10',page:7}]);
+});
+test('catheter discovery includes urinary nomenclature without ranking a laxative or guide as catheter',()=>{
+ const c=[{code:1,name:'Cateter periférico',active:true},{code:2,name:'Sonda trato urinário',active:true},{code:3,name:'Sonda uretral',active:false},{code:4,name:'Mucilóide hidrofílico de psyllium',active:true},{code:5,name:'Guia hidrofílico',active:true}];
+ for(const product of ['cateter','cateter hidrofílico']){const ids=marketFamilies(c,product).map(r=>r.code);assert.ok(ids.includes(2));assert.ok(!ids.includes(4));assert.ok(!ids.includes(5));}
+ assert.ok(!marketFamilies(c,'cateter periférico').some(r=>r.code===2));
+});
+test('urethral synonyms preserve technical uncertainty, explicit contradictions, type and dimensions',()=>{
+ const row={description:'Sonda trato urinário, modelo uretral, calibre 6 French, lubrificada',brand:'PROCIRURGICA'};
+ assert.equal(discoveryMatch(row,{product:'cateter',brand:'procirúrgica'}),true);
+ assert.equal(discoveryMatch(row,{product:'cateter hidrofílico'}),false);
+ assert.equal(discoveryMatch(row,{product:'cateter hidrofílico',allowRelated:true}),true);
+ assert.ok(productCorrespondence(row,'cateter hidrofílico').technical_pending.length);
+ for(const product of ['cateter periférico','cateter central','cateter hidrofílico 12 French'])assert.equal(discoveryMatch(row,{product,allowRelated:true}),false);
+ assert.equal(discoveryMatch({...row,description:row.description+' não hidrofílica'},{product:'cateter hidrofílico',allowRelated:true}),false);
+ assert.equal(discoveryMatch({...row,description:row.description+' revestimento hidrofílico'},{product:'cateter hidrofílico'}),true);
+});
+test('continuation reaches page seven, preserves state and existing results, rejects arbitrary cursor families',async()=>{
+ const input={...q,state:'SP',cursor:[{code:'10',page:7}]},calls=[];
+ const next=await requestMarketResearch(input,{catalog:catalog.slice(0,1),official:async i=>{calls.push(i);return i.action==='prices'?{resultado:[price],totalRegistros:3001,source:'https://dadosabertos.compras.gov.br/prices?page=7'}:{resultado:[],source:'https://dadosabertos.compras.gov.br/result'};}});
+ assert.equal(calls[0].page,7);assert.equal(calls[0].state,'SP');assert.equal(next.rows.length,1);assert.deepEqual(next.next_cursor,[]);
+ const merged=mergeMarketBatches({rows:[],coverage:[{code:10,received:3000,pages:6,total:3001,partial:true}],received:3000,sources:[],failures:[]},next);assert.equal(merged.received,3001);assert.equal(merged.coverage[0].pages,7);assert.equal(merged.rows.length,1);
+ await assert.rejects(requestMarketResearch({...input,cursor:[{code:'999',page:1}]},{catalog}),/invalid_query/);
+ assert.throws(()=>validateMarketQuery({...q,cursor:[{code:'10',page:0}]}));
 });
 test('catalog candidates include legacy references without a product-specific special case',()=>{assert.deepEqual(marketFamilies(catalog,'cama').map(r=>r.code),[10,11]);assert.throws(()=>validateMarketQuery({...q,product:''}));assert.throws(()=>validateMarketQuery({...q,action:'other'}));});
 test('searches national prices without supplier restriction and confirms only exact active results',async()=>{const calls=[];const d=await requestMarketResearch(q,{catalog,official:async input=>{calls.push(input);return input.action==='prices'?{resultado:input.code==='11'?[price]:[],source:'https://dadosabertos.compras.gov.br/prices',totalRegistros:input.code==='11'?1:0}:{resultado:[{idCompraItem:price.idCompraItem,niFornecedor:price.niFornecedor,situacaoCompraItemResultadoId:1,tipoPessoa:'PJ',valorUnitarioHomologado:100,quantidadeHomologada:2,valorTotalHomologado:200,numeroControlePNCPCompra:'07954480000179-1-000001/2025',dataResultadoPncp:'2026-01-01'}],source:'https://dadosabertos.compras.gov.br/result',collected_at:'2026-10-19'};}});assert.equal(d.confirmed,1);assert.equal(d.rows[0].status,'award');assert.equal(d.rows[0].supplier_id,'11111111000111');assert.equal(d.rows[0].total,200);assert.equal(calls[0].state,'');assert.ok(!('supplier' in calls[0]));});
