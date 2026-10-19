@@ -62,11 +62,26 @@ window.cipLogin=async e=>{
   if(btn)btn.disabled=false;
  }
 };
+let recoveryBusy=false;
 window.cipResetPassword=async()=>{
- const email=$("email")?.value?.trim();
+ if(recoveryBusy)return;
+ const email=$("email")?.value?.trim().toLowerCase();
  if(!email){note("Informe primeiro seu e-mail.");return;}
- try { const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:"https://cip.gritnews.com.br/recuperar.html"});if(error)throw error;note("Se o endereço estiver habilitado, receberá instruções de recuperação GRIT."); }
- catch(e){note("Solicitação indisponível. Contate o administrador.");}
+ const button=$("recoverAccess");recoveryBusy=true;
+ if(button){button.disabled=true;button.textContent="Solicitando recuperação…";}
+ let cooldown=false;
+ try {
+  const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:"https://cip.gritnews.com.br/recuperar.html"});
+  if(error)throw error;
+  cooldown=true;note("Solicitação de recuperação GRIT aceita. Confira o e-mail mais recente, inclusive Spam. Aguarde 60 segundos antes de pedir outro link.");
+ }catch(e){
+  if(e?.status===429||["over_email_send_rate_limit","over_request_rate_limit"].includes(e?.code)){
+   cooldown=true;note("Aguarde 60 segundos: o servidor limitou os pedidos de recuperação em sequência. Confira o e-mail GRIT mais recente, inclusive Spam. Esse limite não bloqueia sua conta.");
+  }else{note("Recuperação indisponível no momento. Tente novamente mais tarde; nenhum envio foi confirmado.");}
+ }finally{
+  const release=()=>{recoveryBusy=false;if(button){button.disabled=false;button.textContent="Recuperar acesso por e-mail →";}};
+  if(cooldown){if(button)button.textContent="Novo pedido disponível em 60 segundos";setTimeout(release,60000);}else release();
+ }
 };
 window.cipSignOut=async()=>{await supabase.auth.signOut();toLogin();note("Sessão encerrada.");};
 async function reloadMilestones(){

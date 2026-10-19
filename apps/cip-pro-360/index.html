@@ -78,7 +78,7 @@ html{scroll-behavior:smooth}
  <form id="loginForm" class="fields"><label>E-mail<input id="email" type="email" autocomplete="username" required placeholder="seu.email@empresa.com.br"></label><label>Senha<input id="password" type="password" autocomplete="current-password" minlength="8" required placeholder="••••••••"></label><button id="togglePassword" class="link" type="button" aria-pressed="false" onclick="window.cipTogglePassword?.()">Mostrar senha</button><button class="btn" type="submit">Acessar ambiente seguro →</button></form>
  <div class="form-message" id="loginMessage" aria-live="polite"></div>
  <div class="notice">Acesso restrito a usuários autorizados. O CIP utiliza a autenticação corporativa já existente na infraestrutura GRIT; suas permissões são independentes por empresa.</div>
- <div class="row"><button class="link" onclick="window.cipResetPassword?.()" type="button">Recuperar acesso por e-mail →</button><span class="social">Ambiente seguro</span></div>
+ <div class="row"><button id="recoverAccess" class="link" onclick="window.cipResetPassword?.()" type="button">Recuperar acesso por e-mail →</button><span class="social">Ambiente seguro</span></div>
  </div></div>
 </section>
 <div id="interface" class="app hide">
@@ -158,5 +158,5 @@ function navigate(page){
 document.querySelectorAll('[data-route]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.route)));
 document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();window.cipLogin?.(e)});
 </script>
-<script type="module" src="./cip-auth.js?v=grit-login-20261018"></script>
+<script type="module" src="./cip-auth.js?v=grit-recovery-cooldown-20261018"></script>
 </body></html>
