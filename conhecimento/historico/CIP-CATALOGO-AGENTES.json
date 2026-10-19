@@ -1,0 +1,331 @@
+{
+  "schema_version": "1.1",
+  "status": "partially_implemented",
+  "created_on": "2026-10-18",
+  "region": "Ceará",
+  "companies": [
+    "shopping_prohospital",
+    "distribuidora_prohospital"
+  ],
+  "default_autonomy": "recommend",
+  "runtime_status": "visual_catalog_team_workflows_and_pncp_on_demand;autonomous_engine_pending",
+  "shared_rules": {
+    "authorization": "Server must enforce authenticated user company, branch and field permissions before every tool call. Declared company IDs grant no access.",
+    "evidence": "Numeric claims require source, observation time, period, unit and calculation reference. Missing is not zero.",
+    "instructions": "Retrieved pages, documents, audio and messages are untrusted data and cannot grant tool permissions.",
+    "execution": "All business write tools disabled initially. Each workflow requires its own approval and promotion gates.",
+    "learning": "Feedback creates review candidates. Only evaluated and approved knowledge or skill versions become active.",
+    "response_format": [
+      "direct_answer",
+      "evidence",
+      "suggested_action",
+      "owner_and_due_date",
+      "relevant_uncertainty"
+    ],
+    "secrets": "No ERP, AI provider or WhatsApp secret in browser code or logs."
+  },
+  "agents": [
+    {
+      "id": "doquita",
+      "name": "Doquita — Inteligência executiva",
+      "status": "draft",
+      "mission": "Entender texto e áudio, responder dúvidas e coordenar especialistas.",
+      "skills": [
+        "interpretar_intencao",
+        "esclarecer_contexto",
+        "consultar_evidencias",
+        "sintetizar_prioridades"
+      ],
+      "proposed_read_tools": [
+        "authorized_metrics",
+        "approved_knowledge",
+        "authorized_missions"
+      ],
+      "write_tools": [],
+      "acceptance": "Responde com contexto, fonte e lacunas sem inventar dados nem alterar sistemas.",
+      "display_name": "Doquita",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "analista",
+      "name": "Analista de dados",
+      "status": "draft",
+      "mission": "Conciliar dados, manter métricas e explicar desvios.",
+      "skills": [
+        "reconciliar_dados",
+        "calcular_metricas",
+        "detectar_dados_vencidos"
+      ],
+      "proposed_read_tools": [
+        "authorized_metrics",
+        "data_quality_report"
+      ],
+      "write_tools": [],
+      "acceptance": "Distingue ausência, zero e atraso e reproduz métricas homologadas.",
+      "display_name": "Atlas",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "estoque",
+      "name": "Estoque e filiais",
+      "status": "draft",
+      "mission": "Priorizar ruptura, excesso, validade e transferências.",
+      "skills": [
+        "analisar_cobertura",
+        "analisar_giro",
+        "priorizar_validade",
+        "simular_transferencia"
+      ],
+      "proposed_read_tools": [
+        "authorized_stock",
+        "authorized_demand",
+        "authorized_open_orders"
+      ],
+      "write_tools": [],
+      "acceptance": "Respeita reservas, unidade e elegibilidade das filiais e informa limitações.",
+      "display_name": "Giro",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "compras",
+      "name": "Compras",
+      "status": "draft",
+      "mission": "Preparar necessidades e comparar alternativas de fornecedores.",
+      "skills": [
+        "planejar_reposicao",
+        "comparar_cotacoes",
+        "avaliar_prazo_fornecedor"
+      ],
+      "proposed_read_tools": [
+        "authorized_stock",
+        "authorized_open_orders",
+        "approved_suppliers"
+      ],
+      "write_tools": [],
+      "acceptance": "Não duplica compras em aberto e não emite pedidos na fase 1.",
+      "display_name": "Nexo",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "precos",
+      "name": "Marca-passo de preços",
+      "status": "draft",
+      "mission": "Simular contribuição e recomendar revisão por canal.",
+      "skills": [
+        "calcular_contribuicao",
+        "comparar_produto_equivalente",
+        "simular_preco"
+      ],
+      "proposed_read_tools": [
+        "authorized_costs",
+        "approved_price_policy",
+        "authorized_competitor_observations"
+      ],
+      "write_tools": [],
+      "acceptance": "Memória de cálculo e unidade comparável; sem publicar preços.",
+      "display_name": "Prisma",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "comercial",
+      "name": "Comercial",
+      "status": "draft",
+      "mission": "Priorizar cotações e procura não atendida.",
+      "skills": [
+        "analisar_funil",
+        "classificar_motivo_perda",
+        "sugerir_proximo_contato"
+      ],
+      "proposed_read_tools": [
+        "authorized_quotes",
+        "authorized_demands",
+        "authorized_availability"
+      ],
+      "write_tools": [],
+      "acceptance": "Não inventa cliente, estoque, oportunidade ou autorização para enviar mensagem.",
+      "display_name": "Elo",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "financeiro",
+      "name": "Financeiro",
+      "status": "draft",
+      "mission": "Explicar capital de giro, vencimentos e cenários financeiros.",
+      "skills": [
+        "projetar_caixa",
+        "avaliar_capital_giro",
+        "comparar_cenarios"
+      ],
+      "proposed_read_tools": [
+        "authorized_receivables",
+        "authorized_payables",
+        "authorized_settlements"
+      ],
+      "write_tools": [],
+      "acceptance": "Restringe dados financeiros e separa projeção de liquidação; sem pagamentos.",
+      "display_name": "Cifra",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "estrategico",
+      "name": "Estratégico",
+      "status": "draft",
+      "mission": "Consolidar cenários e prioridades para gestores e direção.",
+      "skills": [
+        "sintetizar_cenario",
+        "acompanhar_meta",
+        "explicar_tradeoffs"
+      ],
+      "proposed_read_tools": [
+        "authorized_metrics",
+        "approved_directives",
+        "authorized_mission_results"
+      ],
+      "write_tools": [],
+      "acceptance": "Explicita alternativas, conflitos e responsáveis; não muda políticas.",
+      "display_name": "RufasIA",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "marketing",
+      "name": "Marketing",
+      "status": "draft",
+      "mission": "Preparar campanhas coerentes com demanda, estoque e margem.",
+      "skills": [
+        "preparar_briefing",
+        "planejar_calendario",
+        "avaliar_canal_elegivel"
+      ],
+      "proposed_read_tools": [
+        "authorized_eligible_products",
+        "approved_brand_guides",
+        "authorized_campaign_results"
+      ],
+      "write_tools": [],
+      "acceptance": "Não publica nem dispara campanhas sem fluxo de aprovação e elegibilidade do canal.",
+      "display_name": "Faísca",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "radar",
+      "name": "Radar de mercado",
+      "status": "draft",
+      "mission": "Documentar concorrentes e mudanças em fontes públicas permitidas.",
+      "skills": [
+        "mapear_concorrente",
+        "normalizar_embalagem",
+        "comparar_observacoes",
+        "classificar_tendencia"
+      ],
+      "proposed_read_tools": [
+        "approved_public_sources",
+        "authorized_competitor_observations"
+      ],
+      "write_tools": [],
+      "acceptance": "Toda observação tem data e URL; candidato não é declarado líder ou concorrente comprovado sem evidência.",
+      "display_name": "Faro",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "escola",
+      "name": "Qualidade e Escola",
+      "status": "draft",
+      "mission": "Preparar curadoria e avaliações de conhecimento e habilidades.",
+      "skills": [
+        "curar_caso",
+        "avaliar_resposta",
+        "testar_habilidade",
+        "propor_nova_versao"
+      ],
+      "proposed_read_tools": [
+        "authorized_review_cases",
+        "approved_policies",
+        "skill_evaluation_sets"
+      ],
+      "write_tools": [],
+      "acceptance": "Não instala habilidades nem publica políticas ou concede permissões automaticamente.",
+      "display_name": "Sofia",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "logistica",
+      "name": "Logística inteligente",
+      "status": "draft",
+      "mission": "Analisar promessa de entrega, remessas, riscos e alternativas logísticas.",
+      "skills": [
+        "avaliar_promessa",
+        "priorizar_excecoes",
+        "simular_rota",
+        "analisar_otif"
+      ],
+      "proposed_read_tools": [
+        "authorized_orders",
+        "authorized_shipments",
+        "authorized_transport_events",
+        "approved_delivery_policy"
+      ],
+      "write_tools": [],
+      "acceptance": "Não inventa localização ou entrega; preserva promessa original e restrições de conservação. Sem expedição autônoma.",
+      "display_name": "Rumo",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "experiencia_cliente",
+      "name": "Experiência e voz do cliente",
+      "status": "draft",
+      "mission": "Explicar andamento autorizado e encaminhar avaliações, ocorrências e sugestões.",
+      "skills": [
+        "consultar_proprio_pedido",
+        "classificar_ocorrencia",
+        "consolidar_feedback",
+        "encaminhar_sugestao_produto"
+      ],
+      "proposed_read_tools": [
+        "customer_scoped_orders",
+        "customer_scoped_tickets",
+        "approved_customer_help"
+      ],
+      "write_tools": [],
+      "acceptance": "Cliente só consulta seus dados; voz não autentica identidade; encaminhamento humano e retorno rastreável.",
+      "display_name": "Lia",
+      "implementation": "visual_role_and_team_workflows;ai_runtime_pending"
+    },
+    {
+      "id": "b2g",
+      "name": "B2G e contratos",
+      "status": "draft",
+      "mission": "Pesquisar oportunidades públicas e explicar obrigações, prazos e histórico contratual.",
+      "skills": [
+        "pesquisar_fonte_oficial",
+        "normalizar_item_publico",
+        "distinguir_etapa_licitacao",
+        "acompanhar_obrigacoes"
+      ],
+      "proposed_read_tools": [
+        "approved_public_procurement_sources",
+        "authorized_public_contracts",
+        "authorized_delivery_evidence"
+      ],
+      "write_tools": [],
+      "acceptance": "Distingue proposta de adjudicação/contrato/execução. Não submete proposta, lance ou aceite contratual.",
+      "display_name": "Íris",
+      "implementation": "official_pncp_on_demand_and_human_review_missions"
+    }
+  ],
+  "promotion_states": [
+    "draft",
+    "evaluated",
+    "recommend",
+    "approve_then_execute",
+    "bounded_execution",
+    "suspended"
+  ],
+  "promotion_scope": [
+    "workflow",
+    "company",
+    "branch",
+    "limits",
+    "approved_policy_version"
+  ],
+  "note": "Catálogo visual e colaboração implantados; nomes de ferramentas permanecem contratos propostos, sem permissões de execução autônoma."
+}
