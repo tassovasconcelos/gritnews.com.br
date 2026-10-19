@@ -36,3 +36,9 @@ As views abaixo são interfaces propostas e ainda não existem de forma comprova
 ## Entrega disponível
 
 O exportador gera um snapshot JSON e o último resultado de conexão local. Não envia dados pela internet, não concede acessos no SQL Server e não modifica o ERP. Importação automática no CIP será habilitada após validar o contrato e o destino dedicado.
+
+## Entrada manual para homologação — implementada em 19/10
+
+O módulo **Procfit & relatórios** recebe JSON/CSV como rascunho e libera uma base de referência apenas após conciliação humana. Não é conector automático nem homologação do ERP. Veja `ERP-REPORTS.md` para contrato de colunas, limites, precisão, escopo parcial, aprovação e comandos do Telegram.
+
+A view opcional de lotes `cip.vw_inventory_lots` é proposta e depende da TI: `company_id, store_id, sku, quantity_remaining_physical, average_cost, stock_value, lot_id, original_receipt_date, last_positive_sale_date`. A data original e o saldo remanescente precisam ser validados; não substitua por idade média nem última venda. O exportador tem parâmetros de datas e o switch `IncludeLotAging`, ainda não executados no ambiente Procfit.

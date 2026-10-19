@@ -1,3 +1,4 @@
+import {erpFrame,mountERP} from './erp-ui.mjs';
 import {processFrame,mountProcesses} from './process-ui.mjs';
 import {botFrame,mountBot} from './bot-ui.mjs';
 // CIP PRO 360° authentication and business data client.
@@ -17,6 +18,7 @@ window.cipRenderSquad=page=>renderSquadPage(page);
 window.cipRenderAdmin=()=>adminFrame();
 window.cipRenderProcesses=()=>processFrame();
 window.cipRenderBot=()=>botFrame();
+window.cipRenderERP=()=>erpFrame();
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g"] };
 const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -34,7 +36,7 @@ async function enter(){
     if(m.error)throw m.error;
     companies=new Set((m.data||[]).map(x=>x.company_id));
   }
-  const allowedRoutes=["inicio","cronograma","doquita","quartel","escola","processos","mensageiro",...(profile.role==="superadm"?["integracoes"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
+  const allowedRoutes=["inicio","cronograma","doquita","quartel","escola","processos","mensageiro",...(profile.role==="superadm"?["integracoes","procfit"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
   document.querySelectorAll(".whoami").forEach(el=>el.textContent=user.email+" · "+profile.role);
@@ -265,6 +267,7 @@ window.cipLoadPage=(page)=>{
  if(page==="integracoes"&&profile?.role==="superadm")mountAdmin({db:supabase,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==='processos'&&window.cipAuth?.allowedRoutes?.includes(page))mountProcesses({db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==='mensageiro'&&window.cipAuth?.allowedRoutes?.includes(page))mountBot({db:supabase,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
+ if(page==='procfit'&&profile?.role==='superadm')mountERP({db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==="doquita")loadDoquita();
  if(page==="cronograma")reloadMilestones();
  if(page==="cotacoes")reloadQuoteRows();
