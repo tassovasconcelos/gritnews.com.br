@@ -2,7 +2,7 @@
 
 ## Evolução mais recente — Radar B2G nacional por produto
 
-Recuperada a atualização remota `e7ef991`: acesso da diretoria pelo Telegram e Marca-passo por contribuição (`PLATFORM-EVOLUTION.md`). A confirmação anterior de voz funcional permanece válida; não confundir a ressalva de testes daquela release com revogação da chave ou da confirmação do usuário.
+Recuperadas as atualizações remotas `e7ef991` e `fe53a63` (prorrogação pelo superadm de convites em uma hora): acesso da diretoria pelo Telegram e Marca-passo por contribuição (`PLATFORM-EVOLUTION.md`). A confirmação anterior de voz funcional permanece válida; não confundir a ressalva de testes daquela release com revogação da chave ou da confirmação do usuário.
 
 Nova implementação B2G em `b2g-research.mjs`/`b2g-research-ui.mjs`, serviço `cip-b2g`, índice público de 20.443 famílias PDM. Pesquisa por família/CATMAT, Brasil ou UF, período, filtro de marca/empresa nas páginas carregadas, detalhe de produto/embalagem/preço/fornecedor, conferência de vencedor/porte no resultado e evolução mensal separada por produto/embalagem/marca. `B2G-PRODUCT-INTELLIGENCE.md` registra uso, fontes, limites e próximos incrementos.
 

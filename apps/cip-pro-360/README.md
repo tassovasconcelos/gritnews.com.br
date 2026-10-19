@@ -79,3 +79,7 @@ Diretores consultam bases aprovadas nas empresas autorizadas pelo CIP e pelo Tel
 ### Prorrogar convites
 
 Em Integrações & acessos, o superadm pode prorrogar convites prontos por mais uma hora. Válidos: uma hora adicional sobre o vencimento atual. Vencidos: uma hora a partir da operação no servidor. Aceitos ou revogados não podem ser prorrogados. O link CIP é preservado e a alteração de prazo é registrada atomicamente no histórico. A prorrogação não renova o token independente de autenticação inicial do provedor; se ele também expirou, usar Preparar novo link. Nenhum convite real foi prorrogado automaticamente nesta implantação.
+
+## Radar B2G nacional por produto
+
+Pesquisa oficial por família PDM/CATMAT, Brasil/UF, período e filtros de marca/fornecedor nas páginas carregadas. Referências distinguem vencedor conferido no PNCP, porte e datas de origem; histórico mensal separa produto, embalagem e marca. Leia `B2G-PRODUCT-INTELLIGENCE.md` para uso, cobertura e limitações.
