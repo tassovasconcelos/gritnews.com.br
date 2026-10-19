@@ -12,7 +12,7 @@
 (function(){
 'use strict';
 const BASE='https://pcrwtoddavpvkaxwtstc.supabase.co';
-const AUTH_BASE='https://pvldaqxblirmgoixselx.supabase.co';
+const AUTH_BASE=BASE; // Mesmo projeto do GRIT Radar 360 e de suas permissões
 const KEY='sb_publishable_FWtxwRlLvr3NiPmimRq9gw_3VIJ3lxh';
 const END=BASE+'/functions/v1/link-uniao-surveys';
 const DASH='/admin';
@@ -29,7 +29,7 @@ busy($('enter'),true);msg('Conferindo credenciais e permissões…','success');
 try{
  const res=await fetch(AUTH_BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY},body:JSON.stringify({email,password})});
  const body=await res.json().catch(()=>({}));
- if(!res.ok||!body.access_token)throw new Error(res.status===400?'Senha incorreta para esta conta. Use Recuperar por e-mail.':(res.status===429?'Muitas tentativas. Aguarde e utilize recuperação de senha.':'Falha na autenticação (HTTP '+res.status+').'));
+ if(!res.ok||!body.access_token)throw new Error(res.status===400?'Não foi possível autenticar: confira a senha da conta GRIT neste Supabase.':(res.status===429?'Muitas tentativas. Tente novamente depois.':'Falha de autenticação no Supabase (HTTP '+res.status+').'));
  const auth=await fetch(END,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+body.access_token},body:JSON.stringify({action:'admin_status'})});
  const a=await auth.json().catch(()=>({}));
  if(!auth.ok||!a.ok)throw new Error(auth.status===403?'Esta conta está autenticada, mas não possui autorização administrativa GRIT.':'Acesso autenticado, mas o painel não conseguiu consultar a API (HTTP '+auth.status+').');
