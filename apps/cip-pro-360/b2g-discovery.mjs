@@ -38,9 +38,15 @@ export function discoveryURL(input){const q=validateDiscovery(input);
  throw Error('invalid_action');
 }
 export const discoveryKey=s=>textKey(s).replace(/proc[\s-]*irur[\s-]*gica/g,'procirurgica').replace(/\bfawler\b/g,'fowler').replace(/\bcamas\b/g,'cama').replace(/\b(?:hospitalares|hospitalar)\b/g,'hospitalar').replace(/[^a-z0-9]+/g,' ').trim();
+export function productCorrespondence(row,product=''){
+ const hay=' '+discoveryKey([row.description,row.detail,row.object,row.process,row.contract].join(' '))+' ';
+ const terms=discoveryKey(product).replace(/\bbolsas\b/g,'bolsa').split(' ').filter(t=>t&&!['de','da','do','das','dos','para','p'].includes(t));
+ const normalizedHay=hay.replace(/\bbolsas\b/g,'bolsa');
+ const expanded=terms.includes('colostomia')&&!normalizedHay.includes(' colostomia ')&&/\bestomia\b/.test(normalizedHay)&&/\bintestinal\b/.test(normalizedHay)&&!/(?:aplicacao\s+)?urinaria|urostomia/.test(normalizedHay);
+ return {matches:terms.every(t=>normalizedHay.includes(' '+t+' ')||(t==='colostomia'&&expanded)),expanded,note:expanded?'Correspondência ampliada: sistema para estomia de aplicação intestinal. Confirmar indicação, modelo, medidas e apresentação; não certifica equivalência técnica.':null};
+}
 export function discoveryMatch(row,{product='',brand='',state='',sphere='',supplier=''}={}){
- const hay=' '+discoveryKey([row.description,row.detail,row.object,row.process,row.contract].join(' '))+' ',terms=discoveryKey(product).split(' ').filter(Boolean);
- return (!supplier||row.supplier_id===supplier)&&(!state||row.state===state)&&(!sphere||row.sphere===sphere)&&terms.every(t=>hay.includes(' '+t+' '))&&(!brand||discoveryKey(row.brand).includes(discoveryKey(brand)));
+ return (!supplier||row.supplier_id===supplier)&&(!state||row.state===state)&&(!sphere||row.sphere===sphere)&&productCorrespondence(row,product).matches&&(!brand||discoveryKey(row.brand).includes(discoveryKey(brand)));
 }
 export function cearaRecord(r,source,collected_at){if(r.confidential===true||r.confidential==='true')return null;return {id:'ceara|'+r.isn_sic,status:'contract',description:r.descricao_objeto||'',object:r.descricao_justificativa||'',buyer:'Governo do Ceará · unidade '+(r.cod_gestora||''),state:'CE',sphere:'E',city:'',supplier:r.descricao_nome_credor||'',supplier_id:r.plain_cpf_cnpj_financiador||String(r.cpf_cnpj_financiador||'').replace(/\D/g,''),brand:null,price:null,quantity:null,total:Number(r.valor_contrato),date:r.data_assinatura?.slice(0,10),publication:r.data_publicacao_portal?.slice(0,10),source,collected_at,url:CEARA+'/'+r.isn_sic,contract:r.num_contrato,kind:r.descricao_tipo,process:r.num_spu,purchase_process:r.num_spu_licitacao,contract_status:r.descricao_situacao,publication_doe:r.data_publicacao_doe?.slice(0,10),evidence:[source]};}
 export function supplierCandidates(data){return data.resultado.filter(r=>r.tipoPessoa==='PJ'&&r.situacaoCompraItemResultadoId===1&&!r.dataCancelamentoPncp).map(r=>({purchase:String(r.idCompra),item:String(r.idCompraItem),date:String(r.dataResultadoPncp??'').slice(0,10),state:r.unidadeOrgaoUfSigla})).sort((a,b)=>b.date.localeCompare(a.date));}
