@@ -7,6 +7,8 @@ export function interpret(text){
  const pair=text.trim().match(/^\/vincular\s+([a-f0-9]{64})$/i);if(pair)return {kind:'pair',code:pair[1].toLowerCase()};
  if(/^\/(sair|revogar)(?:\s|$)/.test(q))return {kind:'revoke'};
  if(/^\/(empresas|empresa)(?:\s|$)/.test(q)||/escolher empresa|trocar empresa/.test(q))return {kind:'companies'};
+ if(/^(?:\/(?:detalhes|calculo)|detalhar|detalhes|detalhe|ver detalhes|memoria de calculo|como calculou|como chegou nesse valor)[.!? ]*$/.test(q))return {kind:'report_followup',detailed:true};
+ if(/^(?:\/curto|resumir|mais curto|mais objetivo|ver resumo)[.!? ]*$/.test(q))return {kind:'report_followup',detailed:false};
  if(/^\/(menu|inicio|start|ajuda)(?:\s|$)/.test(q))return {kind:'help'};
  if(/^\/rotina(?:\s|$)/.test(q))return {kind:'stock_routine',enabled:q==='\/rotina ativar'?true:q==='\/rotina desativar'?false:null};
  if(/\b(alterar|excluir|pagar|comprar|enviar campanha|mudar preco)\b/.test(q))return {kind:'blocked'};

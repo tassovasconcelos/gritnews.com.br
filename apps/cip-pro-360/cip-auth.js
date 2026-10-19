@@ -50,6 +50,15 @@ async function enter(){
   document.querySelector('[data-presentation-menu]')?.classList.toggle('hide',!PRESENTATION_ROLES.includes(profile.role));
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
   document.querySelectorAll(".whoami").forEach(el=>el.textContent=user.email+" · "+profile.role);
+  const chip=document.getElementById('procfitConnectionChip');
+  if(chip){chip.textContent='PROCFIT · PARCIAL';chip.title='Cadastro de produtos integrado; vendas e saldos comerciais automáticos pendentes.';}
+  if(profile.role==='superadm'){
+    const actor=user.id;
+    supabase.from('cip_procfit_catalog_batches').select('captured_at').eq('active',true).maybeSingle().then(({data,error})=>{
+      if(user?.id!==actor||!chip)return;
+      if(!error&&data){chip.textContent='PROCFIT · CADASTRO';chip.title='Cadastro integrado · captura '+new Date(data.captured_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})+' (Brasília). Vendas e saldos automáticos pendentes.';}
+    }).catch(()=>{});
+  }
   window.showPreview();
   window.navigate("inicio");
   return true;

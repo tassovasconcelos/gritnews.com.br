@@ -1,3 +1,4 @@
+import {renderBrief,resultMenu,navigationMenu,rememberReport,restoreReport} from './response-style.mjs';
 import {REFERENCE_KINDS,referenceArgs,renderReference} from './stock-reference.mjs';
 import {checkAIReadiness,aiState} from './ai-readiness.mjs';
 import {ERP_KINDS} from './erp-reports.mjs';
@@ -5,7 +6,7 @@ import {renderExecutive,renderShoppingPosition} from './executive-reports.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {configureBot,telegramApi,BOT_COMMANDS} from './setup.mjs';
 import {classify,transcribe,validAIKey} from './ai.mjs';
-import {parseUpdate,menu,companyMenu,companyIn,COMPANY_NAMES} from './conversation.mjs';
+import {parseUpdate,menu,moreMenu,companyMenu,companyIn,COMPANY_NAMES} from './conversation.mjs';
 import {interpret,HELP} from './intents.mjs';
 const url=Deno.env.get('SUPABASE_URL')!;
 const db=createClient(url,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -41,11 +42,11 @@ async function stockReference(user:string,chat:string,company:string,intent:any,
  const legacy=await db.rpc('cip_bot_stock_reference',{p_telegram:user,p_chat:chat,p_company:company,...args});if(legacy.error)throw Error('stock_reference');return legacy.data;
 }
 function render(data:any,intent:any){
- const header=`Doquita · ${companies[data.company]??'CIP'}\nConsulta: ${new Date(data.generated_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})} (Brasília)\nFonte: cadastro CIP atual\n\n`;
- if(intent.kind==='knowledge')return header+(data.knowledge?.length?data.knowledge.map((m:any)=>`${m.title}\nLocalizador: ${m.locator??'Documento'}\nExtração: ${m.date}\n${m.content}`).join('\n\n'):'Nenhum trecho aprovado, extraído e vigente encontrado para essa busca. Tente /conhecimento seguido de um termo específico.')+'\n\nTrechos de referência, sem síntese gerada por IA. Confira a orientação completa na Escola: https://cip.gritnews.com.br/';
+ const header=`${companies[data.company]??'CIP'} · cadastro atual\n\n`;
+ if(intent.kind==='knowledge')return header+(data.knowledge?.length?data.knowledge.slice(0,2).map((m:any)=>`${m.title}\n${String(m.content).slice(0,220)}${String(m.content).length>220?'…':''}`).join('\n\n'):'Nenhum trecho aprovado, extraído e vigente encontrado para essa busca. Tente /conhecimento seguido de um termo específico.')+'\n\nTrechos aprovados. Orientação completa na Escola: https://cip.gritnews.com.br/';
  if(intent.kind==='processes')return header+`${data.processes} mapas salvos. O desenho e a simulação estão em Processos vivos: https://cip.gritnews.com.br/`;
  const labels:Record<string,string>={queued:'Na fila',in_progress:'Em andamento pelo time',review:'Em revisão',done:'Concluídas pelo time',cancelled:'Canceladas'};
- return header+'Missões cadastradas (todos os períodos):\n'+Object.entries(labels).map(([k,v])=>`${v}: ${Number(data.missions?.[k]??0)}`).join('\n')+(intent.kind==='summary'?`\n\nMapas de processos: ${data.processes}\nMateriais aprovados dentro da revisão: ${data.materials}`:'')+'\n\nEstados registrados pelo time; não comprovam execução autônoma. Estoque de referência disponível: /bases, /cd, /lojas e /produto. Vendas realizadas dependem de carga conciliada. https://cip.gritnews.com.br/';
+ return header+'Missões cadastradas (todos os períodos):\n'+Object.entries(labels).map(([k,v])=>`${v}: ${Number(data.missions?.[k]??0)}`).join('\n')+(intent.kind==='summary'?`\n\nMapas de processos: ${data.processes}\nMateriais aprovados dentro da revisão: ${data.materials}`:'')+'\n\nEstados registrados pelo time. Detalhes no CIP: https://cip.gritnews.com.br/';
 }
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});if(req.method!=='POST')return reply(405,{error:'method_not_allowed'});
@@ -57,7 +58,7 @@ Deno.serve(async(req:Request)=>{
   let sent=0,failed=0;for(const target of claims.data??[]){try{
    const state=await db.rpc('cip_bot_stock_subscribe',{p_telegram:target.telegram_id,p_chat:target.chat_id,p_enabled:null});if(state.error||state.data?.enabled!==true)throw Error('subscription_inactive');
    const reference=await stockReference(target.telegram_id,target.chat_id,'shopping_prohospital',{kind:'stock_priorities'});
-   await send(target.chat_id,'Briefing diário da Shopping · referências disponíveis\nUse /rotina desativar para interromper.\n\n'+(reference.source_kind==='shopping_position'?renderShoppingPosition(reference,'stock_priorities'):renderReference(reference)),cfg.token,menu(['shopping_prohospital']));
+   await send(target.chat_id,'Briefing diário da Shopping · referências disponíveis\nUse /rotina desativar para interromper.\n\n'+renderBrief([{company:'shopping_prohospital',reference}],'stock_priorities'),cfg.token,navigationMenu());
    await db.rpc('cip_bot_stock_daily_finish',{p_telegram:target.telegram_id,p_success:true});sent++;
   }catch{await db.rpc('cip_bot_stock_daily_finish',{p_telegram:target.telegram_id,p_success:false});failed++;}}
   return reply(200,{sent,failed});
@@ -101,7 +102,7 @@ Deno.serve(async(req:Request)=>{
   const claim=await db.rpc('cip_bot_claim',{p_update:message.update_id,p_telegram:message.user});if(claim.error)return reply(503,{error:'queue_unavailable'});
   if(['done','limited','exhausted'].includes(claim.data))return reply(200,{accepted:true});if(claim.data!=='claimed')return reply(503,{error:'retry_later'});
   if(message.callback){try{await fetch(`https://api.telegram.org/bot${cfg.token}/answerCallbackQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callback_query_id:message.callback}),signal:AbortSignal.timeout(5000)});}catch{}}
-  let intent:any=message.intent??interpret(message.text),text='',keyboard:any=null;
+  let intent:any=message.intent??interpret(message.text),text='',keyboard:any=null,detailed=false,reportAnswered=false;
   if(intent.kind==='pair'){
    const r=await db.rpc('cip_bot_bind',{p_hash:await hash(intent.code),p_telegram:message.user,p_chat:message.chat});if(r.error)throw Error('pair');text=r.data?'Vínculo confirmado, sem prazo de expiração. Sou o Doquita. Escolha a empresa para começar.':'Código inválido, expirado, utilizado ou conta não autorizada. O código de ativação dura 10 minutos; o vínculo concluído não expira.';if(r.data){const c=await db.rpc('cip_bot_context',{p_telegram:message.user,p_chat:message.chat});keyboard=companyMenu(c.data?.companies??[]);}
   }else{
@@ -109,18 +110,24 @@ Deno.serve(async(req:Request)=>{
    let context=await getContext();if(context.error)throw Error('context');
    if(!context.data?.authorized)text='Entre no CIP e gere um código em Doquita no Telegram para vincular sua conta. Após ativado, o vínculo não tem prazo de expiração.';
    else{
-    const allowed=context.data.companies;keyboard=menu(allowed);let aiError=false;
+    const allowed=context.data.companies;keyboard=navigationMenu();let aiError=false;
     const isAI=cfg.ai_enabled&&validAIKey(cfg.ai_key);
     let aiAllowed=false;
-    if(isAI&&(message.audio||!message.intent&&!message.text.startsWith('/')&&!REFERENCE_KINDS.includes(intent.kind)&&intent.kind!=='stock_routine')){const a=await db.rpc('cip_bot_ai_claim',{p_update:message.update_id,p_telegram:message.user,p_chat:message.chat});aiAllowed=!a.error&&a.data===true;}
+    if(isAI&&(message.audio||!message.intent&&intent.kind!=='report_followup'&&!message.text.startsWith('/')&&!REFERENCE_KINDS.includes(intent.kind)&&intent.kind!=='stock_routine')){const a=await db.rpc('cip_bot_ai_claim',{p_update:message.update_id,p_telegram:message.user,p_chat:message.chat});aiAllowed=!a.error&&a.data===true;}
     if(message.audio){
      if(!isAI)text=aiState(cfg)==='missing_key'?'Recebi seu áudio, mas ainda não há chave OpenAI API configurada. No CIP, abra Doquita no Telegram → Texto e voz com IA e cadastre a chave no campo protegido. Não envie a chave ao bot. Depois de ativar, reenvie o áudio.':'Recebi seu áudio, mas a IA está desativada. O superadm pode habilitar Texto e voz com IA no CIP. Depois de ativar, reenvie o áudio.';
      else if(!aiAllowed)text='O limite de 100 solicitações com IA por dia foi atingido. Use os botões ou os comandos de texto.';
      else try{message.text=await transcribe(message.audio,{botToken:cfg.token,key:cfg.ai_key});intent=interpret(message.text);}catch(e){text=e instanceof Error&&e.message==='audio_limit'?'Envie um áudio de até 3 minutos e 10 MB.':'Não consegui transcrever com segurança. Tente um áudio mais curto ou escreva seu pedido.';}
     }
     if(!text){
-     const directCompany=message.intent?.company??companyIn(message.text);
-     if(aiAllowed&&!message.intent&&!REFERENCE_KINDS.includes(intent.kind)&&intent.kind!=='stock_routine'){try{const routed=await classify(message.text,{key:cfg.ai_key,context:{company:context.data.all?'all':context.data.company,last_kind:context.data.last_kind,last_query:context.data.last_query}});if(intent.kind!=='blocked'&&intent.kind!=='erp_unavailable')intent=routed;}catch{aiError=true;}}
+     const followup=intent.kind==='report_followup';
+     if(followup){
+      detailed=intent.detailed===true;const previous=restoreReport(context.data);
+      if(previous){intent=previous.intent;message.text=previous.text;}
+      else text='Faça uma consulta primeiro e depois toque em Detalhar última consulta. A referência da conversa dura 20 minutos e é limpa ao trocar de empresa.';
+     }
+     const directCompany=followup?null:message.intent?.company??companyIn(message.text);
+     if(aiAllowed&&!followup&&!message.intent&&!REFERENCE_KINDS.includes(intent.kind)&&intent.kind!=='stock_routine'){try{const routed=await classify(message.text,{key:cfg.ai_key,context:{company:context.data.all?'all':context.data.company,last_kind:context.data.last_kind,last_query:context.data.last_query}});if(intent.kind!=='blocked'&&intent.kind!=='erp_unavailable')intent=routed;}catch{aiError=true;}}
      const chosen=directCompany??(intent.company&&intent.company!=='current'?intent.company:null);
      if(chosen){const change=await db.rpc('cip_bot_choose_company',{p_telegram:message.user,p_chat:message.chat,p_company:chosen});if(change.error)throw Error('scope');if(change.data!==true){text='Esta empresa não está autorizada para sua conta. Selecione uma das empresas disponíveis.';keyboard=companyMenu(allowed);}else{context=await getContext();if(!context.data?.authorized)throw Error('scope');}}
      const scope=context.data.all?'all':context.data.company;
@@ -138,14 +145,15 @@ Deno.serve(async(req:Request)=>{
      }
      else if(REFERENCE_KINDS.includes(intent.kind)){
       if(intent.kind==='stock_product'&&!intent.query?.trim())text='Qual produto? Envie /produto seguido do SKU, descrição ou marca. Exemplo: /produto cadeira. Pode incluir loja 5.';
-      else {const targets=scope==='all'?allowed:[scope],entries=[];for(const company of targets){const reference=await stockReference(message.user,message.chat,company,intent,message.text);entries.push({company,reference});}text=renderExecutive(entries,intent.kind);}
+      else {const targets=scope==='all'?allowed:[scope],entries=[];for(const company of targets){const reference=await stockReference(message.user,message.chat,company,intent,message.text);entries.push({company,reference});}text=detailed?renderExecutive(entries,intent.kind):renderBrief(entries,intent.kind);reportAnswered=true;const saved=await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:rememberReport(intent,message.text)});if(saved.error)throw Error('report_context');}
      }
      else if(ERP_KINDS.includes(intent.kind)){
       const targets=scope==='all'?allowed:[scope],entries=[];
       for(const company of targets){const r=await db.rpc('cip_bot_erp_get',{p_telegram:message.user,p_chat:message.chat,p_company:company});if(r.error)throw Error('erp_scope');let reference=null;if(!r.data&&['inventory','aged_stock','growth_actions'].includes(intent.kind)){const fallback={kind:({inventory:'stock_sources',aged_stock:'stock_stores',growth_actions:'stock_priorities'})[intent.kind]};reference=await stockReference(message.user,message.chat,company,fallback,message.text);}entries.push({company,snapshot:r.data,reference});}
-      text=renderExecutive(entries,intent.kind);await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:''});
+      text=detailed?renderExecutive(entries,intent.kind):renderBrief(entries,intent.kind);reportAnswered=true;const saved=await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:rememberReport(intent,message.text)});if(saved.error)throw Error('report_context');
      }
-     else if(intent.kind==='help')text=HELP;
+     else if(intent.kind==='menu_more'){text='Escolha outra consulta:';keyboard=moreMenu(allowed);}
+     else if(intent.kind==='help'){text='O que você quer consultar? Escolha abaixo ou escreva sua pergunta. Vou responder com o essencial; use Detalhar última consulta para ver a composição e o cálculo.';keyboard=menu(allowed);}
      else if(intent.kind==='knowledge'&&(!intent.query||intent.query.length<3))text='Qual tema você quer pesquisar na Escola? Exemplo: /conhecimento reposição. A consulta usa somente fontes aprovadas e vigentes.';
      else if(intent.kind==='knowledge'&&scope==='all'){text='Para manter as fontes separadas, escolha uma empresa antes de pesquisar conhecimento.';keyboard=companyMenu(allowed);}
      else{
@@ -154,6 +162,7 @@ Deno.serve(async(req:Request)=>{
       text=answers.join('\n\n────────────────\n\n');
       await db.rpc('cip_bot_remember',{p_telegram:message.user,p_chat:message.chat,p_kind:intent.kind,p_query:intent.query??''});
      }
+     if(reportAnswered)keyboard=resultMenu(detailed);
      if(aiError)text+='\n\nA interpretação por IA está indisponível agora; usei as consultas básicas. Use /menu se precisar.';
      if(!['companies','choose_company','revoke',...REFERENCE_KINDS,...ERP_KINDS].includes(intent.kind))text='Escopo: '+COMPANY_NAMES[scope]+'\n\n'+text;
     }
