@@ -10,11 +10,12 @@ export function validateResearch(q){
  const page=Number(q.page??1);if(!Number.isInteger(page)||page<1||page>500)throw Error('invalid_page');
  if(q.action==='catalog')return {action:q.action,code:String(q.code),page};
  if(!['codigoPdm','codigoItemCatalogo'].includes(q.type)||!day(q.start)||!day(q.end)||q.start>q.end||q.end>new Date().toISOString().slice(0,10)||Date.parse(q.end)-Date.parse(q.start)>1096*86400000)throw Error('invalid_period');
- if(q.state&&!STATES.includes(q.state))throw Error('invalid_state');return {action:q.action,code:String(q.code),type:q.type,page,start:q.start,end:q.end,state:q.state||''};
+ if(q.sphere&&!['F','E','M'].includes(q.sphere))throw Error('invalid_sphere');
+ if(q.state&&!STATES.includes(q.state))throw Error('invalid_state');return {action:q.action,code:String(q.code),type:q.type,page,start:q.start,end:q.end,state:q.state||'',sphere:q.sphere||''};
 }
 export function officialURL(input){const q=validateResearch(input);let path,params;
  if(q.action==='catalog'){path='/modulo-material/4_consultarItemMaterial';params={pagina:q.page,tamanhoPagina:20,codigoPdm:q.code};}
- if(q.action==='prices'){path='/modulo-pesquisa-preco/1_consultarMaterial';params={pagina:q.page,tamanhoPagina:50,tipo:q.type,codigo:q.code,dataCompraInicio:q.start,dataCompraFim:q.end,dataResultado:true,...(q.state?{estado:q.state}:{})};}
+ if(q.action==='prices'){path='/modulo-pesquisa-preco/1_consultarMaterial';params={pagina:q.page,tamanhoPagina:50,tipo:q.type,codigo:q.code,dataCompraInicio:q.start,dataCompraFim:q.end,dataResultado:true,...(q.state?{estado:q.state}:{}),...(q.sphere?{esfera:q.sphere}:{})};}
  if(q.action==='result'){path='/modulo-contratacoes/3.1_consultarResultadoItensContratacoes_PNCP_14133_Id';params={tipo:'idCompra',codigo:q.purchase,idCompraItem:q.item};}
  return COMPRAS+path+'?'+new URLSearchParams(params);
 }
@@ -22,7 +23,7 @@ export async function requestOfficial(q,{fetcher=fetch,signal}={}){const url=off
 export function priceRecord(r,source){
  if(!r.idCompraItem||!/^\d{1,30}$/.test(String(r.idCompra))||!Number.isFinite(r.precoUnitario)||r.precoUnitario<=0||!day(String(r.dataResultado??'').slice(0,10)))return null;
  const brand=String(r.marca??'').trim();
- return {id:String(r.idCompraItem)+'|'+String(r.niFornecedor),purchase:String(r.idCompra),item:String(r.idCompraItem),catalog:String(r.codigoItemCatalogo??''),description:String(r.descricaoItem??''),detail:String(r.descricaoDetalhadaItem??''),unit:String(r.siglaUnidadeFornecimento??r.nomeUnidadeFornecimento??''),capacity:r.capacidadeUnidadeFornecimento??null,measure:String(r.siglaUnidadeMedida??''),brand:brand||null,brand_quality:!brand?'missing':/^\d+$/.test(brand)?'review':'reported',supplier:String(r.nomeFornecedor??''),supplier_id:String(r.niFornecedor??''),state:String(r.estado??''),city:String(r.municipio??''),buyer:String(r.nomeOrgao??r.nomeUasg??''),date:String(r.dataResultado).slice(0,10),price:r.precoUnitario,quantity:r.quantidade,source,collected_at:new Date().toISOString(),status:'reference',size:null,verification:null};
+ return {id:String(r.idCompraItem)+'|'+String(r.niFornecedor),purchase:String(r.idCompra),item:String(r.idCompraItem),catalog:String(r.codigoItemCatalogo??''),description:String(r.descricaoItem??''),detail:String(r.descricaoDetalhadaItem??''),unit:String(r.siglaUnidadeFornecimento??r.nomeUnidadeFornecimento??''),capacity:r.capacidadeUnidadeFornecimento??null,measure:String(r.siglaUnidadeMedida??''),brand:brand||null,brand_quality:!brand?'missing':/^\d+$/.test(brand)?'review':'reported',supplier:String(r.nomeFornecedor??''),supplier_id:String(r.niFornecedor??''),state:String(r.estado??''),city:String(r.municipio??''),buyer:String(r.nomeOrgao??r.nomeUasg??''),date:String(r.dataResultado).slice(0,10),price:r.precoUnitario,quantity:r.quantidade,source,collected_at:new Date().toISOString(),procurement_object:String(r.objetoCompra??''),pregao:/\bpregao\b/.test(textKey(r.objetoCompra)),status:'reference',size:null,verification:null};
 }
 export function mergeResult(row,data){
  const matches=data.resultado.filter(r=>String(r.idCompraItem)===row.item&&String(r.niFornecedor)===row.supplier_id);
@@ -31,7 +32,7 @@ export function mergeResult(row,data){
  const id=String(winner.numeroControlePNCPCompra??''),m=id.match(/^([A-Z0-9]{14})-1-(\d+)\/(\d{4})$/i);
  return {...row,status:'confirmed',size:({1:'ME',2:'EPP',3:'Demais',4:'Não se aplica',5:'Não informado'})[winner.porteFornecedorId]??null,result_date:String(winner.dataResultadoPncp??'').slice(0,10),pncp:id,url:m?`https://pncp.gov.br/app/editais/${m[1]}/${m[3]}/${Number(m[2])}`:null,verification:{source:data.source,checked_at:data.collected_at,matched:true},date_discrepancy:String(winner.dataResultadoPncp??'').slice(0,10)!==row.date};
 }
-export function filterPrices(rows,{brand='',supplier='',state='',start='',end='',confirmed=false}={}){const b=textKey(brand),s=textKey(supplier);return rows.filter(r=>(!b||textKey(r.brand).includes(b))&&(!s||textKey(r.supplier+' '+r.supplier_id).includes(s))&&(!state||r.state===state)&&(!start||(r.result_date||r.date)>=start)&&(!end||(r.result_date||r.date)<=end)&&(!confirmed||r.status==='confirmed'));}
+export function filterPrices(rows,{brand='',supplier='',state='',start='',end='',confirmed=false,pregao=false}={}){const b=textKey(brand),s=textKey(supplier);return rows.filter(r=>(!pregao||r.pregao)&&(!b||textKey(r.brand).includes(b))&&(!s||textKey(r.supplier+' '+r.supplier_id).includes(s))&&(!state||r.state===state)&&(!start||(r.result_date||r.date)>=start)&&(!end||(r.result_date||r.date)<=end)&&(!confirmed||r.status==='confirmed'));}
 export const comparisonKey=r=>JSON.stringify([r.catalog,textKey(r.unit),r.capacity??null,textKey(r.measure),textKey(r.brand)]);
 export const comparableRecord=r=>r.status==='confirmed'&&r.brand_quality==='reported'&&!!r.unit&&!!r.catalog&&typeof r.capacity==='number'&&Number.isFinite(r.capacity)&&r.capacity>0;
 export function priceHistory(rows,key){

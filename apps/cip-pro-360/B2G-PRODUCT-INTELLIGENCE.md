@@ -55,3 +55,11 @@ As publicações gerais anteriores permanecem em uma seção recolhida. Novas co
 - https://dadosabertos.compras.gov.br/swagger-ui/index.html e https://dadosabertos.compras.gov.br/v3/api-docs
 - https://pncp.gov.br/manual/pt-br/latest/singlehtml/
 - Endpoints: `/modulo-material/3_consultarPdmMaterial`, `/modulo-material/4_consultarItemMaterial`, `/modulo-pesquisa-preco/1_consultarMaterial`, `/modulo-contratacoes/3.1_consultarResultadoItensContratacoes_PNCP_14133_Id`.
+
+## Mix privado e recorte federal (19/10/2026)
+
+Primeira carga: 60 SKUs, 21 categorias de sugestão, tabela cip_b2g_mix. Campos: descrição/SKU, marca literal e normalizada para busca, referências extraídas, categoria/termo sugerido, hash/arquivo/linha/data de referência. Importação idempotente por hash+SKU. Nenhuma coluna financeira; não substitui ERP. Schema em schema/b2g-mix.sql. Cadastro acessível somente a usuários com escopo Distribuidora; sem gravação pelo navegador. Futuros lotes precisam de revisão e desativação explícita da versão anterior para não duplicar SKUs ativos entre hashes.
+
+Tela: Nosso mix → selecionar produto → selecionar família oficial e especificação → Brasil ou UF → esfera Federal/Estadual/Municipal → consultar → filtrar pregão declarado no objeto → conferir resultados. Marca e modelo próprios não provam equivalência com item comprado; usuário revisa embalagem/especificação. Filtro federal é remoto (`esfera=F`); filtro pregão é local e explícito (`objetoCompra`), limitado às páginas carregadas. Contagens por UF não agregam preços de produtos diferentes. Não inclui varredura automática nem garantia de cobertura de editais abertos.
+
+Verificado na fonte oficial: PDM423, F, todas UFs, 2025-10-19 a 2026-10-19: 41 referências, 33 com menção a pregão; 13 UFs no recorte textual. Evidência local ../evidencias/cip-b2g-mix-federal.png a partir da raiz do projeto. Gravação de missão não exercitada em produção nesta rodada.

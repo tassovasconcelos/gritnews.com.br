@@ -1,5 +1,13 @@
 # CIP 360 — memória operacional
 
+## Mix provisório e recorte federal — 19/10/2026
+
+Importados 60 SKUs únicos da planilha Produtos PROCIRURGICA 16102026 Correta.xlsx (Produtos, A1:B61) em `public.cip_b2g_mix`, tabela privada com RLS `cip_can_access(distribuidora_prohospital)`, sem SELECT anon nem INSERT authenticated. SHA256 da origem: 2f669e37fd5c0327259e3e936d24d265a2a6dc9d914753a13111f3fb3839c4fa. Data 16/10 é referência do nome do arquivo, não atualização ERP. Nenhum dado da planilha no repositório público ou arquivos publicados. Custos/preços/saldo/incentivos/formulas excluídos; 48 erros de fórmula preexistentes na coluna L não usados. Uma descrição sem marca; grafias originais preservadas.
+
+Radar usa catálogo privado por SKU/descrição/marca/referência/categoria; seleção sugere família, sem equivalência CATMAT automática. Brasil padrão, filtro UF e distribuição de contagens por UF. Esfera F/E/M enviada ao endpoint oficial; filtro de pregão depende de menção explícita no objeto nas páginas carregadas, não interpretação de código numérico entre sistemas. Não é lista completa de editais abertos. Backend cip-b2g v3 publicado com JWT validado. Consulta real PDM423, federal, Brasil, 19/10/2025–19/10/2026: 41 referências, 33 com pregão explícito em 13 UFs. Interface verificada em ambiente local com mix de teste e API pública real; sessão autenticada de produção não homologada nesta rodada.
+
+Esta carga é catálogo de referência provisório, não integração Procfit completa. Próxima etapa: mapeamento revisável SKU/CATMAT e índice incremental de oportunidades/histórico, com cobertura e datas explícitas. Publicação da tela deve ser conferida pelo workflow Hostinger e comparação de bytes antes de declarar publicada.
+
 ## Evolução mais recente — Radar B2G nacional por produto
 
 Recuperadas as atualizações remotas `e7ef991` e `fe53a63` (prorrogação pelo superadm de convites em uma hora): acesso da diretoria pelo Telegram e Marca-passo por contribuição (`PLATFORM-EVOLUTION.md`). A confirmação anterior de voz funcional permanece válida; não confundir a ressalva de testes daquela release com revogação da chave ou da confirmação do usuário.
