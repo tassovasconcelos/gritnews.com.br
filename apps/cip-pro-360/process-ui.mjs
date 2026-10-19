@@ -56,7 +56,7 @@ export function mountProcesses({db,user,companies,onDispose}){
   if(action==='export'){const blob=new Blob([JSON.stringify(graph,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cip-processo.json';a.click();URL.revokeObjectURL(url);return;}
   if(!writable)return;
   if(action==='new'){if(dirty&&!window.confirm('Descartar alterações locais e criar outro mapa?'))return;newMap();}
-  if(action==='add'){if(graph.nodes.length>=60){message('Limite de 60 etapas.');return;}selected='n'+crypto.randomUUID();graph.nodes.push({id:selected,type:$('[data-p-type]').value,title:'Nova etapa',agent:'doquita',owner:'',metric:'',evidence:'',notes:'',x:60+(graph.nodes.length%3)*290,y:50+Math.floor(graph.nodes.length/3)*190});changed();draw();}
+  if(action==='add'){if(graph.nodes.length>=60){message('Limite de 60 etapas.');return;}selected='n'+crypto.randomUUID();graph.nodes.push({id:selected,type:$('[data-p-type]').value,title:'Nova etapa',agent:'doquita',owner:'',metric:'',evidence:'',notes:'',x:60+(graph.nodes.length%3)*290,y:Math.min(2900,50+Math.floor(graph.nodes.length/3)*190)});changed();draw();}
   if(action==='remove'){graph.nodes=graph.nodes.filter(x=>x.id!==selected);graph.edges=graph.edges.filter(e=>e.from!==selected&&e.to!==selected);selected=null;changed();draw();}
   if(action==='connect'){const to=$('[data-p-target]').value;if(to&&graph.edges.length<120&&!graph.edges.some(x=>x.from===selected&&x.to===to)){graph.edges.push({from:selected,to,label:$('[data-p-condition]').value.trim()});changed();draw();}}
   if(action==='save'){
