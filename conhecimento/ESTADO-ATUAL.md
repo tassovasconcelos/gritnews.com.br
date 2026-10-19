@@ -1,5 +1,11 @@
 # CIP 360 — memória operacional
 
+## CD 100 Shopping — carga distinta recebida em 19/10/2026
+
+Estoque CD100.xlsx identificado pelo usuário como CD 100 Shopping Prohospital. Importados 624 registros/SKUs únicos em lote privado cd100_partial, separado das lojas. SHA256 3be471067b79a254d4c7a89504bed89faf23da59a4e66c38b1be082ead0b9f15. Não há duplicidades, custos zero ou divergências quantidade×custo. Sem preço de venda, data do saldo, últimas movimentações, dias sem movimento, unidade, reservas ou validade. Ausências NULL, nunca zero; não classificar CD como +180 dias nem inventário completo. Dados e totais financeiros fora do Git/publicação estática. Migração complementar stock-reference-cd100.sql mantém RLS/grants anteriores. Authenticated sem empresa vê zero registros.
+
+Tela Estoque de referência permite selecionar CD100 ou lojas +180 dias; Radar B2G inclui catálogos por origem, sem custo/saldo. 125 testes locais passaram e troca de fontes foi verificada com adaptador privado de leitura. Produção autenticada não homologada nesta rodada. O comparativo privado anterior à carga do CD deve ser lido com esta atualização. Mais detalhes em apps/cip-pro-360/SHOPPING-STOCK-REFERENCE.md.
+
 ## Carga Shopping — somente lojas — 19/10/2026
 
 Usuário corrigiu: Produtos Sem Giro +180 dias.xlsx contém SOMENTE LOJAS; CD100 não faz parte desta carga. Não mapear códigos 1–14,16,32–35 para nomes presumidos. Planilha privada importada em cip_stock_reference_batches/rows: 6.762 registros únicos loja/SKU, 3.295 produtos, 19 códigos. Hash 0e0c8168f496bf52122aac71708f3e765fb1da983d5f69c14e90ae3429a2ba9a. Dados financeiros não estão em Git/publicação estática. Lote provisório, não conciliado, sem alimentar relatórios ERP aprovados ou ROTA PRO.

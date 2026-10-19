@@ -1,4 +1,16 @@
-# Shopping — carga provisória das lojas
+# Shopping — cargas provisórias de CD e lojas
+
+## CD 100 recebido em 19/10/2026
+
+Usuário identificou Estoque CD100.xlsx como CD 100 Shopping Prohospital. Origem privada: Planilha1, A1:I625; SHA256 `3be471067b79a254d4c7a89504bed89faf23da59a4e66c38b1be082ead0b9f15`. São 624 linhas/SKUs únicos, somente empresa 100. Quantidade × custo unitário confere com custo total; sem duplicidades ou custo zero. Valores financeiros e registros permanecem fora do Git e pacote estático.
+
+Lote separado `cd100_partial`, linhas `reference_kind=cd100_stock`. Migração complementar: `schema/stock-reference-cd100.sql`, aplicada após o schema original. Não há data do saldo, preço de venda, receita potencial, últimas movimentações ou contador de dias. Campos ausentes permanecem NULL; importação não comprova data de atualização. Não classificar o CD como estoque parado +180 dias. Não somar esta carga à amostra das lojas como inventário completo.
+
+Interface escolhe a origem e consulta o lote mais recente dentro dela. Confere quantidade de registros e totais antes de apresentar a carga; CD exibe preço/potencial indisponíveis, inclusive em filtro vazio. Filtro de preço abaixo do custo ignora preço ausente. Radar B2G permite carregar cada catálogo Shopping, preservando SKU/origem; repetir o carregamento substitui apenas a mesma origem, sem duplicá-la. Consulta do catálogo não solicita custos, preços ou saldos. Acesso Shopping continua obrigatório.
+
+Verificação local com adaptador de leitura e planilhas reais: 624 produtos no CD, 6.762 linhas/3.295 produtos nas lojas, loja 5 com 881 linhas; troca de origem sem contaminação. Catálogos CD e lojas combinados exibem 3.919 itens por origem (não SKUs únicos consolidados); nenhum erro de console. 125 testes locais passaram. Evidência privada `evidencias/cip-shopping-cd100-carga.png`. Uso autenticado em produção não homologado nesta rodada.
+
+## Lojas — recorte +180 dias
 
 O usuário confirmou em 19/10/2026 que a planilha contém somente estoque parado em lojas. A menção inicial ao CD e a resposta “100” foram corrigidas: o CD não está incluído. Os nomes das lojas não foram mapeados; preservar os 19 códigos de origem.
 
