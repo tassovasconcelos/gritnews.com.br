@@ -1,5 +1,11 @@
 # CIP 360 — memória operacional
 
+## Apresentação executiva viva — 19/10/2026
+
+Guia interativo em presentation.mjs/presentation.css, último item do menu, rota apresentacao apenas para diretoria/superadm. 16 capítulos sobre capacidades, prioridades de Rufino, agentes, jornadas e implantação. Modo palco/tela cheia, animações com pausa/redução de movimento, roteiro opcional, cenários locais de cobertura/capacidade, caminhos de exceção e cronograma por critérios de aceite. Componentes reais em prévia sem dados e acesso ao módulo autorizado com retorno ao capítulo. Sem screenshots privados, números do orçamento reservado, chamadas de IA ou novos acessos ao banco.
+
+Resultados esperados permanecem hipóteses: integração comercial completa Procfit, conciliação, maturidade dos agentes, ecommerce e B2G persistente ainda têm dependências. Não transformar cenário em ganho ou tecnologia publicada em autonomia operacional. Verificação local nos 16 capítulos desktop/mobile, calculadoras e ida/volta. Detalhes de apresentação e limites em apps/cip-pro-360/PRESENTATION.md.
+
 ## Telegram com resposta executiva unificada — 19/10/2026
 
 Recuperada e incorporada a versão remota 8182713, com consultas de estoque e briefing diário opcional, antes de evoluir o serviço. Novo formato: informação disponível primeiro, alcance e validade explícitos, composição por empresa/origem, memória do cálculo sobre todas as linhas do filtro, ranking conjunto e próxima ação de conferência. CD e lojas podem ser consultados juntos; soma dos arquivos continua parcial, não conciliada e sem data de posição comum. Nunca chamar essa soma de inventário total ou de caixa liberado. Quantidades e contagens de SKUs entre fontes não são somadas. Ausência da Distribuidora não vira zero.
