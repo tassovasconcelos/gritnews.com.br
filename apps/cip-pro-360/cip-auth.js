@@ -1,6 +1,7 @@
 // CIP PRO 360° authentication and business data client.
 // Public publishable key only; permissions and segregation enforced by Supabase RLS.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm";
+import {knowledgeContext} from "./academy-engine.mjs";
 import {summarizeDoquita} from "./doquita-insights.mjs";
 import {renderSquadPage,mountSquad} from "./agents-ui.mjs";
 const supabase = createClient("https://pcrwtoddavpvkaxwtstc.supabase.co", "sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS", {
@@ -222,10 +223,27 @@ async function loadDoquita(){
    return '<article class="card doquita-recommendation"><div class="row"><span class="pill '+(x.priority==="MEDIA"?"neutral":"")+'">'+doquitaSanitize(x.priority)+'</span><span class="mini">'+doquitaSanitize(x.source)+'</span></div><h3>'+doquitaSanitize(x.title)+'</h3><p>'+doquitaSanitize(x.detail)+'</p><div class="doquita-action"><strong>Próxima ação sugerida</strong><p>'+doquitaSanitize(x.action)+'</p></div>'+(allowed?'<button class="btn secondary" type="button" data-doquita-route="'+doquitaSanitize(x.route)+'">Revisar no módulo →</button>':"")+'</article>';
   }).join(""):'<div class="empty"><strong>Sem novos sinais nesta amostra</strong><span>Isso não confirma ausência de riscos. Confira o ERP e os fluxos operacionais.</span></div>';
   host.innerHTML='<div class="cards doquita-metrics">'+metricCards+'</div><div class="row section"><h3>Próximas melhores ações</h3><span class="pill neutral">REVISÃO HUMANA</span></div><div class="grid2 doquita-grid">'+recommendations+'</div><p class="foot">'+doquitaSanitize(board.dataScope)+' '+doquitaSanitize(board.limitations)+'</p>';
+  loadAcademyGuidance(host,currentUser);
   host.querySelectorAll("[data-doquita-route]").forEach(button=>button.addEventListener("click",()=>{
     if(window.cipAuth?.allowedRoutes?.includes(button.dataset.doquitaRoute))window.navigate(button.dataset.doquitaRoute);
   }));
  }catch(e){if($("cipDoquitaBoard"))host.textContent="Não foi possível analisar os registros no momento. Nenhuma decisão foi executada.";}
+}
+async function loadAcademyGuidance(host,currentUser){
+ const section=document.createElement('section');section.className='card section';host.append(section);
+ section.textContent='Consultando orientações aprovadas na Escola…';
+ try{
+  const [m,s]=await Promise.all([
+   supabase.from('cip_academy_materials').select('*').in('company_id',[...companies]).order('created_at',{ascending:false}).limit(200),
+   supabase.from('cip_academy_skills').select('*').in('company_id',[...companies]).order('created_at',{ascending:false}).limit(200)
+  ]);
+  if(!user||user.id!==currentUser||!section.isConnected)return;
+  if(m.error||s.error)throw Error('knowledge_unavailable');
+  const contexts=[...companies].map(company=>knowledgeContext({materials:m.data??[],skills:s.data??[],company}));
+  const guidance=contexts.flatMap(c=>c.skills.map(skill=>({...skill,company:c.company}))),pending=contexts.reduce((n,c)=>n+c.review_due+c.blocked_skills,0);
+  section.innerHTML='<h3>Orientações aprovadas da Escola</h3><p class="mini">Consulta de até 200 versões recentes. Fontes vencidas, retiradas ou substituídas ficam fora. '+escape(pending)+' pendências de renovação neste recorte.</p>'+(guidance.length?guidance.slice(0,6).map(g=>'<details><summary>'+escape(g.title)+' · '+escape(g.company===V?'Shopping':'Distribuidora')+'</summary><p>'+escape(g.instructions)+'</p><p><strong>Limites:</strong> '+escape(g.limits)+'</p><p><strong>Fontes:</strong> '+g.sources.map(source=>escape(source.title)+' · revisar até '+escape(source.review_due)).join('; ')+'</p></details>').join(''):'<p>Nenhuma habilidade aprovada e atual disponível neste recorte.</p>')+'<p class="mini">Orientações para revisão do time; nenhuma ação é executada automaticamente.</p><button class="btn secondary" data-academy-open>Ir à Escola →</button>';
+  section.querySelector('[data-academy-open]').addEventListener('click',()=>{if(window.cipAuth?.allowedRoutes?.includes('escola'))window.navigate('escola');});
+ }catch{if(section.isConnected)section.textContent='Conhecimento da Escola indisponível. Nenhuma orientação foi inferida.';}
 }
 window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquita"))loadDoquita();};
 
