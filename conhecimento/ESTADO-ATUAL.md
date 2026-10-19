@@ -269,3 +269,20 @@ Filtro PE:110referencias,2homologacoes somentePE. MunicipalBrasil:358referencias
 Producao final em aba separada:consulta concluida20:32:24,6homologacoes e2documentos candidatos sem marca comprovada,17enderecosweb. Captura ../evidencias/cip-iris-colostomia-corrigida-2026-10-19.png. Usuario permaneceu com sua pesquisa de cateter na aba original. Nenhuma preferencia/avaliacao ficticia salva.
 
 Publicacao final e1286e2/workflow39341988256:validate e publish success. Arquivo publico b2g-discovery.mjs HTTP200 e SHA256 igual ao local. Correcao concluida e conhecimento registrado.
+
+
+## Iris - cateteres, sonda uretral, zeros iniciais e continuidade - 19/10/2026
+
+Corrigidas tres causas:familias erradas por modificador hidrofilico(ex:muciloidepsyllium/guia); cateternaonomenclaturaoficialsondauretral; zero inicial omitido por campo numerico idCompra. Descoberta ancora substantivo e intercala familias relacionadas Sonda trato urinario/Sonda uretral com cateteres. Tipos explicitos periferico/central/vascular/nasal nao herdam expansao urinaria. Sem codigos de caso/fornecedor fixos.
+
+priceRecord restaura zero somente se prefixo17digitos do idCompraItemoficial22digitos comprovar mesmo identificador numerico. SP09014905001282026item5e09014905001342026item3:APIresultadosemzeroretornavavazio;comIDcompletohomologacoesProhospital09485574000171,marcaPROCIRURGICA,17/09/2026,R$5.94,quantidades3390e2700. PNCP46374500000194-1-006299/2026e006192/2026. PE92615005902812026,itens1e3,11/08/2026,Prosaude26383168000117,R$8.98e6.91.4itens/3compras,2Prohospital+2Prosaude,marca nao implica fornecedorProhospital.
+
+Consulta cateter+PROCIRURGICA,Brasil,semCNPJ,19/10/2025-19/10/2026:5500referencias/5familias,4homologacoes,semfalhas. Continuidade oficial:10870referenciasacumuladas,4resultadospreservados,pagina8pendente2639. Cobertura parcial nao e ausencia. BotaoAmpliarpesquisaoficial usa cursor validado apenasfamiliasdoplano/paginas1..500,12paginas/42sporrodada,6porfamilia,120exibidos36conferidos,distribui primeiras consultas entre familias e preserva resultados/filtros/fontes sem repetirIA. Fontesefalhas explicitas. Mudancadefiltro invalidarespostaanterior.
+
+Cateterhidrofilico admite esses registros como relacionados,NAOcomohidrofilicoscomprovados:fonte informasondauretrallubrificada,naorevestimento. technical_pending/nota/contagemseparadanaUI;lubrificacaonaoehidrofilia. Contradicoesexplicitas/calibres/tiposincompativeis rejeitados. Parserweb compartilha regra,documentocandidato nuncavitoriaprovada. Naoagregarprecosem equivalenciatecnica,nemhomologacaocomoreceita.
+
+65testesrelacionadosaprovados. cip-b2gv16ACTIVE6/6arquivosiguaisaopacote,unsigned401. Hostingerf4f3b09/workflow39343127159validateepublishsuccess. Supabasechangelogedocauthconsultados;semRLS/DB/SDK/credenciaisalterados. SemTelegram/ROTAPRO/acoescomerciais/mensagens/lances/missoes. Referenciapps/cip-pro-360/B2G-PRODUCT-INTELLIGENCE.md,evidenciaprivada../evidencias/IRIS-CATETER-2026-10-19.md. ValidacaofinalnoCIPemaba16separadaemcurso.
+
+Producao autenticada final cateter:apos2cliques reais Ampliarpesquisaoficial,12117referencias acumuladasnas5familias,4homologacoespreservadas,12enderecoswebsemnovachamadaIA.Paginasdoplanoconcluidas,botaoampliardesabilitado.Captura../evidencias/cip-iris-cateter-corrigido-2026-10-19.png. Naoequivaleacoberturaintegraldetodosportaisfamilias/modelos.
+
+Validacao hidrofilico(emcampo cateter hidrofilico) concluida20:46:28noCIP:4homologacoes de produtos relacionados com revestimento pendente,0itens com hidrofilia comprovada;notas explicitas seminferirde lubrificada. Captura ../evidencias/cip-iris-cateter-hidrofilico-pendencias-2026-10-19.png. Fontesweb12enderecos,semnovosdocumentos. Consulta generica cateter restaurada naaba16.
