@@ -1,0 +1,25 @@
+name: Link Uniao - HTTP diagnostic
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/link-uniao-http-diagnostic.yml']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Diagnosticar status, certificado e conteúdo de rotas públicas
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in / /index.html /acesso.html /login /admin /equipe /health /health.json; do
+            echo "=== ROUTE: $route ==="
+            code=$(curl -sS -L --connect-timeout 7 --max-time 12 -A 'Mozilla/5.0' -D /tmp/headers.txt -o /tmp/body.txt -w '%{http_code} SSL=%{ssl_verify_result} REMOTE_IP=%{remote_ip} CONTENT_TYPE=%{content_type}' "https://uniao.gritnews.com.br$route" || true)
+            echo "$code"
+            sed -n '1,14p' /tmp/headers.txt | grep -Ei '^(HTTP|server:|content-type:|location:|x-|via:|cache-control:|strict-transport-security:)' || true
+            echo 'BODY (first 180 chars):'
+            head -c 180 /tmp/body.txt | sed -E 's/(apikey|token|password|email)=([^\& "<>]+)/\1=[redacted]/g' | tr '\n' ' '
+            echo
+          done
