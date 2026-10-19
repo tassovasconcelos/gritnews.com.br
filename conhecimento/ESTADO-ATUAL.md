@@ -1,5 +1,11 @@
 # CIP 360 — memória operacional
 
+## Consultoria de processos por briefing — 19/10/2026
+
+Pedido do usuário: processo interativo e consultivo para comercial/financeiro/cobrança/giro, desenho por prompt, riscos, indicadores, expectativas e validação. Implementado em process-consultant.mjs/process-ui.mjs e serviço cip-process-assistant. Proposta OpenAI estruturada em separado; aplicação deliberada cria mapa local novo; versão/histórico anteriores preservados. Modelos guiados sem IA claramente identificados. Laboratório verifica percursos/cobertura; responsável registra resultado/evidência real. Não trata simulação como comprovação de negócio. Editar mapa invalida observações anteriores; captura de evidência durante digitação evita perda na navegação.
+
+Serviço v1 publicado com JWT, acesso de escrita por empresa, consentimento, limite atômico20tentativas/dia e chave central somente no servidor. Tabela cip_process_ai_usage privada, RLS/grants/RPC conferidos; teste de limite revertido sem uso retido, endpoint anônimo401. 139 testes locais passaram. Verificação local com identidade e provedor simulados; homologação OpenAI autenticada de produção ainda pendente nesta etapa. Usuário disse que vai abrir e entrar no CIP para conferir. Detalhes e referências em apps/cip-pro-360/PROCESS-CONSULTANT.md.
+
 ## Estoques, relatórios, cenários e análises integrados — 19/10/2026
 
 Usuário apontou que as importações não refletiam nos módulos. Causa confirmada: Estoque Inteligente ainda exibia apenas simulador de Rufino e a consulta estava isolada em Procfit. Corrigido: Estoque Inteligente, Visão Varejo e Doquita agora consultam automaticamente as cargas privadas por origem, mediante acesso Shopping. Relatórios por grupo/marca/unidade, concentração de custo, filtro SKU, CSV do filtro e cenário de redução de custo com exportação JSON de premissas/hash. Análises determinísticas, sem afirmar validação por IA. Não há cálculo de vendas/giro/cobertura/margem sem dados. Simulador anterior recolhido, explicitamente independente das cargas.
