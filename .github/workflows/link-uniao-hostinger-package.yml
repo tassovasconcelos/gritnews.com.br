@@ -21,7 +21,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for f in index.html acesso.html .htaccess robots.txt health.json; do
+          for f in index.html acesso.html plano.js .htaccess robots.txt health.json; do
             test -s "apps/link-uniao/$f" || { echo "Arquivo ausente: $f"; exit 1; }
           done
           node - <<'NODE'
@@ -51,10 +51,10 @@ jobs:
           mkdir -p release
           (
             cd apps/link-uniao
-            zip -q -9 -j ../../release/grit-link-uniao-hostinger.zip index.html acesso.html .htaccess robots.txt health.json
+            zip -q -9 -j ../../release/grit-link-uniao-hostinger.zip index.html acesso.html plano.js .htaccess robots.txt health.json
           )
           unzip -Z -1 release/grit-link-uniao-hostinger.zip | tee /tmp/filelist
-          for f in index.html acesso.html .htaccess robots.txt health.json; do
+          for f in index.html acesso.html plano.js .htaccess robots.txt health.json; do
             grep -Fxq "$f" /tmp/filelist
           done
           sha256sum release/grit-link-uniao-hostinger.zip

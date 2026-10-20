@@ -5,6 +5,7 @@ on:
     paths:
       - 'apps/link-uniao/index.html'
       - 'apps/link-uniao/acesso.html'
+      - 'apps/link-uniao/plano.js'
       - 'apps/link-uniao/.htaccess'
       - 'apps/link-uniao/robots.txt'
       - 'apps/link-uniao/health.json'
@@ -56,7 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release
-          for f in index.html acesso.html .htaccess health.json robots.txt; do
+          for f in index.html acesso.html plano.js .htaccess health.json robots.txt; do
             test -s "apps/link-uniao/$f"
             cp "apps/link-uniao/$f" "release/$f"
           done
@@ -69,6 +70,7 @@ jobs:
             if(!m)throw Error('Script ausente '+f);
             new vm.Script(m[1]);
           }
+          new vm.Script(fs.readFileSync('release/plano.js','utf8'));
           console.log('Scripts validados.');
           NODE
       - name: Publicar automaticamente por FTPS na pasta dedicada
@@ -120,4 +122,5 @@ jobs:
             console.log('Chave publica confirmada e autenticacao Supabase respondeu corretamente ao teste negativo.');
           })().catch(e=>{console.error(e.message);process.exitCode=1});
           NODE
-          echo "Dominio e paginas publicados."
+          curl -fLSs https://uniao.gritnews.com.br/plano.js | cmp - apps/link-uniao/plano.js
+          echo "Dominio e modulo Plano GRIT 360 publicados e identicos ao release."
