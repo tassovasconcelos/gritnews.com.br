@@ -7,7 +7,7 @@ import {pathToFileURL} from 'node:url';
 
 export const OFFICIAL_LOGO_SHA256 = '1bdf5e051a137268d2aad2a6db750f53faecf1e590e673c9ed5d3a4e87c29d79';
 export const TARGET = 'https://cip.gritnews.com.br';
-const REQUIRED_FILES = ['index.html', 'cip-auth.js', 'presentation.mjs', 'presentation.css', 'supabase-js-2.57.0.mjs', 'doquita-insights.mjs', 'erp-ui.mjs', 'stock-reference.mjs', 'procfit-status-ui.mjs', 'procfit-catalog-ui.mjs', 'erp-engine.mjs', 'pricing-ui.mjs', 'pricing-engine.mjs', 'pricing-intelligence.mjs', 'shopping-position.mjs', 'stock-action-engine.mjs', 'stock-actions-ui.mjs', 'agent-capabilities.mjs', 'process-engine.mjs', 'process-consultant.mjs', 'process-ui.mjs', 'bot-ui.mjs', 'agents-data.mjs', 'agents-ui.mjs', 'academy-ui.mjs', 'admin-ui.mjs', 'ativar.html', 'cip-activation.js', 'academy-engine.mjs', 'agents.css', 'b2g-radar.mjs', 'b2g-research.mjs', 'b2g-research-ui.mjs', 'b2g-discovery.mjs', 'b2g-discovery-ui.mjs', 'b2g-sources.mjs', 'b2g-vocabulary.mjs', 'b2g-catalog.json', 'b2g-snapshot.json', 'recuperar.html', 'grit-recovery.js', '.htaccess', 'robots.txt', 'health.json'];
+const REQUIRED_FILES = ['index.html', 'cip-auth.js', 'presentation.mjs', 'presentation.css', 'supabase-js-2.57.0.mjs', 'doquita-insights.mjs', 'erp-ui.mjs', 'stock-reference.mjs', 'procfit-status-ui.mjs', 'procfit-catalog-ui.mjs', 'erp-engine.mjs', 'pricing-ui.mjs', 'pricing-engine.mjs', 'pricing-intelligence.mjs', 'shopping-position.mjs', 'stock-action-engine.mjs', 'stock-actions-ui.mjs', 'agent-capabilities.mjs', 'process-engine.mjs', 'process-consultant.mjs', 'process-ui.mjs', 'bot-ui.mjs', 'agents-data.mjs', 'agents-ui.mjs', 'academy-ui.mjs', 'admin-ui.mjs', 'ativar.html', 'cip-activation.js', 'academy-engine.mjs', 'agents.css', 'b2g-radar.mjs', 'b2g-research.mjs', 'b2g-research-ui.mjs', 'b2g-discovery.mjs', 'b2g-discovery-ui.mjs', 'b2g-sources.mjs', 'b2g-vocabulary.mjs', 'b2g-catalog.json', 'b2g-snapshot.json', 'recuperar.html', 'grit-recovery.js', '.htaccess', 'robots.txt', 'health.json', 'manifest.webmanifest', 'sw.js', 'icon-192.png', 'icon-512.png', 'logo-cip-512.jpg'];
 const LOGO = 'logo-grupo-prohospital.jpg';
 const MANIFEST = 'release-manifest.json';
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -30,7 +30,12 @@ export function prepareRelease(source, output, commit) {
   if (fs.existsSync(path.join(source, LOGO))) files.push(LOGO);
   const manifest = {schema: 1, app: 'cip-pro360', commit_sha: commit, files: {}};
   for (const file of files) {
-    const bytes = fs.readFileSync(path.join(source, file));
+    let bytes = fs.readFileSync(path.join(source, file));
+    if (file === 'sw.js') {
+      const serviceWorker = bytes.toString('utf8');
+      assert.equal((serviceWorker.match(/__CIP_RELEASE_ID__/g) || []).length, 1, 'Service worker release token is missing or duplicated');
+      bytes = Buffer.from(serviceWorker.replace('__CIP_RELEASE_ID__', commit));
+    }
     assert.ok(bytes.length > 0, `Empty release file: ${file}`);
     if (file === LOGO) checkOfficialLogo(bytes);
     fs.writeFileSync(path.join(output, file), bytes);

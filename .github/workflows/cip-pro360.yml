@@ -37,6 +37,8 @@ jobs:
         run: |
           set -euo pipefail
           node apps/cip-pro-360/release-check.test.mjs
+          node --test apps/cip-pro-360/pwa.test.mjs
+          node --check apps/cip-pro-360/sw.js
           node apps/cip-pro-360/cip-auth.test.mjs
           node apps/cip-pro-360/doquita-insights.test.mjs
           node --test apps/cip-pro-360/operational-analytics.test.mjs
