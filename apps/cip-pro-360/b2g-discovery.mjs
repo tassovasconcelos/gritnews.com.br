@@ -67,7 +67,7 @@ export function productCorrespondence(row,product=''){
  return {matches:terms.every(t=>normalizedHay.includes(' '+t+' ')||(t===intestinalTerm&&intestinalExpanded)||(t==='urostomia'&&urinaryExpanded)),expanded,note:expanded?'Correspondência ampliada: sistema para estomia de aplicação '+(urinaryExpanded?'urinária':'intestinal')+'. Confirmar indicação, modelo, medidas e apresentação; não certifica equivalência técnica.':null};
 }
 export function discoveryMatch(row,{product='',brand='',state='',sphere='',supplier='',allowRelated=false}={}){
- const match=productCorrespondence(row,product);return (!supplier||row.supplier_id===supplier)&&(!state||row.state===state)&&(!sphere||row.sphere===sphere)&&(match.matches||allowRelated&&match.candidate===true)&&(!brand||brandKey(row.brand).includes(brandKey(brand)));
+ if(supplier&&row.supplier_id!==supplier||state&&row.state!==state||sphere&&row.sphere!==sphere||brand&&!brandKey(row.brand).includes(brandKey(brand)))return false;const match=productCorrespondence(row,product);return match.matches||allowRelated&&match.candidate===true;
 }
 export function mergeMarketBatches(previous,next){
  if(!previous)return next;const coverage=new Map(previous.coverage.map(c=>[String(c.code),c]));for(const c of next.coverage){const old=coverage.get(String(c.code));coverage.set(String(c.code),{...c,received:(old?.received||0)+c.received,pages:(old?.pages||0)+c.pages});}
