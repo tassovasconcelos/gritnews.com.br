@@ -1,5 +1,11 @@
 # CIP 360 — memória operacional
 
+## Planejador de campanha em cesta — desenvolvimento 20/10/2026
+
+Nova entrega em desenvolvimento no ramo `codex/campaign-measurement-20261020`: Marca-passo passa a oferecer uma cesta com papéis âncora/complementar/giro, entrada rápida de custo/preço/saldo a partir da posição aprovada consultada, e simulações conservadora/base/otimista limitadas pelo estoque. A conta compara contribuição e receita com a linha de base informada, inclui custo fixo e canibalização, calcula volume de equilíbrio e aponta limites de ruptura e checklist de piloto, lojas de controle, histórico, fonte e limiar de sucesso. Engine determinística em `apps/cip-pro-360/campaign-planner-engine.mjs`; UI em `pricing-ui.mjs` e `campaign-planner.css`.
+
+Todas as entradas manuais e premissas são cenários; volume adicional não é previsão e retorno financeiro não é ganho realizado. Não há ainda registro persistente, comparação real com controle, apuração D+7 nem reconciliação por Controladoria. Enquanto as vendas e custo completos do Procfit não estiverem aprovados, o planejador não pode comprovar demanda, recomendar uma meta real, nem alimentar placar executivo de ganhos. Próxima etapa: pré-registro imutável da hipótese/período/piloto/controle, captura de resultados observados, reconciliação por perfil designado, biblioteca e placar que some somente valores conciliados.
+
 ## Giro histórico varejo, B2B por lote e ações supervisionadas — 19/10/2026
 
 Novas fontes privadas em ../evidencias: Estoque_geral_base_dados_piloto_IA_24-09-2026.xlsx e Estoque Atual da Prohospital - 19-10-26.xlsx. Originais preservados. Piloto contém posição geral117.433linhas (inclusive zeros e nove negativos), giro33.477linhas/33.359chaves, venda histórica141.131linhas sem data e compras pendentes1.358linhas sem ETA. Usuário orientou seguir sem informar período de demanda diária/venda histórica. Não inventar janela mensal, venda atual ou cobertura observada. Giro tem118chaves duplicadas e duas datas futuras; não geram transferências. Posição geral/pedidos podem conter códigos além da carga atual e não comprovam saldo disponível atual.

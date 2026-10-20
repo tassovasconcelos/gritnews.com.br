@@ -42,6 +42,8 @@ test('offline caching is limited to the explicit static app shell',()=>{
  assert.doesNotMatch(sw,/b2g-snapshot|b2g-catalog|supabase\.co|stock_intelligence_rows|localStorage|indexedDB/i);
  assert.ok(sw.includes("'./cip-auth.js'"));
  assert.ok(sw.includes("'./pricing-engine.mjs'"));
+ assert.ok(sw.includes("'./campaign-planner-engine.mjs'"));
+ assert.ok(sw.includes("'./campaign-planner.css'"));
  assert.ok(sw.includes("'./stock-actions-ui.mjs'"));
  const shellAssets=[...sw.matchAll(/'(\.\/[^']+)'/g)].map(match=>match[1]).filter(path=>path!=='./');
  for(const asset of new Set(shellAssets))assert.ok(fs.existsSync(new URL(asset,import.meta.url)),`Missing app-shell file ${asset}`);
