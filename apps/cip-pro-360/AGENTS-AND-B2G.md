@@ -32,3 +32,7 @@ Fontes: https://pncp.gov.br/api/consulta/swagger-ui/index.html e https://www.gov
 40 testes locais antes da publicação: regressão existente, segregação do catálogo, validação de tarefa, escapes, bloqueio de URL externa, filtro de compras de saúde, exclusão de resultados cancelados/não homologados, cronologia da amostra e integridade do pacote. Teste SQL transacional negativo confirmou identidade autenticada sem perfil CIP sem visibilidade e sem inserção; nenhuma linha de teste permaneceu desse ensaio.
 
 Homologação positiva de navegador e persistência deve acompanhar o relatório desta entrega; teste negativo por JWT sem perfil não equivale a homologação de todos os papéis restritos. Avisos de segurança de outros aplicativos no projeto compartilhado não foram alterados.
+
+## Skill de reconciliação da Íris
+
+Em buscas ou ajustes do Radar Íris, aplicar a skill `conhecimento/skills/iris-item-reconciliation/SKILL.md` antes de alterar identificação, enriquecimento, contagens ou publicação. A skill exige conferir UI Hostinger e função `cip-b2g` no projeto Supabase CIP e realizar nova consulta autenticada em produção para mudanças na busca.

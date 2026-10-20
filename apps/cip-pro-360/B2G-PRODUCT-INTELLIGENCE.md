@@ -130,6 +130,14 @@ Fontes técnicas consultadas: https://developers.openai.com/api/docs/guides/tool
 
 Homologação revelou rejeição explícita de filtros de domínio pelo snapshot gpt-4.1-mini-2025-04-14. A pesquisa web passou a gpt-5-mini com suporte à ferramenta; Telegram e Processos mantêm modelos anteriores. Não remover o filtro de domínio para contornar incompatibilidade.
 
+## Item de cama: adjudicação não equivale à marca/modelo exatos — 20/10/2026
+
+Conferida a fonte primária adicional do PNCP para a compra 07954480000179-1-024072/2024: edital/anexo e relação de itens (anexo “RelacaoItens94300105910412024000.pdf”). A página 1 da relação identifica o item 3 como cama hospitalar elétrica/hidráulica, polietileno, até 200 kg, 4 rodízios de 6", comandos remoto e nas grades/peseira, bateria recarregável, Trendelenburg/Fowler/reverso e grades escamoteáveis. A API oficial de item/resultados confirma a mesma especificação, Prohospital, 1.101 unidades e R$ 2.614,00 homologados por unidade. A pesquisa de preços registra literalmente “PROCIRURGICA e RIOFL”. Isso prova a adjudicação desse item e o texto composto da marca; não individualiza fabricante, modelo comercial ou SKU Procirurgica.
+
+Regra de apresentação: manter o resultado visível como adjudicação oficial conciliada, mas quando a pesquisa pede Procirurgica e a origem declara “Procirurgica e Riofl”, classificar marca/modelo como pendentes, não como correspondência exata da marca. Contagem de adjudicações conciliadas é separada da contagem de marcas declaradas individualmente; não contar marca composta como confirmação de fabricante. Mostrar os atributos principais do edital no cartão e deduplicar descrição de pesquisa de preços quando repetir a especificação oficial. Regressão cobre o caso composto. 72 testes B2G passaram; 11 verificações do pacote Hostinger passaram.
+
+Referência oficial: https://pncp.gov.br/app/editais/07954480000179/2024/24072 . A relação de itens é publicação oficial do processo; não foi localizada proposta comercial com modelo/fabricante individual por unidade nesta verificação.
+
 
 A pesquisa integrada consulta primeiro b2g-market-search.mjs: catálogo público de famílias, até cinco famílias incluindo referências legadas. A evolução para colostomia percorre até seis páginas por família (500 registros/página), orçamento total12 páginas/42s de coleta, até120 correspondências exibidas e36 candidatos conferidos nas APIs de resultados. Cobertura recebida/total e páginas parciais são explícitas. Não há fornecedor obrigatório nem códigos fixos do caso comercial. Homologação exige correspondência de fornecedor ativo, preço e quantidade; divergência permanece referência. Depois complementa com pesquisa web oficial, preservando os resultados estruturados mesmo se a web falhar. Isso não representa varredura integral do mercado.
 

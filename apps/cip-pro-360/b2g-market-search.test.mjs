@@ -1,6 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {marketFamilies,requestMarketResearch,validateMarketQuery} from './b2g-market-search.mjs';
-import {discoveryMatch,productCorrespondence,mergeMarketBatches} from './b2g-discovery.mjs';
+import {discoveryMatch,productCorrespondence,mergeMarketBatches,brandCorrespondence,isBrandIndividuallyConfirmed,isExactAwardItem} from './b2g-discovery.mjs';
 const q={action:'discover_market',product:'cama',brand:'PROCIRURGICA',state:'',sphere:'',supplier:'',start:'2025-10-19',end:'2026-10-19'};
 const catalog=[{code:10,name:'Cama hospitalar',group:65,active:true},{code:11,name:'Cama hospitalar (Ver PDM: 10)',group:65,active:false}];
 const price={idCompra:'12345678901234567',idCompraItem:'1234567890123456700001',niFornecedor:'11111111000111',nomeFornecedor:'Outro fornecedor',precoUnitario:100,quantidade:2,dataResultado:'2026-01-01',descricaoItem:'Cama hospitalar',codigoItemCatalogo:123,marca:'PROCIRURGICA',siglaUnidadeFornecimento:'UN',estado:'SP',esfera:'E'};
@@ -64,4 +64,13 @@ test('winning result carries the exact PNCP item identity separately from its pr
  assert.equal(d.rows.length,1);assert.equal(d.rows[0].status,'award');assert.equal(d.rows[0].description,'Cama hospitalar');assert.equal(d.rows[0].catalog_description,detailedPrice.descricaoItem);assert.equal(d.rows[0].procurement_item_number,3);assert.equal(d.rows[0].item_award_aligned,true);assert.ok(d.rows[0].evidence.includes('https://dadosabertos.compras.gov.br/item'));
  const authoritative={...d.rows[0],procurement_description:'Cama hospitalar',procurement_detail:'Cama hospitalar elétrica e hidráulica',catalog_description:'Cama hospitalar manual'};
  assert.equal(discoveryMatch(authoritative,{product:'cama hospitalar'}),true);assert.equal(discoveryMatch(authoritative,{product:'cama manual'}),false);
+});
+test('composite declared brands remain candidates and are never counted as an individually confirmed requested brand',()=>{
+ const row={status:'award',item_identity:'official_item',item_award_aligned:true,procurement_description:'Cama hospitalar',procurement_detail:'Cama hospitalar elétrica/hidráulica, polietileno, capacidade até 200 kg',brand:'PROCIRURGICA e RIOFL'};
+ assert.equal(discoveryMatch(row,{product:'cama',brand:'procirurgica'}),true);
+ assert.deepEqual(brandCorrespondence(row.brand,'PROCIRURGICA'),{status:'composite',parts:['procirurgica','riofl']});
+ assert.equal(isExactAwardItem(row),true);
+ assert.equal(isBrandIndividuallyConfirmed(row,'PROCIRURGICA'),false);
+ assert.equal(isBrandIndividuallyConfirmed({...row,brand:'PROCIRURGICA'},'PROCIRURGICA'),true);
+ assert.equal(brandCorrespondence('RIOFL','PROCIRURGICA').status,'different');
 });
