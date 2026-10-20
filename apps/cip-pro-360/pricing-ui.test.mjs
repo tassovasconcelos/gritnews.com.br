@@ -5,6 +5,10 @@ import { pricingFrame, recommendCampaignDecision } from './pricing-ui.mjs';
 test('puts live opportunities and campaign decisions before detailed mobile tools', () => {
   const frame = pricingFrame();
   assert.ok(frame.indexOf('Oportunidades para decidir') < frame.indexOf('Simular campanha por loja'));
+  assert.ok(frame.indexOf('Planejar campanha em cesta') < frame.indexOf('Simular campanha por loja'));
+  assert.match(frame, /Lojas do piloto/);
+  assert.match(frame, /Lojas de controle/);
+  assert.match(frame, /Premissa conservadora/);
   assert.ok(frame.indexOf('Simular campanha por loja') < frame.indexOf('Simulador detalhado de preço e contribuição'));
   assert.match(frame, /Concorrência e evidências \(opcional\)/);
   assert.match(frame, /RESULTADOS SIMULADOS/);
