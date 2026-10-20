@@ -60,8 +60,9 @@ test('public snapshot has source lineage, no invented winners and a bounded decl
 });
 test('release navigation and data policy enforce separate scope and immutable ownership',()=>{
  const auth=fs.readFileSync(new URL('./cip-auth.js',import.meta.url),'utf8');
+ const routes=fs.readFileSync(new URL('./route-manifest.mjs',import.meta.url),'utf8');
  const sql=fs.readFileSync(new URL('./schema/agent-work.sql',import.meta.url),'utf8');
- assert.match(auth,/\[B\]:\[.*"radar-b2g"/);assert.match(auth,/disposeSquad\(\)/);
+ assert.match(auth,/allowedRoutesFor/);assert.match(routes,/radar-b2g'.*distribuidora_prohospital/s);assert.match(auth,/disposeSquad\(\)/);
  assert.match(sql,/enable row level security/);assert.match(sql,/created_by=\(select auth.uid\(\)\)/);
  assert.match(sql,/grant update\(title,notes,status\)/);assert.doesNotMatch(sql,/grant update on/);
 });

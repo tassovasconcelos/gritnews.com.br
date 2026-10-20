@@ -16,7 +16,7 @@ Centro de Inteligência Prohospital, com Shopping Prohospital e Distribuidora Pr
 |---|---|
 | Identidade | Logo oficial original, vermelho/amarelo/branco do Grupo Prohospital; hash preservado |
 | Shopping | Estoque e capital em simulação; Marca-passo com registros manuais |
-| Distribuidora | Cotações e Caderninho manuais; Radar B2G com evidências PNCP |
+| Comercial | Caderninho manual com foco principal no Varejo e fila separada para demandas da Distribuidora; Cotações B2B e Radar Íris com evidências PNCP |
 | Doquita | Análise explicável de registros manuais, orientações aprovadas e busca nos textos da escola |
 | Escola | Materiais, habilidades, avaliação, versões, revisão e vencimentos |
 | Ingestão | PDF textual, DOCX, XLSX, TXT/MD e HTML público; fila a cada 2 minutos; conferência diária dos links; alteração invalida fonte e habilidades dependentes |
@@ -75,6 +75,10 @@ Superadm pode importar JSON/CSV, conferir rascunho, conciliar totais independent
 ## Diretoria e Marca-passo avançado
 
 Diretores consultam bases aprovadas nas empresas autorizadas pelo CIP e pelo Telegram. Marca-passo traz fila por SKU/loja e simulador de contribuição, piso, alçada e referência com origem. Veja `PLATFORM-EVOLUTION.md` para entrega, limites e prioridades. As análises aguardam a carga real; nenhuma alteração automática de preço.
+
+### Rotas e módulos
+
+`route-manifest.mjs` é a fonte única de rotas, requisitos de papel/empresa e módulos de página. A auditoria PR1, incluindo a contagem estática de chamadas iniciais por rota e seus limites de medição, está em `ROUTE-AUDIT.md`. A Central de ações, posição Shopping e referências históricas são montadas em Estoque Inteligente; Marca-passo concentra preço e campanhas; Varejo/B2B são resumos; Doquita não remonta telas de estoque. Linhas históricas reutilizam cache de sessão somente após conferir empresa, escopo e hash atual da origem.
 
 ### Prorrogar convites
 
