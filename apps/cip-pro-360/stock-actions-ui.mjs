@@ -15,6 +15,11 @@ export function mountStockActions({db,companies,onDispose,canReview=false,onPric
  const root=document.querySelector('[data-stock-actions]');if(!root)return;const $=s=>root.querySelector(s),form=$('[data-stock-actions-filter]');let alive=true,epoch=0,selection=0;
  onDispose(()=>{alive=false;epoch++;selection++;});const live=s=>alive&&root.isConnected&&s===epoch;
  form.elements.company.innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(COMPANIES[c])}</option>`).join('');
+ const deepLink=window.cipRouteContext;
+ if(deepLink?.route==='estoque'&&deepLink.segments?.[0]==='sku'){
+  form.elements.query.value=deepLink.segments[1]||'';
+  form.elements.store.value=deepLink.params?.loja||'';
+ }
  async function load(offset=0){const stamp=++epoch;selection++;const f=Object.fromEntries(new FormData(form)),pageSize=f.tab==='actions'?5:20;$('[data-stock-actions-status]').textContent='Conferindo fontes e ações…';$('[data-stock-actions-items]').replaceChildren();$('[data-stock-actions-editor]').replaceChildren();$('[data-stock-actions-summary]').replaceChildren();$('[data-stock-actions-message]').textContent='';
   try{const response=await db.rpc('cip_stock_intelligence_get',{p_company:f.company,p_tab:f.tab,p_query:f.query,p_store:f.store,p_kind:f.kind||'',p_state:f.state||'',p_alert:f.alert||'',p_offset:offset,p_limit:pageSize});if(!live(stamp))return;if(response.error)throw Error('Não foi possível consultar as ações autorizadas.');const r=response.data;if(!r?.available){$('[data-stock-actions-status]').textContent='Nenhuma carga de inteligência ativa nesta empresa.';return;}
    const b=r.batch,s=b.summary,retail=b.company_id==='shopping_prohospital';$('[data-stock-actions-status]').textContent=`${COMPANIES[b.company_id]} · posição ${b.as_of.split('-').reverse().join('/')} · ${r.filtered_total} registros no filtro · até ${pageSize} por página · análise por regras, com revisão humana.`;

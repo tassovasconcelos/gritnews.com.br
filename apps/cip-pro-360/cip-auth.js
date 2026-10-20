@@ -13,6 +13,7 @@ import {adminFrame,mountAdmin} from "./admin-ui.mjs";
 import {knowledgeContext} from "./academy-engine.mjs";
 import {summarizeDoquita} from "./doquita-insights.mjs";
 import {renderSquadPage,mountSquad} from "./agents-ui.mjs";
+import {ROUTE_MANIFEST,allowedRoutesFor,resolveRoutePath} from './route-manifest.mjs';
 const supabase = createClient("https://pcrwtoddavpvkaxwtstc.supabase.co", "sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS", {
   auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}
 });
@@ -24,11 +25,10 @@ window.cipRenderAdmin=()=>adminFrame();
 window.cipRenderProcesses=()=>processFrame();
 window.cipRenderBot=()=>botFrame();
 window.cipRenderERP=()=>erpFrame();
-window.cipRenderStockActions=()=>stockActionsFrame();
 window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPositionFrame()+'<details class="section card"><summary>Referências históricas parciais · não somar à posição geral</summary>'+stockReferenceFrame({compact})+'</details>':'');
 window.cipRenderPricing=()=>pricingFrame();
 window.cipRenderPresentation=()=>presentationFrame();
-const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g","precos"] };
+const routeHasModule=(route,module)=>ROUTE_MANIFEST[route]?.modules.includes(module)===true;
 const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -45,7 +45,9 @@ async function enter(){
     if(m.error)throw m.error;
     companies=new Set((m.data||[]).map(x=>x.company_id));
   }
-  const allowedRoutes=["inicio","cronograma","doquita","quartel","escola","processos","mensageiro",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
+  const allowedRoutes=allowedRoutesFor({role:profile.role,companies:[...companies]});
+  window.cipResolveRoute=resolveRoutePath;
+  window.cipRouteTitle=route=>ROUTE_MANIFEST[route]?.title||route;
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelector('[data-presentation-menu]')?.classList.toggle('hide',!PRESENTATION_ROLES.includes(profile.role));
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
@@ -59,8 +61,11 @@ async function enter(){
       if(!error&&data){chip.textContent='PROCFIT · CADASTRO';chip.title='Cadastro integrado · captura '+new Date(data.captured_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})+' (Brasília). Vendas e saldos automáticos pendentes.';}
     }).catch(()=>{});
   }
-  window.showPreview();
-  window.navigate("inicio");
+  document.getElementById('login')?.classList.add('hide');
+  document.getElementById('interface')?.classList.remove('hide');
+  window.cipRouteContext=resolveRoutePath(location.hash);
+  const requested=window.cipRouteContext.route;
+  window.navigate(allowedRoutes.includes(requested)?requested:"inicio");
   return true;
 }
 async function verify(){
@@ -283,21 +288,22 @@ window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquit
 window.cipLoadPage=(page)=>{
  disposeSquad();disposeSquad=()=>{};
  if(!user)return;
- if(page==='apresentacao'&&PRESENTATION_ROLES.includes(profile?.role)&&window.cipAuth?.allowedRoutes?.includes(page))mountPresentation({root:document.getElementById('content'),role:profile.role,allowedRoutes:window.cipAuth.allowedRoutes,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};},preview:route=>({precos:()=>pricingFrame(),estoque:()=>stockReferenceFrame({compact:false}),processos:()=>processFrame(),mensageiro:()=>botFrame(),procfit:()=>erpFrame(),quartel:()=>renderSquadPage('quartel'),escola:()=>renderSquadPage('escola'),'radar-b2g':()=>renderSquadPage('radar-b2g')})[route]?.()||'',onOpen:route=>{if(!window.cipAuth?.allowedRoutes?.includes(route))return;window.navigate(route);const remove=presentationReturn(document.getElementById('content'),()=>{if(window.cipAuth?.allowedRoutes?.includes('apresentacao'))window.navigate('apresentacao');});const previous=disposeSquad;disposeSquad=()=>{previous();remove();};}});
- if(["quartel","escola","radar-b2g"].includes(page)&&window.cipAuth?.allowedRoutes?.includes(page))mountSquad(page,{db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
- if(page==="integracoes"&&profile?.role==="superadm")mountAdmin({db:supabase,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
- if(page==='processos'&&window.cipAuth?.allowedRoutes?.includes(page))mountProcesses({db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
- if(page==='mensageiro'&&window.cipAuth?.allowedRoutes?.includes(page))mountBot({db:supabase,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
- if(page==='procfit'&&['superadm','diretoria'].includes(profile?.role))mountERP({db:supabase,user,canManage:profile.role==='superadm',companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
- if(['estoque','varejo','doquita'].includes(page)&&companies.has(V)&&window.cipAuth?.allowedRoutes?.includes(page))mountStockReference({db:supabase,root:document.getElementById('content'),companies:[...companies],isAlive:()=>!!user,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};},autoLoad:true,onOpen:()=>{if(window.cipAuth?.allowedRoutes?.includes('estoque'))window.navigate('estoque');}});
- if(['estoque','varejo','doquita'].includes(page)&&companies.has(V)&&window.cipAuth?.allowedRoutes?.includes(page))mountShoppingPosition({db:supabase,canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
- if(['estoque','varejo','doquita','b2b'].includes(page)&&window.cipAuth?.allowedRoutes?.includes(page))mountStockActions({db:supabase,companies:page==='b2b'?[B]:[...companies],canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
- if(page==="doquita")loadDoquita();
- if(page==="cronograma")reloadMilestones();
- if(page==="cotacoes")reloadQuoteRows();
- if(page==="caderninho")reloadDemandRows();
- if(page==="estoque")reloadScenarios();
- if(page==='precos'&&window.cipAuth?.allowedRoutes?.includes(page))mountPricing({db:supabase,companies:[...companies],canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
+ const onDispose=fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};};
+ if(routeHasModule(page,'executive-presentation')&&PRESENTATION_ROLES.includes(profile?.role))mountPresentation({root:document.getElementById('content'),role:profile.role,allowedRoutes:window.cipAuth.allowedRoutes,onDispose,preview:route=>({precos:()=>pricingFrame(),estoque:()=>stockReferenceFrame({compact:false}),processos:()=>processFrame(),mensageiro:()=>botFrame(),procfit:()=>erpFrame(),quartel:()=>renderSquadPage('quartel'),escola:()=>renderSquadPage('escola'),'radar-b2g':()=>renderSquadPage('radar-b2g')})[route]?.()||'',onOpen:route=>{if(!window.cipAuth?.allowedRoutes?.includes(route))return;window.navigate(route);const remove=presentationReturn(document.getElementById('content'),()=>{if(window.cipAuth?.allowedRoutes?.includes('apresentacao'))window.navigate('apresentacao');});onDispose(remove);}});
+ if(routeHasModule(page,{'quartel':'agent-operations','escola':'agent-academy','radar-b2g':'b2g-radar'}[page]))mountSquad(page,{db:supabase,user,companies:[...companies],onDispose});
+ if(routeHasModule(page,'integrations-admin'))mountAdmin({db:supabase,onDispose});
+ if(routeHasModule(page,'process-builder'))mountProcesses({db:supabase,user,companies:[...companies],onDispose});
+ if(routeHasModule(page,'telegram-console'))mountBot({db:supabase,companies:[...companies],onDispose});
+ if(routeHasModule(page,'procfit-reports'))mountERP({db:supabase,user,canManage:profile.role==='superadm',companies:[...companies],onDispose});
+ if(routeHasModule(page,'stock-reference')&&companies.has(V))mountStockReference({db:supabase,root:document.getElementById('content'),companies:[...companies],sessionId:user.id,isAlive:()=>!!user,onDispose,autoLoad:true,onOpen:()=>{if(window.cipAuth?.allowedRoutes?.includes('estoque'))window.navigate('estoque');}});
+ if(routeHasModule(page,'shopping-position')&&companies.has(V))mountShoppingPosition({db:supabase,canReview:['diretoria','superadm'].includes(profile?.role),onDispose});
+ if(routeHasModule(page,'stock-actions'))mountStockActions({db:supabase,companies:[...companies],canReview:['diretoria','superadm'].includes(profile?.role),onDispose});
+ if(routeHasModule(page,'doquita-briefing'))loadDoquita();
+ if(routeHasModule(page,'implementation-schedule'))reloadMilestones();
+ if(routeHasModule(page,'quotes'))reloadQuoteRows();
+ if(routeHasModule(page,'demand-notebook'))reloadDemandRows();
+ if(routeHasModule(page,'stock-simulator')&&companies.has(V))reloadScenarios();
+ if(routeHasModule(page,'pricing'))mountPricing({db:supabase,companies:[...companies],canReview:['diretoria','superadm'].includes(profile?.role),onDispose});
 };
 window.addEventListener("cip:navigate",e=>window.cipLoadPage(e.detail.page));
 supabase.auth.onAuthStateChange((_event,session)=>{if(!session && user)toLogin();});

@@ -13,7 +13,7 @@ export function mountERP({db,user,companies,onDispose,canManage=false}){
  const $=s=>root.querySelector(s),live=()=>alive&&root.isConnected;onDispose(()=>{alive=false;epoch++;});
  $('[data-erp-company]').innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(COMPANIES[c])}</option>`).join('');
  root.querySelector('details.card').hidden=!canManage; $('[data-erp-history]').closest('section').hidden=!canManage;
- mountStockReference({db,root,companies,isAlive:live,onDispose});
+ mountStockReference({db,root,companies,sessionId:user.id,isAlive:live,onDispose});
  const form=$('[data-erp-import]'),today=brazilDay(new Date());form.elements.from.value=today.slice(0,7)+'-01';form.elements.through.value=today;
  const dt=new Date();form.elements.captured.value=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16);
  form.elements.mode.addEventListener('change',()=>{$('[data-erp-csv]').hidden=form.elements.mode.value!=='csv';});
