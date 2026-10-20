@@ -1,10 +1,11 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
- <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ea1734">
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ea1734">
  <meta name="robots" content="noindex,nofollow"><meta name="description" content="CIP PRO 360° — ambiente privado de inteligência do Grupo Prohospital">
+ <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="CIP 360">
+ <link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-192.png"><link rel="icon" href="./icon-192.png" type="image/png">
  <title>CIP PRO 360° | Grupo Prohospital</title>
- <link rel="icon" href="./logo-grupo-prohospital.jpg" type="image/jpeg">
  <link rel="stylesheet" href="./agents.css?v=squad-20261018">
  <link rel="stylesheet" href="./presentation.css?v=board-20261019">
  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,6 +54,13 @@ html{scroll-behavior:smooth}
 .doquita-action strong{font-size:12px;color:var(--deep)}
 .doquita-action p{margin:5px 0 0}
 .doquita-metrics{margin:15px 0 20px}
+.bottom-nav{display:none}
+.offline-notice{display:none;position:fixed;z-index:8;right:18px;bottom:18px;max-width:min(460px,calc(100vw - 36px));padding:11px 14px;border:1px solid #f0d7aa;border-radius:11px;background:#fff9ef;color:#815612;box-shadow:0 5px 20px #1c27321a;font-size:12px}
+.install-app{font-size:11px;padding:9px 12px;white-space:nowrap}
+.bottom-nav button{border:0;background:transparent;color:#627080;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;min-width:0;min-height:54px;padding:5px 4px;font-size:10px;font-weight:700;border-radius:10px}
+.bottom-nav button .nav-icon{font-size:18px;line-height:1}
+.bottom-nav button.active{color:var(--red);background:#fff1f3}
+.bottom-nav button:focus-visible{outline:3px solid var(--brand-yellow);outline-offset:2px}
 @media(max-width:780px){
  .mobile-backdrop{display:block;position:fixed;inset:0;background:#0a1524ad;z-index:7;backdrop-filter:blur(2px)}
  .side{width:min(330px,88vw);left:-110vw;overflow:auto;overscroll-behavior:contain}
@@ -65,6 +73,13 @@ html{scroll-behavior:smooth}
  #crumb{font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .topnav .btn{font-size:11px;padding:10px}
  .mobile-menu{min-width:44px;min-height:44px}
+ .mobile-menu{display:none}
+ .bottom-nav{position:fixed;z-index:6;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);box-shadow:0 -5px 22px #17202b0d}
+ .bottom-nav button{min-height:50px}
+ .bottom-nav [data-bottom-more].active{background:#fff1f3}
+ .shell{padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+ .offline-notice{left:10px;right:10px;bottom:calc(70px + env(safe-area-inset-bottom));max-width:none;padding:10px 13px}
+ .offline-notice.visible{display:block}
  .main{padding:20px 13px}
  .doquita-grid{grid-template-columns:1fr}
 }
@@ -73,7 +88,7 @@ html{scroll-behavior:smooth}
 </head>
 <body>
 <section id="login" class="login">
- <div class="login-art"><div class="brand login-brand"><div class="logo-official"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial do Grupo Prohospital" loading="eager"></div><div class="brand-kicker"><strong>CIP PRO 360°</strong><small>CENTRO DE INTELIGÊNCIA · GRUPO PROHOSPITAL</small></div></div>
+ <div class="login-art"><div class="brand login-brand"><div class="logo-official"><img src="./logo-cip-512.jpg" alt="Logo oficial do Grupo Prohospital" loading="eager" width="512" height="365"></div><div class="brand-kicker"><strong>CIP PRO 360°</strong><small>CENTRO DE INTELIGÊNCIA · GRUPO PROHOSPITAL</small></div></div>
  <div><span class="pill" style="background:#ffffff24;color:white">CENTRO DE INTELIGÊNCIA</span><h1>Decisões melhores. Resultados reais.</h1><p>Estoque, preços e inteligência comercial. Shopping Prohospital e Distribuidora Prohospital conectadas à mesma visão estratégica.</p></div>
  <div class="footer">CIP PRO 360° · Tecnologia e desenvolvimento: GRIT Soluções e Negócios</div></div>
  <div class="login-side"><div class="login-card"><span class="eyebrow">Ambiente corporativo</span><h2>Bem-vindo ao CIP.</h2><p class="muted">Entre com sua conta autorizada para consultar os módulos do Grupo Prohospital.</p>
@@ -86,7 +101,7 @@ html{scroll-behavior:smooth}
 <div id="interface" class="app hide">
  <div id="menuBackdrop" class="mobile-backdrop" hidden></div>
  <aside id="side" class="side" aria-label="Navegação do CIP PRO 360">
-   <div class="brand side-brand"><div class="logo-official"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial do Grupo Prohospital"></div><div><strong>CIP PRO 360°</strong><small>GRUPO PROHOSPITAL</small></div></div>
+   <div class="brand side-brand"><div class="logo-official"><img src="./logo-cip-512.jpg" alt="Logo oficial do Grupo Prohospital" width="512" height="365"></div><div><strong>CIP PRO 360°</strong><small>GRUPO PROHOSPITAL</small></div></div>
    <div><h6>VISÃO ESTRATÉGICA</h6><button class="navitem active" data-route="inicio">◈ Visão Geral</button><button class="navitem" data-route="cronograma">◷ Cronograma</button><button class="navitem" data-route="doquita">✧ Doquita</button></div>
    <div><h6>SHOPPING PROHOSPITAL</h6><button class="navitem" data-route="varejo">▦ Visão Varejo</button><button class="navitem" data-route="estoque">▤ Estoque inteligente</button><button class="navitem" data-route="precos">▥ Marca-passo de preços</button></div>
    <div><h6>DISTRIBUIDORA PROHOSPITAL</h6><button class="navitem" data-route="b2b">▣ Visão B2B</button><button class="navitem" data-route="cotacoes">▤ Cotações & conversão</button><button class="navitem" data-route="caderninho">◇ Caderninho inteligente</button></div>
@@ -96,8 +111,16 @@ html{scroll-behavior:smooth}
    <div style="margin-top:auto"><span class="pill neutral whoami">Sessão corporativa</span><button style="margin-top:10px" class="navitem" onclick="window.cipSignOut?.()">← Encerrar sessão</button></div>
  </aside>
  <div class="shell">
-  <header class="topnav"><div class="row"><button id="mobileMenuButton" class="mobile-menu" onclick="toggleMenu()" type="button" aria-controls="side" aria-expanded="false" aria-label="Abrir menu de navegação">☰</button><strong id="crumb">Visão Geral</strong></div><div class="row"><span class="status-chip" id="procfitConnectionChip" title="Cadastro de produtos integrado ao Procfit; vendas e saldos comerciais ainda pendentes.">PROCFIT · PARCIAL</span><span class="mini" style="display:none">Superadm</span><button class="btn secondary" onclick="window.cipSignOut?.()">Sair</button></div></header>
+  <header class="topnav"><div class="row"><button id="mobileMenuButton" class="mobile-menu" onclick="toggleMenu()" type="button" aria-controls="side" aria-expanded="false" aria-label="Abrir menu de navegação">☰</button><strong id="crumb">Visão Geral</strong></div><div class="row"><span class="status-chip" id="procfitConnectionChip" title="Cadastro de produtos integrado ao Procfit; vendas e saldos comerciais ainda pendentes.">PROCFIT · PARCIAL</span><button id="installAppButton" class="btn secondary install-app hide" type="button">Instalar app</button><span class="mini" style="display:none">Superadm</span><button class="btn secondary" onclick="window.cipSignOut?.()">Sair</button></div></header>
   <main id="content" class="main"></main>
+  <nav id="bottomNav" class="bottom-nav" aria-label="Navegação principal">
+   <button type="button" data-route="inicio" data-bottom-route="inicio" aria-label="Início"><span class="nav-icon" aria-hidden="true">⌂</span><span>Início</span></button>
+   <button type="button" data-route="estoque" data-bottom-route="estoque" aria-label="Estoque inteligente"><span class="nav-icon" aria-hidden="true">▤</span><span>Estoque</span></button>
+   <button type="button" data-route="precos" data-bottom-route="precos" aria-label="Marca-passo de preços"><span class="nav-icon" aria-hidden="true">▥</span><span>Preços</span></button>
+   <button type="button" data-route="b2b" data-bottom-route="b2b" aria-label="Distribuidora B2B"><span class="nav-icon" aria-hidden="true">▣</span><span>B2B</span></button>
+   <button type="button" data-bottom-more aria-controls="side" aria-expanded="false" aria-label="Abrir mais módulos"><span class="nav-icon" aria-hidden="true">☰</span><span>Mais</span></button>
+  </nav>
+  <div id="offlineNotice" class="offline-notice" role="status" aria-live="polite"></div>
  </div>
 </div>
 <script>
@@ -120,7 +143,8 @@ function closeMenu({returnFocus=false}={}){
  const wasOpen=side.classList.contains('open');
  side.classList.remove('open');backdrop.hidden=true;document.body.classList.remove('nav-open');
  button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','Abrir menu de navegação');
- if(returnFocus&&wasOpen)button.focus();
+ const more=document.querySelector('[data-bottom-more]');more?.setAttribute('aria-expanded','false');
+ if(returnFocus&&wasOpen)(window.matchMedia('(max-width: 780px)').matches?more:button)?.focus();
 }
 function toggleMenu(){
  const side=document.getElementById('side'),backdrop=document.getElementById('menuBackdrop'),button=document.getElementById('mobileMenuButton');
@@ -129,12 +153,15 @@ function toggleMenu(){
  button.setAttribute('aria-expanded','true');button.setAttribute('aria-label','Fechar menu de navegação');
  side.querySelector('.navitem:not(.hide)')?.focus();
 }
+document.querySelector('[data-bottom-more]').addEventListener('click',()=>{const button=document.querySelector('[data-bottom-more]');const open=!document.getElementById('side').classList.contains('open');toggleMenu();button.setAttribute('aria-expanded',String(open));});
 document.getElementById('menuBackdrop').addEventListener('click',()=>closeMenu({returnFocus:true}));
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu({returnFocus:true})});
 window.matchMedia('(min-width: 781px)').addEventListener('change',event=>{if(event.matches)closeMenu()});
 function navigate(page){
  if(!window.cipAuth || !window.cipAuth.allowedRoutes.includes(page))return;
  document.querySelectorAll('[data-route]').forEach(b=>b.classList.toggle('active',b.dataset.route===page));
+ document.querySelectorAll('[data-bottom-route]').forEach(b=>{const active=b.dataset.bottomRoute===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+ const quickRoutes=[...document.querySelectorAll('[data-bottom-route]:not(.hide)')].map(b=>b.dataset.bottomRoute),more=document.querySelector('[data-bottom-more]');more?.classList.toggle('active',!quickRoutes.includes(page));
  closeMenu();document.getElementById('crumb').textContent=page==='apresentacao'?'CIP 360 para a diretoria':names[page];let h='';
  if(page==='procfit'){h=window.cipRenderERP?.()||'<p>Carregando relatórios…</p>'}
  else if(page==='apresentacao'){if(!['superadm','diretoria'].includes(window.cipAuth.role))return;h=window.cipRenderPresentation?.()||'<p>Carregando apresentação…</p>'}
@@ -167,6 +194,16 @@ function navigate(page){
 }
 document.querySelectorAll('[data-route]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.route)));
 document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();window.cipLogin?.(e)});
+const installButton=document.getElementById('installAppButton');let installPrompt=null;
+const isAppleMobile=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+if(isAppleMobile)installButton.classList.remove('hide');
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;installButton.classList.remove('hide');});
+window.addEventListener('appinstalled',()=>{installPrompt=null;installButton.classList.add('hide');});
+installButton.addEventListener('click',async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.classList.add('hide');return;}if(isAppleMobile)alert('Para instalar no iPhone: toque em Compartilhar no Safari e escolha “Adicionar à Tela de Início”.');});
+function updateConnectionState(){const notice=document.getElementById('offlineNotice');if(navigator.onLine){notice.classList.remove('visible');return;}const time=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});notice.textContent='Sem conexão desde '+time+'. Esta aba mantém somente a tela que já estava aberta; atualize os dados quando a rede voltar.';notice.classList.add('visible');}
+window.addEventListener('offline',updateConnectionState);window.addEventListener('online',()=>document.getElementById('offlineNotice').classList.remove('visible'));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+if(!navigator.onLine)updateConnectionState();
 </script>
 <script type="module" src="./cip-auth.js?v=board-presentation-20261019"></script>
 </body></html>
