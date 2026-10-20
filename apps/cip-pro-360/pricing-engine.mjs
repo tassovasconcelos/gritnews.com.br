@@ -3,6 +3,7 @@ const DAY=86400000;
 const elapsed=(a,b)=>Math.round((Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/DAY);
 const number=(v,name,min=0,max=1e12)=>{if(v===null||v===undefined||String(v).trim()===''||!Number.isFinite(Number(v))||Number(v)<min||Number(v)>max)throw Error('Confira '+name+'.');return Number(v);};
 const ceilMoney=v=>Math.ceil((v-1e-9)*100)/100;
+const addDays=(date,days)=>{const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
 // Simulation only; no write, discount execution, inferred elasticity or forecast.
 export function simulatePrice(input,now=new Date()){
  const cost=number(input.cost,'custo',0.00000001),price=number(input.price,'preço atual',0.01),expenses=number(input.expense_pct,'despesas percentuais',0,99),fixed=number(input.fixed_cost,'despesas fixas por unidade'),minimum=number(input.minimum_margin_pct,'contribuição mínima',0,99),target=number(input.target_margin_pct,'contribuição alvo',0,99),maxChange=number(input.max_change_pct,'variação máxima',0,100),candidate=number(input.candidate,'preço em avaliação',0.01),units=number(input.units,'quantidade do cenário',0.0001);
@@ -28,15 +29,25 @@ export function buildPriceQueue(snapshot,now=new Date(),offset=0){
  const all=[...groups.entries()].map(([key,g])=>{const s=sales.get(key),recent=s?.last&&elapsed(asof,s.last)<=180;const last=s?.last&&(!g.last||s.last>g.last)?s.last:g.last;const history180=m.sales_complete&&elapsed(asof,m.sales_from)>=180&&m.sales_through>=asof;
   const noSales=recent?false:last?elapsed(asof,last)>180?history180||m.last_sale_verified?true:null:false:history180?true:null;
   const daily=demandComplete&&s?.units>0?s.units/90:null,coverage=daily?g.quantity/daily:null,current=prices.get(key)??null;
-  const reasons=[];if(stale)reasons.push('Atualizar carga antes de decidir');if(!m.inventory_complete)reasons.push('Conferir cobertura do estoque');if(g.old_value>0)reasons.push('Capital em lotes >180 dias');if(noSales===true)reasons.push('Sem venda positiva em 180 dias');if(coverage!==null&&coverage>180)reasons.push('Cobertura superior a 180 dias');if(coverage!==null&&coverage<15)reasons.push('Risco de ruptura: evitar promoção');if(g.unknown_age)reasons.push('Idade parcialmente desconhecida');if(!current)reasons.push('Preço vigente ausente');
-  return {...g,last_sale_date:last,no_sales_180:noSales,average_cost:g.value/g.quantity,current_price:current,coverage_days:coverage,net_units_90d:demandComplete?s?.units??0:null,priority:g.old_value>0?'capital_antigo':noSales===true?'sem_vendas':coverage!==null&&coverage>180?'excesso':coverage!==null&&coverage<15?'ruptura':'conferir',reasons,discount_ready:false};
+  let idleSince=null,idleBasis=null;
+  if(noSales===true){
+   if(last&&(m.last_sale_verified||history180)){idleSince=addDays(last,1);if(idleSince<m.sales_from&&history180)idleSince=m.sales_from;idleBasis=m.last_sale_verified?'ultima_venda_erp_verificada':'janela_completa_de_vendas';}
+   else if(history180){idleSince=m.sales_from;idleBasis='inicio_da_janela_completa_sem_vendas';}
+  }
+  const idleDays=idleSince===null?null:Math.max(0,elapsed(asof,idleSince));
+  const carryingCostScenario=g.value*MP_MONTHLY_CARRY_RATE_PCT/100;
+  const monthlyCarryCost=noSales===true?g.value*MP_MONTHLY_CARRY_RATE_PCT/100:null;
+  const accruedCarryEstimate=idleDays===null?null:g.value*MP_MONTHLY_CARRY_RATE_PCT/100*idleDays/30;
+  const reasons=[];if(stale)reasons.push('Atualizar carga: custo e saldo observados em base antiga');if(!m.inventory_complete)reasons.push('Conferir cobertura do estoque');if(g.old_value>0)reasons.push('Capital em lotes >180 dias');if(noSales===true)reasons.push('Sem venda positiva em 180 dias');if(noSales===true&&idleDays===null)reasons.push('Data confiável de início da parada indisponível');if(coverage!==null&&coverage>180)reasons.push('Cobertura superior a 180 dias');if(coverage!==null&&coverage<15)reasons.push('Risco de ruptura: evitar promoção');if(g.unknown_age)reasons.push('Idade parcialmente desconhecida');if(!current)reasons.push('Preço vigente ausente');
+  return {...g,last_sale_date:last,no_sales_180:noSales,idle_since:idleSince,idle_basis:idleBasis,idle_days:idleDays,monthly_carry_rate_pct:MP_MONTHLY_CARRY_RATE_PCT,monthly_carrying_cost_scenario:carryingCostScenario,monthly_carrying_cost:monthlyCarryCost,accumulated_carrying_cost_estimate:accruedCarryEstimate,average_cost:g.value/g.quantity,current_price:current,cost_observed_at:snapshot.captured_at,cost_status:stale?'atualizacao_requerida':'custo_da_base_aprovada',coverage_days:coverage,net_units_90d:demandComplete?s?.units??0:null,priority:g.old_value>0?'capital_antigo':noSales===true?'sem_vendas':coverage!==null&&coverage>180?'excesso':coverage!==null&&coverage<15?'ruptura':'conferir',reasons,discount_ready:false};
  }).sort((a,b)=>b.old_value-a.old_value||b.value-a.value||a.store_id.localeCompare(b.store_id)||a.sku.localeCompare(b.sku));
  const start=Number.isSafeInteger(offset)&&offset>=0?offset:0;
- return {available:true,company:snapshot.company_id,source:snapshot.source_name,hash:snapshot.source_hash,captured_at:snapshot.captured_at,status:snapshot.status,partial:m.scope!=='company_all',stale,demand_complete:demandComplete,page:{offset:start,limit:20,total:all.length,has_more:start+20<all.length},items:all.slice(start,start+20),notice:'Fila de revisão; custo por saldo valorizado. Antes de precificar: validar custo de reposição, tributação, reservas, validade, frete, comissão e contribuição. ABC/XYZ e elasticidade aguardam histórico adequado.'};
+  return {available:true,company:snapshot.company_id,source:snapshot.source_name,hash:snapshot.source_hash,captured_at:snapshot.captured_at,status:snapshot.status,partial:m.scope!=='company_all',stale,demand_complete:demandComplete,page:{offset:start,limit:20,total:all.length,has_more:start+20<all.length},items:all.slice(start,start+20),notice:'Custo unitário médio ponderado vem do saldo valorizado da última base aprovada. Atualize a carga Procfit para renovar custo e preço observados. Custo mensal estimado = valor atual a custo × 1,5%. Acumulado estimado só aparece quando uma janela confiável comprova a parada; usa o saldo atual e não é perda contábil realizada. Validar custo de reposição, tributação, reservas, validade, frete, comissão e contribuição antes de agir. ABC/XYZ e elasticidade aguardam histórico adequado.'};
 }
 
 // Marca-passo F1: deterministic scenarios, never a forecast or an ERP instruction.
 export const MP_RULE_VERSION='mp-economics-2026-10-19.1';
+export const MP_MONTHLY_CARRY_RATE_PCT=1.5;
 export function carryingCost({capital,days,monthly_rate_pct=1.5,expiry_risk=0}){
  const c=number(capital,'capital elegível'),d=number(days,'dias',0,3650),r=number(monthly_rate_pct,'taxa mensal',0,100),risk=number(expiry_risk,'risco de perda estimado');
  return {simulation:true,capital:c,days:d,monthly_rate_pct:r,capital_cost:c*r/100*d/30,expiry_risk:risk,total:c*r/100*d/30+risk,formula:'capital × taxa mensal ÷ 100 × dias ÷ 30 + risco de perda',rule_version:MP_RULE_VERSION};
