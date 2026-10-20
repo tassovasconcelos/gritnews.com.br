@@ -21,6 +21,10 @@ test('route permissions preserve company and role boundaries', () => {
   assert.ok(canAccessRoute('estoque', { role: 'gestor', companies: ['distribuidora_prohospital'] }));
   assert.ok(canAccessRoute('estoque', { role: 'gestor', companies: ['distribuidora_prohospital'] }));
   assert.ok(canAccessRoute('precos', { role: 'precificacao', companies: ['distribuidora_prohospital'] }));
+  assert.ok(canAccessRoute('caderninho', { role: 'vendedor', companies: ['shopping_prohospital'] }));
+  assert.ok(canAccessRoute('caderninho', { role: 'comercial', companies: ['distribuidora_prohospital'] }));
+  assert.ok(canAccessRoute('caderninho', { role: 'diretoria', companies: ['shopping_prohospital', 'distribuidora_prohospital'] }));
+  assert.ok(!canAccessRoute('caderninho', { role: 'vendedor', companies: [] }));
   assert.ok(!canAccessRoute('integracoes', { role: 'diretoria', companies: ['shopping_prohospital'] }));
   assert.ok(canAccessRoute('procfit', { role: 'diretoria', companies: [] }));
   assert.deepEqual(allowedRoutesFor({ role: 'superadm', companies: [] }).includes('integracoes'), true);
@@ -52,6 +56,10 @@ test('only the stock route mounts the shared stock modules', () => {
   assert.match(auth, /routeHasModule\(page,'stock-actions'\)\)mountStockActions/);
   assert.match(auth, /routeHasModule\(page,'shopping-position'\)&&companies\.has\(V\)\)mountShoppingPosition/);
   assert.match(auth, /routeHasModule\(page,'stock-reference'\)&&companies\.has\(V\)\)mountStockReference/);
+  assert.match(auth, /\.eq\("company_id",companyId\)/);
+  assert.match(auth, /insert\(\{company_id:companyId,created_by:user\.id/);
+  assert.match(index, /Caderninho Inteligente','Foco principal no varejo; também registra demandas não atendidas da Distribuidora/);
+  assert.match(index, /demandCompany.*shopping_prohospital.*distribuidora_prohospital/);
   assert.doesNotMatch(pricing, /stock-actions-ui|shopping-position\.mjs|mountStockActions|mountShoppingPosition|stockActionsFrame|shoppingPositionFrame/);
   for (const route of ['varejo', 'b2b', 'doquita']) {
     const branch = index.match(new RegExp(`else if\\(page==='${route}'\\)\\{([\\s\\S]*?)(?=else if\\(|\\n document\\.getElementById)`))?.[1] || '';

@@ -152,14 +152,19 @@ window.cipQuoteStatus=async(id,status)=>{
 };
 async function reloadDemandRows(){
  const host=$("cipDemandRows");if(!host)return;
- const {data,error}=await supabase.from("cip_demands").select("id,product,customer,requested_quantity,reason,status").eq("company_id",B).order("created_at",{ascending:false}).limit(100);
+ const selected=$("demandCompany")?.value;
+ const companyId=companies.has(selected)?selected:companies.has(V)?V:companies.has(B)?B:null;
+ if(!companyId){host.textContent="Sem empresa autorizada para registrar demandas.";return;}
+ const {data,error}=await supabase.from("cip_demands").select("id,product,customer,requested_quantity,reason,status").eq("company_id",companyId).order("created_at",{ascending:false}).limit(100);
  if(error){host.textContent="Não foi possível acessar as demandas.";return;}
  if(!data?.length){host.textContent="Nenhuma demanda manual cadastrada.";return;}
- const tr=data.map(x=>'<tr><td>'+escape(x.product)+'</td><td>'+escape(x.customer||"—")+'</td><td>'+escape(x.requested_quantity)+'</td><td>'+escape(x.reason)+'</td><td><select onchange="cipDemandStatus(\''+escape(x.id)+'\',this.value)">'+["registrado","em_busca","cotado","convertido","perdido"].map(k=>'<option value="'+k+'" '+(k===x.status?"selected":"")+'>'+k+'</option>').join("")+'</select></td></tr>').join("");
+ const tr=data.map(x=>'<tr><td>'+escape(x.product)+'</td><td>'+escape(x.customer||"—")+'</td><td>'+escape(x.requested_quantity)+'</td><td>'+escape(x.reason)+'</td><td><select onchange="cipDemandStatus(\''+escape(x.id)+'\',this.value,\''+companyId+'\')">'+["registrado","em_busca","cotado","convertido","perdido"].map(k=>'<option value="'+k+'" '+(k===x.status?"selected":"")+'>'+k+'</option>').join("")+'</select></td></tr>').join("");
  host.innerHTML='<div class="tablewrap"><table><thead><tr><th>Produto procurado</th><th>Cliente</th><th>Qtd.</th><th>Motivo</th><th>Status</th></tr></thead><tbody>'+tr+'</tbody></table></div>';
 }
-window.cipDemandStatus=async(id,status)=>{
- const {error}=await supabase.from("cip_demands").update({status,updated_at:new Date().toISOString()}).eq("id",id).eq("company_id",B);
+window.cipDemandCompanyChanged=()=>reloadDemandRows();
+window.cipDemandStatus=async(id,status,companyId)=>{
+ if(!companies.has(companyId)){alert("Sem permissão para alterar esta demanda.");return;}
+ const {error}=await supabase.from("cip_demands").update({status,updated_at:new Date().toISOString()}).eq("id",id).eq("company_id",companyId);
  if(error)alert("Sem permissão para alterar a demanda.");reloadDemandRows();
 };
 window.cipSaveQuote=async()=>{
@@ -172,7 +177,10 @@ window.cipSaveQuote=async()=>{
 window.cipSaveDemand=async()=>{
  const product=$("demandProduct")?.value.trim(),customer=$("demandCustomer")?.value.trim(),q=Number($("demandQty")?.value);
  if(!product||!Number.isFinite(q)||q<=0){alert("Informe o produto e a quantidade.");return;}
- const {error}=await supabase.from("cip_demands").insert({company_id:B,created_by:user.id,product,customer,requested_quantity:q,reason:"nao_cadastrado"});
+ const selected=$("demandCompany")?.value;
+ const companyId=companies.has(selected)?selected:companies.has(V)?V:companies.has(B)?B:null;
+ if(!companyId){alert("Sem empresa autorizada para registrar a demanda.");return;}
+ const {error}=await supabase.from("cip_demands").insert({company_id:companyId,created_by:user.id,product,customer,requested_quantity:q,reason:"nao_cadastrado"});
  if(error){alert("Demanda não salva: verifique suas permissões.");return;}
  $("demandProduct").value="";$("demandCustomer").value="";$("demandQty").value="1";reloadDemandRows();
 };

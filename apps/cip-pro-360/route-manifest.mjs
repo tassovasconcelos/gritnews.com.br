@@ -7,7 +7,7 @@ export const ROUTE_MANIFEST = Object.freeze({
   precos: { title: 'Marca-passo de Preços', anyCompanies: ['shopping_prohospital', 'distribuidora_prohospital'], modules: ['pricing'] },
   b2b: { title: 'Distribuidora Prohospital', companies: ['distribuidora_prohospital'], modules: ['b2b-summary'] },
   cotacoes: { title: 'Cotações e Conversão', companies: ['distribuidora_prohospital'], modules: ['quotes'] },
-  caderninho: { title: 'Caderninho Inteligente', companies: ['distribuidora_prohospital'], modules: ['demand-notebook'] },
+  caderninho: { title: 'Caderninho Inteligente', anyCompanies: ['shopping_prohospital', 'distribuidora_prohospital'], modules: ['demand-notebook'] },
   quartel: { title: 'Quartel dos Agentes', modules: ['agent-operations'] },
   escola: { title: 'Escola dos Agentes', modules: ['agent-academy'] },
   processos: { title: 'Processos vivos', modules: ['process-builder'] },
