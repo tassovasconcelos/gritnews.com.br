@@ -57,6 +57,7 @@ jobs:
           node --test apps/cip-pro-360/stock-action-engine.test.mjs
           node --test apps/cip-pro-360/pricing-intelligence.test.mjs
           node --test apps/cip-pro-360/pricing-engine.test.mjs
+          node --test apps/cip-pro-360/pricing-campaign-engine.test.mjs
           node --check apps/cip-pro-360/procfit-catalog-ui.mjs
           node --test apps/cip-pro-360/procfit-catalog.test.mjs
           node --check apps/cip-pro-360/procfit-status-ui.mjs
