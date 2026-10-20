@@ -3,6 +3,7 @@ export const NODE_TYPES={start:'Início',task:'Atividade',decision:'Decisão',ap
 export const PRACTICES=[{title:'Processos, risco e melhoria contínua · ISO',url:'https://www.iso.org/insights/iso-9001-explained',checked:'2026-10-19',detail:'Referência para donos, indicadores e melhoria contínua; não representa certificação.'},{title:'Rastreabilidade por eventos · GS1 EPCIS',url:'https://www.gs1.org/standards/epcis',checked:'2026-10-19',detail:'Evolução a avaliar para estoque e logística: registrar eventos e seus dados essenciais.'},{title:'Governança, medição e supervisão de IA · NIST',url:'https://airc.nist.gov/airmf-resources/airmf/5-sec-core/',checked:'2026-10-19',detail:'Referência para responsabilidades humanas, avaliação e monitoramento dos agentes.'},{title:'Fluxos com início, fim e decisões explícitas',url:'https://www.omg.org/spec/BPMN/2.0/',checked:'2026-10-19',detail:'Inspiração em BPMN. O editor usa notação simplificada, sem certificação de conformidade BPMN.'},{title:'Conhecimento aprovado e revisão periódica',url:'https://cip.gritnews.com.br/',checked:'2026-10-19',detail:'Prática interna CIP: fonte, responsável, indicador, teste e aprovação. Recomendações são regras locais; tendências atuais exigem pesquisa e evidência datada.'}];
 const str=(v,max)=>typeof v==='string'&&v.length<=max;
 export function validGraph(g,company){
+ if(g?.governance&&!validGovernance(g.governance))return false;
  if(!g||g.schema!==1||!Array.isArray(g.nodes)||!Array.isArray(g.edges)||g.nodes.length>60||g.edges.length>120)return false;
  const ids=new Set();
  for(const n of g.nodes){if(!n||!str(n.id,48)||!/^n[\w-]+$/.test(n.id)||ids.has(n.id)||!Object.hasOwn(NODE_TYPES,n.type)||!str(n.title,120)||!n.title.trim()||!Number.isFinite(n.x)||!Number.isFinite(n.y)||n.x<0||n.y<0||n.x>3000||n.y>3000||!['owner','metric','evidence','notes'].every(k=>str(n[k]??'',k==='notes'?2000:500))||!AGENTS.some(a=>a.id===n.agent&&(!company||a.companies.includes(company))))return false;ids.add(n.id);}
@@ -176,4 +177,21 @@ export function processQualification(g){
  const timed=nodes.filter(n=>/^\d+$/.test(n.planned_minutes||'')).length;
  const outputs=nodes.filter(n=>n.output?.trim()).length;
  return {activities:nodes.length,assigned,timed,outputs,completed:nodes.filter(n=>n.execution_status==='done').length,pending:nodes.length*3-assigned-timed-outputs,plannedMinutes:nodes.reduce((sum,n)=>sum+(/^\d+$/.test(n.planned_minutes||'')?Number(n.planned_minutes):0),0)};
+}
+
+export const CHANGE_OPTIONS={cost_status:{pending:'Custo a qualificar',none:'Sem custo adicional',existing:'Usa orçamento existente',additional:'Exige investimento adicional'},resource:{none:'Sem recurso adicional',reallocate:'Realocar equipe/capacidade',hire:'Contratação de pessoal',vehicle:'Aquisição ou locação de veículo',service:'Serviço, licença ou equipamento',multiple:'Mais de um recurso'},priority:{normal:'Normal · fila planejada',high:'Alta · justificar impacto',critical:'Crítica · escalar à diretoria'},status:{draft:'Rascunho',review:'Em análise das áreas',approved:'Aceite declarado com evidência',rejected:'Não aprovado'}};
+export const CHANGE_FIELDS={setup_cost:'Investimento inicial estimado (R$)',monthly_cost:'Custo mensal adicional estimado (R$)',cost_basis:'Memória de custo / justificativa sem custo',resource_detail:'Recurso necessário e alternativa com a estrutura atual',priority_reason:'Motivo da prioridade e impacto de esperar',affected_processes:'Processos, pedidos e áreas afetados',capacity:'Capacidade disponível e o que será reprogramado',approver:'Responsável pela alçada e áreas consultadas',approval_evidence:'Registro do aceite ou parecer das áreas',rollback:'Plano de implantação gradual e reversão'};
+export function validGovernance(g){return !!g&&typeof g==='object'&&!Array.isArray(g)&&Object.entries(g).every(([k,v])=>Object.hasOwn(CHANGE_OPTIONS,k)?typeof v==='string'&&Object.hasOwn(CHANGE_OPTIONS[k],v):['setup_cost','monthly_cost'].includes(k)?typeof v==='string'&&(v===''||/^\d{1,12}(?:\.\d{1,2})?$/.test(v)):Object.hasOwn(CHANGE_FIELDS,k)&&typeof v==='string'&&v.length<=1200);}
+export function changeReadiness(g){
+ if(!g||!validGovernance(g))return ['Qualificar custo, recursos, prioridade e impactos corporativos.'];
+ const out=[];if(!g.cost_status||g.cost_status==='pending')out.push('Informar se existe custo adicional.');
+ if(!g.cost_basis?.trim())out.push('Registrar a memória de custo ou justificativa de ausência de custo adicional.');
+ if(g.cost_status==='additional'&&(!g.setup_cost||!g.monthly_cost))out.push('Informar investimento inicial e mensal adicional, incluindo zero quando aplicável.');
+ if(g.cost_status==='none'&&[g.setup_cost,g.monthly_cost].some(x=>Number(x)>0))out.push('Há valor adicional informado: corrigir classificação de custo.');
+ if(!g.resource)out.push('Qualificar recursos, contratação, veículo ou realocação.');
+ if(g.resource&&g.resource!=='none'&&!g.resource_detail?.trim())out.push('Detalhar recurso e alternativa com a capacidade atual.');
+ if(!g.priority||!g.priority_reason?.trim())out.push('Justificar prioridade perante a fila corporativa.');
+ for(const k of ['affected_processes','capacity','approver','rollback'])if(!g[k]?.trim())out.push(CHANGE_FIELDS[k]+'.');
+ if(g.status!=='approved'||!g.approval_evidence?.trim())out.push('Obter e registrar aceite das alçadas e áreas afetadas antes de implantar.');
+ return out;
 }

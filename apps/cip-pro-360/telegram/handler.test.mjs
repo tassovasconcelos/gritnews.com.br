@@ -34,7 +34,7 @@ async function invoke(text,{authorized=true,scope='all',rpcError=false,header=se
  return {response,messages,calls};
 }
 test('webhook inventory connects authorized ERP fallback to one executive answer',async()=>{
- const r=await invoke('/estoque');assert.equal(r.response.status,200);assert.equal(r.messages.length,1);assert.match(r.messages[0].text,/^Custo declarado/);assert.match(r.messages[0].text,/R\$ 10,00/);assert.match(r.messages[0].text,/Distribuidora Prohospital: sem base/);assert.ok(r.calls.some(c=>c.name==='cip_bot_stock_reference'));
+ const r=await invoke('/estoque');assert.equal(r.response.status,200);assert.equal(r.messages.length,1);assert.match(r.messages[0].text,/^Olá!.*\n\nCusto declarado/);assert.match(r.messages[0].text,/R\$ 10,00/);assert.match(r.messages[0].text,/Distribuidora Prohospital: sem base/);assert.ok(r.calls.some(c=>c.name==='cip_bot_stock_reference'));
 });
 test('direct combined reference request and audio keep same summary and memory',async()=>{
  for(const audio of [false,true]){const r=await invoke('Unifique estoque CD100 e lojas',{audio});assert.equal(r.response.status,200);assert.doesNotMatch(r.messages[0].text,/Composição e memória de cálculo/);assert.equal(r.messages[0].reply_markup.inline_keyboard[0][0].callback_data,'report_details');assert.equal(r.calls.filter(c=>c.name==='cip_bot_stock_reference')[0].args.p_scope,'both');}
@@ -50,13 +50,13 @@ test('sales does not substitute provisional stock',async()=>{
 });
 
 test('current dated position wins for text and voice, never adds old Shopping references',async()=>{
- for(const audio of [false,true]){const r=await invoke('/marcapasso',{current:true,audio,scope:company});assert.equal(r.response.status,200);assert.match(r.messages[0].text,/^Estoque valorizado no filtro: R\$ 22,01/);assert.match(r.messages[0].text,/2025-04-08/);assert.ok(!r.calls.some(c=>c.name==='cip_bot_stock_reference'));}
+ for(const audio of [false,true]){const r=await invoke('/marcapasso',{current:true,audio,scope:company});assert.equal(r.response.status,200);assert.match(r.messages[0].text,/^Olá!.*\n\nEstoque valorizado no filtro: R\$ 22,01/);assert.match(r.messages[0].text,/2025-04-08/);assert.ok(!r.calls.some(c=>c.name==='cip_bot_stock_reference'));}
 });
 test('failed current source does not silently answer from an older workbook',async()=>{
  const r=await invoke('/bases',{currentError:true});assert.equal(r.response.status,503);assert.equal(r.messages.length,0);assert.ok(!r.calls.some(c=>c.name==='cip_bot_stock_reference'));
 });
 test('B2B dated lots are returned directly and CD100 never includes the distributor warehouse',async()=>{
- const r=await invoke('/bases',{intelligence:true,scope:other});assert.equal(r.response.status,200);assert.match(r.messages[0].text,/^Estoque B2B no filtro.*R\$ 7,01/);assert.ok(!r.calls.some(c=>c.name==='cip_bot_stock_reference'));
+ const r=await invoke('/bases',{intelligence:true,scope:other});assert.equal(r.response.status,200);assert.match(r.messages[0].text,/^Olá!.*\n\nEstoque B2B no filtro.*R\$ 7,01/);assert.ok(!r.calls.some(c=>c.name==='cip_bot_stock_reference'));
  const cd=await invoke('/cd',{intelligence:true,scope:other});assert.equal(cd.response.status,200);assert.ok(!cd.calls.some(c=>c.name==='cip_bot_stock_intelligence'));assert.doesNotMatch(cd.messages[0].text,/R\$ 7,01/);
 });
 

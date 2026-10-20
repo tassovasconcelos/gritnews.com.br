@@ -35,3 +35,13 @@ test('activity qualification counts confirmed people, bounded times and declared
  for(const patch of [{planned_minutes:'-1'},{planned_minutes:'Infinity'},{actual_minutes:'525601'},{execution_status:'approved'},{output:'x'.repeat(501)}]){const copy=structuredClone(g);Object.assign(copy.nodes.find(x=>x.id===n.id),patch);assert.equal(validGraph(copy,company),false);}
  assert.equal(g.consultation.observations.length,0);
 });
+
+
+test('corporate change qualification blocks uncosted or disruptive priority and keeps draft saving',async()=>{
+ const {changeReadiness,validGovernance,operationalTemplate}=await import('./process-engine.mjs');
+ assert.ok(changeReadiness().length);const g={cost_status:'additional',resource:'vehicle',priority:'critical',status:'review'};
+ assert.ok(changeReadiness(g).some(x=>/investimento inicial/.test(x)));assert.ok(changeReadiness(g).some(x=>/fila corporativa/.test(x)));
+ Object.assign(g,{setup_cost:'0',monthly_cost:'5000.00',cost_basis:'Cotação sintética para teste.',resource_detail:'Locação a avaliar contra realocação de capacidade.',priority_reason:'Prazo de atendimento em risco; validar fila.',affected_processes:'Expedição e pedidos existentes.',capacity:'Janela limitada aprovada para teste.',approver:'Gestor de teste',rollback:'Retorno à rotina anterior.',status:'approved',approval_evidence:'Aceite sintético.'});
+ assert.deepEqual(changeReadiness(g),[]);assert.ok(validGovernance(g));g.cost_status='none';assert.ok(changeReadiness(g).some(x=>/valor adicional/.test(x)));
+ const map=operationalTemplate('order-promise');map.governance={cost_status:'pending'};assert.ok(validGraph(map,company));map.governance={monthly_cost:'-1'};assert.equal(validGraph(map,company),false);
+});

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {renderBrief,rememberReport,restoreReport,resultMenu} from './response-style.mjs';
+import {humanizeReply,renderBrief,rememberReport,restoreReport,resultMenu} from './response-style.mjs';
 import {interpret} from './intents.mjs';
 const company='shopping_prohospital';
 const reference={available:true,company,kind:'summary',sources:[{scope:'cd100_partial',status:'reference_unreconciled',source:'SYNTHETIC',hash:'a'.repeat(64),loaded_at:'2026-10-19T12:00:00Z',summary:{rows:1,skus:1,cost:'0.10',cost_review:0,zero_cost:0},items:[],units:[]}]};
@@ -23,4 +23,12 @@ test('plain-language details and shorter follow-ups are deterministic without AI
  for(const s of ['/detalhes','memória de cálculo','como calculou?'])assert.deepEqual(interpret(s),{kind:'report_followup',detailed:true});
  for(const s of ['/curto','mais objetivo','resumir'])assert.deepEqual(interpret(s),{kind:'report_followup',detailed:false});
  assert.equal(resultMenu().inline_keyboard.length,2);assert.equal(resultMenu(true).inline_keyboard[0][0].callback_data,'report_summary');
+});
+
+
+test('human welcome precedes unchanged evidence without new model interpretation',()=>{
+ const body='Estoque: R$ 10,00. Base parcial de 19/10/2026. Não comprova giro atual.';
+ assert.equal(humanizeReply(body),'Olá! Estou por aqui para ajudar. 😊\n\n'+body);
+ assert.match(humanizeReply(''),/Não consegui concluir/);
+ assert.equal(resultMenu().inline_keyboard[0][0].callback_data,'report_details');
 });

@@ -1,4 +1,4 @@
-import {renderBrief,resultMenu,navigationMenu,rememberReport,restoreReport} from './response-style.mjs';
+import {humanizeReply,renderBrief,resultMenu,navigationMenu,rememberReport,restoreReport} from './response-style.mjs';
 import {REFERENCE_KINDS,referenceArgs,renderReference} from './stock-reference.mjs';
 import {checkAIReadiness,aiState} from './ai-readiness.mjs';
 import {ERP_KINDS} from './erp-reports.mjs';
@@ -24,7 +24,7 @@ function secretMatches(value:string,secret:string){if(value.length!==secret.leng
 const hash=async(s:string)=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
 async function body(req:Request){const reader=req.body?.getReader();if(!reader)throw Error('body');const chunks:Uint8Array[]=[];let size=0;while(true){const r=await reader.read();if(r.done)break;size+=r.value.length;if(size>32768){await reader.cancel();throw Error('size');}chunks.push(r.value);}const all=new Uint8Array(size);let offset=0;for(const chunk of chunks){all.set(chunk,offset);offset+=chunk.length;}return JSON.parse(new TextDecoder().decode(all));}
 async function send(chat:string,text:string,token:string,keyboard:any=null){
- const chunks:string[]=[];let remaining=text;while(remaining.length>3800){let end=remaining.lastIndexOf('\n',3800);if(end<1000)end=3800;const code=remaining.charCodeAt(end-1);if(code>=0xd800&&code<=0xdbff)end--;chunks.push(remaining.slice(0,end));remaining=remaining.slice(end).replace(/^\n/,'');}chunks.push(remaining);
+ const chunks:string[]=[];let remaining=humanizeReply(text);while(remaining.length>3800){let end=remaining.lastIndexOf('\n',3800);if(end<1000)end=3800;const code=remaining.charCodeAt(end-1);if(code>=0xd800&&code<=0xdbff)end--;chunks.push(remaining.slice(0,end));remaining=remaining.slice(end).replace(/^\n/,'');}chunks.push(remaining);
  for(let i=0;i<chunks.length;i++){
   const res=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chat,text:chunks[i],protect_content:true,...(keyboard&&i===chunks.length-1?{reply_markup:keyboard}:{}),link_preview_options:{is_disabled:true}}),signal:AbortSignal.timeout(12000)});
   if(!res.ok)throw Error('delivery');const data=await res.json();if(!data.ok)throw Error('delivery');

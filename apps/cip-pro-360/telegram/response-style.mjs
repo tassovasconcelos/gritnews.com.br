@@ -61,3 +61,5 @@ export function renderBrief(entries,kind,now=new Date()){
  else if(kind==='stock_priorities'||kind==='growth_actions')lines.push('Próximo passo: revisar prioridades no CIP antes de aprovar preço, campanha ou transferência.');
  return lines.join('\n\n');
 }
+
+export function humanizeReply(text){const body=String(text??'').trim();return 'Olá! Estou por aqui para ajudar. 😊\n\n'+(body||'Não consegui concluir esta consulta. Pode me dizer o que precisa?');}
