@@ -1,0 +1,11 @@
+{
+  "name": "@gritnews/prospect-360",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test src/*.test.mjs",
+    "import:dry-run": "node scripts/import-dry-run.mjs"
+  },
+  "engines": { "node": ">=22" }
+}
