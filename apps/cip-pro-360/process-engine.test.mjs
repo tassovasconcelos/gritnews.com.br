@@ -24,3 +24,14 @@ test('operational standards cover approval, rejection and incomplete evidence fo
   assert.equal(graph.consultation.observations.length,0);
  }}
 });
+
+
+test('activity qualification counts confirmed people, bounded times and declared execution separately',async()=>{
+ const {processQualification,operationalTemplate}=await import('./process-engine.mjs');
+ const g=operationalTemplate('pricing-cycle');const n=g.nodes.find(n=>n.type==='task');
+ const initial=processQualification(g);assert.equal(initial.assigned,0);assert.equal(initial.timed,0);assert.equal(initial.completed,0);
+ Object.assign(n,{owner:'Ana · Estoque',planned_minutes:'15',actual_minutes:'20',output:'Lista de SKUs conferida',execution_status:'done'});
+ assert.ok(validGraph(g,company));const q=processQualification(g);assert.equal(q.assigned,1);assert.equal(q.timed,1);assert.equal(q.outputs,1);assert.equal(q.completed,1);assert.equal(q.plannedMinutes,15);
+ for(const patch of [{planned_minutes:'-1'},{planned_minutes:'Infinity'},{actual_minutes:'525601'},{execution_status:'approved'},{output:'x'.repeat(501)}]){const copy=structuredClone(g);Object.assign(copy.nodes.find(x=>x.id===n.id),patch);assert.equal(validGraph(copy,company),false);}
+ assert.equal(g.consultation.observations.length,0);
+});
