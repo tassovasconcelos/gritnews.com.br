@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {validateDiscovery,discoveryURL,discoveryMatch,supplierCandidates,contractRecord,cearaRecord,requestDiscovery} from './b2g-discovery.mjs';
+import {validateDiscovery,discoveryURL,discoveryMatch,supplierCandidates,contractRecord,cearaRecord,requestDiscovery,mergeAwardItemDetails,isExactAwardItem} from './b2g-discovery.mjs';
 const query={action:'discover_supplier',supplier:'09485574000171',start:'2025-10-19',end:'2026-10-19'};
 const ids={purchase:'94300105910412024',item:'9430010591041202400003'};
 test('supplier discovery does not require CATMAT and sends exact CNPJ to the national index',()=>{const u=new URL(discoveryURL(query));assert.equal(u.hostname,'dadosabertos.compras.gov.br');assert.equal(u.searchParams.get('niFornecedor'),query.supplier);assert.equal(u.searchParams.has('codigo'),false);assert.equal(u.searchParams.has('orgaoEntidadeCnpj'),false);});
@@ -19,3 +19,11 @@ test('Ceará transparency uses documented date format, page metadata and indepen
 test('confidential source records are not surfaced and lookup rejects paths',()=>{assert.equal(cearaRecord({confidential:true}),null);assert.throws(()=>validateDiscovery({action:'discover_ce_contract',id:'../1454263'}));assert.equal(discoveryURL({action:'discover_ce_contract',id:'1454263'}),'https://api-dados-abertos.cearatransparente.ce.gov.br/transparencia/contratos/contratos/1454263');});
 test('filters before expensive enrichment and never labels unmatched products as source failures',async()=>{let calls=0;const d=await requestDiscovery({...enrich,product:'seringa'},{fetcher:async u=>{calls++;return mock()(u);}});assert.equal(calls,1);assert.equal(d.skipped,1);assert.equal(d.failures.length,0);assert.equal(d.rows.length,0);});
 test('source throttling remains retriable instead of turning into no results',async()=>{const d=await requestDiscovery(enrich,{fetcher:async()=>new Response('',{status:429})});assert.equal(d.failures[0].error,'source_rate_limit');});
+test('pending item identity is retried from official item detail before it counts as an exact homologation',()=>{
+ const pendingAward={id:ids.item+'|'+query.supplier,status:'award',supplier_id:query.supplier,item:ids.item,purchase:ids.purchase,description:'Cama hospitalar elétrica',procurement_description:'',item_identity:'pending',item_award_aligned:true,evidence:['prices','result']};
+ assert.equal(isExactAwardItem(pendingAward),false);
+ const exact={...pendingAward,description:'Cama hospitalar',procurement_description:'Cama hospitalar',procurement_detail:'Especificação oficial do item 3',item_identity:'official_item',item_award_aligned:true,evidence:['item']};
+ const merged=mergeAwardItemDetails([pendingAward],[exact]);assert.equal(isExactAwardItem(merged[0]),true);assert.equal(merged[0].procurement_description,'Cama hospitalar');assert.deepEqual(merged[0].evidence,['item','prices','result']);
+ assert.equal(isExactAwardItem({...exact,item_award_aligned:false}),false);assert.equal(isExactAwardItem({...exact,procurement_description:'',procurement_detail:''}),false);
+ const unrelated={...exact,id:'different-item'};assert.equal(mergeAwardItemDetails([pendingAward],[unrelated])[0].item_identity,'pending');
+});
