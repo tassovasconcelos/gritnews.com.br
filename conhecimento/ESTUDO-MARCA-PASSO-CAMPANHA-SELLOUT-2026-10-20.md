@@ -65,6 +65,6 @@ Não estimar aumento de volume nem elasticidade com os dados atuais. A melhor co
 
 ## Estado desta evolução
 
-O CIP ganhou o motor determinístico, testes, regra comercial versionada, propostas por SKU/loja, memória de cálculo e aprovação/rejeição com autoria. A submissão recalcula no servidor o piso, preço alvo, limite de variação e margem, usando a versão ativa. RLS restringe leitura à empresa e as alterações passam por funções protegidas; a publicação da regra e a decisão só aceitam diretor/superadmin ativo.
+O CIP ganhou o motor determinístico, testes, regra comercial versionada, propostas por SKU/loja, memória de cálculo e aprovação/rejeição com autoria. A submissão exige snapshot completo e recente, confere custo, preço e saldo por SKU/loja nessa fonte e recalcula no servidor o piso, preço alvo, limite de variação e margem, usando a versão ativa. RLS restringe leitura à empresa e as alterações passam por funções protegidas; a publicação da regra e a decisão só aceitam diretor/superadmin ativo.
 
 O HTML V24 permanece referência analítica. O preço não é atualizado no Procfit; a campanha não é ativada automaticamente; não há ainda painel de resultados reais conciliados. A próxima evolução deve integrar custo/despesas e vendas completos da view Procfit, conectar resultado de sell-out e recebimento e só então avaliar automações delimitadas.
