@@ -179,6 +179,16 @@ Fundação/dados → Doquita/RufasIA → estoque/giro/preços/comercial → pain
 
 Histórico copiado seletivamente em `historico/`: backlog, catálogo, rodadas, indicadores, premissas ERP/ROTA PRO/Driver e entregas. São documentos históricos; conflitos devem ser resolvidos pelo código atual e evidências recentes. Não copiamos credenciais, screenshots de acesso ou dumps operacionais.
 
+## Marca-passo: política versionada e sell-out por loja - 20/10/2026
+
+Estudo analítico e referência de regra em `conhecimento/ESTUDO-MARCA-PASSO-CAMPANHA-SELLOUT-2026-10-20.md`. O HTML V24 enviado pelo usuário é referência independente, baseada em dados locais. Conceitos de piso/alvo e custos foram avaliados; percentuais fiscais do arquivo não viraram regra no CIP.
+
+Implementação em curso no código: motor determinístico de preço com bônus líquido, subsídio do fornecedor, margem recomputada depois do incentivo, concorrência equivalente até sete dias, teto de variação, meta física por loja, equilíbrio de contribuição, capital e 1,5% mensal como cenário. Política comercial é publicada em versões por diretor/superadmin; propostas permanecem por empresa/SKU/loja, com autoria e aprovação/rejeição humana. RLS limita leitura por empresa e RPCs protegem gravação e alçadas; as funções foram verificadas no projeto Supabase `pcrwtoddavpvkaxwtstc`.
+
+As propostas submetidas exigem carga Procfit aprovada, completa para a empresa e atualizada em até 36 horas; o preço e as premissas são conferidos novamente no banco contra a versão ativa. O teste de cálculo é automatizado. O CIP ainda não atualiza preços no Procfit nem lança campanhas. Vendas incompletas não viram previsão; Financeiro/Fiscal deve validar custo e despesas variáveis antes de publicar a primeira regra e testar uma campanha.
+
+Na conferência de 20/10/2026, `cip_erp_snapshots` não tem cargas aprovadas. Até chegar a primeira carga Procfit conciliada, o simulador pode operar com entradas manuais para estudo, mas o servidor não aceitará enviar proposta para aprovação.
+
 Chats consultados: “Continue implantação do CIP PRO 360°” (01a14f39-3d74-7430-a68b-ac91db2e0bcd) e “Atualizar projetos CIP 360” (6ad59911-0ae8-83e9-bcdb-23b097264f13). Nenhuma mensagem foi enviada a outras conversas.
 
 Documentação oficial consultada: https://developers.openai.com/api/docs/guides/function-calling — ferramentas conectam o modelo a funções externas; o servidor executa e controla o acesso. A chave sozinha não fornece dados do Procfit.
