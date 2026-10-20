@@ -18,6 +18,8 @@ create table public.lu_plan_audit (
 );
 alter table public.lu_plan_state enable row level security;
 alter table public.lu_plan_audit enable row level security;
+create policy lu_plan_state_deny_direct on public.lu_plan_state as restrictive for all to anon,authenticated using(false) with check(false);
+create policy lu_plan_audit_deny_direct on public.lu_plan_audit as restrictive for all to anon,authenticated using(false) with check(false);
 revoke all on public.lu_plan_state,public.lu_plan_audit from anon,authenticated;
 grant select,insert,update on public.lu_plan_state to service_role;
 grant select,insert on public.lu_plan_audit to service_role;

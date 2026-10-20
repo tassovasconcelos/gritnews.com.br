@@ -52,10 +52,11 @@ jobs:
               exit 1
               ;;
           esac
-      - name: Validar a aplicacao e preparar os cinco arquivos
+      - name: Validar a aplicacao e preparar os arquivos
         shell: bash
         run: |
           set -euo pipefail
+          node --test tests/link-uniao-plan.test.mjs
           mkdir -p release
           for f in index.html acesso.html plano.js .htaccess health.json robots.txt; do
             test -s "apps/link-uniao/$f"
