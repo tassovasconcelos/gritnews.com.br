@@ -34,3 +34,28 @@ export function buildPriceQueue(snapshot,now=new Date(),offset=0){
  const start=Number.isSafeInteger(offset)&&offset>=0?offset:0;
  return {available:true,company:snapshot.company_id,source:snapshot.source_name,hash:snapshot.source_hash,captured_at:snapshot.captured_at,status:snapshot.status,partial:m.scope!=='company_all',stale,demand_complete:demandComplete,page:{offset:start,limit:20,total:all.length,has_more:start+20<all.length},items:all.slice(start,start+20),notice:'Fila de revisão; custo por saldo valorizado. Antes de precificar: validar custo de reposição, tributação, reservas, validade, frete, comissão e contribuição. ABC/XYZ e elasticidade aguardam histórico adequado.'};
 }
+
+// Marca-passo F1: deterministic scenarios, never a forecast or an ERP instruction.
+export const MP_RULE_VERSION='mp-economics-2026-10-19.1';
+export function carryingCost({capital,days,monthly_rate_pct=1.5,expiry_risk=0}){
+ const c=number(capital,'capital elegível'),d=number(days,'dias',0,3650),r=number(monthly_rate_pct,'taxa mensal',0,100),risk=number(expiry_risk,'risco de perda estimado');
+ return {simulation:true,capital:c,days:d,monthly_rate_pct:r,capital_cost:c*r/100*d/30,expiry_risk:risk,total:c*r/100*d/30+risk,formula:'capital × taxa mensal ÷ 100 × dias ÷ 30 + risco de perda',rule_version:MP_RULE_VERSION};
+}
+export function coverageEconomics({stock_cost,daily_cogs,target_days}){
+ const stock=number(stock_cost,'estoque a custo'),daily=number(daily_cogs,'CMV diário',0.00000001),target=number(target_days,'cobertura alvo',0,3650);
+ return {coverage_days:stock/daily,excess_capital:Math.max(0,stock-daily*target),target_cost:daily*target,rule_version:MP_RULE_VERSION};
+}
+export function priceEconomics(input){
+ const r=simulatePrice({...input,target_margin_pct:input.minimum_margin_pct});
+ const cost=number(input.cost,'custo',0.00000001)+number(input.fixed_cost,'despesa por unidade'),expense=number(input.expense_pct,'despesa percentual',0,99),units=number(input.units,'quantidade',0.0001);
+ const liquidationFloor=ceilMoney(cost/(1-expense/100));
+ const carrying=carryingCost({capital:number(input.cost,'custo')*units,days:input.days??30,monthly_rate_pct:input.monthly_rate_pct??1.5,expiry_risk:input.expiry_risk??0});
+ const contributionLoss=Math.max(0,r.current_contribution-r.candidate_contribution)*units;
+ return {...r,rule_version:MP_RULE_VERSION,liquidation_floor:liquidationFloor,price_shortfall:Math.max(0,r.floor-Number(input.candidate)),margin_gap_pp:r.candidate_margin_pct-Number(input.minimum_margin_pct),cash_if_all_sold_and_received:Number(input.candidate)*units,stock_cost_released_if_sold:Number(input.cost)*units,contribution_loss_same_volume:contributionLoss,carrying,discount_economic_same_volume:contributionLoss<carrying.total,volume_compensation_pct:r.candidate_contribution>0?r.current_contribution>0?(r.current_contribution/r.candidate_contribution-1)*100:0:null,notice:'Simulação na quantidade informada. Caixa exige venda e recebimento; custo carregado não é prejuízo contábil realizado. Comparação econômica não autoriza furar piso ou alçada.'};
+}
+export function scoreMP(components,weights={excess:30,age:20,competition:20,floor:15,demand:15}){
+ if(Object.values(weights).some(x=>!Number.isFinite(x)||x<0)||Object.values(weights).reduce((a,b)=>a+b,0)!==100)throw Error('Pesos devem somar 100.');
+ const missing=Object.keys(weights).filter(k=>components[k]===undefined||components[k]===null);
+ for(const k of Object.keys(weights))if(!missing.includes(k)&&(!Number.isFinite(components[k])||components[k]<0||components[k]>1))throw Error('Componentes do rating devem estar entre zero e um.');
+ return {score:missing.length?null:Object.entries(weights).reduce((sum,[key,w])=>sum+components[key]*w,0),missing,weights,rule_version:MP_RULE_VERSION,notice:'Componentes normalizados precisam de origem, data e política aprovada. Sem evidência não há rating econômico.'};
+}
