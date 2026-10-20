@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pricingFrame, recommendCampaignDecision } from './pricing-ui.mjs';
+import { pricingFrame, recommendCampaignDecision, stockCampaignPrefill } from './pricing-ui.mjs';
 
 test('puts live opportunities and campaign decisions before detailed mobile tools', () => {
   const frame = pricingFrame();
@@ -35,4 +35,10 @@ test('does not recommend approval when the store demand history is not reconcile
   const result = recommendCampaignDecision({ candidate_margin_pct: 22, contribution_delta: 10, blockers: [] }, 18, { demandHistoryComplete: false });
   assert.equal(result.label, 'REVISAR');
   assert.match(result.reason, /histórico de vendas/);
+});
+
+test('stock validation opens a campaign scenario without asserting an unverified line quantity is available balance', () => {
+  assert.deepEqual(stockCampaignPrefill({ quantity: 3440, source_data_unverified: true, data: { daily: 4 } }), { available_units: null, target_units: null });
+  assert.deepEqual(stockCampaignPrefill({ quantity_limit: 20, payload: { target_daily: 2 } }), { available_units: 20, target_units: 20 });
+  assert.deepEqual(stockCampaignPrefill({ quantity: 0, source_data_unverified: true }), { available_units: null, target_units: null });
 });
