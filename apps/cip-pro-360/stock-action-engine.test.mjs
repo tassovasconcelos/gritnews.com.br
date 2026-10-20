@@ -19,3 +19,10 @@ test('unsafe numeric lot identifiers cannot become campaign candidates',()=>{con
 const intelligence={available:true,company:'distribuidora_prohospital',source_kind:'inventory_intelligence',batch:{company_id:'distribuidora_prohospital',status:'active',as_of:'2026-10-19',sources:[{file:'Synthetic.xlsx',hash:'a'.repeat(64)}],summary:{metrics:2,skus:2,alerts:{vencido:1,validade_90d:1},actions:{campanha:1,conferencia:1},tax_cost_available:'30.00',tax_missing:0}},filtered_total:1,filtered_cost:'10.01',items:[]};
 test('Telegram B2B leads with all-filter cents, preserves lot limits and no inferred turnover',()=>{const t=renderExecutive([{company:'distribuidora_prohospital',reference:intelligence}],'stock_sources');assert.match(t,/^Estoque B2B no filtro.*R\$ 10,01/);assert.match(t,/C.Estoque 1000; separado do CD100/);assert.match(t,/não há giro, cobertura, margem ou ganho previsto/);assert.match(t,/Lotes vencidos não são candidatos/);});
 test('B2B zero matched lots is not interpreted as a zero company stock',()=>{const t=renderExecutive([{company:'distribuidora_prohospital',reference:{...intelligence,filtered_total:0,filtered_cost:null}}],'stock_product');assert.match(t,/Nenhum lote encontrado neste filtro; não significa estoque zerado/);});
+
+
+test('action brief separates physical quantity, economic rating and conditional carrying cost',async()=>{
+ const {actionCard}=await import('./stock-actions-ui.mjs');const a={kind:'campanha',sku:'SYNTHETIC',description:'Produto de teste',state:'sugerida',source_store:'1',quantity_limit:10,priority:70,payload:{unit:'UN',unit_cost:60,reason:'Excesso do cenário histórico.'}};
+ const html=actionCard(a,0,'2026-10-19',true,true);assert.match(html,/Limite físico, não desconto/);assert.match(html,/Rating econômico:<\/strong> pendente/);assert.match(html,/1,5% ao mês/);assert.match(html,/R\$&nbsp;9,00|R\$ 9,00|R\$ 9,00/);assert.doesNotMatch(html,/JSON|"unit_cost"/);
+ const missing=actionCard({...a,payload:{}},0,'2026-10-19',false,false);assert.match(missing,/cálculo indisponível/);assert.doesNotMatch(missing,/R\$ 0,00/);
+});
