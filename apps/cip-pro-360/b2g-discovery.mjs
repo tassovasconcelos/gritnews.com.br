@@ -1,3 +1,4 @@
+import {vocabularyCorrespondence,vocabularyFamilyQueries,vocabularyKey} from './b2g-vocabulary.mjs';
 import {COMPRAS,STATES,textKey,parseOfficialJSON} from './b2g-research.mjs';
 const PNCP='https://pncp.gov.br/api/consulta/v1';
 const CEARA='https://api-dados-abertos.cearatransparente.ce.gov.br/transparencia/contratos/contratos';
@@ -37,27 +38,36 @@ export function discoveryURL(input){const q=validateDiscovery(input);
  if(q.action==='discover_contracts')return PNCP+'/contratos?'+new URLSearchParams({dataInicial:q.start.replaceAll('-',''),dataFinal:q.end.replaceAll('-',''),pagina:q.page,tamanhoPagina:500,...(q.organ?{cnpjOrgao:q.organ}:{})});
  throw Error('invalid_action');
 }
-export const discoveryKey=s=>textKey(s).replace(/proc[\s-]*irur[\s-]*gica/g,'procirurgica').replace(/\bfawler\b/g,'fowler').replace(/\bcamas\b/g,'cama').replace(/\bcateteres\b/g,'cateter').replace(/\bhidrofilic[ao]s?\b/g,'hidrofilico').replace(/\b(?:hospitalares|hospitalar)\b/g,'hospitalar').replace(/[^a-z0-9]+/g,' ').trim();
+export const discoveryKey=s=>textKey(s).replace(/proc[\s-]*irur[\s-]*gica/g,'procirurgica').replace(/\bfawler\b/g,'fowler').replace(/\bcamas\b/g,'cama').replace(/\bcateteres\b/g,'cateter').replace(/\b(ch|fr)\s*0*(\d+)\b/g,'$2 french').replace(/\b(\d+)\s*(fr|ch)\b/g,'$1 french').replace(/\bhidrofilic[ao]s?\b/g,'hidrofilico').replace(/\b(?:hospitalares|hospitalar)\b/g,'hospitalar').replace(/[^a-z0-9]+/g,' ').trim();
+export const brandKey=s=>discoveryKey(s).replace(/\s+/g,'');
 export function familySearchQueries(product){
  const key=discoveryKey(product),urinary=/\b(?:uretral|urinario|vesical|hidrofilico|nelaton|tiemann|comfortcath)\b/.test(key),other=/\b(?:periferico|central|venoso|intravenoso|hemodinamica|nasal|arterial|angioplastia|epidural)\b/.test(key);
- if(!/\bcateter\b/.test(key)||other)return [product];
- return urinary?['sonda trato urinario','sonda uretral',product]:[product,'sonda trato urinario','sonda uretral'];
+ if(!/\bcateter\b/.test(key)||other)return vocabularyFamilyQueries(product);
+ return urinary?[...new Set([...vocabularyFamilyQueries(product),'sonda trato urinario','sonda uretral'])]:[product,'sonda trato urinario','sonda uretral'];
 }
 export function productCorrespondence(row,product=''){
  const hay=' '+discoveryKey([row.description,row.detail,row.object,row.process,row.contract].join(' '))+' ';
  const terms=discoveryKey(product).replace(/\bbolsas\b/g,'bolsa').split(' ').filter(t=>t&&!['de','da','do','das','dos','para','p'].includes(t));
- const normalizedHay=hay.replace(/\bbolsas\b/g,'bolsa');
+ const normalizedHay=hay.replace(/\bbolsas\b/g,'bolsa'),key=discoveryKey(product);
+ const dimensions=[...vocabularyKey(product).matchAll(/\b\d+(?:\.\d+)? (?:mm|cm|ml|kg|mg|g|v|french)\b/g)].map(m=>m[0]),dimensionHay=' '+vocabularyKey([row.description,row.detail,row.object].join(' '))+' ';
+ if(dimensions.some(t=>!dimensionHay.includes(' '+t+' ')))return {matches:false,candidate:false,expanded:false,note:null};
+ const requirements=[...key.matchAll(/\b(?:sem|com) (?:latex|po|filtro)\b|\bnao esteril\b/g)].map(m=>m[0]);
+ if(requirements.some(t=>!normalizedHay.includes(' '+t+' '))||terms.includes('esteril')&&!terms.includes('nao')&&/\bnao[ -]?esteril\b/.test(normalizedHay))return {matches:false,candidate:false,expanded:false,note:null};
+ if(terms.some(t=>['hidrofilico','intermitente'].includes(t))&&/\b(?:foley|demora|balonete)\b/.test(normalizedHay))return {matches:false,candidate:false,expanded:false,note:null};
  if(terms.includes('hidrofilico')&&/\b(?:nao hidrofilico|sem (?:revestimento )?hidrofilico)\b/.test(normalizedHay))return {matches:false,candidate:false,expanded:false,note:null};
  const urinaryCatheter=terms.includes('cateter')&&/\b(?:sonda|cateter)\b/.test(normalizedHay)&&/\buretral\b/.test(normalizedHay)&&!/\b(?:periferico|central|venoso|intravenoso|hemodinamica|nasal|arterial|angioplastia|epidural)\b/.test(discoveryKey(product));
  const missing=terms.filter(t=>!normalizedHay.includes(' '+t+' ')&&!(t==='cateter'&&urinaryCatheter));
  if(urinaryCatheter){const pending=missing.length===1&&missing[0]==='hidrofilico'&&!/\b(?:nao hidrofilico|sem revestimento hidrofilico)\b/.test(normalizedHay);return {matches:missing.length===0,candidate:pending,technical_pending:pending?['Revestimento hidrofílico não comprovado nesta fonte']:[],expanded:true,note:pending?'Produto relacionado: sonda uretral da marca pesquisada. A fonte não comprova revestimento hidrofílico; lubrificação não comprova hidrofilia. Conferir ficha técnica e anexos.':'Correspondência ampliada: cateter descrito na fonte como sonda uretral. Conferir indicação, calibre, comprimento, ponta e revestimento; não certifica equivalência técnica.'};}
+ const semantic=vocabularyCorrespondence(row,product);if(semantic)return semantic;
  const accessory=/^(?:adjuvante|placa|clipe?|fixador|pasta|cinto)\b/.test(discoveryKey(row.description));
  if(terms.includes('bolsa')&&accessory&&!terms.some(t=>/^(?:adjuvante|placa|clipe?|fixador|pasta|cinto)$/.test(t)))return {matches:false,expanded:false,note:null};
- const expanded=terms.includes('colostomia')&&!normalizedHay.includes(' colostomia ')&&/\bestomia\b/.test(normalizedHay)&&/\bintestinal\b/.test(normalizedHay)&&!/(?:aplicacao\s+)?urinaria|urostomia/.test(normalizedHay);
- return {matches:terms.every(t=>normalizedHay.includes(' '+t+' ')||(t==='colostomia'&&expanded)),expanded,note:expanded?'Correspondência ampliada: sistema para estomia de aplicação intestinal. Confirmar indicação, modelo, medidas e apresentação; não certifica equivalência técnica.':null};
+ const intestinalTerm=terms.find(t=>['colostomia','ileostomia'].includes(t)),urinaryTerm=terms.includes('urostomia'),opposite=intestinalTerm==='colostomia'?'ileostomia':'colostomia';
+ const intestinalExpanded=!!intestinalTerm&&!normalizedHay.includes(' '+intestinalTerm+' ')&&/\bestomia\b/.test(normalizedHay)&&/\bintestinal\b/.test(normalizedHay)&&!/(?:aplicacao\s+)?urinaria|urostomia/.test(normalizedHay)&&!normalizedHay.includes(' '+opposite+' ');
+ const urinaryExpanded=urinaryTerm&&!normalizedHay.includes(' urostomia ')&&/\bestomia\b/.test(normalizedHay)&&/\burinaria\b/.test(normalizedHay)&&!/\b(?:intestinal|colostomia|ileostomia)\b/.test(normalizedHay),expanded=intestinalExpanded||urinaryExpanded;
+ return {matches:terms.every(t=>normalizedHay.includes(' '+t+' ')||(t===intestinalTerm&&intestinalExpanded)||(t==='urostomia'&&urinaryExpanded)),expanded,note:expanded?'Correspondência ampliada: sistema para estomia de aplicação '+(urinaryExpanded?'urinária':'intestinal')+'. Confirmar indicação, modelo, medidas e apresentação; não certifica equivalência técnica.':null};
 }
 export function discoveryMatch(row,{product='',brand='',state='',sphere='',supplier='',allowRelated=false}={}){
- const match=productCorrespondence(row,product);return (!supplier||row.supplier_id===supplier)&&(!state||row.state===state)&&(!sphere||row.sphere===sphere)&&(match.matches||allowRelated&&match.candidate===true)&&(!brand||discoveryKey(row.brand).includes(discoveryKey(brand)));
+ const match=productCorrespondence(row,product);return (!supplier||row.supplier_id===supplier)&&(!state||row.state===state)&&(!sphere||row.sphere===sphere)&&(match.matches||allowRelated&&match.candidate===true)&&(!brand||brandKey(row.brand).includes(brandKey(brand)));
 }
 export function mergeMarketBatches(previous,next){
  if(!previous)return next;const coverage=new Map(previous.coverage.map(c=>[String(c.code),c]));for(const c of next.coverage){const old=coverage.get(String(c.code));coverage.set(String(c.code),{...c,received:(old?.received||0)+c.received,pages:(old?.pages||0)+c.pages});}
