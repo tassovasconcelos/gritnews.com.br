@@ -2,6 +2,22 @@ export const STOCK_POLICY=Object.freeze({risk_days:14,target_days:30,donor_days:
 export const STOCK_CHECKS={saldo_atual:'Saldo atual conferido na origem',reservas:'Reservas e compras pendentes verificadas, sem contar pedido como recebido',unidade_lote_validade:'SKU, embalagem, lote, validade e elegibilidade comercial conferidos',demanda_atual:'Demanda e período atualizados e documentados',margem_frete:'Contribuição, frete e condição comercial validados',responsavel_prazo:'Responsável, prazo e capacidade operacional confirmados'};
 export const STOCK_KINDS={redistribuicao:'Redistribuição entre filiais',campanha:'Campanha dirigida para revisão',preco:'Revisão de preço e margem',conferencia:'Conferência de dados ou lote'};
 const n=v=>v!==null&&v!==undefined&&String(v).trim()!==''&&Number.isFinite(Number(v))?Number(v):null;
+export function stockMetricsAlertFilter(sort='capital',alert=''){
+ if(!['capital','volume'].includes(sort))throw Error('invalid_stock_metric_sort');
+ if(alert&&!/^[a-z0-9_]{1,60}$/.test(alert))throw Error('invalid_stock_metric_alert');
+ return `@${sort}:${alert}`;
+}
+export function stockMetricExposure(row){
+ const direct=n(row?.declared_cost);if(direct!==null&&direct>=0)return direct;
+ const unitCost=n(row?.unit_cost),quantity=n(row?.quantity);return unitCost!==null&&unitCost>=0&&quantity!==null&&quantity>=0?unitCost*quantity:null;
+}
+export function rankStockMetrics(rows,sort='capital'){
+ if(!['capital','volume'].includes(sort))throw Error('invalid_stock_metric_sort');
+ return [...(rows||[])].sort((a,b)=>{
+  const av=sort==='volume'?n(a?.quantity):stockMetricExposure(a),bv=sort==='volume'?n(b?.quantity):stockMetricExposure(b);
+  return (bv??-1)-(av??-1)||(n(b?.quantity)??-1)-(n(a?.quantity)??-1)||String(a?.sku||'').localeCompare(String(b?.sku||''));
+ });
+}
 export function retailSignal(current,historical){
  const q=n(current?.quantity),d=n(historical?.daily),flags=[];
  if(!current)flags.push('saldo_atual_ausente');
