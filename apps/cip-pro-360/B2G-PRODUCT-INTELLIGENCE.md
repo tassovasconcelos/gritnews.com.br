@@ -103,6 +103,14 @@ Botão de caso real consulta novamente ambas as fontes e só apresenta a relaç�
 
 Documentação oficial: https://dadosabertos.compras.gov.br/v3/api-docs ; https://pncp.gov.br/api/consulta/v3/api-docs ; https://api-dados-abertos.cearatransparente.ce.gov.br/api-docs/v1/swagger.yaml . Serviço preserva getUser e cip_can_access antes de qualquer consulta/cache; nenhum token, cadastro privado ou saldo incluído no pacote público. Sem alteração ROTA PRO ou Telegram.
 
+## Precisão da identidade de item — 20/10/2026
+
+Na busca integrada, cada resultado homologado agora é enriquecido com a descrição curta e a especificação do item da contratação (endpoint `2.1_consultarItensContratacoes_PNCP_14133_Id`), unido pela chave exata de compra + item. O vínculo do resultado homologado continua exigindo item, fornecedor, situação, preço e quantidade. A pesquisa de preços fica identificada em campo separado; não é usada como título do item oficial.
+
+Se a consulta do item falhar, o cartão informa que a descrição oficial está pendente. Divergência de fornecedor/preço/quantidade entre o item e resultado aparece como alerta. Código de catálogo e PDM são exibidos como classificação; não certificam SKU/modelo comercial nem fabricante. Marca composta permanece literal e não é atribuída a um fabricante isolado.
+
+Caso real revalidado em 20/10/2026 nas APIs oficiais: compra `94300105910412024`, item PNCP 3 (`9430010591041202400003`), Prohospital, 1.101 unidades, R$ 2.614,00 homologados/unidade, R$ 2.878.014,00 no total. Descrição curta oficial: “Cama hospitalar”. A especificação detalhada oficial e a descrição da pesquisa de preços coincidem no registro, com referência textual PDM 30368; o item contém código catálogo 402629/PDM 9639. A consulta de preço declara a marca composta “PROCIRURGICA e RIOFL”. Valores, vencedor, quantidade e item conferem; a fonte não comprova um modelo comercial único nem qual das duas marcas corresponde a cada unidade. Não declarar esse registro como equivalência exata a SKU de catálogo da Procirúrgica sem edital/anexo ou referência comercial validada.
+
 
 ## Pesquisa nacional por produto, marca e UF — 19/10/2026
 
