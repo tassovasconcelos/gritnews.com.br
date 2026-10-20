@@ -367,3 +367,14 @@ PR140 integrado após CI validate aprovada; merge23aa43c/workflow39352707814 em 
 Final23aa43c/workflow39352707814 validate+publish SUCCESS; pricing-engine.mjs,stock-actions-ui.mjs,agents.css públicosHTTP200/SHA256iguaisao local. UI autenticada confirmou1769campanhas com exatamente5cartões por página e editor antes da fila. Abertura por teclado conferida após atraso do navegador na restauração da sessão; diagnóstico local final exibiu bloqueios de piso/alçada e comparou perda38,55vs custo de carregar0,45, sem justificar desconto apenas por esse custo. Nada aprovado, rejeitado ou concluído; botão Atualizar ações descartou campos de teste e aba21 foi mantida como entrega. Screenshot privado do diagnóstico final ../evidencias/cip-marca-passo-diagnostico-2026-10-19.png (cenário de teste, não resultado comercial).
 
 Os três PRs138/139/140 ficaram anexados e integrados; fases futuras permanecem descritas no documento do app. Não foi criada tabela cip_mp nova, autonomia, rotina diária de campanha, integração de concorrência ou medição real. Base matemática F1 e legibilidade/diagnóstico da central atual foram entregues e verificadas.
+
+
+## Aplicativo instalável e navegação mobile — 19/10/2026
+
+Primeira etapa do briefing PWA entregue sobre o CIP existente: manifesto e ícones, orientação de instalação em Android/iOS, navegação mobile com cinco destinos principais e acesso “Mais” aos módulos já autorizados pelo perfil. Desktop mantém o menu lateral. Aviso informa quando a tela atual perde conexão.
+
+O service worker mantém apenas o shell estático versionado. Não armazena dados de negócio, respostas do Supabase, sessão nem informações de clientes no cache offline; sem rede, autenticação e atualização de dados continuam indisponíveis. Guia de instalação e limites: apps/cip-pro-360/PWA.md. Escopo funcional, mapa e requisitos pendentes: apps/cip-pro-360/CIP-PWA-BLUEPRINT.md.
+
+PR141 integrado em 76ef1700671df71c91961124080651241821e57d. Publicação Hostinger confirmada pelo workflow39355375536 (validate e publish success); os seis recursos PWA publicados responderam HTTP200 e tiveram SHA-256 idêntico aos arquivos do release. Testes PWA, autenticação, CSP/segurança e pacote de release passaram. Instalação em dispositivo físico e auditoria Lighthouse de produção ainda precisam de homologação.
+
+Regra financeira confirmada pelo usuário: perda acumulada de estoque parado começa no primeiro histórico confiável de vendas que comprove a parada. Só calcular retrospectivamente quando a janela e os dados forem confiáveis e completos; na ausência, iniciar no primeiro snapshot conciliado do CIP e identificar como “acumulado observado no CIP”. Idade do lote não substitui tempo sem venda. Essa regra está documentada, mas o painel global de perda acumulada ainda não foi implementado.
