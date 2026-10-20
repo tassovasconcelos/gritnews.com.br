@@ -69,6 +69,11 @@ export function productCorrespondence(row,product=''){
 export function discoveryMatch(row,{product='',brand='',state='',sphere='',supplier='',allowRelated=false}={}){
  if(supplier&&row.supplier_id!==supplier||state&&row.state!==state||sphere&&row.sphere!==sphere||brand&&!brandKey(row.brand).includes(brandKey(brand)))return false;const match=productCorrespondence(row.item_identity==='official_item'?{...row,description:row.procurement_description,detail:row.procurement_detail,object:''}:row,product);return match.matches||allowRelated&&match.candidate===true;
 }
+export function isExactAwardItem(row){return row?.status==='award'&&row.item_identity==='official_item'&&row.item_award_aligned===true&&!!String(row.procurement_description||row.procurement_detail||'').trim();}
+export function mergeAwardItemDetails(rows,enrichedRows){
+ const details=new Map((enrichedRows||[]).filter(r=>r?.status==='award'&&r.item_identity==='official_item'&&String(r.procurement_description||r.procurement_detail||'').trim()).map(r=>[r.id,r]));
+ return rows.map(row=>{const detail=details.get(row.id);if(row.status!=='award'||!detail)return row;return {...row,...detail,brand:detail.brand||row.brand,brandSource:detail.brandSource||row.brandSource,catalog_description:row.catalog_description||detail.catalog_description,catalog_detail:row.catalog_detail||detail.catalog_detail,evidence:[...new Set([...(detail.evidence||[]),...(row.evidence||[])])]};});
+}
 export function mergeMarketBatches(previous,next){
  if(!previous)return next;const coverage=new Map(previous.coverage.map(c=>[String(c.code),c]));for(const c of next.coverage){const old=coverage.get(String(c.code));coverage.set(String(c.code),{...c,received:(old?.received||0)+c.received,pages:(old?.pages||0)+c.pages});}
  const rows=[...new Map([...previous.rows,...next.rows].map(r=>[r.id,r])).values()];return {...next,rows,coverage:[...coverage.values()],received:[...coverage.values()].reduce((n,c)=>n+c.received,0),sources:[...new Map([...previous.sources,...next.sources].map(s=>[s.url,s])).values()],failures:next.failures,confirmed:rows.filter(r=>r.status==='award').length,partial:next.next_cursor.length>0||next.partial};
