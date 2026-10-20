@@ -40,6 +40,16 @@ export function discoveryURL(input){const q=validateDiscovery(input);
 }
 export const discoveryKey=s=>textKey(s).replace(/proc[\s-]*irur[\s-]*gica/g,'procirurgica').replace(/\bfawler\b/g,'fowler').replace(/\bcamas\b/g,'cama').replace(/\bcateteres\b/g,'cateter').replace(/\b(ch|fr)\s*0*(\d+)\b/g,'$2 french').replace(/\b(\d+)\s*(fr|ch)\b/g,'$1 french').replace(/\bhidrofilic[ao]s?\b/g,'hidrofilico').replace(/\b(?:hospitalares|hospitalar)\b/g,'hospitalar').replace(/[^a-z0-9]+/g,' ').trim();
 export const brandKey=s=>discoveryKey(s).replace(/\s+/g,'');
+export function brandCorrespondence(declared='',requested=''){
+ if(!String(requested||'').trim())return {status:'not_requested'};
+ const wanted=brandKey(requested),raw=String(declared||'').trim(),key=brandKey(raw);
+ if(!raw)return {status:'missing'};
+ if(key===wanted)return {status:'exact'};
+ const parts=raw.split(/\s+(?:e|and)\s+|\s*[\/;&+]\s*/i).map(brandKey).filter(Boolean);
+ if(parts.length>1&&parts.includes(wanted))return {status:'composite',parts};
+ if(key.includes(wanted))return {status:'embedded'};
+ return {status:'different'};
+}
 export function familySearchQueries(product){
  const key=discoveryKey(product),urinary=/\b(?:uretral|urinario|vesical|hidrofilico|nelaton|tiemann|comfortcath)\b/.test(key),other=/\b(?:periferico|central|venoso|intravenoso|hemodinamica|nasal|arterial|angioplastia|epidural)\b/.test(key);
  if(!/\bcateter\b/.test(key)||other)return vocabularyFamilyQueries(product);
@@ -67,9 +77,12 @@ export function productCorrespondence(row,product=''){
  return {matches:terms.every(t=>normalizedHay.includes(' '+t+' ')||(t===intestinalTerm&&intestinalExpanded)||(t==='urostomia'&&urinaryExpanded)),expanded,note:expanded?'Correspondência ampliada: sistema para estomia de aplicação '+(urinaryExpanded?'urinária':'intestinal')+'. Confirmar indicação, modelo, medidas e apresentação; não certifica equivalência técnica.':null};
 }
 export function discoveryMatch(row,{product='',brand='',state='',sphere='',supplier='',allowRelated=false}={}){
- if(supplier&&row.supplier_id!==supplier||state&&row.state!==state||sphere&&row.sphere!==sphere||brand&&!brandKey(row.brand).includes(brandKey(brand)))return false;const match=productCorrespondence(row.item_identity==='official_item'?{...row,description:row.procurement_description,detail:row.procurement_detail,object:''}:row,product);return match.matches||allowRelated&&match.candidate===true;
+ if(supplier&&row.supplier_id!==supplier||state&&row.state!==state||sphere&&row.sphere!==sphere||brand&&['missing','different'].includes(brandCorrespondence(row.brand,brand).status))return false;const match=productCorrespondence(row.item_identity==='official_item'?{...row,description:row.procurement_description,detail:row.procurement_detail,object:''}:row,product);return match.matches||allowRelated&&match.candidate===true;
 }
 export function isExactAwardItem(row){return row?.status==='award'&&row.item_identity==='official_item'&&row.item_award_aligned===true&&!!String(row.procurement_description||row.procurement_detail||'').trim();}
+export function isBrandIndividuallyConfirmed(row,requestedBrand=''){
+ return isExactAwardItem(row)&&brandCorrespondence(row.brand,requestedBrand).status==='exact'&&!row.technical_pending?.length;
+}
 export function mergeAwardItemDetails(rows,enrichedRows){
  const details=new Map((enrichedRows||[]).filter(r=>r?.status==='award'&&r.item_identity==='official_item'&&String(r.procurement_description||r.procurement_detail||'').trim()).map(r=>[r.id,r]));
  return rows.map(row=>{const detail=details.get(row.id);if(row.status!=='award'||!detail)return row;return {...row,...detail,brand:detail.brand||row.brand,brandSource:detail.brandSource||row.brandSource,catalog_description:row.catalog_description||detail.catalog_description,catalog_detail:row.catalog_detail||detail.catalog_detail,evidence:[...new Set([...(detail.evidence||[]),...(row.evidence||[])])]};});
