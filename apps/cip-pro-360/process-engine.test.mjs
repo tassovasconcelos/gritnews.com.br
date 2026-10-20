@@ -8,3 +8,19 @@ test('imports reject dangling edges, unsafe coordinates, duplicate IDs and wrong
 test('audit detects disconnected nodes, missing branch labels and no-exit loops',()=>{const g=processTemplate();g.edges=g.edges.filter(e=>e.from!=='n2');g.edges.push({from:'n2',to:'n1',label:''});const f=auditGraph(g,company);for(const code of ['unreachable','no_exit','branches','conditions','cycle'])assert.ok(f.some(x=>x.code===code),code);});
 test('normal activities cannot silently fork and approvals are explicit',()=>{const g=processTemplate();g.edges.push({from:'n1',to:'n6',label:'Outro caminho'});assert.ok(auditGraph(g,company).some(x=>x.code==='single_exit'));});
 test('a complete simple map passes local rules without claiming business certification',()=>{const g={schema:1,nodes:[{id:'na',type:'start',title:'Começar',agent:'doquita',x:0,y:0},{id:'nb',type:'approval',title:'Revisar',agent:'financeiro',x:300,y:0,owner:'Gestor',metric:'1 dia',evidence:'Planilha revisada'},{id:'nc',type:'end',title:'Terminar',agent:'doquita',x:600,y:0}],edges:[{from:'na',to:'nb'},{from:'nb',to:'nc'}]};assert.equal(auditGraph(g,company)[0].level,'ok');});
+
+
+test('operational standards cover approval, rejection and incomplete evidence for both companies', async()=>{
+ const {OPERATIONAL_PROCESSES,operationalTemplate}=await import('./process-engine.mjs');
+ const {validateProposal,verifyProcessCases,pilotReadiness}=await import('./process-consultant.mjs');
+ assert.equal(OPERATIONAL_PROCESSES.length,6);
+ for(const p of OPERATIONAL_PROCESSES){for(const company of ['shopping_prohospital','distribuidora_prohospital']){
+  const graph=operationalTemplate(p.key);
+  assert.ok(validateProposal({...graph.consultation,graph},company),p.key);
+  assert.equal(auditGraph(graph,company).filter(x=>x.level==='error').length,0,p.key);
+  const cases=verifyProcessCases(graph,graph.consultation.tests);
+  assert.equal(cases.covered,cases.total,p.key);assert.ok(cases.cases.every(x=>x.valid));
+  assert.match(pilotReadiness(graph),/Pendente/);
+  assert.equal(graph.consultation.observations.length,0);
+ }}
+});
