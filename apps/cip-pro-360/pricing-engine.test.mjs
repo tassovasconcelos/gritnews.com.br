@@ -8,3 +8,15 @@ const fixture=()=>({id:'test',company_id:'shopping_prohospital',source_name:'SYN
 test('queue never invents price, coverage, discounts or ERP connection',()=>{assert.equal(buildPriceQueue(null).available,false);const r=buildPriceQueue(fixture(),now);assert.equal(r.partial,true);assert.equal(r.items[0].old_value,1000);assert.equal(r.items[0].coverage_days,null);assert.equal(r.items[0].current_price,null);assert.equal(r.items[0].discount_ready,false);assert.equal(r.items[0].no_sales_180,false);});
 test('complete 90-day window enables observed coverage; returns pagination and refresh warnings',()=>{const f=fixture();Object.assign(f.payload.metadata,{sales_complete:true,sales_from:'2026-07-01'});const r=buildPriceQueue(f,now);assert.equal(r.items[0].coverage_days,9000);const stale=buildPriceQueue(f,new Date('2026-10-21T10:00:00Z'));assert.equal(stale.stale,true);f.payload.data.inventory=Array.from({length:25},(_,i)=>({...f.payload.data.inventory[0],store_id:String(i)}));assert.equal(buildPriceQueue(f,now,20).items.length,5);});
 test('recent verified last-sale always defeats old imported history; no-sales needs evidence',()=>{const f=fixture();f.payload.data.inventory[0].last_sale_date='2026-10-19';f.payload.data.sales=[];assert.equal(buildPriceQueue(f,now).items[0].no_sales_180,false);f.payload.metadata.last_sale_verified=false;assert.equal(buildPriceQueue(f,now).items[0].no_sales_180,null);});
+
+
+test('Marca-passo floors, carrying cost and opportunity comparison preserve units and missing data',async()=>{
+ const {priceEconomics,carryingCost,coverageEconomics,scoreMP}=await import('./pricing-engine.mjs');
+ const r=priceEconomics({cost:60,price:100,candidate:85.72,fixed_cost:0,expense_pct:10,minimum_margin_pct:20,max_change_pct:20,units:10,days:30});
+ assert.equal(r.floor,85.72);assert.equal(r.liquidation_floor,66.67);assert.equal(r.carrying.total,9);assert.ok(r.candidate_margin_pct>=20);assert.equal(r.cash_if_all_sold_and_received,857.2);
+ const low=priceEconomics({cost:60,price:100,candidate:80,fixed_cost:0,expense_pct:10,minimum_margin_pct:20,max_change_pct:30,units:10});assert.ok(low.price_shortfall>5.71);assert.equal(low.margin_gap_pp,-5);assert.equal(low.status,'bloqueado');
+ assert.equal(carryingCost({capital:100000,days:90}).total,4500);assert.deepEqual(coverageEconomics({stock_cost:6000,daily_cogs:100,target_days:30}),{coverage_days:60,excess_capital:3000,target_cost:3000,rule_version:r.rule_version});
+ for(const input of [{stock_cost:100,daily_cogs:0,target_days:30},{stock_cost:100,target_days:30}])assert.throws(()=>coverageEconomics(input));
+ assert.equal(scoreMP({excess:1}).score,null);assert.equal(scoreMP({excess:1,age:1,competition:1,floor:1,demand:1}).score,100);assert.throws(()=>scoreMP({excess:2}));
+ const zero=priceEconomics({cost:60,price:100,candidate:60,fixed_cost:0,expense_pct:0,minimum_margin_pct:0,max_change_pct:50,units:1});assert.equal(zero.volume_compensation_pct,null);
+});
