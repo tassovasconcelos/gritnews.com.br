@@ -72,7 +72,7 @@ export function productCorrespondence(row,product=''){
  const accessory=/^(?:adjuvante|placa|clipe?|fixador|pasta|cinto)\b/.test(discoveryKey(row.description));
  if(terms.includes('bolsa')&&accessory&&!terms.some(t=>/^(?:adjuvante|placa|clipe?|fixador|pasta|cinto)$/.test(t)))return {matches:false,expanded:false,note:null};
  const intestinalTerm=terms.find(t=>['colostomia','ileostomia'].includes(t)),urinaryTerm=terms.includes('urostomia'),opposite=intestinalTerm==='colostomia'?'ileostomia':'colostomia';
- const intestinalExpanded=!!intestinalTerm&&!normalizedHay.includes(' '+intestinalTerm+' ')&&/\bestomia\b/.test(normalizedHay)&&/\bintestinal\b/.test(normalizedHay)&&!/(?:aplicacao\s+)?urinaria|urostomia/.test(normalizedHay)&&!normalizedHay.includes(' '+opposite+' ');
+ const intestinalExpanded=!!intestinalTerm&&!normalizedHay.includes(' '+intestinalTerm+' ')&&/\b(?:estomia|estoma)\b/.test(normalizedHay)&&/\bintestinal\b/.test(normalizedHay)&&!/(?:aplicacao\s+)?urinaria|urostomia/.test(normalizedHay)&&!normalizedHay.includes(' '+opposite+' ');
  const urinaryExpanded=urinaryTerm&&!normalizedHay.includes(' urostomia ')&&/\bestomia\b/.test(normalizedHay)&&/\burinaria\b/.test(normalizedHay)&&!/\b(?:intestinal|colostomia|ileostomia)\b/.test(normalizedHay),expanded=intestinalExpanded||urinaryExpanded;
  return {matches:terms.every(t=>normalizedHay.includes(' '+t+' ')||(t===intestinalTerm&&intestinalExpanded)||(t==='urostomia'&&urinaryExpanded)),expanded,note:expanded?'Correspondência ampliada: sistema para estomia de aplicação '+(urinaryExpanded?'urinária':'intestinal')+'. Confirmar indicação, modelo, medidas e apresentação; não certifica equivalência técnica.':null};
 }

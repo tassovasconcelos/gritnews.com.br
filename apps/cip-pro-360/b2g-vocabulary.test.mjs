@@ -71,6 +71,14 @@ test('ostomy expansion distinguishes urinary, intestinal and explicit competing 
  assert.equal(discoveryMatch({description:'Sistema p/ estomia, aplicação intestinal, tipo bolsa'},{product:'bolsa ileostomia'}),true);
  assert.equal(discoveryMatch({description:'Bolsa colostomia'},{product:'bolsa ileostomia'}),false);
 });
+test('ostomy vocabulary expands commercial terms while keeping generic ostomy application unclassified',()=>{
+ const profile=keywordPlan('bolsa de colostomia');
+ assert.equal(profile.profile,'bolsa-intestinal');
+ for(const term of ['bolsa coletora para estoma intestinal','sistema coletor de uma peça','sistema para estomia de aplicação intestinal'])assert.ok(profile.families.includes(term)||profile.related.includes(term));
+ assert.equal(keywordPlan('sistema para estomia').profile,null);
+ for(const description of ['Bolsa coletora para estoma intestinal','Sistema para estomia de aplicação intestinal, tipo bolsa','Sistema p/ estomia, aplicação intestinal, tipo bolsa'])assert.equal(discoveryMatch({description},{product:'bolsa de colostomia',allowRelated:true}),true,description);
+ for(const description of ['Sistema para estomia de aplicação urinária, tipo bolsa','Bolsa coletora para estoma urinário'])assert.equal(discoveryMatch({description},{product:'bolsa de colostomia',allowRelated:true}),false,description);
+});
 test('sterility and compound negations remain hard requirements while brand spacing is normalized',()=>{
  assert.equal(discoveryMatch({description:'Avental não estéril'},{product:'avental estéril'}),false);
  assert.equal(discoveryMatch({description:'Avental com manga, sem pó, com látex'},{product:'avental sem látex'}),false);
