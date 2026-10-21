@@ -1,5 +1,7 @@
 packages:
   - apps/*
+  # CONSUMO PRO 360 ships separately with npm; do not impose new dependencies on GRIT News lockfile.
+  - '!apps/consumo-pro-360'
   - packages/*
 
 allowBuilds:
