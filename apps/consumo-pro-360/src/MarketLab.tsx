@@ -1,6 +1,7 @@
 import {useCallback,useEffect,useMemo,useState} from "react";
 import {BrainCircuit,CheckCircle2,ClipboardCheck,Compass,ExternalLink,FlaskConical,
  Lightbulb,PlaneTakeoff,Plus,RefreshCw,ShieldAlert,TrendingUp} from "lucide-react";
+import {readWithDeadline} from "./lib/async-read.mjs";
 import {db} from "./lib/supabase";
 import "./travel-lab.css";
 
@@ -34,10 +35,12 @@ export default function MarketLab({
  const [message,setMessage]=useState("");
  const reload=useCallback(async()=>{
   if(!db||!companyId)return;
-  const {data,error}=await db.from("cp_lab_studies").select("id,title,area,hypothesis,inputs,results,created_at,status")
-   .eq("company_id",companyId).neq("area","travel").order("created_at",{ascending:false}).limit(50);
+  try{
+  const {data,error}=await readWithDeadline(db.from("cp_lab_studies").select("id,title,area,hypothesis,inputs,results,created_at,status")
+   .eq("company_id",companyId).neq("area","travel").order("created_at",{ascending:false}).limit(50));
   if(error)setMessage("Leitura do laboratório indisponível: "+error.message);
   else setRecords((data||[]) as Study[]);
+  }catch{setMessage("Não foi possível consultar os estudos. Verifique a conexão e atualize novamente.");}
  },[companyId]);
  useEffect(()=>{void reload();},[reload]);
  const learning=useMemo(()=>{
@@ -62,6 +65,7 @@ export default function MarketLab({
    catch{setMessage("A evidência precisa ter URL HTTPS válida.");return;}
   }
   setLoading(true);setMessage("");
+  try{
   const {error}=await db.from("cp_lab_studies").insert({
    company_id:companyId,created_by:userId,title:title.trim(),area,hypothesis:hypothesis.trim(),
    inputs:{metric:metric.trim(),baseline:baseline.trim(),target:target.trim(),source:source.trim()},
@@ -73,6 +77,8 @@ export default function MarketLab({
   setTitle("");setHypothesis("");setMetric("");setBaseline("");setTarget("");setSource("");
   setMessage("Teste registrado em rascunho. Métricas reais e validação humana ainda são necessárias.");
   await reload();
+  }catch{setMessage("Não foi possível confirmar o registro. Atualize a lista antes de tentar salvar novamente.");}
+  finally{setLoading(false);}
  };
  return <div className="market-lab">
   <div className="travel-hero"><div><span className="travel-eyebrow"><FlaskConical size={16}/> GRIT · LABORATÓRIO DE INTELIGÊNCIA</span>

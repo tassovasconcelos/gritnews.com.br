@@ -1,5 +1,6 @@
 import {useEffect,useState} from "react";
 import {Building2, Users, Package, Truck, Layers3, Wallet, ShieldCheck, Plus, RefreshCw, Search, Download} from "lucide-react";
+import {readWithDeadline} from "./lib/async-read.mjs";
 import {db} from "./lib/supabase";
 import UserManagement from "./UserManagement";
 
@@ -24,12 +25,19 @@ export default function AdminRegistry({orgId,companyId,companies,departments,pro
  const [budget,setBudget]=useState("");const [threshold,setThreshold]=useState("0");const [budgetDept,setBudgetDept]=useState("");
  const [saving,setSaving]=useState(false);const [message,setMessage]=useState("");
  const [error,setError]=useState("");
- useEffect(()=>{if(!db||!companyId)return;let on=true;db.from("cp_units").select("*").eq("company_id",companyId)
- .order("name").then(({data})=>{if(on)setUnits(data||[]);});return()=>{on=false;};},[companyId]);
+ useEffect(()=>{
+  setUnits([]);if(!db||!companyId)return;let on=true;
+  readWithDeadline(db.from("cp_units").select("*").eq("company_id",companyId).order("name"))
+   .then(({data,error})=>{if(!on)return;if(error)throw error;setUnits(data||[]);})
+   .catch(()=>{if(on)setError("Não foi possível consultar as unidades. Verifique a conexão e atualize novamente.");});
+  return()=>{on=false;};
+ },[companyId]);
  async function refresh(){
   if(!db)return;
-  const {data}=await db.from("cp_units").select("*").eq("company_id",companyId).order("name");
-  setUnits(data||[]);await onReload();
+  try{
+   const {data,error}=await readWithDeadline(db.from("cp_units").select("*").eq("company_id",companyId).order("name"));
+   if(error)throw error;setUnits(data||[]);await onReload();
+  }catch{setError("Não foi possível atualizar as unidades. Verifique a conexão e tente novamente.");}
  }
  async function action(fn:()=>PromiseLike<any>,success:string){
   setSaving(true);setError("");setMessage("");

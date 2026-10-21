@@ -336,6 +336,27 @@ export default function App(){
   }catch(error){setNotice("Não foi possível entrar. "+errText(error));}
   finally{setLoginBusy(false);}
  }
+ async function recoverPassword(){
+  if(!db||!email.trim())return;
+  setLoginBusy(true);setNotice("");
+  try{
+   const {error}=await readWithDeadline(db.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin+"/gestao"}));
+   if(error)throw error;
+   setNotice("Se houver uma conta habilitada, as instruções serão enviadas ao e-mail informado.");
+  }catch{setNotice("Não foi possível confirmar o envio. Confira seu e-mail antes de tentar novamente ou fale com o responsável pelo setor.");}
+  finally{setLoginBusy(false);}
+ }
+ async function changePassword(e:React.FormEvent){
+  e.preventDefault();if(!db)return;
+  if(newPassword.length<12||newPassword!==confirmPassword){setNotice("A senha precisa ter pelo menos 12 caracteres e coincidir com a confirmação.");return;}
+  setBusy(true);
+  try{
+   const {error}=await readWithDeadline(db.auth.updateUser({password:newPassword}));
+   if(error)throw error;
+   setNotice("Senha atualizada. A identidade continua vinculada ao seu perfil.");setNewPassword("");setConfirmPassword("");setModal("");
+  }catch{setNotice("Não foi possível confirmar a atualização da senha. Verifique a conexão antes de tentar novamente.");}
+  finally{setBusy(false);}
+ }
  async function logout(){
   try{const result=await readWithDeadline(db!.auth.signOut());if(result.error)throw result.error;}
   catch{setNotice("Não foi possível encerrar a sessão. Verifique a conexão e tente novamente.");return;}
@@ -508,7 +529,7 @@ export default function App(){
   <small>Grupo Prohospital · Tecnologia e desenvolvimento: GRIT Soluções e Negócios</small>
  </div>;
  if(!authReady)return <div className="loading-screen">Validando acesso corporativo…</div>;
- if(!user&&mobilePortal)return <main className="user-login"><img src="/logo-prohospital.webp" alt="Grupo Prohospital"/><h1>Seu app de solicitações</h1><p>Peça materiais e acompanhe seus pedidos. Entre com a conta autorizada pelo Grupo.</p><form onSubmit={login}><label>E-mail corporativo<input autoComplete="username" type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@empresa.com.br"/></label><label>Senha<input autoComplete="current-password" type="password" required value={password} onChange={e=>setPassword(e.target.value)}/></label>{notice&&<p className="user-warning" role="alert">{notice}</p>}<button className="btn primary" disabled={loginBusy}>{loginBusy?"Entrando…":"Entrar no app"}</button><button className="link-button" type="button" disabled={loginBusy||!email.trim()} onClick={async()=>{if(!db)return;setLoginBusy(true);const {error}=await db.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin+"/gestao"});setLoginBusy(false);setNotice(error?"Não foi possível enviar as instruções. Confira o e-mail ou fale com o responsável pelo setor.":"Se houver uma conta habilitada, as instruções serão enviadas ao e-mail informado.");}}>Esqueci minha senha</button></form><small>Grupo Prohospital · Tecnologia GRIT Soluções e Negócios</small></main>;
+ if(!user&&mobilePortal)return <main className="user-login"><img src="/logo-prohospital.webp" alt="Grupo Prohospital"/><h1>Seu app de solicitações</h1><p>Peça materiais e acompanhe seus pedidos. Entre com a conta autorizada pelo Grupo.</p><form onSubmit={login}><label>E-mail corporativo<input autoComplete="username" type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@empresa.com.br"/></label><label>Senha<input autoComplete="current-password" type="password" required value={password} onChange={e=>setPassword(e.target.value)}/></label>{notice&&<p className="user-warning" role="alert">{notice}</p>}<button className="btn primary" disabled={loginBusy}>{loginBusy?"Entrando…":"Entrar no app"}</button><button className="link-button" type="button" disabled={loginBusy||!email.trim()} onClick={recoverPassword}>Esqueci minha senha</button></form><small>Grupo Prohospital · Tecnologia GRIT Soluções e Negócios</small></main>;
  if(!user)return <div className="auth-layout">
   <div className="auth-hero"><div className="auth-brand"><img className="login-official-logo" src="/logo-prohospital.webp" alt="Grupo Prohospital"/></div>
    <div className="auth-body"><span className="eyebrow">Gestão inteligente de consumo</span>
@@ -524,7 +545,7 @@ export default function App(){
    <label>E-mail corporativo<input autoComplete="email" type="email" required value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="nome@empresa.com.br"/></label>
    <label>Senha<input autoComplete="current-password" type="password" required value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••••"/></label>
    <button className="btn primary full" disabled={loginBusy}>{loginBusy?"Validando…":"Entrar no CONSUMO PRO"}<ChevronRight size={18}/></button>
-   <button type="button" className="link-button centered" disabled={loginBusy||!email.trim()} onClick={async()=>{if(!db||!email.trim())return;setLoginBusy(true);const {error}=await db.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin});setLoginBusy(false);setNotice(error?"Não foi possível enviar o e-mail de recuperação: "+error.message:"Se houver uma conta habilitada, as instruções serão encaminhadas para o e-mail informado.");}}>Esqueci minha senha</button>
+   <button type="button" className="link-button centered" disabled={loginBusy||!email.trim()} onClick={recoverPassword}>Esqueci minha senha</button>
    <div className="muted centered"><Lock size={13}/> Acesso restrito a colaboradores autorizados</div>
   </form></div>
  </div>;
@@ -698,7 +719,7 @@ export default function App(){
   {modal==="account"&&<Modal title="Minha conta e segurança" onClose={()=>setModal("")}>
    <div className="detail-head"><div><strong>{user.email}</strong><p className="muted">Identidade confirmada pelo Supabase Auth</p></div><Lock size={19}/></div>
    <p>Defina uma senha exclusiva para este sistema. A senha nunca fica salva no banco de cadastros ou exposta ao Superadmin GRIT.</p>
-   <form onSubmit={async(e)=>{e.preventDefault();if(!db)return;if(newPassword.length<12||newPassword!==confirmPassword){setNotice("A senha precisa ter pelo menos 12 caracteres e coincidir com a confirmação.");return;}setBusy(true);const {error}=await db.auth.updateUser({password:newPassword});setBusy(false);if(error){setNotice("Não foi possível atualizar a senha: "+error.message);}else{setNotice("Senha atualizada. A identidade continua vinculada ao seu perfil.");setNewPassword("");setConfirmPassword("");setModal("");}}}>
+   <form onSubmit={changePassword}>
     <label>Nova senha (mínimo 12 caracteres)<input required minLength={12} autoComplete="new-password" type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)}/></label>
     <label>Confirmar nova senha<input required minLength={12} autoComplete="new-password" type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)}/></label>
     <div className="form-footer"><button className="btn secondary" type="button" onClick={()=>setModal("")}>Cancelar</button><button disabled={busy||newPassword.length<12||newPassword!==confirmPassword} className="btn primary">Salvar senha</button></div>
