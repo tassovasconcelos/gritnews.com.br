@@ -11,7 +11,7 @@ export function validateResearch(q){
  const page=Number(q.page??1);if(!Number.isInteger(page)||page<1||page>500)throw Error('invalid_page');
  if(!/^\d{1,9}$/.test(String(q.code??'')))throw Error('invalid_code');
  if(q.action==='catalog')return {action:q.action,code:String(q.code),page};
- if(!['codigoPdm','codigoItemCatalogo'].includes(q.type)||!day(q.start)||!day(q.end)||q.start>q.end||q.end>new Date().toISOString().slice(0,10)||Date.parse(q.end)-Date.parse(q.start)>1096*86400000)throw Error('invalid_period');
+ if(!['codigoPdm','codigoItemCatalogo'].includes(q.type)||!day(q.start)||!day(q.end)||q.start>q.end||q.end>new Date().toISOString().slice(0,10)||Date.parse(q.end)-Date.parse(q.start)>4383*86400000)throw Error('invalid_period');
  if(q.sphere&&!['F','E','M'].includes(q.sphere))throw Error('invalid_sphere');
  if(q.state&&!STATES.includes(q.state))throw Error('invalid_state');return {action:q.action,code:String(q.code),type:q.type,page,start:q.start,end:q.end,state:q.state||'',sphere:q.sphere||''};
 }

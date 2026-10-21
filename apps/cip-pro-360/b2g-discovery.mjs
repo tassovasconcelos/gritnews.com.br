@@ -12,7 +12,7 @@ export function validateDiscovery(q){
  }
  if(!['discover_supplier','discover_contracts','discover_ceara'].includes(q?.action))throw Error('invalid_action');
  const page=Number(q.page??1);if(!Number.isInteger(page)||page<1||page>50)throw Error('invalid_page');
- if(!date(q.start)||!date(q.end)||q.start>q.end||q.end>new Date().toISOString().slice(0,10)||Date.parse(q.end)-Date.parse(q.start)>365*86400000)throw Error('invalid_period');
+ if(!date(q.start)||!date(q.end)||q.start>q.end||q.end>new Date().toISOString().slice(0,10)||Date.parse(q.end)-Date.parse(q.start)>4383*86400000)throw Error('invalid_period');
  if(q.state&&!STATES.includes(q.state))throw Error('invalid_state');
  if(q.sphere&&!['F','E','M'].includes(q.sphere))throw Error('invalid_sphere');
  if(q.action==='discover_supplier'&&!/^\d{14}$/.test(q.supplier??''))throw Error('invalid_query');
