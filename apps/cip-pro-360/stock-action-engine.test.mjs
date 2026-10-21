@@ -1,0 +1,43 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {retailSignal,planRedistribution,b2bSignal,STOCK_POLICY,stockMetricsAlertFilter,stockMetricExposure,rankStockMetrics} from './stock-action-engine.mjs';
+import {renderExecutive} from './telegram/executive-reports.mjs';
+const item=(store,quantity,daily=1,unit='UN',extra={})=>{const current={store_code:store,sku:'SYNTH',description:'Synthetic product',unit,quantity,min_stock:1,security_stock:0,max_stock:1000,unit_cost:10,sale_price:20,alerts:[],...extra},historical={daily,duplicates:1,invalid_date:false};return {current,historical,signal:retailSignal(current,historical)};};
+test('historical demand scenario is not a current sales measurement; missing is not zero',()=>{assert.equal(retailSignal(null,{daily:1,duplicates:1}).coverage_scenario,null);assert.ok(retailSignal(null,{daily:1}).flags.includes('saldo_atual_ausente'));assert.equal(retailSignal(item('1',2).current,{daily:0,duplicates:1}).coverage_scenario,null);assert.ok(retailSignal(item('1',2).current,{daily:null,duplicates:1}).flags.includes('demanda_ausente'));});
+test('duplicate historical keys and invalid source dates never drive redistribution',()=>{for(const h of [{daily:1,duplicates:2},{daily:1,duplicates:1,invalid_date:true}])assert.equal(retailSignal(item('1',2).current,h).eligible,false);});
+test('same SKU and unit transfers retain donor reserve and destination maximum',()=>{const out=planRedistribution([item('1',100),item('2',1,1,'UN',{max_stock:20})]);assert.equal(out.length,1);assert.equal(out[0].quantity_limit,19);assert.equal(out[0].source_store,'1');assert.equal(out[0].target_store,'2');assert.equal(out[0].payload.coverage_scenario,1);});
+test('multiple receivers never allocate the donor balance twice',()=>{const out=planRedistribution([item('1',70),item('2',1),item('3',1)]);assert.equal(out.reduce((s,x)=>s+x.quantity_limit,0),10);assert.ok(70-out.reduce((s,x)=>s+x.quantity_limit,0)>=60);});
+test('unit or description mismatch and CD100 do not become automatic donors',()=>{for(const donor of [item('1',100,1,'CX'),item('100',100),item('1',100,1,'UN',{description:'Different synthetic product'})])assert.equal(planRedistribution([donor,item('2',1)]).length,0);});
+test('source quality, security floor and incoherent parameters exclude donors',()=>{for(const donor of [item('1',100,1,'UN',{alerts:['cost_review']}),item('1',100,1,'UN',{min_stock:100}),item('1',100,1,'UN',{min_stock:101,max_stock:10})])assert.equal(planRedistribution([donor,item('2',1)]).length,0);});
+test('invalid policy ordering is refused',()=>assert.throws(()=>planRedistribution([],{...STOCK_POLICY,target_days:90,donor_days:60})));
+test('stock triage filters are explicit and rank current exposure or volume without guessing missing values',()=>{
+ assert.equal(stockMetricsAlertFilter('capital','curva_e'),'@capital:curva_e');assert.equal(stockMetricsAlertFilter('volume',''),'@volume:');
+ assert.throws(()=>stockMetricsAlertFilter('margin','curva_e'),/invalid_stock_metric_sort/);assert.throws(()=>stockMetricsAlertFilter('capital','curva_e|x'),/invalid_stock_metric_alert/);
+ const rows=[{sku:'low',quantity:20,declared_cost:50},{sku:'high-cost',quantity:2,declared_cost:900},{sku:'high-volume',quantity:100,declared_cost:null,unit_cost:4},{sku:'unknown',quantity:null,declared_cost:null}];
+ assert.equal(stockMetricExposure(rows[2]),400);assert.deepEqual(rankStockMetrics(rows,'capital').map(x=>x.sku),['high-cost','high-volume','low','unknown']);assert.deepEqual(rankStockMetrics(rows,'volume').map(x=>x.sku),['high-volume','low','high-cost','unknown']);
+});
+const b={expiry:'2026-11-01',unit_cost:10,declared_cost:100,tax_cost:100,section:'COMERCIALIZÁVEIS'};
+test('expired lots cannot become promotional candidates',()=>{const x=b2bSignal({...b,expiry:'2026-10-18'},'2026-10-19');assert.ok(x.alerts.includes('vencido'));assert.equal(x.promotion_candidate,false);});
+test('near expiry is separate from lot age and unknown validity sentinel',()=>{assert.equal(b2bSignal(b,'2026-10-19').promotion_candidate,true);for(const expiry of [null,'2099-12-31','invalid']){const x=b2bSignal({...b,expiry},'2026-10-19');assert.ok(x.alerts.includes('validade_conferir'));assert.equal(x.promotion_candidate,false);}});
+test('prescription, blocked section and zero cost require technical review',()=>{for(const changes of [{section:'BLOQUEADOS'},{section:'PRODUTOS DE PRESCRIÇÃO MÉDICA'},{unit_cost:0},{controlled:'Sujeito a controle Especial'}])assert.equal(b2bSignal({...b,...changes},'2026-10-19').promotion_candidate,false);});
+test('tax gaps and lower declared tax valuation are preserved as review alerts',()=>{assert.ok(b2bSignal({...b,tax_cost:null},'2026-10-19').alerts.includes('tributacao_ausente'));assert.ok(b2bSignal({...b,tax_cost:90},'2026-10-19').alerts.includes('tributacao_conferir'));});
+test('unsafe numeric lot identifiers cannot become campaign candidates',()=>{const x=b2bSignal({...b,lot:3e159},'2026-10-19');assert.ok(x.alerts.includes('lote_conferir'));assert.equal(x.promotion_candidate,false);assert.equal(b2bSignal({...b,lot:'3E159'},'2026-10-19').promotion_candidate,true);});
+const intelligence={available:true,company:'distribuidora_prohospital',source_kind:'inventory_intelligence',batch:{company_id:'distribuidora_prohospital',status:'active',as_of:'2026-10-19',sources:[{file:'Synthetic.xlsx',hash:'a'.repeat(64)}],summary:{metrics:2,skus:2,alerts:{vencido:1,validade_90d:1},actions:{campanha:1,conferencia:1},tax_cost_available:'30.00',tax_missing:0}},filtered_total:1,filtered_cost:'10.01',items:[]};
+test('Telegram B2B leads with all-filter cents, preserves lot limits and no inferred turnover',()=>{const t=renderExecutive([{company:'distribuidora_prohospital',reference:intelligence}],'stock_sources');assert.match(t,/^Estoque B2B no filtro.*R\$ 10,01/);assert.match(t,/C.Estoque 1000; separado do CD100/);assert.match(t,/não há giro, cobertura, margem ou ganho previsto/);assert.match(t,/Lotes vencidos não são candidatos/);});
+test('B2B zero matched lots is not interpreted as a zero company stock',()=>{const t=renderExecutive([{company:'distribuidora_prohospital',reference:{...intelligence,filtered_total:0,filtered_cost:null}}],'stock_product');assert.match(t,/Nenhum lote encontrado neste filtro; não significa estoque zerado/);});
+
+
+test('action brief separates physical quantity, economic rating and conditional carrying cost',async()=>{
+ const {actionCard}=await import('./stock-actions-ui.mjs');const a={kind:'campanha',sku:'SYNTHETIC',description:'Produto de teste',state:'sugerida',source_store:'1',quantity_limit:10,priority:70,payload:{unit:'UN',unit_cost:60,reason:'Excesso do cenário histórico.'}};
+ const html=actionCard(a,0,'2026-10-19',true,true,true);assert.match(html,/Quantidade máxima do plano/);assert.match(html,/Rating econômico:<\/strong> pendente/);assert.match(html,/1,5% ao mês/);assert.match(html,/R\$&nbsp;9,00|R\$ 9,00|R\$ 9,00/);assert.match(html,/Montar cenário/);assert.doesNotMatch(html,/JSON|"unit_cost"/);
+ const missing=actionCard({...a,payload:{}},0,'2026-10-19',false,false);assert.match(missing,/Custo unitário ou quantidade não comprovados/);assert.doesNotMatch(missing,/R\$ 0,00/);
+});
+
+test('validation view is compact, explains source caveats and opens prioritized records',async()=>{
+ const {stockActionsFrame,validationSummary,validationProductCard}=await import('./stock-actions-ui.mjs');
+ const frame=stockActionsFrame();assert.match(frame,/Pesquisar produto e outros filtros/);assert.match(frame,/Validar estoque e dados/);assert.match(frame,/<details class="stock-filter-details">/);
+ const summary=validationSummary({metrics:3,matched_current:2,current_cost:'900',cost:'500',skus:2,tax_cost_available:'400',tax_missing:1,notice:'Base importada',policy:{risk_days:14,target_days:30,donor_days:60,excess_days:90,expiry_days:90},alerts:{curva_e:2,saldo_atual_ausente:1}}, {as_of:'2026-10-19',sources:[]},true,{states:{sugerida:2},results:{reported_cash:null}});
+ assert.match(summary,/Validações em aberto/);assert.match(summary,/contagens por alerta podem se sobrepor/);assert.match(summary,/saldo atual/);assert.match(summary,/Posição 19\/10\/2026/);
+ const row=validationProductCard({sku:'SKU-X',description:'Produto de teste',store_code:'4',quantity:120,unit:'UN',unit_cost:7,declared_cost:840,sale_price:11,alerts:['demanda_ausente'],data:{daily:null,lot:'L1'}},0,'2026-10-19',true);
+ assert.match(row,/120 UN/);assert.match(row,/Quantidade informada na linha/);assert.match(row,/Montar cenário/);assert.match(row,/período ainda não confirmado/);assert.match(row,/R\$&nbsp;840,00|R\$ 840,00|R\$ 840,00/);
+});

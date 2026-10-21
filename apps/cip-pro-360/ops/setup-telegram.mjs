@@ -1,0 +1,17 @@
+// Node 20+. Interactive only: credentials stay in process memory, never arguments/files/logs.
+import {stdin,stdout} from 'node:process';import {emitKeypressEvents} from 'node:readline';import {randomBytes} from 'node:crypto';
+const project='pcrwtoddavpvkaxwtstc',webhook=`https://${project}.supabase.co/functions/v1/cip-telegram`;
+async function hidden(prompt){if(!stdin.isTTY)throw Error('Execute em terminal interativo; não passe segredos por argumentos.');stdout.write(prompt);emitKeypressEvents(stdin);stdin.setRawMode(true);stdin.resume();return new Promise((resolve,reject)=>{let value='';const finish=()=>{stdin.removeListener('keypress',key);stdin.setRawMode(false);stdin.pause();stdout.write('\n');};const key=(s,k)=>{if(k?.ctrl&&k.name==='c'){finish();reject(Error('Cancelado.'));}else if(k?.name==='return'){finish();resolve(value);}else if(k?.name==='backspace')value=value.slice(0,-1);else if(typeof s==='string'&&!k?.ctrl&&!/[\r\n\x00-\x1f]/.test(s))value+=s;};stdin.on('keypress',key);});}
+async function request(url,body,headers={}){const r=await fetch(url,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...headers},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('Serviço recusou a configuração (HTTP '+r.status+'). Nenhuma credencial será exibida.');return r.json();}
+try{
+ stdout.write('Configurar Doquita CIP no Telegram · piloto somente leitura\nO bot deve ser exclusivo do CIP. O script configura segredos do projeto e o webhook; não envia mensagens.\n');
+ const token=String(await hidden('Token do BotFather (entrada oculta): ')).trim();if(!/^\d+:[A-Za-z0-9_-]{20,}$/.test(token))throw Error('Formato de token inválido.');
+ const me=await request(`https://api.telegram.org/bot${token}/getMe`);if(!me.ok||!me.result?.is_bot)throw Error('Token não validado.');stdout.write('Bot validado: @'+me.result.username+'\n');
+ const pat=String(await hidden('Access token Supabase autorizado para o projeto (entrada oculta): ')).trim();if(!pat)throw Error('Access token ausente.');
+ const secret=randomBytes(32).toString('hex');
+ await request(`https://api.supabase.com/v1/projects/${project}/secrets`,[{name:'CIP_TELEGRAM_BOT_TOKEN',value:token},{name:'CIP_TELEGRAM_WEBHOOK_SECRET',value:secret}],{Authorization:'Bearer '+pat});
+ const set=await request(`https://api.telegram.org/bot${token}/setWebhook`,{url:webhook,secret_token:secret,allowed_updates:['message'],max_connections:5});if(!set.ok)throw Error('Webhook não confirmado.');
+ const commands=await request(`https://api.telegram.org/bot${token}/setMyCommands`,{commands:[{command:'resumo',description:'Resumo dos registros do CIP'},{command:'missoes',description:'Contagem das missões por estado'},{command:'processos',description:'Mapas cadastrados'},{command:'conhecimento',description:'Buscar em conhecimento aprovado'},{command:'sair',description:'Revogar o vínculo'}]});if(!commands.ok)throw Error('Menu de comandos não confirmado.');
+ const info=await request(`https://api.telegram.org/bot${token}/getWebhookInfo`);if(info.result?.url!==webhook)throw Error('Endereço do webhook não confirmado.');
+ stdout.write('Configuração confirmada para @'+me.result.username+'.\nAbra o CIP → Doquita no Telegram, gere o código e envie ao seu bot. Valide /resumo e /sair. Nenhuma mensagem foi enviada por este script.\n');
+}catch{stdout.write('Configuração não concluída. Confira a autorização do projeto e as credenciais nos serviços oficiais. Nenhum segredo foi gravado em arquivo ou exibido.\n');process.exitCode=1;}
