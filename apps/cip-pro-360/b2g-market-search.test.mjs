@@ -21,10 +21,20 @@ test('brand results beyond the first page remain discoverable and municipality s
  const calls=[];const d=await requestMarketResearch({...q,product:'bolsa de colostomia',state:'PE',sphere:'M'},{catalog:[{code:3,name:'Sistema p/ estomia',group:65,active:true}],official:async input=>{calls.push(input);if(input.action==='result')return {resultado:[],source:'https://dadosabertos.compras.gov.br/result'};return {resultado:input.page===1?Array.from({length:500},()=>({...price,marca:'OUTRA'})):[{...price,descricaoItem:'Sistema p/ estomia, aplicação intestinal, tipo bolsa',marca:'PROCIRURGICA',estado:'PE',esfera:'M',municipio:'OLINDA'}],totalRegistros:501,source:'https://dadosabertos.compras.gov.br/prices?pagina='+input.page};}});
  assert.equal(d.received,501);assert.equal(d.rows.length,1);assert.equal(d.rows[0].city,'OLINDA');assert.equal(d.rows[0].sphere,'M');assert.equal(d.coverage[0].pages,2);assert.equal(d.partial,false);assert.equal(calls[0].state,'PE');assert.equal(calls[0].sphere,'M');
 });
-test('page cap reports partial coverage instead of claiming complete absence',async()=>{
- const d=await requestMarketResearch(q,{catalog:catalog.slice(0,1),official:async()=>({resultado:Array.from({length:500},()=>({...price,marca:'OUTRA'})),totalRegistros:3500,source:'https://dadosabertos.compras.gov.br/prices'})});
- assert.equal(d.coverage[0].pages,6);assert.equal(d.partial,true);assert.equal(d.rows.length,0);
- assert.deepEqual(d.next_cursor,[{code:'10',page:7}]);
+test('family page cap reports partial coverage and resumes at the next page',async()=>{
+ const d=await requestMarketResearch(q,{catalog:catalog.slice(0,1),official:async()=>({resultado:Array.from({length:500},()=>({...price,marca:'OUTRA'})),totalRegistros:9000,source:'https://dadosabertos.compras.gov.br/prices'})});
+ assert.equal(d.coverage[0].pages,10);assert.equal(d.partial,true);assert.equal(d.rows.length,0);
+ assert.deepEqual(d.next_cursor,[{code:'10',page:11}]);assert.equal(d.page_limit,24);assert.equal(d.family_page_limit,10);
+});
+test('expands coverage across candidate families up to the 24-page round budget',async()=>{
+ const c=Array.from({length:8},(_,i)=>({code:String(10+i),name:'Cama hospitalar',group:65,active:true}));
+ const d=await requestMarketResearch(q,{catalog:c,official:async()=>({resultado:Array.from({length:500},()=>({...price,marca:'OUTRA'})),totalRegistros:6000,source:'https://dadosabertos.compras.gov.br/prices'})});
+ assert.equal(d.coverage.length,5);assert.equal(d.coverage.reduce((n,f)=>n+f.pages,0),24);assert.equal(d.next_cursor.length,5);assert.equal(d.partial,true);
+});
+test('reports matching records beyond the official verification sample',async()=>{
+ const candidates=Array.from({length:121},(_,i)=>{const purchase=String(10000000000000000n+BigInt(i));return {...price,idCompra:purchase,idCompraItem:purchase+'00001',marca:'PROCIRURGICA'};});
+ const d=await requestMarketResearch(q,{catalog:catalog.slice(0,1),official:async input=>input.action==='prices'?{resultado:candidates,totalRegistros:121,source:'https://dadosabertos.compras.gov.br/prices'}:{resultado:[],source:'https://dadosabertos.compras.gov.br/result'}});
+ assert.equal(d.matched,121);assert.equal(d.displayed,120);assert.equal(d.verification_pending,1);assert.equal(d.partial,true);
 });
 test('catheter discovery includes urinary nomenclature without ranking a laxative or guide as catheter',()=>{
  const c=[{code:1,name:'Cateter periférico',active:true},{code:2,name:'Sonda trato urinário',active:true},{code:3,name:'Sonda uretral',active:false},{code:4,name:'Mucilóide hidrofílico de psyllium',active:true},{code:5,name:'Guia hidrofílico',active:true}];
