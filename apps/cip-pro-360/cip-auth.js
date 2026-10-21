@@ -1,7 +1,7 @@
+import {initNavigation,resetNavigation,navigationChanged,homeFrame,solutionsFrame,preferencesFrame} from './navigation-ui.mjs';
 import {stockActionsFrame,mountStockActions} from './stock-actions-ui.mjs';
 import {shoppingPositionFrame,mountShoppingPosition} from './shopping-position.mjs';
 import {stockReferenceFrame,mountStockReference} from './stock-reference.mjs';
-import {presentationFrame,mountPresentation,presentationReturn,PRESENTATION_ROLES} from './presentation.mjs';
 import {pricingFrame,mountPricing} from './pricing-ui.mjs';
 import {erpFrame,mountERP} from './erp-ui.mjs';
 import {processFrame,mountProcesses} from './process-ui.mjs';
@@ -17,6 +17,11 @@ const supabase = createClient("https://pcrwtoddavpvkaxwtstc.supabase.co", "sb_pu
   auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}
 });
 const V="shopping_prohospital", B="distribuidora_prohospital";
+const PRESENTATION_ROLES=['superadm','diretoria'];let presentationPromise=null;
+function ensurePresentation(){
+ if(!document.querySelector('link[data-cip-presentation-style]')){const css=document.createElement('link');css.rel='stylesheet';css.href='./presentation.css';css.dataset.cipPresentationStyle='';document.head.append(css);}
+ if(!presentationPromise)presentationPromise=import('./presentation.mjs').catch(error=>{presentationPromise=null;throw error;});return presentationPromise;
+}
 let user=null,profile=null,companies=new Set();
 let disposeSquad=()=>{};
 window.cipRenderSquad=page=>renderSquadPage(page);
@@ -27,13 +32,14 @@ window.cipRenderERP=()=>erpFrame();
 window.cipRenderStockActions=()=>stockActionsFrame();
 window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPositionFrame()+'<details class="section card"><summary>Referências históricas parciais · não somar à posição geral</summary>'+stockReferenceFrame({compact})+'</details>':'');
 window.cipRenderPricing=()=>pricingFrame();
-window.cipRenderPresentation=()=>presentationFrame();
+window.cipRenderPresentation=()=>'<section data-presentation-loading><h1>Apresentação executiva</h1><p role="status">Carregando a apresentação…</p></section>';
+window.cipHomeFrame=()=>homeFrame();window.cipSolutionsFrame=()=>solutionsFrame();window.cipPreferencesFrame=()=>preferencesFrame();window.cipNavigationChanged=(...args)=>navigationChanged(...args);
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g","precos"] };
 const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const note=(s)=>{const el=$("loginMessage");if(el)el.textContent=s;};
-function toLogin(){disposeSquad();window.closeMenu?.();user=null;profile=null;companies=new Set();window.cipAuth=null;$("interface")?.classList.add("hide");$("login")?.classList.remove("hide");}
+function toLogin(){disposeSquad();if(typeof resetNavigation==='function')resetNavigation();window.closeMenu?.();user=null;profile=null;companies=new Set();window.cipAuth=null;$("interface")?.classList.add("hide");$("login")?.classList.remove("hide");}
 async function enter(){
   if(!user)return toLogin();
   const p=await supabase.from("cip_profiles").select("role,active").eq("user_id",user.id).maybeSingle();
@@ -45,7 +51,7 @@ async function enter(){
     if(m.error)throw m.error;
     companies=new Set((m.data||[]).map(x=>x.company_id));
   }
-  const allowedRoutes=["inicio","cronograma","doquita","quartel","escola","processos","mensageiro",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
+  const allowedRoutes=["inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelector('[data-presentation-menu]')?.classList.toggle('hide',!PRESENTATION_ROLES.includes(profile.role));
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
@@ -59,8 +65,9 @@ async function enter(){
       if(!error&&data){chip.textContent='PROCFIT · CADASTRO';chip.title='Cadastro integrado · captura '+new Date(data.captured_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})+' (Brasília). Vendas e saldos automáticos pendentes.';}
     }).catch(()=>{});
   }
+  const start=initNavigation({userId:user.id,allowedRoutes});
   window.showPreview();
-  window.navigate("inicio");
+  window.navigate(start,{recordHistory:false});
   return true;
 }
 async function verify(){
@@ -283,7 +290,12 @@ window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquit
 window.cipLoadPage=(page)=>{
  disposeSquad();disposeSquad=()=>{};
  if(!user)return;
- if(page==='apresentacao'&&PRESENTATION_ROLES.includes(profile?.role)&&window.cipAuth?.allowedRoutes?.includes(page))mountPresentation({root:document.getElementById('content'),role:profile.role,allowedRoutes:window.cipAuth.allowedRoutes,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};},preview:route=>({precos:()=>pricingFrame(),estoque:()=>stockReferenceFrame({compact:false}),processos:()=>processFrame(),mensageiro:()=>botFrame(),procfit:()=>erpFrame(),quartel:()=>renderSquadPage('quartel'),escola:()=>renderSquadPage('escola'),'radar-b2g':()=>renderSquadPage('radar-b2g')})[route]?.()||'',onOpen:route=>{if(!window.cipAuth?.allowedRoutes?.includes(route))return;window.navigate(route);const remove=presentationReturn(document.getElementById('content'),()=>{if(window.cipAuth?.allowedRoutes?.includes('apresentacao'))window.navigate('apresentacao');});const previous=disposeSquad;disposeSquad=()=>{previous();remove();};}});
+ if(page==='apresentacao'&&PRESENTATION_ROLES.includes(profile?.role)&&window.cipAuth?.allowedRoutes?.includes(page)){
+  const actor=user.id;ensurePresentation().then(mod=>{const host=document.getElementById('content');if(user?.id!==actor||!PRESENTATION_ROLES.includes(profile?.role)||!window.cipAuth?.allowedRoutes?.includes(page)||!host.querySelector('[data-presentation-loading]'))return;host.innerHTML=mod.presentationFrame();const {mountPresentation,presentationReturn}=mod;
+  mountPresentation({root:document.getElementById('content'),role:profile.role,allowedRoutes:window.cipAuth.allowedRoutes,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};},preview:route=>({precos:()=>pricingFrame(),estoque:()=>stockReferenceFrame({compact:false}),processos:()=>processFrame(),mensageiro:()=>botFrame(),procfit:()=>erpFrame(),quartel:()=>renderSquadPage('quartel'),escola:()=>renderSquadPage('escola'),'radar-b2g':()=>renderSquadPage('radar-b2g')})[route]?.()||'',onOpen:route=>{if(!window.cipAuth?.allowedRoutes?.includes(route))return;window.navigate(route);const remove=presentationReturn(document.getElementById('content'),()=>{if(window.cipAuth?.allowedRoutes?.includes('apresentacao'))window.navigate('apresentacao');});const previous=disposeSquad;disposeSquad=()=>{previous();remove();};}});
+  window.cipNavigationChanged?.(page,{recordHistory:false});
+  }).catch(()=>{const pending=document.querySelector('[data-presentation-loading]');if(pending)pending.innerHTML='<h1>Apresentação executiva</h1><p role="status">Não foi possível carregar. Verifique a conexão e abra novamente esta solução.</p>';});
+ }
  if(["quartel","escola","radar-b2g"].includes(page)&&window.cipAuth?.allowedRoutes?.includes(page))mountSquad(page,{db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==="integracoes"&&profile?.role==="superadm")mountAdmin({db:supabase,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==='processos'&&window.cipAuth?.allowedRoutes?.includes(page))mountProcesses({db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});

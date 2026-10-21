@@ -10,9 +10,9 @@ test('coverage scenario uses same-scope cost and monthly CMV without claiming re
 test('capacity scenario distinguishes gross and reusable hours without counting hires',()=>{
  assert.deepEqual(capacityScenario(25,20),{gross:25*20*22/60,useful:110});assert.equal(capacityScenario(0,20),null);assert.equal(capacityScenario(25,-1),null);assert.equal(capacityScenario(2.5,10),null);
 });
-test('guide is a final navigation route with explicit director authorization at entry and mount',()=>{
+test('guide is a permission-filtered navigation route with explicit director authorization at entry and mount',()=>{
  const html=readFileSync(new URL('./index.html',import.meta.url),'utf8'),auth=readFileSync(new URL('./cip-auth.js',import.meta.url),'utf8');
- assert.ok(html.indexOf('data-route="apresentacao"')>html.indexOf('data-route="integracoes"'));assert.ok(html.indexOf('data-route="apresentacao"')<html.indexOf('Encerrar sessão'));
+ const catalog=readFileSync(new URL('./navigation-data.mjs',import.meta.url),'utf8');assert.match(catalog,/\['apresentacao','Apresentação executiva'/);assert.match(auth,/ensurePresentation\(\)/);assert.match(auth,/import\('\.\/presentation.mjs'\)/);
  assert.match(html,/\['superadm','diretoria'\]\.includes\(window.cipAuth.role\)/);assert.match(auth,/\["superadm","diretoria"\]\.includes\(profile.role\)\?\["procfit","apresentacao"\]/);
  assert.deepEqual(PRESENTATION_ROLES,['superadm','diretoria']);
  for(const role of ['vendedor','gestor',null]){const host={innerHTML:'unchanged'};mountPresentation({root:{querySelector:()=>host},role,allowedRoutes:['apresentacao']});assert.equal(host.innerHTML,'unchanged');}

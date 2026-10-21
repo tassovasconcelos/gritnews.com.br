@@ -8,7 +8,6 @@
  <title>CIP PRO 360° | Grupo Prohospital</title>
  <link rel="stylesheet" href="./agents.css?v=mp-mobile-20261020">
  <link rel="stylesheet" href="./campaign-planner.css?v=campaign-basket-20261020">
- <link rel="stylesheet" href="./presentation.css?v=board-20261019">
  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
  <style>
@@ -86,8 +85,11 @@ html{scroll-behavior:smooth}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.navitem,.side{transition:none!important}}
 </style>
+<link rel="stylesheet" href="./navigation.css?v=access-20261020">
 </head>
 <body>
+<a id="skipContent" class="skip-content" href="#content" hidden>Pular para o conteúdo principal</a>
+<div id="navigationStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 <section id="login" class="login">
  <div class="login-art"><div class="brand login-brand"><div class="logo-official"><img src="./logo-cip-512.jpg" alt="Logo oficial do Grupo Prohospital" loading="eager" width="512" height="365"></div><div class="brand-kicker"><strong>CIP PRO 360°</strong><small>CENTRO DE INTELIGÊNCIA · GRUPO PROHOSPITAL</small></div></div>
  <div><span class="pill" style="background:#ffffff24;color:white">CENTRO DE INTELIGÊNCIA</span><h1>Decisões melhores. Resultados reais.</h1><p>Estoque, preços e inteligência comercial. Shopping Prohospital e Distribuidora Prohospital conectadas à mesma visão estratégica.</p></div>
@@ -96,24 +98,21 @@ html{scroll-behavior:smooth}
  <form id="loginForm" class="fields"><label>E-mail<input id="email" type="email" autocomplete="username" required placeholder="seu.email@empresa.com.br"></label><label>Senha<input id="password" type="password" autocomplete="current-password" minlength="8" required placeholder="••••••••"></label><button id="togglePassword" class="link" type="button" aria-pressed="false" onclick="window.cipTogglePassword?.()">Mostrar senha</button><button class="btn" type="submit">Acessar ambiente seguro →</button></form>
  <div class="form-message" id="loginMessage" aria-live="polite"></div>
  <div class="notice">Acesso restrito a usuários autorizados. O CIP utiliza a autenticação corporativa já existente na infraestrutura GRIT; suas permissões são independentes por empresa.</div>
+ <button type="button" class="btn secondary pwa-help-public" data-pwa-help>Instalar o CIP no celular</button>
  <div class="row"><button id="recoverAccess" class="link" onclick="window.cipResetPassword?.()" type="button">Recuperar acesso por e-mail →</button><span class="social">Ambiente seguro</span></div>
  </div></div>
 </section>
 <div id="interface" class="app hide">
- <div id="menuBackdrop" class="mobile-backdrop" hidden></div>
+ <div id="menuBackdrop" class="mobile-backdrop" aria-hidden="true" hidden></div>
  <aside id="side" class="side" aria-label="Navegação do CIP PRO 360">
    <div class="brand side-brand"><div class="logo-official"><img src="./logo-cip-512.jpg" alt="Logo oficial do Grupo Prohospital" width="512" height="365"></div><div><strong>CIP PRO 360°</strong><small>GRUPO PROHOSPITAL</small></div></div>
-   <div><h6>VISÃO ESTRATÉGICA</h6><button class="navitem active" data-route="inicio">◈ Visão Geral</button><button class="navitem" data-route="cronograma">◷ Cronograma</button><button class="navitem" data-route="doquita">✧ Doquita</button></div>
-   <div><h6>SHOPPING PROHOSPITAL</h6><button class="navitem" data-route="varejo">▦ Visão Varejo</button><button class="navitem" data-route="estoque">▤ Estoque inteligente</button><button class="navitem" data-route="precos">▥ Marca-passo de preços</button></div>
-   <div><h6>DISTRIBUIDORA PROHOSPITAL</h6><button class="navitem" data-route="b2b">▣ Visão B2B</button><button class="navitem" data-route="cotacoes">▤ Cotações & conversão</button><button class="navitem" data-route="caderninho">◇ Caderninho inteligente</button></div>
-   <div><h6>INTELIGÊNCIA EM EQUIPE</h6><button class="navitem" data-route="quartel">✦ Quartel dos Agentes</button><button class="navitem" data-route="escola">⌘ Escola dos Agentes</button><button class="navitem" data-route="processos">⤴ Processos vivos</button><button class="navitem" data-route="mensageiro">✉ Doquita no Telegram</button><button class="navitem" data-route="radar-b2g">◎ Radar B2G · Íris</button></div>
-   <div><h6>GOVERNANÇA</h6><button class="navitem" data-route="procfit">◫ Procfit & relatórios</button><button class="navitem" data-route="integracoes">⚙ Integrações & acessos</button></div>
-   <div class="hide" data-presentation-menu><h6>APRESENTAÇÃO EXECUTIVA</h6><button class="navitem hide" data-route="apresentacao">▷ CIP 360 para a diretoria</button></div>
-   <div style="margin-top:auto"><span class="pill neutral whoami">Sessão corporativa</span><button style="margin-top:10px" class="navitem" onclick="window.cipSignOut?.()">← Encerrar sessão</button></div>
+   <div class="nav-toolbar"><button type="button" class="nav-search-button" data-nav-search aria-label="Buscar soluções">⌕ <span>Buscar solução</span><kbd>Ctrl K</kbd></button><button type="button" class="nav-close" data-close-navigation aria-label="Fechar menu">×</button></div>
+   <nav id="solutionNavigation" class="solution-navigation" aria-label="Soluções autorizadas"></nav>
+   <div class="side-session"><span class="pill neutral whoami">Sessão corporativa</span><button class="navitem" type="button" onclick="window.cipSignOut?.()">Encerrar sessão</button></div>
  </aside>
  <div class="shell">
-  <header class="topnav"><div class="row"><button id="mobileMenuButton" class="mobile-menu" onclick="toggleMenu()" type="button" aria-controls="side" aria-expanded="false" aria-label="Abrir menu de navegação">☰</button><strong id="crumb">Visão Geral</strong></div><div class="row"><span class="status-chip" id="procfitConnectionChip" title="Cadastro de produtos integrado ao Procfit; vendas e saldos comerciais ainda pendentes.">PROCFIT · PARCIAL</span><button id="installAppButton" class="btn secondary install-app hide" type="button">Instalar app</button><span class="mini" style="display:none">Superadm</span><button class="btn secondary" onclick="window.cipSignOut?.()">Sair</button></div></header>
-  <main id="content" class="main"></main>
+  <header class="topnav"><div class="row"><button id="mobileMenuButton" class="mobile-menu" onclick="toggleMenu()" type="button" aria-controls="side" aria-expanded="false" aria-label="Abrir menu de navegação">☰</button><strong id="crumb">Visão Geral</strong></div><div class="row"><button type="button" class="btn secondary top-search" data-nav-search aria-label="Buscar soluções"><span aria-hidden="true">⌕</span><span class="search-label">Buscar</span><kbd>Ctrl K</kbd></button><span class="status-chip" id="procfitConnectionChip" title="Cadastro de produtos integrado ao Procfit; vendas e saldos comerciais ainda pendentes.">PROCFIT · PARCIAL</span><button id="installAppButton" class="btn secondary install-app hide" type="button">Instalar app</button><span class="mini" style="display:none">Superadm</span><button class="btn secondary" onclick="window.cipSignOut?.()">Sair</button></div></header>
+  <main id="content" class="main" tabindex="-1" aria-label="Conteúdo principal"></main>
   <nav id="bottomNav" class="bottom-nav" aria-label="Navegação principal">
    <button type="button" data-route="inicio" data-bottom-route="inicio" aria-label="Início"><span class="nav-icon" aria-hidden="true">⌂</span><span>Início</span></button>
    <button type="button" data-route="estoque" data-bottom-route="estoque" aria-label="Estoque inteligente"><span class="nav-icon" aria-hidden="true">▤</span><span>Estoque</span></button>
@@ -124,7 +123,11 @@ html{scroll-behavior:smooth}
   <div id="offlineNotice" class="offline-notice" role="status" aria-live="polite"></div>
  </div>
 </div>
+<dialog id="solutionSearchDialog" class="cip-dialog" aria-labelledby="solutionSearchTitle"><div class="dialog-header"><h2 id="solutionSearchTitle">Encontre sua solução</h2><button type="button" class="dialog-close" data-dialog-close aria-label="Fechar busca">×</button></div><div class="dialog-body"><label class="solution-search-label" for="quickSolutionQuery">Busque por nome, assunto ou objetivo</label><div class="solution-search"><input id="quickSolutionQuery" type="search" maxlength="200" autocomplete="off" placeholder="Ex.: estoque, CD, campanhas, Telegram…"></div><p id="quickSolutionCount" role="status" aria-live="polite"></p><div id="quickSolutionResults" class="solution-grid"></div></div></dialog>
+<dialog id="pwaHelpDialog" class="cip-dialog" aria-labelledby="pwaHelpTitle"><div class="dialog-header"><h2 id="pwaHelpTitle">CIP na tela inicial</h2><button type="button" class="dialog-close" data-dialog-close aria-label="Fechar instruções de instalação">×</button></div><div class="dialog-body pwa-guide"><p id="pwaInstallState" role="status">A instalação depende do seu navegador. O CIP também funciona pelo endereço normal.</p><button type="button" class="btn" id="installFromHelp" hidden>Instalar agora</button><h3>Android</h3><p>No Chrome, abra o menu do navegador e escolha <strong>Instalar aplicativo</strong> ou <strong>Adicionar à tela inicial</strong>, quando disponível.</p><h3>iPhone ou iPad</h3><p>Abra no Safari. Toque em <strong>Compartilhar</strong> e escolha <strong>Adicionar à Tela de Início</strong>.</p><h3>Conexão e atualização</h3><p>A autenticação e a consulta de dados precisam de internet. O modo sem conexão guarda somente a estrutura do aplicativo; dados comerciais não são salvos para consulta offline. A tela já aberta pode conter informações antigas.</p><p>Se houver nova versão, conclua ou salve seu trabalho antes de tocar em Atualizar aplicativo.</p></div></dialog>
+<section id="appUpdateNotice" class="update-notice" aria-label="Atualização disponível" hidden><p>Há uma nova versão do CIP. Salve seu trabalho antes de atualizar.</p><button type="button" class="btn" id="applyAppUpdate">Atualizar aplicativo</button><button type="button" class="link" id="dismissAppUpdate">Mais tarde</button></section>
 <script>
+let menuReturnTarget=null;
 const phases=[
  ['18–24 out 2026','Fundação e ambiente','Identidade institucional, navegação, login e papéis, estruturas Shopping e Distribuidora.'],
  ['25 out – 07 nov','ERP, dados e conciliação','Contrato de dados Procfit/BI, SKU e filiais, estoque e CMV, preços por canal e baseline.'],
@@ -132,45 +135,55 @@ const phases=[
  ['22 nov – 05 dez','Conversão B2B e Caderninho','Funil de cotações, motivos de perda e demandas de produtos ainda não atendidos.'],
  ['06–19 dez','Doquita e ações','Alertas baseados em evidências, tarefas, responsáveis e avaliação de resultados.'],
  ['20 dez – 16 jan','Piloto e homologação','Piloto em lojas selecionadas e distribuidora, testes, indicadores e plano de expansão.']
-]; const names={inicio:'Visão geral',cronograma:'Cronograma',doquita:'Doquita',varejo:'Shopping Prohospital',estoque:'Estoque Inteligente',precos:'Marca-passo de Preços',b2b:'Distribuidora Prohospital',cotacoes:'Cotações e Conversão',caderninho:'Caderninho Inteligente',integracoes:'Integrações e Acessos',procfit:'Procfit & relatórios',processos:'Processos vivos',mensageiro:'Doquita no Telegram',quartel:'Quartel dos Agentes',escola:'Escola dos Agentes','radar-b2g':'Radar B2G · Íris'};
+]; const names={solucoes:'Todas as soluções',preferencias:'Acessibilidade e aplicativo',inicio:'Visão geral',cronograma:'Cronograma',doquita:'Doquita',varejo:'Shopping Prohospital',estoque:'Estoque Inteligente',precos:'Marca-passo de Preços',b2b:'Distribuidora Prohospital',cotacoes:'Cotações e Conversão',caderninho:'Caderninho Inteligente',integracoes:'Integrações e Acessos',procfit:'Procfit & relatórios',processos:'Processos vivos',mensageiro:'Doquita no Telegram',quartel:'Quartel dos Agentes',escola:'Escola dos Agentes','radar-b2g':'Radar B2G · Íris'};
 const header=(title,subtitle)=>'<div class="row"><div><span class="eyebrow">CIP PRO 360° / '+title.toUpperCase()+'</span><h1 class="page-title">'+title+'</h1><p class="sub">'+subtitle+'</p></div></div><div class="info">ⓘ Cadastro de produtos integrado ao Procfit. Vendas e saldos automáticos ainda pendentes; estoques importados mostram a fonte e a data.</div>';
 const empty=(title,desc)=>'<div class="empty"><div style="font-size:25px;margin-bottom:10px">⌁</div><strong>'+title+'</strong><span>'+desc+'</span></div>';
 const metric=(label,value,sub)=>'<div class="card metric"><span class="label">'+label+'</span><b>'+value+'</b><small>'+sub+'</small></div>';
 const coming=(title)=>'<div class="section">'+empty(title,'Aguardando autenticação, fontes homologadas e implantação da etapa correspondente.')+'</div>';
-function showPreview(){document.getElementById('login').classList.add('hide');document.getElementById('interface').classList.remove('hide');navigate('cronograma')}
+function showPreview(){document.getElementById('login').classList.add('hide');document.getElementById('interface').classList.remove('hide')}
 function backToLogin(){document.getElementById('interface').classList.add('hide');document.getElementById('login').classList.remove('hide')}
+function syncMobileMenu(){
+ const side=document.getElementById('side'),mobile=window.matchMedia('(max-width: 780px)').matches,open=side.classList.contains('open');
+ side.inert=mobile&&!open;document.querySelector('.shell').inert=mobile&&open;
+ if(mobile&&open){side.setAttribute('role','dialog');side.setAttribute('aria-modal','true');}else{side.removeAttribute('role');side.removeAttribute('aria-modal');}
+}
 function closeMenu({returnFocus=false}={}){
  const side=document.getElementById('side'),backdrop=document.getElementById('menuBackdrop'),button=document.getElementById('mobileMenuButton');
  const wasOpen=side.classList.contains('open');
  side.classList.remove('open');backdrop.hidden=true;document.body.classList.remove('nav-open');
  button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','Abrir menu de navegação');
  const more=document.querySelector('[data-bottom-more]');more?.setAttribute('aria-expanded','false');
- if(returnFocus&&wasOpen)(window.matchMedia('(max-width: 780px)').matches?more:button)?.focus();
+ syncMobileMenu();if(returnFocus&&wasOpen)(menuReturnTarget?.isConnected?menuReturnTarget:button)?.focus();
 }
 function toggleMenu(){
  const side=document.getElementById('side'),backdrop=document.getElementById('menuBackdrop'),button=document.getElementById('mobileMenuButton');
  if(side.classList.contains('open'))return closeMenu({returnFocus:true});
- side.classList.add('open');backdrop.hidden=false;document.body.classList.add('nav-open');
+ menuReturnTarget=document.activeElement;side.classList.add('open');backdrop.hidden=false;document.body.classList.add('nav-open');
  button.setAttribute('aria-expanded','true');button.setAttribute('aria-label','Fechar menu de navegação');
- side.querySelector('.navitem:not(.hide)')?.focus();
+ syncMobileMenu();side.querySelector('[data-nav-search]')?.focus();
 }
 document.querySelector('[data-bottom-more]').addEventListener('click',()=>{const button=document.querySelector('[data-bottom-more]');const open=!document.getElementById('side').classList.contains('open');toggleMenu();button.setAttribute('aria-expanded',String(open));});
 document.getElementById('menuBackdrop').addEventListener('click',()=>closeMenu({returnFocus:true}));
-document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu({returnFocus:true})});
-window.matchMedia('(min-width: 781px)').addEventListener('change',event=>{if(event.matches)closeMenu()});
-function navigate(page){
+document.querySelector('[data-close-navigation]').addEventListener('click',()=>closeMenu({returnFocus:true}));
+document.addEventListener('keydown',event=>{const side=document.getElementById('side');if(event.key==='Escape')closeMenu({returnFocus:true});
+ if(event.key==='Tab'&&side.classList.contains('open')&&window.matchMedia('(max-width: 780px)').matches){const controls=[...side.querySelectorAll('button:not([disabled]),input,a[href]')].filter(e=>!e.closest('.hide,[hidden]'));const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}
+});
+window.matchMedia('(min-width: 781px)').addEventListener('change',event=>{closeMenu();syncMobileMenu();});
+function navigate(page,{recordHistory=true}={}){
  if(!window.cipAuth || !window.cipAuth.allowedRoutes.includes(page))return;
  document.querySelectorAll('[data-route]').forEach(b=>b.classList.toggle('active',b.dataset.route===page));
  document.querySelectorAll('[data-bottom-route]').forEach(b=>{const active=b.dataset.bottomRoute===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
  const quickRoutes=[...document.querySelectorAll('[data-bottom-route]:not(.hide)')].map(b=>b.dataset.bottomRoute),more=document.querySelector('[data-bottom-more]');more?.classList.toggle('active',!quickRoutes.includes(page));
  closeMenu();document.getElementById('crumb').textContent=page==='apresentacao'?'CIP 360 para a diretoria':names[page];let h='';
- if(page==='procfit'){h=window.cipRenderERP?.()||'<p>Carregando relatórios…</p>'}
+ if(page==='solucoes'){h=window.cipSolutionsFrame?.()||''}
+ else if(page==='preferencias'){h=window.cipPreferencesFrame?.()||''}
+ else if(page==='procfit'){h=window.cipRenderERP?.()||'<p>Carregando relatórios…</p>'}
  else if(page==='apresentacao'){if(!['superadm','diretoria'].includes(window.cipAuth.role))return;h=window.cipRenderPresentation?.()||'<p>Carregando apresentação…</p>'}
  else if(page==='processos'){h=window.cipRenderProcesses?.()||'<p>Carregando processos…</p>'}
  else if(page==='mensageiro'){h=window.cipRenderBot?.()||'<p>Carregando mensageiro…</p>'}
  else if(['quartel','escola','radar-b2g'].includes(page)){h=window.cipRenderSquad?.(page)||'<p>Carregando o squad…</p>'}
  else if(page==='cronograma'){h=header('Cronograma de implantação','Seis marcos de desenvolvimento, sujeitos a homologação técnica e disponibilização do ERP.')+'<div class="two"><div class="card"><h3>Roadmap prioritário</h3><div class="timeline" id="cipTimeline">'+phases.map((x,i)=>'<div class="milestone"><span class="pill neutral">'+x[0]+'</span><h3>'+String(i+1).padStart(2,'0')+'. '+x[1]+'</h3><p>'+x[2]+'</p><span class="mini">Status: planejamento • responsável a designar</span></div>').join('')+'</div></div><div><div class="card"><h3>Portas de homologação</h3><p class="muted">A publicação visual não equivale a integração nem a acesso corporativo homologado.</p>'+['Autenticação e superadm','Segregação efetiva por empresa','Conciliação dos números de Rufino','Integração read-only Procfit','Testes, auditoria e segurança'].map(t=>'<p>□ '+t+'</p>').join('')+'</div><div class="card section"><h3>Publicação definitiva</h3><p class="muted">Domínio solicitado: <b>cip.gritnews.com.br</b></p><span class="pill">SITE PUBLICADO · VALIDAÇÃO POR FLUXO</span></div></div></div>'}
- else if(page==='inicio'){h=header('Visão Geral','Duas empresas. Uma camada de inteligência. Governança centralizada.')+'<div class="grid2"><div class="card"><div class="company"><span class="company-icon">▦</span><div><h3>Shopping Prohospital</h3><p>Varejo · estoque, giro e preços</p></div><button class="btn secondary" onclick="navigate(\'varejo\')">Abrir</button></div></div><div class="card"><div class="company"><span class="company-icon">▤</span><div><h3>Distribuidora Prohospital</h3><p>B2B · cotações e vendas recuperadas</p></div><button class="btn secondary" onclick="navigate(\'b2b\')">Abrir</button></div></div></div><div class="section grid2"><div class="card"><h3>Prioridade de Rufino</h3><p>Reduzir capital parado, corrigir disponibilidade e competitividade, capturar demanda não atendida e aumentar conversão.</p><button class="btn secondary" onclick="navigate(\'estoque\')">Explorar estoque</button></div><div class="card"><h3>Próxima entrega</h3><p>Catálogo Procfit disponível. Próxima etapa: integrar vendas e saldos por filial para evoluir giro, preços e decisões supervisionadas.</p><button class="btn secondary" onclick="navigate(\'cronograma\')">Ver plano</button></div></div>'}
+ else if(page==='inicio'){h=window.cipHomeFrame?.()||header('Visão geral','Encontre suas soluções autorizadas.') }
  else if(page==='varejo'){h=header('Shopping Prohospital','Estoque importado, concentração de custo e prioridades de análise por origem.')+(window.cipRenderStock?.(true)||'')+'<div class="section grid2"><div class="card"><h3>Estoque Inteligente</h3><p class="muted">Acompanhamento por loja, filial, SKU e fornecedor.</p><button class="btn" onclick="navigate(\'estoque\')">Abrir módulo</button></div><div class="card"><h3>Marca-passo</h3><p class="muted">Preço vigente × custo × concorrência × margem autorizada.</p><button class="btn" onclick="navigate(\'precos\')">Abrir módulo</button></div></div>'}
  else if(page==='estoque'){h=header('Estoque Inteligente','Dados importados por origem, relatórios filtráveis e cenários com premissas explícitas.')+(window.cipRenderStock?.(false)||'')+'<details class="section card"><summary>Simulador manual de cobertura · cenário independente das cargas</summary><p>Premissas manuais do relato inicial de Rufino. Este cenário não usa automaticamente o CD nem a amostra das lojas. Informe estoque, vendas e CMV do mesmo escopo.</p><div class="row"><h3>Simulador de capital de giro</h3><span class="pill neutral">CENÁRIOS TEÓRICOS</span></div><div class="fieldrow"><label>Estoque atual (R$)<input id="stock" type="number" min="0" value="6000000"></label><label>Vendas mensais (R$)<input id="sales" type="number" min="0" value="3000000"></label><label>CMV (%)<input id="cmv" type="number" min="0" max="100" value="47"></label><label>Cobertura-alvo (dias)<select id="days"><option value="60">60 dias</option><option value="75">75 dias</option><option value="90" selected>90 dias</option><option value="120">120 dias</option></select></label></div><div id="result" class="section grid2"></div><p class="note">Exclui sazonalidade, lead time, segurança, validade, filiais e demanda por SKU. Não é recomendação de corte linear.</p><div class="row"><button class="btn" onclick="window.cipSaveScenario?.()">Salvar simulação</button><span class="mini" id="scenarioMessage"></span></div><h3>Meu histórico</h3><div id="cipScenarioHistory" class="mini">Carregando...</div></details>'}
  else if(page==='precos'){h=window.cipRenderPricing?.()||''}
@@ -179,32 +192,33 @@ function navigate(page){
  else if(page==='caderninho'){h=header('Caderninho Inteligente','Hoje não tenho, mas amanhã eu vou ter. Registro de procura não atendida.')+'<div class="card"><div class="row"><h3>Registrar procura</h3><span class="pill neutral">CADASTRO MANUAL CIP</span></div><div class="fieldrow demand-fields"><label>Produto ou especificação<input id="demandProduct" maxlength="250" placeholder="Produto procurado"></label><label>Cliente ou instituição<input id="demandCustomer" maxlength="200" placeholder="Cliente"></label><label>Quantidade<input id="demandQty" type="number" min="0.001" step="0.001" value="1"></label><label>Registrar<br><button class="btn" onclick="window.cipSaveDemand?.()" style="margin-top:6px">Salvar procura</button></label></div></div><div class="card section"><h3>Demandas e acompanhamento</h3><div id="cipDemandRows">Carregando...</div></div>'}
  else if(page==='doquita'){h=header('Doquita · Inteligência executiva','Estoque importado e registros manuais autorizados, com prioridades para revisão humana.')+'<div class="insight"><div class="row"><div><b>Doquita · observatório operacional</b><p>Localize riscos de margem, cotações em aberto e procuras não atendidas com base no que já foi registrado.</p></div><button class="btn secondary" type="button" onclick="window.cipRefreshDoquita?.()">Atualizar análise</button></div><span class="pill neutral">DADOS MANUAIS CIP · NÃO É ERP</span></div><section id="cipDoquitaBoard" class="section" aria-live="polite">Consultando registros autorizados…</section>'+(window.cipRenderStock?.(true)||'')}
  else if(page==='integracoes'){h=header('Integrações e acessos','Segurança e dados segregados por empresa desde a fundação.')+'<div class="grid2"><div class="card"><h3>Administração</h3><p>Superadm designado: <b>gritsolucoes@gmail.com</b></p><span class="pill">PERFIL CIP ATIVO</span><p class="mini">Autenticação corporativa e permissões por empresa habilitadas. Convites por link, papéis e suspensão disponíveis abaixo. O acesso atual é por empresa; restrição por loja ainda requer integração.</p></div><div class="card"><h3>ERP Procfit / BI</h3><p>Fonte transacional prevista com acesso homologado somente leitura.</p><span class="pill">NÃO CONECTADO</span><p class="mini">Requer TI, views, catálogo, filiais, custos, vendas, preços e cotações.</p></div></div><div class="section card"><h3>Arquitetura alvo</h3><p class="muted">Procfit/BI → conector seguro → dados organizados por empresa → estoque/preços/cotações → Doquita → decisão e auditoria.</p></div>'+(window.cipRenderAdmin?.()||'')}
+ delete document.getElementById('content').dataset.solutionGroup;
  document.getElementById('content').innerHTML=h;
  if(['quartel','escola','radar-b2g'].includes(page))window.scrollTo(0,0);
  document.getElementById('content').scrollIntoView({behavior:'instant',block:'start'});
- if(page==='inicio'){
-   const allowed=window.cipAuth.allowedRoutes;
-   document.querySelectorAll('#content .company').forEach(company=>{
-     const route=company.textContent.includes('Shopping Prohospital')?'varejo':'b2b';
-     if(!allowed.includes(route))company.closest('.card').remove();
-   });
-   if(!allowed.includes('estoque'))document.querySelector('#content .section .card')?.remove();
- }
  window.dispatchEvent(new CustomEvent('cip:navigate',{detail:{page}}));
+ window.cipNavigationChanged?.(page,{recordHistory});
  if(page==='estoque'){const r=()=>{const s=Number(document.getElementById('stock').value),v=Number(document.getElementById('sales').value),c=Number(document.getElementById('cmv').value)/100,d=Number(document.getElementById('days').value),target=v*c*d/30,release=s-target;const fmt=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});document.getElementById('result').innerHTML=metric('Estoque-alvo teórico',fmt(target),'Base: vendas × CMV × dias / 30')+metric(release>=0?'Capital potencialmente liberável':'Estoque adicional necessário',fmt(Math.abs(release)),'Não equivale a caixa realizado')};document.querySelectorAll('#stock,#sales,#cmv,#days').forEach(el=>el.addEventListener('input',r));r();}
 }
-document.querySelectorAll('[data-route]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.route)));
+document.addEventListener('click',event=>{const button=event.target.closest('[data-route]');if(button&&!button.hasAttribute('data-solution-open'))navigate(button.dataset.route);});
+syncMobileMenu();
 document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();window.cipLogin?.(e)});
 const installButton=document.getElementById('installAppButton');let installPrompt=null;
+const installFromHelp=document.getElementById('installFromHelp'),installState=document.getElementById('pwaInstallState');
 const isAppleMobile=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 if(isAppleMobile)installButton.classList.remove('hide');
-window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;installButton.classList.remove('hide');});
-window.addEventListener('appinstalled',()=>{installPrompt=null;installButton.classList.add('hide');});
-installButton.addEventListener('click',async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.classList.add('hide');return;}if(isAppleMobile)alert('Para instalar no iPhone: toque em Compartilhar no Safari e escolha “Adicionar à Tela de Início”.');});
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;installButton.classList.remove('hide');installFromHelp.hidden=false;installState.textContent='Seu navegador oferece a instalação do CIP.';});
+window.addEventListener('appinstalled',()=>{installPrompt=null;installButton.classList.add('hide');installFromHelp.hidden=true;installState.textContent='Aplicativo instalado.';});
+installFromHelp.addEventListener('click',async()=>{if(!installPrompt)return;installFromHelp.disabled=true;try{const prompt=installPrompt;await prompt.prompt();const result=await prompt.userChoice;installState.textContent=result.outcome==='accepted'?'Instalação solicitada ao navegador.':'Instalação adiada. Você pode continuar usando o endereço normal.';installPrompt=null;installFromHelp.hidden=true;}catch{installState.textContent='Instalação não confirmada. Use o menu do navegador.';}finally{installFromHelp.disabled=false;}});
+installButton.addEventListener('click',()=>document.getElementById('pwaHelpDialog').showModal());
 function updateConnectionState(){const notice=document.getElementById('offlineNotice');if(navigator.onLine){notice.classList.remove('visible');return;}const time=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});notice.textContent='Sem conexão desde '+time+'. Esta aba mantém somente a tela que já estava aberta; atualize os dados quando a rede voltar.';notice.classList.add('visible');}
-window.addEventListener('offline',updateConnectionState);window.addEventListener('online',()=>document.getElementById('offlineNotice').classList.remove('visible'));
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+window.addEventListener('offline',updateConnectionState);window.addEventListener('online',()=>{const notice=document.getElementById('offlineNotice');notice.textContent='Conexão restabelecida. Atualize a consulta para conferir os dados atuais.';notice.classList.add('visible');});
+let waitingWorker=null,reloadingForUpdate=false;
+function showAppUpdate(worker){waitingWorker=worker;document.getElementById('appUpdateNotice').hidden=false;}
+document.getElementById('applyAppUpdate').addEventListener('click',()=>{if(!waitingWorker)return;reloadingForUpdate=true;waitingWorker.postMessage({type:'ACTIVATE_UPDATE'});document.getElementById('applyAppUpdate').disabled=true;});
+document.getElementById('dismissAppUpdate').addEventListener('click',()=>{document.getElementById('appUpdateNotice').hidden=true;});
+if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloadingForUpdate)location.reload();});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{if(reg.waiting)showAppUpdate(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showAppUpdate(worker);});});}).catch(()=>{installState.textContent='Instalação indisponível neste navegador agora. O acesso pelo endereço continua disponível.';}));}
 if(!navigator.onLine)updateConnectionState();
 </script>
-<script type="module" src="./cip-auth.js?v=iris-item-retry-20261020"></script>
+<script type="module" src="./cip-auth.js?v=navigation-audit-20261020"></script>
 </body></html>

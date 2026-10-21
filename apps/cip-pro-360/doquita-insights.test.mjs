@@ -53,9 +53,10 @@ test('CIP mobile menu and Doquita are gated behind authenticated routes and safe
  const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
  const auth=readFileSync(new URL('./cip-auth.js',import.meta.url),'utf8');
  const release=readFileSync(new URL('./release-check.mjs',import.meta.url),'utf8');
- for(const pattern of [/id="menuBackdrop"/,/aria-expanded="false"/,/function closeMenu\(/,/event.key==='Escape'/,/data-route="doquita"/,/id="cipDoquitaBoard"/]){
+ for(const pattern of [/id="menuBackdrop"/,/aria-expanded="false"/,/function closeMenu\(/,/event.key==='Escape'/,/id="cipDoquitaBoard"/]){
   assert.match(html,pattern);
  }
+ assert.match(readFileSync(new URL('./navigation-data.mjs',import.meta.url),'utf8'),/\['doquita','Doquita'/);
  assert.match(auth,/import \{summarizeDoquita\}/);
  assert.match(auth,/doquitaSource\("cip_price_reviews"/);
  assert.match(auth,/doquitaSanitize/);

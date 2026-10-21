@@ -45,7 +45,7 @@ test('offline caching is limited to the explicit static app shell',()=>{
  assert.ok(sw.includes("'./campaign-planner-engine.mjs'"));
  assert.ok(sw.includes("'./campaign-planner.css'"));
  assert.ok(sw.includes("'./stock-actions-ui.mjs'"));
- const shellAssets=[...sw.matchAll(/'(\.\/[^']+)'/g)].map(match=>match[1]).filter(path=>path!=='./');
+ const shellAssets=[...sw.match(/const SHELL=\[([\s\S]*?)\];/)[1].matchAll(/'(\.\/[^']+)'/g)].map(match=>match[1]).filter(path=>path!=='./');
  for(const asset of new Set(shellAssets))assert.ok(fs.existsSync(new URL(asset,import.meta.url)),`Missing app-shell file ${asset}`);
  const budget=[...new Set(shellAssets)].filter(asset=>asset!=='./supabase-js-2.57.0.mjs').reduce((total,asset)=>total+gzipSync(fs.readFileSync(new URL(asset,import.meta.url))).length,0);
  assert.ok(budget<250_000,`Compressed app shell excluding Supabase is ${budget} bytes`);
@@ -55,7 +55,7 @@ test('offline caching is limited to the explicit static app shell',()=>{
 test('install help and connection notice are available without persisting business data',()=>{
  assert.match(html,/beforeinstallprompt/);
  assert.match(html,/apple-touch-icon/);
- assert.match(html,/Compartilhar no Safari/);
+ assert.match(html,/Abra no Safari/);
  assert.match(html,/Sem conexão desde/);
  assert.match(html,/somente a tela que já estava aberta/);
  assert.match(html,/navigator\.serviceWorker\.register\('\.\/sw\.js'/);
