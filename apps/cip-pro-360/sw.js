@@ -6,7 +6,7 @@ const SHELL=[
  './agents.css','./campaign-planner.css','./cip-auth.js','./supabase-js-2.57.0.mjs',
  './doquita-insights.mjs','./erp-ui.mjs','./stock-reference.mjs','./procfit-status-ui.mjs','./procfit-catalog-ui.mjs','./erp-engine.mjs',
  './pricing-ui.mjs','./pricing-engine.mjs','./pricing-campaign-engine.mjs','./campaign-planner-engine.mjs','./pricing-intelligence.mjs','./shopping-position.mjs','./stock-action-engine.mjs','./stock-actions-ui.mjs',
- './agent-capabilities.mjs','./process-engine.mjs','./process-consultant.mjs','./process-ui.mjs','./bot-ui.mjs','./agents-data.mjs','./agents-ui.mjs','./academy-ui.mjs','./admin-ui.mjs','./academy-engine.mjs',
+ './agent-capabilities.mjs','./process-engine.mjs','./process-consultant.mjs','./process-ui.mjs','./bot-ui.mjs','./agents-data.mjs','./agents-ui.mjs','./agent-operations-ui.mjs','./agent-operations-engine.mjs','./academy-ui.mjs','./admin-ui.mjs','./academy-engine.mjs',
  './b2g-radar.mjs','./b2g-research.mjs','./b2g-research-ui.mjs','./b2g-discovery.mjs','./b2g-discovery-ui.mjs','./b2g-sources.mjs','./b2g-vocabulary.mjs'
 ];
 const OPTIONAL=['./presentation.mjs','./presentation.css'];

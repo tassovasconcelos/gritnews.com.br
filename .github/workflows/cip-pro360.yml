@@ -44,6 +44,8 @@ jobs:
           node apps/cip-pro-360/doquita-insights.test.mjs
           node --test apps/cip-pro-360/operational-analytics.test.mjs
           node apps/cip-pro-360/agents.test.mjs
+          node --test apps/cip-pro-360/agent-operations.test.mjs
+          node --check apps/cip-pro-360/agent-operations-ui.mjs
           node --test apps/cip-pro-360/academy.test.mjs
           node --test apps/cip-pro-360/admin.test.mjs
           node --test apps/cip-pro-360/erp-engine.test.mjs

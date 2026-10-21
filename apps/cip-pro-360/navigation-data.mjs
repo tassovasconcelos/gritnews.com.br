@@ -9,7 +9,7 @@ export const SOLUTIONS=[
  ['cotacoes','Cotações e conversão','Distribuidora','Registre cotações e acompanhe oportunidades.','document','cotacoes propostas vendas orcamentos funil conversao'],
  ['caderninho','Caderninho inteligente','Distribuidora','Registre produtos procurados e demanda não atendida.','book','faltas procura oportunidades demanda nao atendida'],
  ['radar-b2g','Radar B2G · Íris','Inteligência e equipe','Pesquise licitações, itens e evidências de mercado.','radar','licitacoes editais pregao pncp governo concorrencia pesquisa iris b2g'],
- ['quartel','Quartel dos agentes','Inteligência e equipe','Conheça os 14 agentes e acompanhe missões registradas.','team','agentes robos missoes tarefas equipe responsaveis'],
+ ['quartel','Quartel dos agentes','Inteligência e equipe','Acompanhe análises automáticas, missões, metas e aprendizado dos 14 agentes.','team','agentes robos missoes tarefas equipe responsaveis metas resultados rotina conselho coordenacao'],
  ['escola','Escola dos agentes','Inteligência e equipe','Organize materiais, conhecimento e desenvolvimento de habilidades.','school','escola treinamento skills conhecimento documentos links aprendizado'],
  ['processos','Processos vivos','Inteligência e equipe','Desenhe, simule e revise os processos da operação.','flow','processos fluxos auditoria desenho automacao consultor'],
  ['mensageiro','Doquita no Telegram','Inteligência e equipe','Vincule sua conta ao bot e consulte relatórios em conversa.','message','telegram bot mensagem voz audio rotina briefing relatorios'],
