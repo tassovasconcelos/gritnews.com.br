@@ -5,7 +5,23 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/((?!assets/|sw.js|manifest.webmanifest|icon.svg).*)",
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/app",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/solicitar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gestao",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gestao/:path*",
       "destination": "/index.html"
     }
   ],
@@ -48,5 +64,8 @@
         }
       ]
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": false
+  }
 }

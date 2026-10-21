@@ -120,7 +120,9 @@ jobs:
             echo "RELEASE_READY=true" >> "$GITHUB_ENV"
           fi
       - name: Install isolated app dependencies
-        run: npm install --no-audit --no-fund
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm audit --audit-level=high
       - name: Check provision script and release smoke test syntax
         shell: bash
         run: |
@@ -128,7 +130,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_hostinger_provision.py' -v
           bash -n scripts/verify_hostinger.sh
       - name: Verify intelligent travel route calculation
-        run: npm run test:travel
+        run: node --test tests/test-async-read.mjs tests/test-travel-engine.mjs
       - name: Type check and build
         run: |
           npm run check

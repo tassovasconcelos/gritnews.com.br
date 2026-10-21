@@ -1,4 +1,4 @@
-const CACHE="cp360-shell-v3";
+const CACHE="cp360-shell-v4";
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/offline.html','/offline.css'])).then(()=>self.skipWaiting())));
 self.addEventListener("activate",(event)=>event.waitUntil((async()=>{
  const names=await caches.keys();

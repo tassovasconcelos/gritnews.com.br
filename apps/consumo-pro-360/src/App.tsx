@@ -1,4 +1,4 @@
-import { useCallback,useEffect,useMemo,useState } from "react";
+import { useCallback,useEffect,useMemo,useRef,useState,lazy } from "react";
 import type { User } from "@supabase/supabase-js";
 import {
   LayoutDashboard, ClipboardList, CheckCircle2, Package, Boxes, FileText, Truck,
@@ -6,11 +6,12 @@ import {
   Search, Building2, BarChart3, BrainCircuit, X, ChevronRight,
   UploadCloud, CircleHelp, Lock, FlaskConical, PlaneTakeoff
 } from "lucide-react";
+import { readWithDeadline, createReadScope } from "./lib/async-read.mjs";
 import { db,configured } from "./lib/supabase";
-import ProcurementWorkbench from "./ProcurementWorkbench";
-import TravelIntelligence from "./TravelIntelligence";
-import MarketLab from "./MarketLab";
-import AdminRegistry from "./AdminRegistry";
+const ProcurementWorkbench=lazy(()=>import("./ProcurementWorkbench"));
+const TravelIntelligence=lazy(()=>import("./TravelIntelligence"));
+const MarketLab=lazy(()=>import("./MarketLab"));
+const AdminRegistry=lazy(()=>import("./AdminRegistry"));
 import RequestComposer from "./RequestComposer";
 import MobileRequestPortal from "./MobileRequestPortal";
 import { readNFe, type FiscalLine } from "./lib/nfe";
@@ -58,6 +59,7 @@ function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:
 const emptyFiscalLine=():FiscalLine=>({external_code:"",description:"",brand:"",unit:"UN",quantity:1,unit_price:0,product_id:"",conversion_factor:1});
 
 export default function App(){
+ const readScope=useRef(createReadScope());
  const [user,setUser]=useState<User|null>(null);
  const [authReady,setAuthReady]=useState(false);
  const [membershipReady,setMembershipReady]=useState(false);
@@ -71,7 +73,7 @@ export default function App(){
  const [companyId,setCompanyId]=useState("");
  const [orgId,setOrgId]=useState("");
  const [brandLogo,setBrandLogo]=useState("/logo-prohospital.webp");
- const [view,setView]=useState<View>(()=>{
+ const [requestedView,setView]=useState<View>(()=>{
   const parts=window.location.pathname.split("/").filter(Boolean);
   if(parts[0]==="solicitar")return "requests";
   if(parts[0]==="gestao"&&nav.some(n=>n.id===parts[1]))return parts[1] as View;
@@ -121,29 +123,34 @@ export default function App(){
 
  useEffect(()=>{
   if(!db){setAuthReady(true);return;}
-  const client=db; let alive=true;
-  client.auth.getUser().then(({data})=>{if(alive){setUser(data.user);setAuthReady(true);}});
-  const {data:{subscription}}=client.auth.onAuthStateChange((event,session)=>{if(alive){setUser(session?.user||null);setAuthReady(true);if(event==="PASSWORD_RECOVERY")setModal("account");}});
+  const client=db; let alive=true;let authChanged=false;
+  readWithDeadline(client.auth.getUser()).then(({data,error})=>{if(alive&&!authChanged){if(error)throw error;setUser(data.user);}})
+   .catch(()=>{if(alive)setNotice("Não foi possível validar a sessão. Verifique a conexão e entre novamente.");})
+   .finally(()=>{if(alive)setAuthReady(true);});
+  const {data:{subscription}}=client.auth.onAuthStateChange((event,session)=>{if(alive){authChanged=true;setUser(session?.user||null);setAuthReady(true);if(event==="PASSWORD_RECOVERY")setModal("account");}});
   return ()=>{alive=false;subscription.unsubscribe();};
  },[]);
 
  useEffect(()=>{
-  if(!user||!db)return;
+  setMembers([]);setCompanies([]);setCompanyId("");setOrgId("");
+  if(!user||!db){setMembershipReady(false);return;}
   let live=true;
   setMembershipReady(false);
   (async()=>{
-   const [m,c]=await Promise.all([
+   const [m,c]=await readWithDeadline(Promise.all([
     db!.from("cp_memberships").select("*").eq("user_id",user.id).eq("active",true),
     db!.from("cp_companies").select("*").eq("active",true).order("name")
-   ]);
+   ]));
    if(!live)return;
-   if(m.error)setNotice("Falha ao consultar permissões: "+m.error.message);
+   if(m.error)throw m.error;
+   if(c.error)throw c.error;
    let linked=m.data||[];
    if(!linked.length){
     try {
-     const activation=await db!.functions.invoke("cp-activate-access",{body:{}});
+     const activation=await readWithDeadline(db!.functions.invoke("cp-activate-access",{body:{}}));
      if(!activation.error&&activation.data?.success){
-      const reassigned=await db!.from("cp_memberships").select("*").eq("user_id",user.id).eq("active",true);
+      const reassigned=await readWithDeadline(db!.from("cp_memberships").select("*").eq("user_id",user.id).eq("active",true));
+      if(reassigned.error)throw reassigned.error;
       linked=reassigned.data||[];
      }
     }catch{ /* Convites sem permissão não bloqueiam a sessão. */ }
@@ -153,7 +160,8 @@ export default function App(){
    setMembers(linked);setCompanies(accessible);setMembershipReady(true);
    const chosen=accessible.find((x)=>x.id===companyId)||accessible[0];
    if(chosen){setCompanyId(chosen.id);setOrgId(chosen.organization_id);}
-  })();
+  })().catch(()=>{if(live)setNotice("Não foi possível carregar seu acesso. Verifique a conexão e use Atualizar acesso.");})
+    .finally(()=>{if(live)setMembershipReady(true);});
   return ()=>{live=false;};
  // only when authenticated identity changes; company changes have their own loader
  // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,11 +170,11 @@ export default function App(){
  useEffect(()=>{
   if(!db||!orgId){setBrandLogo("/logo-prohospital.webp");return;}
   let active=true;
-  db.from("cp_branding").select("logo_path").eq("organization_id",orgId).maybeSingle()
+  readWithDeadline(db.from("cp_branding").select("logo_path").eq("organization_id",orgId).maybeSingle())
    .then(({data})=>{
     if(!active)return;
     setBrandLogo(data?.logo_path?db!.storage.from("consumo-pro-brand").getPublicUrl(data.logo_path).data.publicUrl:"/logo-prohospital.webp");
-   });
+   }).catch(()=>{if(active)setBrandLogo("/logo-prohospital.webp");});
   return ()=>{active=false;};
  },[orgId]);
  const hasRole=(roles:string[])=>members.some((m)=>m.active&&m.organization_id===orgId&&roles.includes(m.role)&&(!m.company_id||m.company_id===companyId));
@@ -182,6 +190,7 @@ export default function App(){
   if(item.id==="admin")return hasRole(["group_admin","grit_superadmin"]);
   return false;
  });
+ const view:View=visibleNav.some(item=>item.id===requestedView)?requestedView:"overview";
  const navigate=(next:View)=>{
   if(!visibleNav.some(item=>item.id===next))return;
   setView(next);setSearch("");
@@ -208,7 +217,9 @@ export default function App(){
 
  const reload=useCallback(async()=>{
   if(!db||!companyId||!orgId||!user)return;
+  const current=readScope.current.begin();
   setLoading(true);
+  try {
   const cfg:[string,string,string?][]=[
    ["cp_departments","company_id",companyId],["cp_products","organization_id",orgId],
    ["cp_warehouses","company_id",companyId],["cp_stock","company_id",companyId],
@@ -217,25 +228,43 @@ export default function App(){
    ["cp_quote_batches","company_id",companyId],["cp_stock_events","company_id",companyId],
    ["cp_audit_events","company_id",companyId]
   ];
-  const result=await Promise.all(cfg.map(async([table,key,value])=>{
+  const result=await readWithDeadline(Promise.all(cfg.map(async([table,key,value])=>{
    if(mobilePortal&&!["cp_departments","cp_products","cp_requests"].includes(table))return {data:[],error:null};
    let query=db!.from(table).select("*").eq(key,value!);
    if(mobilePortal&&table==="cp_requests")query=query.eq("created_by",user!.id).order("created_at",{ascending:false});
    return query.limit(1000);
-  }));
+  })));
+  if(!current())return;
+  const fatal=result.find((r)=>r.error&&r.error.code!=="42501");
+  if(fatal?.error)throw fatal.error;
   const data=result.map((r)=>r.data||[]);
+  const ids=data[5].map((r:Rec)=>r.id);
+  const allLines:Rec[]=[];
+  // Keep URLs short and avoid PostgREST's default row cap per request.
+  for(let offset=0;offset<ids.length;offset+=50){
+   const batch=ids.slice(offset,offset+50);
+   for(let page=0;;page++){
+    const lines=await readWithDeadline(db.from("cp_request_lines").select("*").in("request_id",batch).order("id").range(page*1000,page*1000+999));
+    if(!current())return;
+    if(lines.error)throw lines.error;
+    allLines.push(...(lines.data||[]));
+    if((lines.data||[]).length<1000)break;
+   }
+  }
+  if(!current())return;
   setDepartments(data[0]);setProducts(data[1]);setWarehouses(data[2]);setStock(data[3]);setCosts(data[4]);
   setRequests(data[5]);setInvoices(data[6]);setSuppliers(data[7]);setQuotes(data[8]);setEvents(data[9]);setAudit(data[10]);
-  const ids=data[5].map((r:Rec)=>r.id);
-  if(ids.length){
-   const lines=await db.from("cp_request_lines").select("*").in("request_id",ids);
-   setRequestLines(lines.data||[]);
-  }else setRequestLines([]);
-  const fatal=result.find((r)=>r.error&&r.error.code!=="42501");
-  if(fatal?.error)setNotice("Falha de consulta: "+fatal.error.message);
-  setLoading(false);
+  setRequestLines(allLines);
+  if(data.some(rows=>rows.length===1000))setNotice("Uma lista atingiu o limite de 1.000 registros. Os relatórios desta tela podem estar incompletos.");
+  }catch(error){if(current())setNotice("Não foi possível atualizar os dados. "+errText(error));}
+  finally{if(current())setLoading(false);}
  },[companyId,orgId,mobilePortal,user?.id]);
- useEffect(()=>{void reload();},[reload]);
+ useEffect(()=>{
+  setDepartments([]);setProducts([]);setWarehouses([]);setStock([]);setCosts([]);setRequests([]);
+  setRequestLines([]);setInvoices([]);setSuppliers([]);setQuotes([]);setEvents([]);setAudit([]);setLoading(false);
+  void reload();
+  return ()=>readScope.current.cancel();
+ },[reload]);
  // Keep open management and request screens synchronized while they are visible.
  // This is foreground monitoring, not background push notification delivery.
  useEffect(()=>{
@@ -301,10 +330,17 @@ export default function App(){
  }
  async function login(e:React.FormEvent) {
   e.preventDefault();if(!db)return;setLoginBusy(true);setNotice("");
-  const {error}=await db.auth.signInWithPassword({email,password});
-  setLoginBusy(false);if(error)setNotice(error.message);else setPassword("");
+  try{
+   const {error}=await readWithDeadline(db.auth.signInWithPassword({email,password}));
+   if(error)throw error;setPassword("");
+  }catch(error){setNotice("Não foi possível entrar. "+errText(error));}
+  finally{setLoginBusy(false);}
  }
- async function logout(){await db?.auth.signOut();setCompanyId("");setOrgId("");setMembers([]);setCompanies([]);setView("overview");}
+ async function logout(){
+  try{const result=await readWithDeadline(db!.auth.signOut());if(result.error)throw result.error;}
+  catch{setNotice("Não foi possível encerrar a sessão. Verifique a conexão e tente novamente.");return;}
+  readScope.current.cancel();setUser(null);setCompanyId("");setOrgId("");setMembers([]);setCompanies([]);setView("overview");
+ }
  async function mutate(label:string,fn:()=>PromiseLike<any>,close=true){
   setBusy(true);setNotice("");
   try{
