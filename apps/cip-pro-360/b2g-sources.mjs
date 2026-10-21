@@ -9,7 +9,7 @@ export function validateWebQuery(q){
  const day=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(Date.parse(s))&&new Date(s+'T12:00:00Z').toISOString().slice(0,10)===s;
  if(q?.action!=='discover_web'||(!product&&!brand&&!supplier)||product.length+brand.length<2&&!supplier||supplier&&!/^\d{14}$/.test(supplier))throw Error('invalid_query');
  if(state&&!STATES.includes(state))throw Error('invalid_state');if(sphere&&!['F','E','M'].includes(sphere))throw Error('invalid_sphere');
- if(!day(start)||!day(end)||start>end||end>new Date().toISOString().slice(0,10)||Date.parse(end)-Date.parse(start)>365*86400000)throw Error('invalid_period');
+ if(!day(start)||!day(end)||start>end||end>new Date().toISOString().slice(0,10)||Date.parse(end)-Date.parse(start)>4383*86400000)throw Error('invalid_period');
  return {action:'discover_web',product,brand,supplier,state,sphere,start,end};
 }
 export function researchPlan(input){const q=validateWebQuery(input),states=q.sphere==='F'?[]:STATE_SOURCES.filter(s=>!q.state||s.uf===q.state);
