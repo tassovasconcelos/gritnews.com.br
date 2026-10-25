@@ -1,0 +1,5 @@
+Contact: mailto:contato@gritnews.com.br
+Preferred-Languages: pt-BR, en
+Canonical: https://srpadeiro.gritnews.com.br/.well-known/security.txt
+Policy: https://srpadeiro.gritnews.com.br/termos
+Expires: 2027-08-23T23:59:59Z

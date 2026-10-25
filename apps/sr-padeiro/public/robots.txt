@@ -3,5 +3,7 @@ Allow: /
 Disallow: /admin
 Disallow: /app
 Disallow: /login
+Disallow: /auth
+Disallow: /onboarding
 
 Sitemap: https://srpadeiro.gritnews.com.br/sitemap.xml
