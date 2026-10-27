@@ -9,7 +9,7 @@ const SHELL=[
  './agent-capabilities.mjs','./process-engine.mjs','./process-consultant.mjs','./process-ui.mjs','./bot-ui.mjs','./agents-data.mjs','./agents-ui.mjs','./agent-operations-ui.mjs','./agent-operations-engine.mjs','./academy-ui.mjs','./admin-ui.mjs','./academy-engine.mjs',
  './b2g-radar.mjs','./b2g-research.mjs','./b2g-research-ui.mjs','./b2g-discovery.mjs','./b2g-discovery-ui.mjs','./b2g-sources.mjs','./b2g-vocabulary.mjs'
 ];
-const OPTIONAL=['./presentation.mjs','./presentation.css'];
+const OPTIONAL=['./presentation.mjs','./presentation.css','./pricing-desk-ui.mjs','./pricing-desk-engine.mjs','./pricing-desk.css'];
 const shellPaths=new Set([...SHELL,...OPTIONAL].map(path=>new URL(path,self.location).pathname));
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{

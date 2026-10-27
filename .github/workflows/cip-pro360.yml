@@ -56,7 +56,8 @@ jobs:
           node --test apps/cip-pro-360/telegram/executive-reports.test.mjs
           node --test apps/cip-pro-360/telegram/handler.test.mjs apps/cip-pro-360/telegram/response-style.test.mjs
           node --check apps/cip-pro-360/pricing-ui.mjs
-          node --test apps/cip-pro-360/pricing-ui.test.mjs
+          node --test apps/cip-pro-360/pricing-ui.test.mjs apps/cip-pro-360/pricing-desk.test.mjs
+          node --check apps/cip-pro-360/pricing-desk-ui.mjs
           node --check apps/cip-pro-360/shopping-position.mjs
           node --check apps/cip-pro-360/stock-actions-ui.mjs
           node --test apps/cip-pro-360/stock-action-engine.test.mjs

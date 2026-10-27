@@ -4,7 +4,7 @@ export const SOLUTIONS=[
  ['doquita','Doquita','Comece por aqui','Consulte prioridades e a inteligência executiva autorizada.','spark','assistente inteligencia ia analise resumo'],
  ['varejo','Shopping Prohospital','Shopping','Visão do varejo e das fontes de estoque.','store','varejo shopping filiais lojas'],
  ['estoque','Estoque inteligente','Shopping','Localize CD, lojas, produtos, relatórios e ações de estoque.','box','estoque cd saldo sku produtos estoque parado relatorios csv reposicao transferencia'],
- ['precos','Marca-passo de preços','Comercial','Avalie oportunidades, contribuição e campanhas supervisionadas.','chart','precos margem custo desconto campanhas simulacao lucro promocao'],
+ ['precos','Marca-passo de preços','Comercial','Compare preços, concorrência e margem; programe a aplicação assistida por loja, tabela e data.','chart','precos concorrencia tabela agenda programacao margem custo desconto campanhas simulacao lucro promocao'],
  ['b2b','Distribuidora Prohospital','Distribuidora','Acompanhe a frente comercial B2B.','building','atacado b2b distribuidora hospitais clinicas'],
  ['cotacoes','Cotações e conversão','Distribuidora','Registre cotações e acompanhe oportunidades.','document','cotacoes propostas vendas orcamentos funil conversao'],
  ['caderninho','Caderninho inteligente','Distribuidora','Registre produtos procurados e demanda não atendida.','book','faltas procura oportunidades demanda nao atendida'],
