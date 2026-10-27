@@ -2,7 +2,7 @@ const CACHE_PREFIX='cip-app-shell-';
 const RELEASE_ID='__CIP_RELEASE_ID__';
 const CACHE_NAME=CACHE_PREFIX+RELEASE_ID;
 const SHELL=[
- './index.html','./navigation.css','./navigation-ui.mjs','./navigation-data.mjs','./manifest.webmanifest','./icon-192.png','./icon-512.png','./logo-cip-512.jpg',
+ './index.html','./navigation.css','./navigation-ui.mjs','./navigation-data.mjs','./readiness.mjs','./manifest.webmanifest','./icon-192.png','./icon-512.png','./logo-cip-512.jpg',
  './agents.css','./campaign-planner.css','./cip-auth.js','./supabase-js-2.57.0.mjs',
  './doquita-insights.mjs','./erp-ui.mjs','./stock-reference.mjs','./procfit-status-ui.mjs','./procfit-catalog-ui.mjs','./erp-engine.mjs',
  './pricing-ui.mjs','./pricing-engine.mjs','./pricing-campaign-engine.mjs','./campaign-planner-engine.mjs','./pricing-intelligence.mjs','./shopping-position.mjs','./stock-action-engine.mjs','./stock-actions-ui.mjs',

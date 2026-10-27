@@ -1,3 +1,4 @@
+import {readinessFrame,mountReadiness} from './readiness.mjs';
 import {initNavigation,resetNavigation,navigationChanged,homeFrame,solutionsFrame,preferencesFrame} from './navigation-ui.mjs';
 import {stockActionsFrame,mountStockActions} from './stock-actions-ui.mjs';
 import {shoppingPositionFrame,mountShoppingPosition} from './shopping-position.mjs';
@@ -285,6 +286,7 @@ async function loadAcademyGuidance(host,currentUser){
   section.querySelector('[data-academy-open]').addEventListener('click',()=>{if(window.cipAuth?.allowedRoutes?.includes('escola'))window.navigate('escola');});
  }catch{if(section.isConnected)section.textContent='Conhecimento da Escola indisponível. Nenhuma orientação foi inferida.';}
 }
+window.cipRenderReadiness=()=>readinessFrame();
 window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquita"))loadDoquita();};
 
 window.cipLoadPage=(page)=>{
@@ -305,7 +307,7 @@ window.cipLoadPage=(page)=>{
  if(['estoque','varejo','doquita'].includes(page)&&companies.has(V)&&window.cipAuth?.allowedRoutes?.includes(page))mountShoppingPosition({db:supabase,canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(['estoque','varejo','doquita','b2b'].includes(page)&&window.cipAuth?.allowedRoutes?.includes(page))mountStockActions({db:supabase,companies:page==='b2b'?[B]:[...companies],canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==="doquita")loadDoquita();
- if(page==="cronograma")reloadMilestones();
+ if(page==="cronograma"){reloadMilestones();if(profile?.role==='superadm')mountReadiness(document.getElementById('content'),{db:supabase,isAlive:()=>!!user&&window.cipAuth?.role==='superadm'&&document.getElementById('readinessTitle')!==null,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});}
  if(page==="cotacoes")reloadQuoteRows();
  if(page==="caderninho")reloadDemandRows();
  if(page==="estoque")reloadScenarios();

@@ -15,7 +15,7 @@ export const SOLUTIONS=[
  ['mensageiro','Doquita no Telegram','Inteligência e equipe','Vincule sua conta ao bot e consulte relatórios em conversa.','message','telegram bot mensagem voz audio rotina briefing relatorios'],
  ['procfit','Procfit e relatórios','Gestão e governança','Confira fontes, cargas, catálogo e bases para consulta.','database','erp procfit importar arquivos catalogo dados conexao integracao conciliacao'],
  ['apresentacao','Apresentação executiva','Gestão e governança','Explore a apresentação do CIP para a diretoria.','presentation','apresentacao diretoria investidores projeto demonstracao'],
- ['cronograma','Cronograma','Gestão e governança','Acompanhe os marcos de implantação.','calendar','cronograma plano planejamento fases prazos roadmap'],
+ ['cronograma','Checklist e cronograma','Gestão e governança','Confira a preparação operacional, pendências e marcos de implantação.','calendar','cronograma checklist operacao prontidao pendencias plano planejamento fases prazos roadmap'],
  ['integracoes','Integrações e acessos','Gestão e governança','Administre convites, usuários e permissões do CIP.','settings','usuarios diretores convites acesso prorrogacao revogar superadm'],
  ['preferencias','Acessibilidade e aplicativo','Seu ambiente','Ajuste leitura, movimento, favoritos e instalação no celular.','access','acessibilidade pwa instalar app celular fonte letras tamanho animacoes favoritos personalizar mobile']
 ].map(([route,title,group,description,icon,keywords])=>({route,title,group,description,icon,keywords}));
