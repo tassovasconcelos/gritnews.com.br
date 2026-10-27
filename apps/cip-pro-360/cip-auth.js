@@ -366,8 +366,8 @@ window.cipLoadPage=(page)=>{
  disposeSquad();disposeSquad=()=>{};
  if(!user)return;
  if(page==='radar-mercado'&&window.cipAuth?.allowedRoutes?.includes(page)){
-  const actor=user.id,host=document.getElementById('content'),pick=window.cipMarketPick;window.cipMarketPick=null;
-  import('./market-radar-ui.mjs').then(mod=>{if(user?.id!==actor||!host.isConnected||!host.querySelector('[data-market-loading]'))return;mod.mountMarketRadar(host,{db:supabase,companies:[...companies],pick,onDispose:fn=>{const prev=disposeSquad;disposeSquad=()=>{prev();fn();};}});}).catch(()=>{if(user?.id===actor&&host.querySelector('[data-market-loading]'))host.textContent='Radar indisponível. Verifique a conexão e abra novamente.';});
+  const actor=user.id,host=document.getElementById('content'),pending=host.querySelector('[data-market-loading]'),pick=window.cipMarketPick;window.cipMarketPick=null;
+  import('./market-radar-ui.mjs').then(mod=>{if(user?.id!==actor||!pending?.isConnected||pending!==host.querySelector('[data-market-loading]'))return;mod.mountMarketRadar(host,{db:supabase,companies:[...companies],pick,onDispose:fn=>{const prev=disposeSquad;disposeSquad=()=>{prev();fn();};}});}).catch(()=>{if(user?.id===actor&&pending?.isConnected&&pending===host.querySelector('[data-market-loading]'))host.textContent='Radar indisponível. Verifique a conexão e abra novamente.';});
  }
  if(page==='apresentacao'&&PRESENTATION_ROLES.includes(profile?.role)&&window.cipAuth?.allowedRoutes?.includes(page)){
   const actor=user.id;ensurePresentation().then(mod=>{const host=document.getElementById('content');if(user?.id!==actor||!PRESENTATION_ROLES.includes(profile?.role)||!window.cipAuth?.allowedRoutes?.includes(page)||!host.querySelector('[data-presentation-loading]'))return;host.innerHTML=mod.presentationFrame();const {mountPresentation,presentationReturn}=mod;
