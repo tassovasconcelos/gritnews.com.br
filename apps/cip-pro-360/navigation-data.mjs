@@ -8,6 +8,7 @@ export const SOLUTIONS=[
  ['b2b','Distribuidora Prohospital','Distribuidora','Acompanhe a frente comercial B2B.','building','atacado b2b distribuidora hospitais clinicas'],
  ['cotacoes','Cotações e conversão','Distribuidora','Registre cotações e acompanhe oportunidades.','document','cotacoes propostas vendas orcamentos funil conversao'],
  ['caderninho','Caderninho inteligente','Distribuidora','Registre produtos procurados e demanda não atendida.','book','faltas procura oportunidades demanda nao atendida'],
+ ['radar-mercado','Radar B2B2C · Faro','Inteligência e equipe','Pesquise ofertas, confira similaridade e leve evidências ao Marca-passo.','radar','concorrentes concorrencia precos b2b2c radar mercado livre magalu amazon marketplaces atacado distribuidores similaridade marca modelo gtin de para'],
  ['radar-b2g','Radar B2G · Íris','Inteligência e equipe','Pesquise licitações, itens e evidências de mercado.','radar','licitacoes editais pregao pncp governo concorrencia pesquisa iris b2g'],
  ['quartel','Quartel dos agentes','Inteligência e equipe','Acompanhe análises automáticas, missões, metas e aprendizado dos 14 agentes.','team','agentes robos missoes tarefas equipe responsaveis metas resultados rotina conselho coordenacao'],
  ['escola','Escola dos agentes','Inteligência e equipe','Organize materiais, conhecimento e desenvolvimento de habilidades.','school','escola treinamento skills conhecimento documentos links aprendizado'],

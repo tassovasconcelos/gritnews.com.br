@@ -2,15 +2,15 @@ const CACHE_PREFIX='cip-app-shell-';
 const RELEASE_ID='__CIP_RELEASE_ID__';
 const CACHE_NAME=CACHE_PREFIX+RELEASE_ID;
 const SHELL=[
- './index.html','./navigation.css','./navigation-ui.mjs','./navigation-data.mjs','./readiness.mjs','./manifest.webmanifest','./icon-192.png','./logo-cip-512.jpg',
+ './index.html','./navigation.css','./navigation-ui.mjs','./navigation-data.mjs','./readiness.mjs','./manifest.webmanifest','./logo-cip-512.jpg',
  './agents.css','./campaign-planner.css','./cip-auth.js','./supabase-js-2.57.0.mjs',
  './doquita-insights.mjs','./erp-ui.mjs','./stock-reference.mjs','./procfit-status-ui.mjs','./procfit-catalog-ui.mjs','./erp-engine.mjs',
  './pricing-ui.mjs','./pricing-engine.mjs','./pricing-campaign-engine.mjs','./campaign-planner-engine.mjs','./pricing-intelligence.mjs','./shopping-position.mjs','./stock-action-engine.mjs','./stock-actions-ui.mjs',
  './agent-capabilities.mjs','./process-engine.mjs','./process-consultant.mjs','./process-ui.mjs','./bot-ui.mjs','./agents-data.mjs','./agents-ui.mjs','./agent-operations-ui.mjs','./agent-operations-engine.mjs','./academy-ui.mjs','./admin-ui.mjs','./academy-engine.mjs',
  './b2g-radar.mjs','./b2g-research.mjs','./b2g-research-ui.mjs','./b2g-discovery.mjs','./b2g-discovery-ui.mjs','./b2g-sources.mjs','./b2g-vocabulary.mjs'
 ];
-// The large install icon is cached on demand; it is not required to open the login.
-const OPTIONAL=['./icon-512.png','./presentation.mjs','./presentation.css','./pricing-desk-ui.mjs','./pricing-desk-engine.mjs','./pricing-desk.css'];
+// Install icons is cached on demand; they are not required to open the login.
+const OPTIONAL=['./icon-192.png','./market-radar-ui.mjs','./market-radar-engine.mjs','./market-radar.css','./icon-512.png','./presentation.mjs','./presentation.css','./pricing-desk-ui.mjs','./pricing-desk-engine.mjs','./pricing-desk.css'];
 const shellPaths=new Set([...SHELL,...OPTIONAL].map(path=>new URL(path,self.location).pathname));
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{

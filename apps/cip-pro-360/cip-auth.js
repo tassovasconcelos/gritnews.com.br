@@ -58,6 +58,7 @@ window.cipRenderERP=()=>erpFrame();
 window.cipRenderStockActions=()=>stockActionsFrame();
 window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPositionFrame()+'<details class="section card"><summary>Referências históricas parciais · não somar à posição geral</summary>'+stockReferenceFrame({compact})+'</details>':'');
 window.cipRenderPricing=()=>pricingFrame();
+window.cipRenderMarket=()=>'<section data-market-loading><h1>Radar B2B2C · Faro</h1><p role="status">Carregando o radar…</p></section>';
 window.cipRenderPresentation=()=>'<section data-presentation-loading><h1>Apresentação executiva</h1><p role="status">Carregando a apresentação…</p></section>';
 window.cipHomeFrame=()=>homeFrame();window.cipSolutionsFrame=()=>solutionsFrame();window.cipPreferencesFrame=()=>preferencesFrame();window.cipNavigationChanged=(...args)=>navigationChanged(...args);
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g","precos"] };
@@ -66,7 +67,7 @@ const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">"
 const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const note=(s)=>{const el=$("loginMessage");if(el)el.textContent=s;};
 function toLogin(){
- ++authEpoch;user=null;profile=null;companies=new Set();window.cipAuth=null;
+ ++authEpoch;user=null;profile=null;companies=new Set();window.cipAuth=null;window.cipMarketPick=null;window.cipPricingPick=null;
  $("interface")?.classList.add("hide");$("login")?.classList.remove("hide");
  disposeSquad();disposeSquad=()=>{};
  if(typeof resetNavigation==='function')resetNavigation();window.closeMenu?.();
@@ -97,7 +98,7 @@ async function enter(){
   }
   if(!startClock()){await closeSession("Sessão encerrada por tempo de uso ou inatividade. Entre novamente.");return;}
   lastAccessCheck=Date.now();
-  const allowedRoutes=["inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
+  const allowedRoutes=["inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro","radar-mercado",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelector('[data-presentation-menu]')?.classList.toggle('hide',!PRESENTATION_ROLES.includes(profile.role));
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
@@ -364,6 +365,10 @@ window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquit
 window.cipLoadPage=(page)=>{
  disposeSquad();disposeSquad=()=>{};
  if(!user)return;
+ if(page==='radar-mercado'&&window.cipAuth?.allowedRoutes?.includes(page)){
+  const actor=user.id,host=document.getElementById('content'),pick=window.cipMarketPick;window.cipMarketPick=null;
+  import('./market-radar-ui.mjs').then(mod=>{if(user?.id!==actor||!host.isConnected||!host.querySelector('[data-market-loading]'))return;mod.mountMarketRadar(host,{db:supabase,companies:[...companies],pick,onDispose:fn=>{const prev=disposeSquad;disposeSquad=()=>{prev();fn();};}});}).catch(()=>{if(user?.id===actor&&host.querySelector('[data-market-loading]'))host.textContent='Radar indisponível. Verifique a conexão e abra novamente.';});
+ }
  if(page==='apresentacao'&&PRESENTATION_ROLES.includes(profile?.role)&&window.cipAuth?.allowedRoutes?.includes(page)){
   const actor=user.id;ensurePresentation().then(mod=>{const host=document.getElementById('content');if(user?.id!==actor||!PRESENTATION_ROLES.includes(profile?.role)||!window.cipAuth?.allowedRoutes?.includes(page)||!host.querySelector('[data-presentation-loading]'))return;host.innerHTML=mod.presentationFrame();const {mountPresentation,presentationReturn}=mod;
   mountPresentation({root:document.getElementById('content'),role:profile.role,allowedRoutes:window.cipAuth.allowedRoutes,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};},preview:route=>({precos:()=>pricingFrame(),estoque:()=>stockReferenceFrame({compact:false}),processos:()=>processFrame(),mensageiro:()=>botFrame(),procfit:()=>erpFrame(),quartel:()=>renderSquadPage('quartel'),escola:()=>renderSquadPage('escola'),'radar-b2g':()=>renderSquadPage('radar-b2g')})[route]?.()||'',onOpen:route=>{if(!window.cipAuth?.allowedRoutes?.includes(route))return;window.navigate(route);const remove=presentationReturn(document.getElementById('content'),()=>{if(window.cipAuth?.allowedRoutes?.includes('apresentacao'))window.navigate('apresentacao');});const previous=disposeSquad;disposeSquad=()=>{previous();remove();};}});
