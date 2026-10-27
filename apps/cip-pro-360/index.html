@@ -84,6 +84,7 @@ html{scroll-behavior:smooth}
  .doquita-grid{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.navitem,.side{transition:none!important}}
+input[type="password"]::-ms-reveal,input[type="password"]::-ms-clear{display:none}
 </style>
 <link rel="stylesheet" href="./navigation.css?v=access-20261020">
 </head>
@@ -94,8 +95,8 @@ html{scroll-behavior:smooth}
  <div class="login-art"><div class="brand login-brand"><div class="logo-official"><img src="./logo-cip-512.jpg" alt="Logo oficial do Grupo Prohospital" loading="eager" width="512" height="365"></div><div class="brand-kicker"><strong>CIP PRO 360°</strong><small>CENTRO DE INTELIGÊNCIA · GRUPO PROHOSPITAL</small></div></div>
  <div><span class="pill" style="background:#ffffff24;color:white">CENTRO DE INTELIGÊNCIA</span><h1>Decisões melhores. Resultados reais.</h1><p>Estoque, preços e inteligência comercial. Shopping Prohospital e Distribuidora Prohospital conectadas à mesma visão estratégica.</p></div>
  <div class="footer">CIP PRO 360° · Tecnologia e desenvolvimento: GRIT Soluções e Negócios</div></div>
- <div class="login-side"><div class="login-card"><span class="eyebrow">Ambiente corporativo</span><h2>Bem-vindo ao CIP.</h2><p class="muted">Entre com sua conta autorizada para consultar os módulos do Grupo Prohospital.</p>
- <form id="loginForm" class="fields"><label>E-mail<input id="email" type="email" autocomplete="username" required placeholder="seu.email@empresa.com.br"></label><label>Senha<input id="password" type="password" autocomplete="current-password" minlength="8" required placeholder="••••••••"></label><button id="togglePassword" class="link" type="button" aria-pressed="false" onclick="window.cipTogglePassword?.()">Mostrar senha</button><button class="btn" type="submit">Acessar ambiente seguro →</button></form>
+ <div class="login-side"><div class="login-card"><span class="eyebrow">Ambiente corporativo</span><h2>Bem-vindo ao CIP.</h2><p class="muted">Entre com sua conta autorizada. A sessão fica nesta aba e é encerrada após 30 minutos sem uso ou 8 horas de duração.</p>
+ <form id="loginForm" class="fields"><label>E-mail<input id="email" type="email" autocomplete="username" required placeholder="seu.email@empresa.com.br"></label><label>Senha<input id="password" type="password" spellcheck="false" autocapitalize="none" autocomplete="current-password" minlength="8" required placeholder="••••••••"></label><button class="btn" type="submit">Acessar ambiente seguro →</button></form>
  <div class="form-message" id="loginMessage" aria-live="polite"></div>
  <div class="notice">Acesso restrito a usuários autorizados. O CIP utiliza a autenticação corporativa já existente na infraestrutura GRIT; suas permissões são independentes por empresa.</div>
  <button type="button" class="btn secondary pwa-help-public" data-pwa-help>Instalar o CIP no celular</button>
@@ -220,5 +221,5 @@ document.getElementById('dismissAppUpdate').addEventListener('click',()=>{docume
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloadingForUpdate)location.reload();});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{if(reg.waiting)showAppUpdate(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showAppUpdate(worker);});});}).catch(()=>{installState.textContent='Instalação indisponível neste navegador agora. O acesso pelo endereço continua disponível.';}));}
 if(!navigator.onLine)updateConnectionState();
 </script>
-<script type="module" src="./cip-auth.js?v=pricing-desk-20261027"></script>
+<script type="module" src="./cip-auth.js?v=login-security-20261027"></script>
 </body></html>

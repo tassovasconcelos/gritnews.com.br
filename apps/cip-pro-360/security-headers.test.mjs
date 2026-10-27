@@ -46,3 +46,11 @@ test('vendored supabase-js matches the pinned bundle', () => {
 test('no leftover Vercel configuration', () => {
   assert.equal(fs.existsSync(new URL('vercel.json', dir)), false);
 });
+
+test('credential links never send referrers and sensitive pages forbid inline scripts and caching',()=>{
+ assert.match(htaccess,/Referrer-Policy "no-referrer"/);
+ const sensitive=htaccess.match(/<FilesMatch "\^\(ativar\|recuperar\)[\s\S]*?<\/FilesMatch>/)?.[0];
+ assert.ok(sensitive);assert.match(sensitive,/Cache-Control "no-store"/);
+ assert.match(sensitive,/script-src 'self';/);assert.match(sensitive,/base-uri 'none'/);
+ for(const page of ['ativar.html','recuperar.html'])assert.doesNotMatch(read(page),/<script(?![^>]*src=)[^>]*>|\son[a-z]+=/i);
+});

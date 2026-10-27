@@ -14,8 +14,16 @@ import {adminFrame,mountAdmin} from "./admin-ui.mjs";
 import {knowledgeContext} from "./academy-engine.mjs";
 import {summarizeDoquita} from "./doquita-insights.mjs";
 import {renderSquadPage,mountSquad} from "./agents-ui.mjs";
+// CIP credentials stay in this tab. Never fall back to persistent localStorage.
+const authMemory=new Map();
+const authStorage={
+ getItem(key){try{return globalThis.sessionStorage?.getItem(key)??authMemory.get(key)??null;}catch{return authMemory.get(key)??null;}},
+ setItem(key,value){authMemory.set(key,value);try{globalThis.sessionStorage?.setItem(key,value);}catch{}},
+ removeItem(key){authMemory.delete(key);try{globalThis.sessionStorage?.removeItem(key);}catch{}}
+};
+try{globalThis.localStorage?.removeItem('sb-pcrwtoddavpvkaxwtstc-auth-token');}catch{}
 const supabase = createClient("https://pcrwtoddavpvkaxwtstc.supabase.co", "sb_publishable_m11Lb0v2t5Cp-BrooNWE6g_np421eYS", {
-  auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}
+  auth:{storage:authStorage,storageKey:"cip-auth-session-v2",autoRefreshToken:true,persistSession:true,detectSessionInUrl:false}
 });
 const V="shopping_prohospital", B="distribuidora_prohospital";
 const PRESENTATION_ROLES=['superadm','diretoria'];let presentationPromise=null;
@@ -24,6 +32,23 @@ function ensurePresentation(){
  if(!presentationPromise)presentationPromise=import('./presentation.mjs').catch(error=>{presentationPromise=null;throw error;});return presentationPromise;
 }
 let user=null,profile=null,companies=new Set();
+let authEpoch=0,loginBusy=false,signoutBusy=false,checkingAccess=false;
+const IDLE_MS=30*60*1000,MAX_SESSION_MS=8*60*60*1000;
+let lastActivity=0,sessionStarted=0,lastAccessCheck=0;
+const securityKey='cip-session-clock-v2';
+function saveClock(){try{globalThis.sessionStorage?.setItem(securityKey,JSON.stringify({user:user?.id,lastActivity,sessionStarted}));}catch{}}
+function startClock(){
+ let saved;try{saved=JSON.parse(globalThis.sessionStorage?.getItem(securityKey)||'null');}catch{}
+ const now=Date.now();
+ if(saved?.user===user.id&&Number.isFinite(saved.lastActivity)&&Number.isFinite(saved.sessionStarted)){
+  lastActivity=saved.lastActivity;sessionStarted=saved.sessionStarted;
+ }else{lastActivity=now;sessionStarted=now;saveClock();}
+ return now-lastActivity<IDLE_MS&&now-sessionStarted<MAX_SESSION_MS&&lastActivity<=now&&sessionStarted<=now;
+}
+function clearCredentialStorage(){
+ if(typeof authStorage!=='undefined')authStorage.removeItem('cip-auth-session-v2');
+ try{globalThis.sessionStorage?.removeItem(securityKey);}catch{}
+}
 let disposeSquad=()=>{};
 window.cipRenderSquad=page=>renderSquadPage(page);
 window.cipRenderAdmin=()=>adminFrame();
@@ -40,18 +65,38 @@ const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const note=(s)=>{const el=$("loginMessage");if(el)el.textContent=s;};
-function toLogin(){disposeSquad();if(typeof resetNavigation==='function')resetNavigation();window.closeMenu?.();user=null;profile=null;companies=new Set();window.cipAuth=null;$("interface")?.classList.add("hide");$("login")?.classList.remove("hide");}
+function toLogin(){
+ ++authEpoch;user=null;profile=null;companies=new Set();window.cipAuth=null;
+ $("interface")?.classList.add("hide");$("login")?.classList.remove("hide");
+ disposeSquad();disposeSquad=()=>{};
+ if(typeof resetNavigation==='function')resetNavigation();window.closeMenu?.();
+ $("content")?.replaceChildren();
+ document.querySelectorAll?.(".whoami").forEach(el=>el.textContent='');
+ const password=$("password");if(password){password.value='';password.type='password';}
+}
+async function closeSession(message){
+ if(signoutBusy)return;signoutBusy=true;
+ toLogin();note(message);
+ try{const result=await supabase.auth.signOut({scope:'local'});if(result?.error)note(message+' A revogação no servidor não foi confirmada; feche esta aba em um dispositivo compartilhado.');}
+ catch{note(message+' A revogação no servidor não foi confirmada; feche esta aba em um dispositivo compartilhado.');}
+ finally{clearCredentialStorage();signoutBusy=false;}
+}
 async function enter(){
   if(!user)return toLogin();
+  const actor=user.id,epoch=authEpoch;
   const p=await supabase.from("cip_profiles").select("role,active").eq("user_id",user.id).maybeSingle();
-  if(p.error||!p.data?.active){await supabase.auth.signOut();toLogin();note("Seu acesso ao CIP ainda não está autorizado. Solicite liberação ao administrador.");return;}
+  if(epoch!==authEpoch||user?.id!==actor)return;
+  if(p.error||!p.data?.active){await closeSession("Seu acesso ao CIP não pôde ser autorizado. Solicite liberação ao administrador.");return;}
   profile=p.data;
   if(profile.role==="superadm"){companies=new Set([V,B]);}
   else {
     const m=await supabase.from("cip_memberships").select("company_id").eq("user_id",user.id).eq("active",true);
+    if(epoch!==authEpoch||user?.id!==actor)return;
     if(m.error)throw m.error;
     companies=new Set((m.data||[]).map(x=>x.company_id));
   }
+  if(!startClock()){await closeSession("Sessão encerrada por tempo de uso ou inatividade. Entre novamente.");return;}
+  lastAccessCheck=Date.now();
   const allowedRoutes=["inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelector('[data-presentation-menu]')?.classList.toggle('hide',!PRESENTATION_ROLES.includes(profile.role));
@@ -72,32 +117,31 @@ async function enter(){
   return true;
 }
 async function verify(){
+  const epoch=authEpoch;
   try{
     const {data,error}=await supabase.auth.getUser();
+    if(epoch!==authEpoch)return;
     if(error||!data?.user){toLogin();return;}
     user=data.user;await enter();
-  }catch(e){toLogin();note("Erro ao validar acesso. Verifique sua conexão.");}
+  }catch(e){if(epoch!==authEpoch)return;toLogin();note("Erro ao validar acesso. Verifique sua conexão.");}
 }
-window.cipTogglePassword=()=>{
- const field=$("password"),button=$("togglePassword");if(!field||!button)return;
- const visible=field.type!=="text";field.type=visible?"text":"password";
- button.textContent=visible?"Ocultar senha":"Mostrar senha";button.setAttribute("aria-pressed",String(visible));
-};
 window.cipLogin=async e=>{
- e.preventDefault();const btn=document.querySelector("#loginForm button[type=submit]");if(btn)btn.disabled=true;
+ e.preventDefault();if(loginBusy||signoutBusy)return;loginBusy=true;const epoch=++authEpoch;const btn=document.querySelector("#loginForm button[type=submit]");if(btn)btn.disabled=true;
  note("Validando acesso...");
  try{
    const email=$("email")?.value?.trim().toLowerCase(),password=$("password")?.value;
    if(!email||!password)throw Error("Preencha e-mail e senha.");
    const {data,error}=await supabase.auth.signInWithPassword({email,password});
    $("password").value="";
-   if(error?.code==="invalid_credentials"){note("E-mail ou senha não conferem. Verifique a conta informada e use Mostrar senha para conferir a digitação.");return;}
+   if(epoch!==authEpoch){await supabase.auth.signOut({scope:"local"});clearCredentialStorage();return;}
+   if(error?.code==="invalid_credentials"){note("E-mail ou senha não conferem. Confira os dados ou recupere seu acesso.");return;}
+   if(error?.status===429){note("Muitas tentativas. Aguarde antes de tentar novamente.");return;}
    if(error||!data?.user)throw Error("authentication_unavailable");
+   try{globalThis.sessionStorage?.removeItem(securityKey);}catch{}
    user=data.user;if(await enter())note("");
- }catch(e){note(e.message==="Preencha e-mail e senha."?e.message:"Não foi possível concluir o acesso. Verifique sua conexão ou tente novamente mais tarde.");}
+ }catch(e){if(epoch===authEpoch)note(e.message==="Preencha e-mail e senha."?e.message:"Não foi possível concluir o acesso. Verifique sua conexão ou tente novamente mais tarde.");}
  finally{
-  const field=$("password"),toggle=$("togglePassword");if(field){field.value="";field.type="password";}
-  if(toggle){toggle.textContent="Mostrar senha";toggle.setAttribute("aria-pressed","false");}
+  loginBusy=false;const field=$("password");if(field){field.value="";field.type="password";}
   if(btn)btn.disabled=false;
  }
 };
@@ -122,7 +166,35 @@ window.cipResetPassword=async()=>{
   if(cooldown){if(button)button.textContent="Novo pedido disponível em 60 segundos";setTimeout(release,60000);}else release();
  }
 };
-window.cipSignOut=async()=>{await supabase.auth.signOut();toLogin();note("Sessão encerrada.");};
+window.cipSignOut=()=>closeSession("Sessão encerrada neste dispositivo.");
+async function checkAccess(){
+ if(!user)return;
+ if(Date.now()-lastActivity>=IDLE_MS||Date.now()-sessionStarted>=MAX_SESSION_MS){await closeSession("Sessão encerrada por tempo de uso ou inatividade. Entre novamente.");return;}
+ if(checkingAccess||Date.now()-lastAccessCheck<5*60*1000)return;
+ checkingAccess=true;const actor=user.id,epoch=authEpoch;lastAccessCheck=Date.now();
+ try{
+  const identity=await supabase.auth.getUser();
+  const p=await supabase.from('cip_profiles').select('role,active').eq('user_id',actor).maybeSingle();
+  if(epoch!==authEpoch||user?.id!==actor)return;
+  if(identity.error||identity.data?.user?.id!==actor||p.error||!p.data?.active||p.data.role!==profile?.role){await closeSession("Não foi possível confirmar suas permissões. Entre novamente.");return;}
+  if(profile.role!=='superadm'){
+   const m=await supabase.from('cip_memberships').select('company_id').eq('user_id',actor).eq('active',true);
+   if(epoch!==authEpoch||user?.id!==actor)return;
+   const next=new Set((m.data||[]).map(x=>x.company_id));
+   if(m.error||next.size!==companies.size||[...next].some(x=>!companies.has(x)))await closeSession("Suas permissões foram atualizadas. Entre novamente.");
+  }
+ }catch{if(epoch===authEpoch)await closeSession("Não foi possível validar a sessão. Verifique a conexão e entre novamente.");}
+ finally{checkingAccess=false;}
+}
+function activity(event){
+ if(!user||event.isTrusted!==true)return;
+ const now=Date.now();
+ if(now-lastActivity>=IDLE_MS||now-sessionStarted>=MAX_SESSION_MS){void checkAccess();return;}
+ if(now-lastActivity>1000){lastActivity=now;saveClock();}
+}
+for(const name of ['pointerdown','keydown','scroll'])document.addEventListener?.(name,activity,{passive:true,capture:true});
+document.addEventListener?.('visibilitychange',()=>{if(document.visibilityState==='visible')void checkAccess();});
+setInterval(()=>{void checkAccess();},30000);
 async function reloadMilestones(){
   const timeline=$("cipTimeline");if(!timeline)return;
   const {data,error}=await supabase.from("cip_milestones").select("id,title,date_range,detail,status").order("id");
