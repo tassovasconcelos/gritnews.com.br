@@ -36,7 +36,7 @@ Preço normalizado de cenário = `(preço total + frete conhecido) × itens da n
 - Preço extraído só é mantido se o trecho possuir o mesmo valor explícito em reais. O trecho vem do provedor: não substitui a confirmação da página pelo responsável. Frete e embalagem desconhecidos permanecem desconhecidos.
 - Não se afirma varredura integral, preço em tempo real, acesso a todos os vendedores, conexão às APIs dos marketplaces ou quantidade disponível auditada. Um domínio selecionado pode não gerar fonte ou resultado. Catálogos sem preço público podem gerar somente pistas para cotação.
 - Login, CAPTCHA, CNPJ, CEP, conteúdo dinâmico e restrições de indexação limitam a coleta. O radar não faz login em concorrentes, não contorna bloqueios e não compra produtos. Integrações oficiais de ML/Magalu/Amazon são uma etapa independente, com credenciais e escopos próprios.
-- Não foi introduzida coleta contínua ou rotina paga automática. O B2G e os agentes existentes continuam disponíveis.
+- A pesquisa manual mantém os limites desta seção. A rotina automática do Faro para curva A possui orçamento separado e está descrita em [Faro horário](./FARO-HORARIO.md). O B2G e os agentes existentes continuam disponíveis.
 
 ## Segurança e validação
 
@@ -45,12 +45,12 @@ Preço normalizado de cenário = `(preço total + frete conhecido) × itens da n
 - Custos, estoque, margens e preço interno não são enviados ao provedor; somente descrição, unidade, atributos informados, domínios e links públicos anteriores. Resultados e dados comerciais não são guardados em localStorage nem no cache PWA.
 - Payload, saída, links, quantidade de fontes, duração e chamadas limitados. Instruções nas páginas são tratadas como conteúdo não confiável; o modelo não possui ferramentas para alterações de negócio.
 - Testes unitários de correspondência, medidas, fontes, preço ausente, cotas, autorização e persistência; testes SQL em transação com rollback (inclusive criação de referência, substituição, divergência, concorrência, cotas e isolamento); teste isolado da interface e axe estrutural sem contraste. Não equivalem à homologação visual em aparelho nem a uma pesquisa comercial real autenticada.
-- Serviço instalado; inteligência existente confirmada habilitada e com chave configurada, sem expô-la. Nenhuma referência comercial ou preço real foi criado durante os testes; a primeira pesquisa operacional deve ser iniciada por usuário autorizado no CIP.
+- Serviço instalado; inteligência existente confirmada habilitada e com chave configurada, sem expô-la. Os testes iniciais não criaram referências ou preços reais. Posteriormente, o Faro horário foi ativado por autorização explícita e já registrou suas primeiras coletas reais, conforme FARO-HORARIO.md; as evidências continuam candidatas.
 
 ## Próximas etapas
 
 - Conectores oficiais e feeds de parceiros, quando as credenciais, termos e escopos forem homologados; manter a proveniência de cada captura.
-- Monitoramento agendado opt-in por produto/fonte, orçamento, validade e alertas. Precisa de limites e autorização próprios antes de consumir buscas em segundo plano.
+- Monitoramento horário de curva A implantado com limite e autorização próprios; expandir fontes ABC e identidade de produto para outras operações conforme as cargas forem homologadas.
 - Catálogo mestre homologado com GTIN/embalagem/marca/modelo por SKU; validação de enriquecimento vindo do Procfit. Os campos informados nesta versão não reescrevem o cadastro mestre.
 - Histórico de variação normalizado e alertas considerando mesma variante, praça, vendedor, canal, impostos e forma de pagamento. Uma mudança de condição não deve parecer simples alteração de preço.
 
