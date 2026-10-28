@@ -10,7 +10,7 @@ Não há cron novo, chamada paga ao salvar nem execução extraordinária de tes
 
 A seleção conserva primeiro até quatro recorrentes prioritários conforme a configuração existente. Os especiais ativos recebem as próximas vagas; a união não duplica produtos. O restante fica em rodízio geral. Com quatro recorrentes distintos dos dez especiais, sobram dez vagas gerais em um lote de 24; se houver sobreposição, sobram mais. Configuração menor, pausa, circuito, quota diária ou fila atrasada podem impedir todos os especiais de concluir na hora. A UI distingue seleção de execução real e não promete cobertura integral.
 
-Especiais são classificados com prioridade 110 para preservar pesquisa em múltiplos domínios autorizados, sem substituir a busca por um único alvo regional. Não há descoberta irrestrita de domínios. Referências regionais e de marcas continuam no rodízio geral existente.
+Especiais são classificados com prioridade 110 para preservar pesquisa em múltiplos domínios autorizados, sem substituir a busca por um único alvo regional. Desde a evolução de autonomia, uma vaga geral por janela e as fases de aprofundamento dos especiais expandidos podem explorar novos domínios públicos. Os limites permanecem os mesmos. Referências regionais e de marcas continuam no rodízio geral existente.
 
 O ciclo expandido alterna por janela horária: produto exato, aprofundamento e semelhantes. A fase segue a janela original da tarefa, mesmo se executada depois. Busca exata não pede alternativas. Todas as variantes conservam qualificação determinística e revisão humana; nenhuma modifica preços, referências aprovadas ou cadastro mestre.
 

@@ -53,3 +53,17 @@ test('special worker passes the phase and retains evidence context without addit
  await worker(new Request('https://example.invalid',{method:'POST',headers:{'X-CIP-Faro-Secret':secret}}));
  assert.equal(observed.mode,'alternatives');assert.deepEqual(observed.focus,focus);assert.deepEqual(calls.find(x=>x.name==='cip_faro_finish').args.p_meta.special_focus,focus);
 });
+
+test('discovery worker uses one existing job, skips regional narrowing and retains public-source memory',async()=>{
+ let observed,queries=0;const calls=[];const db={rpc:async(name,args)=>{calls.push({name,args});return {data:name==='cip_faro_worker_secret'?secret:name==='cip_bot_config_read'?{ai_enabled:true,ai_key:'unit-key'}:name==='cip_faro_claim'?[{...job,discovery:true,tracked_urls:['https://nova-cirurgica.com.br/luva','http://localhost/private']}]:name==='cip_faro_finish'?{state:'completed'}:null};}};
+ const worker=createFaroWorker({db,research:async(ctx,opt)=>{queries++;observed=ctx;assert.deepEqual(opt.limits,{calls:2,tokens:3200});return {offers:[],meta:{sources:[],observed_domains:[],discovery:true}};}});
+ await worker(new Request('https://example.invalid',{method:'POST',headers:{'X-CIP-Faro-Secret':secret}}));
+ assert.equal(queries,1);assert.equal(observed.discovery,true);assert.ok(!calls.some(c=>c.name==='cip_faro_directory_target'));assert.deepEqual(observed.tracked_urls,['https://nova-cirurgica.com.br/luva']);assert.ok(observed.known_domains.includes('nova-cirurgica.com.br'));
+ assert.equal(calls.find(c=>c.name==='cip_faro_finish').args.p_meta.discovery,true);
+});
+test('discovery opens public search but accepts only actually cited evidence and labels the new source',()=>{
+ const context={...job,discovery:true,known_domains:['medjet.com.br']};const payload=researchRequest(context,{calls:2,tokens:3200});assert.equal(payload.tools[0].filters,undefined);assert.deepEqual(JSON.parse(payload.input).known_domains,['medjet.com.br']);
+ const url='https://nova-cirurgica.com.br/luva';const offer={title:'Luva Medix',url,quote:'Luva Medix por R$ 10,00',seller:'Nova Cirúrgica',brand:'Medix',price:10,currency:'BRL'};
+ const raw={status:'completed',output:[{type:'web_search_call',status:'completed',action:{sources:[{url}]}},{type:'message',content:[{type:'output_text',text:JSON.stringify({offers:[offer,{...offer,url:'https://inventada.com.br/luva'}],limitations:'Amostra parcial'})}]}]};
+ const result=parseResearch(raw,context);assert.equal(result.offers.length,1);assert.equal(result.offers[0].discovery_candidate,true);assert.match(result.offers[0].match.pending.join(' '),/Nova fonte/);
+});
