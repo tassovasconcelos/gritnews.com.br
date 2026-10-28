@@ -88,7 +88,7 @@ export function evidenceScenario(own,record,targetPrice=null){
  const sameSku=String(own?.sku??'')===String(record?.sku??'');
  const sameUnit=!!norm(own?.unit)&&norm(own.unit)===norm(base.unit);
  const cost=positive(own?.cost),price=positive(own?.price),pack=positive(record?.criteria?.our_pack_units),offerPack=positive(o.pack_units);
- const eligible=sameSku&&sameUnit&&record?.state!=='rejected'&&o.quality?.basic_eligible!==false&&!['alternative','incompatible'].includes(o.match?.kind)&&o.currency==='BRL';
+ const eligible=sameSku&&sameUnit&&evidenceSource(record).qualified&&!['alternative','incompatible'].includes(o.match?.kind)&&o.currency==='BRL';
  const candidate=eligible&&pack&&offerPack&&positive(o.price)?o.price*pack/offerPack:null;
  const delivered=eligible?comparablePrice(o,pack):null;
  const target=positive(targetPrice)??candidate;
@@ -107,3 +107,19 @@ export async function resolveEvidenceProduct(db,company,sku,store=''){
  const exact=response.data.items.find(x=>String(x.sku).trim()===String(sku).trim()&&(!store||String(x.store_code).trim()===String(store).trim()));
  return {item:exact?{...exact,source_at:response.data.source_at,source_fresh:response.data.source_fresh,source:response.data.source}:null,items:response.data.items};
 }
+
+export function evidenceSource(record){
+ const o=record?.offer??{},url=record?.url??o.url,seller=String(record?.seller??o.seller??'').trim(),reasons=[];let href=null;
+ try{const d=publicDomain(new URL(url).hostname);if(d)href=sourceUrl(url,[d]);}catch{}
+ if(!href)reasons.push('Link HTTPS consultável não identificado.');
+ const generic=!seller||/nao identificado|nao informado|desconhecido|diversos vendedores|varios vendedores/.test(norm(seller))||['amazon','amazon com br','magalu','magazine luiza','mercado livre','mercadolivre','shopee','n a'].includes(norm(seller));
+ if(/(?:^| )pronut(?: |$)|shopping prohospital|prohospital/.test(norm(seller)))reasons.push('Oferta do grupo Prohospital; não usar como concorrência externa.');
+ if(generic)reasons.push('Vendedor específico não identificado.');
+ if(href&&(/^https:\/\/lista\./i.test(href)||/^https:\/\/[^/]+\/?(?:[?#].*)?$/.test(href)||/^https:\/\/[^/]+\/(busca|search|pesquisa|loja|marcas|categorias?|collections)(?:\/|[?]|$)/i.test(href)||/\.(pdf|csv|xlsx?|jpg|png)(?:[?#]|$)/i.test(href)))reasons.push('Fonte de catálogo, perfil ou busca; falta anúncio individual.');
+ if(o.quality?.basic_eligible!==true)reasons.push('Qualidade da correspondência pendente ou bloqueada.');
+ if(typeof o.quote!=='string'||o.quote.trim().length<5)reasons.push('Trecho da evidência ausente.');
+ if(o.currency!=='BRL'||typeof o.price!=='number'||!Number.isFinite(o.price)||o.price<=0)reasons.push('Preço total em reais não comprovado.');
+ if(record?.state==='rejected')reasons.push('Oferta descartada na revisão.');
+ return {qualified:reasons.length===0,href,seller:generic?null:seller,reasons};
+}
+export function specialSkus(value){const skus=[...new Set(String(value??'').split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean))];if(!skus.length||skus.length>10||skus.some(x=>x.length>80))throw Error('special_skus_required');return skus;}

@@ -98,7 +98,7 @@ async function enter(){
   }
   if(!startClock()){await closeSession("Sessão encerrada por tempo de uso ou inatividade. Entre novamente.");return;}
   lastAccessCheck=Date.now();
-  const allowedRoutes=["inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro","radar-mercado",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
+  const allowedRoutes=["inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro","concorrentes","radar-mercado",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelector('[data-presentation-menu]')?.classList.toggle('hide',!PRESENTATION_ROLES.includes(profile.role));
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
@@ -365,6 +365,10 @@ window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquit
 window.cipLoadPage=(page)=>{
  disposeSquad();disposeSquad=()=>{};
  if(!user)return;
+ if(page==='concorrentes'&&window.cipAuth?.allowedRoutes?.includes(page)){
+  const actor=user.id,host=document.getElementById('content'),pending=host.querySelector('[data-directory-page-loading]');
+  import('./market-directory-ui.mjs').then(mod=>{if(user?.id!==actor||!pending?.isConnected)return;host.innerHTML='<section><h1>Concorrentes do Brasil</h1><label>Empresa <select data-directory-company></select></label><div data-directory-root></div></section>';const select=host.querySelector('[data-directory-company]');for(const c of companies){const option=document.createElement('option');option.value=c;option.textContent=c==='shopping_prohospital'?'Shopping Prohospital':'Distribuidora Prohospital';select.append(option);}mod.mountMarketDirectory(host.querySelector('[data-directory-root]'),{db:supabase,companyElement:select,onDispose:fn=>{const prev=disposeSquad;disposeSquad=()=>{prev();fn();};}});}).catch(()=>{if(user?.id===actor&&pending?.isConnected)pending.textContent='Diretório indisponível. Abra novamente para tentar.';});
+ }
  if(page==='radar-mercado'&&window.cipAuth?.allowedRoutes?.includes(page)){
   const actor=user.id,host=document.getElementById('content'),pending=host.querySelector('[data-market-loading]'),pick=window.cipMarketPick;window.cipMarketPick=null;
   import('./market-radar-ui.mjs').then(mod=>{if(user?.id!==actor||!pending?.isConnected||pending!==host.querySelector('[data-market-loading]'))return;mod.mountMarketRadar(host,{db:supabase,companies:[...companies],pick,onDispose:fn=>{const prev=disposeSquad;disposeSquad=()=>{prev();fn();};}});}).catch(()=>{if(user?.id===actor&&pending?.isConnected&&pending===host.querySelector('[data-market-loading]'))host.textContent='Radar indisponível. Verifique a conexão e abra novamente.';});
