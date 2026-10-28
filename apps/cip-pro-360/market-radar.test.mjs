@@ -78,3 +78,40 @@ test('navigation, guarded review and optional assets integrate with the existing
  const sql=read('./schema/market-radar.sql');assert.match(sql,/enable row level security/);assert.match(sql,/revoke all on function public.cip_market_finish[\s\S]*?authenticated/);assert.match(sql,/offer_changed/);assert.match(sql,/comparison_blocked/);assert.match(sql,/checks_required/);assert.match(sql,/pg_advisory_xact_lock/);
  const ui=read('./market-radar-ui.mjs');assert.match(ui,/Frete total conferido/);assert.match(ui,/replace_previous/);assert.match(ui,/role="status"/);assert.match(ui,/new Set/);assert.doesNotMatch(ui,/localStorage|service_role|ai_key/);
 });
+
+test('evidence comparison distinguishes delivered difference, markup on cost and gross margin',async()=>{
+ const {evidenceScenario}=await import('./market-radar-engine.mjs');
+ const own={sku:'1',unit:'UN',cost:50,price:100,source_fresh:false};
+ const r={sku:'1',state:'candidate',our:{unit:'UN'},criteria:{our_pack_units:1},offer:{price:160,pack_units:2,shipping:20,currency:'BRL',quality:{basic_eligible:true},match:{kind:'similar'}}};
+ const s=evidenceScenario(own,r,75);assert.equal(s.candidate,80);assert.equal(s.delivered,90);assert.equal(s.ourMarkup,100);assert.equal(s.candidateMarkup,60);assert.ok(Math.abs(s.gapPct-11.111111111111116)<1e-8);assert.equal(s.targetMarkup,50);assert.equal(s.targetFactor,1.5);assert.ok(Math.abs(s.targetGrossMargin-100/3)<1e-8);assert.ok(s.pending.some(x=>x.includes('conciliada')));
+ const missing=evidenceScenario({...own,cost:0},{...r,offer:{...r.offer,shipping:null}});assert.equal(missing.gapPct,null);assert.equal(missing.candidateMarkup,null);assert.equal(missing.candidate,80);
+ for(const bad of [{...r,offer:{...r.offer,quality:{basic_eligible:false}}},{...r,offer:{...r.offer,match:{kind:'alternative'}}},{...r,our:{unit:'CX'}}])assert.equal(evidenceScenario(own,bad).candidate,null);
+});
+test('Faro product opening resolves numeric SKU/store, does not select a partial match and exposes missing base',async()=>{
+ const {resolveEvidenceProduct}=await import('./market-radar-engine.mjs');
+ const db={rpc:async()=>({data:{items:[{sku:123,store_code:10,cost:5,price:9,unit:'UN'},{sku:'1234',store_code:'10'}],source_at:'2026-10-19',source_fresh:false}})};
+ const exact=await resolveEvidenceProduct(db,'shopping_prohospital','123','10');assert.equal(exact.item.cost,5);assert.equal(exact.item.source_at,'2026-10-19');
+ assert.equal((await resolveEvidenceProduct(db,'shopping_prohospital','123','11')).item,null);
+ await assert.rejects(resolveEvidenceProduct({rpc:async()=>({error:{}})},'shopping_prohospital','123','10'),/product_lookup_failed/);
+});
+
+test('opening a Faro product reveals evidence, supports interactive markup simulation and opens the pricing desk',async()=>{
+ const {mountMarketRadar}=await import('./market-radar-ui.mjs');
+ const previous={document:globalThis.document,window:globalThis.window};const nodes=new Map(),listeners={},dispose=[],navigations=[];
+ const node=selector=>{if(!nodes.has(selector))nodes.set(selector,{value:'',innerHTML:'',textContent:'',hidden:false,disabled:false,focusCount:0,scrollCount:0,focus(){this.focusCount++;},scrollIntoView(){this.scrollCount++;},replaceChildren(){this.innerHTML='';},reset(){},elements:{query:{value:''},store:{value:''},our_pack_units:{value:''}}});return nodes.get(selector);};
+ const root={isConnected:true,innerHTML:'',querySelector:s=>s==='[data-faro-hourly]'?null:node(s),addEventListener:(k,f)=>listeners[k]=f,removeEventListener:()=>{},contains:()=>true};
+ globalThis.document={querySelector:()=>({})};globalThis.window={matchMedia:()=>({matches:true}),navigate:x=>navigations.push(x)};
+ node('[data-market-company]').value='shopping_prohospital';node('[data-market-scenario-price]').value='80';node('[data-market-scenario-price]').dataset={offer:'offer-one'};
+ const offer={id:'offer-one',sku:'123',seller:'Loja exemplo',state:'candidate',version:1,url:'https://loja.com.br/luva',created_at:'2026-10-28',our:{sku:'123',description:'Luva',store_code:'10',unit:'UN',price:100,source_at:'2026-10-19'},criteria:{our_pack_units:1},offer:{title:'Luva',seller:'Loja exemplo',platform:'loja.com.br',price:160,shipping:20,pack_units:2,currency:'BRL',quality:{basic_eligible:true,findings:[]},match:{kind:'similar',score:75,conflicts:[],pending:[],reasons:[]}}};
+ const db={rpc:async name=>name==='cip_mp_desk_get'?{data:{items:[{sku:123,store_code:10,unit:'UN',description:'Luva',cost:50,price:100}],source_at:'2026-10-19',source_fresh:false}}:{data:{offers:[offer],runs:[],can_write:true}}};
+ try{
+ mountMarketRadar(root,{db,companies:['shopping_prohospital'],onDispose:f=>dispose.push(f),pick:{company:'shopping_prohospital',sku:'123',store:'10'}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.ok(node('[data-market-evidence]').focusCount>0);assert.ok(node('[data-market-evidence]').scrollCount>0);assert.match(node('[data-market-offers]').innerHTML,/Nosso custo observado/);assert.match(node('[data-market-offers]').innerHTML,/Markup ao preço concorrente/);
+ const click=dataset=>listeners.click({target:{closest:()=>({dataset,hasAttribute:()=>false})}});
+ click({marketSimulate:'offer-one'});assert.equal(node('[data-market-editor]').hidden,false);assert.match(node('[data-market-editor]').innerHTML,/Simular preço e markup/);
+ node('[data-market-scenario-price]').value='75';listeners.input({target:{matches:()=>true}});assert.match(node('[data-market-scenario-output]').innerHTML,/50%/);assert.match(node('[data-market-scenario-output]').innerHTML,/1.5000/);
+ click({marketScenarioDesk:'offer-one'});assert.deepEqual(window.cipPricingPick,{company:'shopping_prohospital',sku:'123',store:10});assert.deepEqual(navigations,['precos']);
+ dispose.forEach(f=>f());const before=node('[data-market-evidence]').focusCount;mountMarketRadar(root,{db:{rpc:async(name,args)=>name==='cip_mp_desk_get'?{data:{items:[]}}:db.rpc(name,args)},companies:['shopping_prohospital'],onDispose:f=>dispose.push(f),pick:{company:'shopping_prohospital',sku:'123',store:'10'}});await new Promise(resolve=>setImmediate(resolve));assert.ok(node('[data-market-evidence]').focusCount>before);assert.match(node('[data-market-status]').textContent,/não localizado/);assert.match(node('[data-market-offers]').innerHTML,/Custo positivo da loja não disponível/);
+ }finally{dispose.forEach(f=>f());root.isConnected=false;globalThis.document=previous.document;globalThis.window=previous.window;}
+});

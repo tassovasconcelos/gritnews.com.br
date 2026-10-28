@@ -67,3 +67,14 @@ test('discovery opens public search but accepts only actually cited evidence and
  const raw={status:'completed',output:[{type:'web_search_call',status:'completed',action:{sources:[{url}]}},{type:'message',content:[{type:'output_text',text:JSON.stringify({offers:[offer,{...offer,url:'https://inventada.com.br/luva'}],limitations:'Amostra parcial'})}]}]};
  const result=parseResearch(raw,context);assert.equal(result.offers.length,1);assert.equal(result.offers[0].discovery_candidate,true);assert.match(result.offers[0].match.pending.join(' '),/Nova fonte/);
 });
+
+test('capacity worker processes four distinct jobs with one web call and 1600 tokens each',async()=>{
+ let count=0;const db={rpc:async(name,args)=>({data:name==='cip_faro_worker_secret'?secret:name==='cip_bot_config_read'?{ai_enabled:true,ai_key:'unit-key'}:name==='cip_faro_claim'?Array.from({length:4},(_,i)=>({...job,job:'job-'+i,web_calls:1})):name==='cip_faro_finish'?{state:'completed'}:null})};
+ const worker=createFaroWorker({db,direct:async()=>null,research:async(ctx,opt)=>{count++;assert.equal(ctx.capacity,true);assert.deepEqual(opt.limits,{calls:1,tokens:1600});return {offers:[],meta:{search_calls:1}};}});
+ const response=await worker(new Request('https://example.invalid',{method:'POST',headers:{'X-CIP-Faro-Secret':secret}}));assert.equal(response.status,200);assert.equal(count,4);
+});
+test('an approved direct refresh never invokes paid research',async()=>{
+ let paid=0,saved;const db={rpc:async(name,args)=>{if(name==='cip_faro_finish')saved=args;return {data:name==='cip_faro_worker_secret'?secret:name==='cip_bot_config_read'?{ai_enabled:true,ai_key:'unit-key'}:name==='cip_faro_claim'?[{...job,web_calls:1}]:name==='cip_faro_finish'?{state:'completed'}:null};}};
+ const worker=createFaroWorker({db,direct:async()=>({offers:[],meta:{collection:'direct_structured',search_calls:0}}),research:async()=>{paid++;throw Error();}});
+ await worker(new Request('https://example.invalid',{method:'POST',headers:{'X-CIP-Faro-Secret':secret}}));assert.equal(paid,0);assert.equal(saved.p_meta.search_calls,0);assert.equal(saved.p_meta.collection,'direct_structured');
+});

@@ -1,5 +1,7 @@
 # Faro: descoberta autônoma com evidências
 
+> Evolução de volume em 28/10/2026: as regras atuais são descritas em `FARO-COBERTURA-MIX.md` (1.000 SKUs distintos/dia, até 48 verificações/hora, uma chamada/tarefa e revisita especial de quatro horas). Os parâmetros de volume abaixo documentam a implantação anterior.
+
 O cron e o worker existentes continuam sendo os únicos executores pagos. Nenhuma pesquisa é disparada ao publicar ou validar esta evolução. Não se aumenta o teto de 24 tarefas por hora, 576 por dia, duas chamadas web e 3.200 tokens de saída por tarefa. Quotas, pausa, circuito e patrocínio continuam obrigatórios.
 
 ## O que muda

@@ -81,3 +81,29 @@ export function offerQuality(our,offer){
  if(norm(our.criteria?.brand)&&!norm(offer.brand))findings.push('Marca não comprovada na oferta.');
  return {basic_eligible:findings.length===0,findings:[...new Set(findings)],source_type:listing?'listing':'individual_candidate',rule_version:'market-quality-20261027.1',certified:false};
 }
+
+// Internal arithmetic only: never sent to the research provider.
+export function evidenceScenario(own,record,targetPrice=null){
+ const o=record?.offer??{},base=record?.our??{},positive=v=>typeof v==='number'&&Number.isFinite(v)&&v>0?v:null;
+ const sameSku=String(own?.sku??'')===String(record?.sku??'');
+ const sameUnit=!!norm(own?.unit)&&norm(own.unit)===norm(base.unit);
+ const cost=positive(own?.cost),price=positive(own?.price),pack=positive(record?.criteria?.our_pack_units),offerPack=positive(o.pack_units);
+ const eligible=sameSku&&sameUnit&&record?.state!=='rejected'&&o.quality?.basic_eligible!==false&&!['alternative','incompatible'].includes(o.match?.kind)&&o.currency==='BRL';
+ const candidate=eligible&&pack&&offerPack&&positive(o.price)?o.price*pack/offerPack:null;
+ const delivered=eligible?comparablePrice(o,pack):null;
+ const target=positive(targetPrice)??candidate;
+ return {cost,price,candidate,delivered,target,
+  gapPct:price&&delivered?(price/delivered-1)*100:null,gapValue:price&&delivered?price-delivered:null,
+  ourMarkup:cost&&price?(price-cost)/cost*100:null,candidateMarkup:cost&&candidate?(candidate-cost)/cost*100:null,
+  targetMarkup:cost&&target?(target-cost)/cost*100:null,targetFactor:cost&&target?target/cost:null,
+  targetGrossMargin:cost&&target?(target-cost)/target*100:null,
+  pending:[...(!sameSku||!sameUnit?['Unidade do produto selecionado diferente da base da coleta.']:[]),...(!cost?['Custo positivo da loja não disponível.']:[]),...(delivered===null?['Sem comparação completa: conferir correspondência, embalagem e frete.']:[]),...(own?.source_fresh!==true?['Base interna não confirmada como atual e conciliada.']:[])],
+ };
+}
+
+export async function resolveEvidenceProduct(db,company,sku,store=''){
+ const response=await db.rpc('cip_mp_desk_get',{p_company:company,p_query:String(sku),p_store:String(store??''),p_channel:'marketplace',p_offset:0});
+ if(response.error||!Array.isArray(response.data?.items))throw Error('product_lookup_failed');
+ const exact=response.data.items.find(x=>String(x.sku).trim()===String(sku).trim()&&(!store||String(x.store_code).trim()===String(store).trim()));
+ return {item:exact?{...exact,source_at:response.data.source_at,source_fresh:response.data.source_fresh,source:response.data.source}:null,items:response.data.items};
+}

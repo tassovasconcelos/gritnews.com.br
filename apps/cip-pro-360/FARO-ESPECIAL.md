@@ -1,5 +1,7 @@
 # Faro especial: seleção assistida e pesquisa contínua
 
+> Evolução de volume em 28/10/2026: as regras atuais são descritas em `FARO-COBERTURA-MIX.md` (1.000 SKUs distintos/dia, até 48 verificações/hora, uma chamada/tarefa e revisita especial de quatro horas). Os parâmetros de volume abaixo documentam a implantação anterior.
+
 Na operação do Radar, a diretoria pode adicionar até dez produtos do portfólio ativo da empresa ao Faro especial, definir um objetivo e escolher busca exata ou ciclo expandido. A lista permanece visível fora dos filtros e da paginação do portfólio; mostra tarefas concluídas, registros de ofertas, evidências recentes, vendedor, marca, preço candidato, data, correspondência e pendências. O histórico completo continua no radar do SKU. Retirar não apaga coletas ou decisões.
 
 A seleção inicial usa o portfólio com fonte identificada já disponível. Não cria catálogo ou curva ABC para a Distribuidora. Se a origem retirar um produto da base ativa, ele permanece identificado como pendente na seleção e não recebe novas tarefas até voltar à base. O limite dez inclui pendentes; a diretoria pode retirá-los.
