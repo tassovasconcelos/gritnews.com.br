@@ -39,3 +39,17 @@ test('schema scopes all public tables, protects worker capabilities, queues once
 test('interface distinguishes attempted and evidence coverage, states rotation capacity and preserves human review',()=>{
  const ui=fs.readFileSync(new URL('./faro-hourly-ui.mjs',import.meta.url),'utf8');assert.match(ui,/Pesquisados em 24 h/);assert.match(ui,/Com evidência em 24 h/);assert.match(ui,/Passagem estimada/);assert.match(ui,/custo|consumo|Consumo/);assert.match(ui,/conferência/);assert.match(ui,/clearInterval/);assert.doesNotMatch(ui,/localStorage|service_role|ai_key|worker_secret/);
 });
+
+test('special focus carries a bounded research objective without sending internal prices or costs',()=>{
+ const focus={objective:'Conferir embalagem e vendedores',phase:'similar',version:2,feedback:[{note:'Rever modelo'}]};
+ const p=researchRequest({...job,mode:'alternatives',monitoring:true,focus},{calls:2,tokens:3200});
+ assert.deepEqual(JSON.parse(p.input).focus,focus);assert.equal(JSON.parse(p.input).mode,'alternatives');
+ assert.equal(p.max_tool_calls,2);assert.match(p.instructions,/nunca evidência atual de preço/);assert.doesNotMatch(p.input,/999|99|cost|price/);
+});
+test('special worker passes the phase and retains evidence context without additional research calls',async()=>{
+ let observed;const calls=[];const focus={objective:'Conferir modelo e embalagem',phase:'similar',version:1};
+ const db={rpc:async(name,args)=>{calls.push({name,args});return {data:name==='cip_faro_worker_secret'?secret:name==='cip_bot_config_read'?{ai_enabled:true,ai_key:'unit-key'}:name==='cip_faro_claim'?[{...job,mode:'alternatives',focus}]:name==='cip_faro_finish'?{state:'completed'}:null};}};
+ const worker=createFaroWorker({db,research:async(ctx,opt)=>{observed=ctx;assert.deepEqual(opt.limits,{calls:2,tokens:3200});return {offers:[],meta:{search_calls:1}};}});
+ await worker(new Request('https://example.invalid',{method:'POST',headers:{'X-CIP-Faro-Secret':secret}}));
+ assert.equal(observed.mode,'alternatives');assert.deepEqual(observed.focus,focus);assert.deepEqual(calls.find(x=>x.name==='cip_faro_finish').args.p_meta.special_focus,focus);
+});

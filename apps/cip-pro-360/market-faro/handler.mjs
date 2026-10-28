@@ -15,11 +15,11 @@ export function createFaroWorker({db,research=requestResearch}){return async req
   const target=await db.rpc('cip_faro_directory_target',{p_job:job.job,p_lease:job.lease});if(target.error)throw Error('regional_source_unavailable');
   const region=target.data??null,domains=region?[region.domain]:job.domains;
   if(!validRadarRequest({company:job.company,sku:job.sku,store:job.store,criteria:job.criteria,domains,mode:'identity',consent:true}))throw Error('identity_required');
-  const result=await research({our:job.our,criteria:job.criteria,domains,region:region?.region,mode:region?.region?.allow_alternatives?'alternatives':'identity',discovery:false,monitoring:true,tracked_urls:(job.tracked_urls??[]).filter(u=>sourceUrl(u,domains)),already_seen:[]},{key:cfg.data.ai_key,limits:{calls:2,tokens:3200}});
-  const saved=await db.rpc('cip_faro_finish',{p_job:job.job,p_lease:job.lease,p_offers:result.offers,p_meta:{...result.meta,...(region?{directory_target:{id:region.id,domain:region.domain,region:region.region}}:{})},p_failed:false});
+  const result=await research({our:job.our,criteria:job.criteria,domains,region:region?.region,mode:region?.region?.allow_alternatives?'alternatives':job.mode==='alternatives'?'alternatives':'identity',focus:job.focus??null,discovery:false,monitoring:true,tracked_urls:(job.tracked_urls??[]).filter(u=>sourceUrl(u,domains)),already_seen:[]},{key:cfg.data.ai_key,limits:{calls:2,tokens:3200}});
+  const saved=await db.rpc('cip_faro_finish',{p_job:job.job,p_lease:job.lease,p_offers:result.offers,p_meta:{...result.meta,special_focus:job.focus??null,...(region?{directory_target:{id:region.id,domain:region.domain,region:region.region}}:{})},p_failed:false});
   if(saved.error)throw Error('research_not_saved');return {state:saved.data?.state??'completed',offers:result.offers.length};
  }catch(e){const error=['regional_source_unavailable','identity_required','search_not_completed','search_without_sources','invalid_search_output','provider_rate_limit','research_not_saved'].includes(e?.message)?e.message:'research_unavailable';
-  const saved=await db.rpc('cip_faro_finish',{p_job:job.job,p_lease:job.lease,p_offers:[],p_meta:{error,origin:'faro_hourly',coverage:'sample'},p_failed:true});
+  const saved=await db.rpc('cip_faro_finish',{p_job:job.job,p_lease:job.lease,p_offers:[],p_meta:{error,special_focus:job.focus??null,origin:'faro_hourly',coverage:'sample'},p_failed:true});
   return {state:saved.error?'finish_unconfirmed':'failed',error};
  }
  }));
