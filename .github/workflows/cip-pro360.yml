@@ -58,7 +58,8 @@ jobs:
           node --check apps/cip-pro-360/pricing-ui.mjs
           node --test apps/cip-pro-360/pricing-ui.test.mjs apps/cip-pro-360/pricing-desk.test.mjs
           node --check apps/cip-pro-360/pricing-desk-ui.mjs
-          node --test apps/cip-pro-360/market-directory.test.mjs
+          node --test apps/cip-pro-360/market-directory.test.mjs apps/cip-pro-360/market-specialties.test.mjs
+          node --check apps/cip-pro-360/market-watch-ui.mjs
           node --check apps/cip-pro-360/market-directory-ui.mjs
           node --test apps/cip-pro-360/market-radar.test.mjs apps/cip-pro-360/faro-hourly.test.mjs
           node --check apps/cip-pro-360/faro-hourly-ui.mjs
