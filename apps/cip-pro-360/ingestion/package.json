@@ -1,0 +1,1 @@
+{"name":"cip-academy-ingestion","private":true,"type":"module","dependencies":{"@supabase/supabase-js":"2.57.0","fflate":"0.8.2","htmlparser2":"10.0.0","unpdf":"1.0.6"}}

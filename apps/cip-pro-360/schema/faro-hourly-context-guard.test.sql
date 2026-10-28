@@ -1,0 +1,21 @@
+begin;
+do $$declare c text:='shopping_prohospital';actor uuid;pid uuid;jid uuid;rid uuid;lease uuid:=gen_random_uuid();p public.cip_faro_portfolio;r jsonb;
+begin
+ select owner_id into actor from public.cip_faro_config where company_id=c;
+ perform set_config('request.jwt.claim.sub',actor::text,true);
+ insert into public.cip_faro_portfolio(company_id,sku,source_at,source_hash,our,identity,stock_value) values(c,'__CIP_FARO_CONTEXT_TEST__',current_date,repeat('0',64),'{"sku":"__CIP_FARO_CONTEXT_TEST__","store_code":"1","description":"Auditoria sintética","unit":"UN","price":100}','{"brand":"Teste","our_pack_units":1}',1) returning * into p;
+ pid:=p.id;
+ begin perform public.cip_faro_command(c,'identity',jsonb_build_object('id',pid,'source_hash',p.source_hash,'expected_updated_at',p.updated_at-interval '1 second','identity','{}'::jsonb));raise exception 'stale_identity_allowed';exception when raise_exception then if sqlerrm<>'portfolio_changed' then raise;end if;end;
+ perform public.cip_faro_command(c,'identity',jsonb_build_object('id',pid,'source_hash',p.source_hash,'expected_updated_at',p.updated_at,'identity','{"gtin":"7894900011517","our_pack_units":1}'::jsonb));
+ select * into p from public.cip_faro_portfolio where id=pid;
+ insert into public.cip_faro_jobs(company_id,portfolio_id,slot,state,lease,claimed_at,reserved_calls) values(c,pid,date_trunc('hour',now()),'claimed',lease,now(),2) returning id into jid;
+ insert into public.cip_market_runs(company_id,actor,sku,store_code,our,criteria,domains,mode,auto_job_id) values(c,actor,p.sku,'1',p.our,p.identity||p.overrides,'["medjet.com.br"]','identity',jid) returning id into rid;
+ update public.cip_faro_jobs set run_id=rid where id=jid;
+ update public.cip_faro_portfolio set overrides='{"brand":"Identidade alterada durante a pesquisa"}' where id=pid;
+ r:=public.cip_faro_finish(jid,lease,'[]','{}',false);
+ if r->>'state'<>'skipped' or (select error_code from public.cip_faro_jobs where id=jid)<>'portfolio_changed_during_search' then raise exception 'changed_identity_completed';end if;
+ if has_column_privilege('authenticated','public.cip_faro_jobs','lease','select') then raise exception 'lease_exposed';end if;
+ if exists(select 1 from jsonb_array_elements(public.cip_faro_get(c,'',0)->'jobs')x where x?'lease') then raise exception 'lease_exposed_in_rpc';end if;
+end;$$;
+select true as passed;
+rollback;
