@@ -9,7 +9,7 @@ export const MARKET_SOURCES=[
  {id:'paulista',name:'Cirúrgica Paulista',domain:'cirurgicapaulista.com.br',kind:'medical'},
  {id:'fernandes',name:'Cirúrgica Fernandes',domain:'cfernandes.com.br',kind:'distributor'}
 ];
-export const MATCH_LABELS={exact_gtin:'Mesmo GTIN · conferir oferta',exact_brand_model:'Marca e modelo correspondentes',similar:'Similaridade · conferir especificação',alternative:'Alternativa de marca · não usar como equivalente',incompatible:'Divergência · não comparar'};
+export const MATCH_LABELS={exact_gtin:'Mesmo EAN · conferir oferta',exact_brand_model:'Marca e modelo correspondentes',similar:'Similaridade · conferir especificação',alternative:'Alternativa de marca · não usar como equivalente',incompatible:'Divergência · não comparar'};
 export const REVIEW_LABELS={candidate:'Aguardando conferência',linked:'Referência enviada ao Marca-passo',alternative:'Alternativa para análise de mix',rejected:'Descartada'};
 export const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const number=v=>typeof v==='number'&&Number.isFinite(v)?v:null;
@@ -51,7 +51,7 @@ export function productMatch(our,offer){
  const wanted=our.criteria??{},a=norm([our.description,wanted.type,wanted.specification].join(' ')),b=norm([offer.title,offer.description,offer.type,offer.specification].join(' '));
  const conflicts=[],pending=[],reasons=[];const ourCategory=specialty(a),offerCategory=specialty(b);if(ourCategory!=='unclassified'&&offerCategory!=='unclassified'&&ourCategory!==offerCategory)conflicts.push('Categoria diferente; não comparar como o mesmo produto');const af=facts(a),bf=facts(b);
  for(const k of Object.keys(af))if(bf[k]!==undefined&&af[k]!==bf[k])conflicts.push('Divergência de '+({application:'aplicação',material:'material',sterile:'esterilidade',coating:'revestimento',stoma:'tipo de estomia',system:'sistema de peças',compression:'compressão em mmHg',mask:'interface da máscara'}[k]));else if(bf[k]===undefined)pending.push('Conferir '+k);
- const gtin=validGtin(wanted.gtin),other=validGtin(offer.gtin);if(gtin&&other&&gtin!==other)conflicts.push('GTIN diferente');
+ const gtin=validGtin(wanted.gtin),other=validGtin(offer.gtin);if(gtin&&other&&gtin!==other)conflicts.push('EAN diferente');
  const brand=norm(wanted.brand),ob=norm(offer.brand),model=norm(wanted.model).replace(/ /g,''),om=norm(offer.model).replace(/ /g,'');
  const differentBrand=!!(brand&&ob&&brand!==ob);if(differentBrand)reasons.push('Marca diferente: avaliar como alternativa');
  if(model&&om&&model!==om&&!differentBrand)conflicts.push('Modelo diferente');if(model&&!om)pending.push('Modelo não comprovado');if(brand&&!ob)pending.push('Marca não comprovada');
@@ -64,7 +64,7 @@ export function productMatch(our,offer){
  let kind=conflicts.length?'incompatible':differentBrand?'alternative':gtin&&other===gtin?'exact_gtin':brandModel?'exact_brand_model':'similar';
  if(!conflicts.length&&kind==='similar'&&similarity<0.15){conflicts.push('Descrição sem correspondência suficiente');kind='incompatible';}
  if(!wanted.our_pack_units)pending.push('Quantidade da nossa embalagem');if(!(number(offer.pack_units)>0))pending.push('Quantidade da embalagem concorrente');if(number(offer.shipping)===null)pending.push('Frete da praça');
- if(kind==='exact_gtin')reasons.push('GTIN válido correspondente');if(kind==='exact_brand_model')reasons.push('Marca e modelo informados correspondem');
+ if(kind==='exact_gtin')reasons.push('EAN válido correspondente');if(kind==='exact_brand_model')reasons.push('Marca e modelo informados correspondem');
  return {kind,score:kind==='incompatible'?0:kind==='exact_gtin'?100:kind==='exact_brand_model'?90:Math.min(differentBrand?65:79,Math.round(similarity*75)),conflicts,pending,reasons,certified:false};
 }
 export function comparablePrice(offer,ourPack){if(offer.quality?.basic_eligible===false)return null;if(['incompatible','alternative'].includes(offer.match?.kind))return null;if(offer.currency!=='BRL'||!(number(offer.price)>0)||number(offer.shipping)===null||offer.shipping<0||!(number(offer.pack_units)>0)||!(number(ourPack)>0))return null;return (offer.price+offer.shipping)*ourPack/offer.pack_units;}

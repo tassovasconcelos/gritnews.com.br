@@ -71,7 +71,7 @@ export const OPERATIONAL_PROCESSES=[
   ],
   "rule": "Ranking proposto: 30% valor a custo do estoque elegível parado, 20% excesso de cobertura, 15% risco de validade, 15% demanda/giro comprovado, 10% quantidade e 10% volume físico. Normalizar por canal e categoria; não somar unidades diferentes. Pesos exigem aceite. Sem dimensão física, não inventar m³. Curva A indica prioridade comercial, não comprova venda atual.",
   "scope": "Lista permanente de alto giro para consulta diária; segunda fila de excesso, capital imobilizado e sem giro. Cruzar quantidade, custo conciliado, curva, demanda, ciclo de reposição e disponibilidade. Ausência de dados reduz confiança, não vira zero. Fonte antiga bloqueia publicação automática.",
-  "control": "Coleta diária proposta online em fontes acessíveis e cadastro offline pelo time com foto/cotação, data, loja e validade. Mesmo SKU/GTIN, marca, embalagem, região, frete, imposto, condição e disponibilidade; sem equivalência, apenas pista. Custo + tributos + taxas + frete + comissão + piso de contribuição limitam o preço. Preço do concorrente não é ordem de redução.",
+  "control": "Coleta diária proposta online em fontes acessíveis e cadastro offline pelo time com foto/cotação, data, loja e validade. Mesmo SKU/EAN, marca, embalagem, região, frete, imposto, condição e disponibilidade; sem equivalência, apenas pista. Custo + tributos + taxas + frete + comissão + piso de contribuição limitam o preço. Preço do concorrente não é ordem de redução.",
   "kpi": "Margem de contribuição; conversão; unidades vendidas; cobertura; ruptura; capital liberado conciliado; frescor e cobertura das referências. Baseline por canal antes/depois; não atribuir efeito causal sem controle."
  },
  {
