@@ -112,7 +112,7 @@ export function evidenceSource(record){
  const o=record?.offer??{},url=record?.url??o.url,seller=String(record?.seller??o.seller??'').trim(),reasons=[];let href=null;
  try{const d=publicDomain(new URL(url).hostname);if(d)href=sourceUrl(url,[d]);}catch{}
  if(!href)reasons.push('Link HTTPS consultável não identificado.');
- const generic=!seller||/nao identificado|nao informado|desconhecido|anunciante individual|sem vendedor|diversos vendedores|varios vendedores/.test(norm(seller))||['amazon','amazon com br','magalu','magazine luiza','mercado livre','mercadolivre','shopee','n a'].includes(norm(seller));
+ const generic=!seller||/nao identificado|nao informado|desconhecido|unknown|not identified|unidentified|not available|anunciante individual|sem vendedor|diversos vendedores|varios vendedores/.test(norm(seller))||['amazon','amazon com br','magalu','magazine luiza','mercado livre','mercadolivre','shopee','n a'].includes(norm(seller));
  if(/(?:^| )pronut(?: |$)|shopping prohospital|prohospital/.test(norm(seller)))reasons.push('Oferta do grupo Prohospital; não usar como concorrência externa.');
  if(generic)reasons.push('Vendedor específico não identificado.');
  if(href&&(/^https:\/\/lista\./i.test(href)||/^https:\/\/[^/]+\/?(?:[?#].*)?$/.test(href)||/^https:\/\/[^/]+\/(busca|search|pesquisa|loja|marcas|categorias?|collections)(?:\/|[?]|$)/i.test(href)||/\.(pdf|csv|xlsx?|jpg|png)(?:[?#]|$)/i.test(href)))reasons.push('Fonte de catálogo, perfil ou busca; falta anúncio individual.');
