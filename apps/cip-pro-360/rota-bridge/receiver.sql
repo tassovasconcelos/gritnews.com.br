@@ -1,4 +1,5 @@
 begin;
+alter table public.market_radar_sources add column faro_evidence jsonb not null default '{}';
 create schema cip_rota_bridge_private;
 revoke all on schema cip_rota_bridge_private from public,anon,authenticated;
 create table cip_rota_bridge_private.auth(id boolean primary key default true check(id),secret text not null check(length(secret)=64));
@@ -28,6 +29,7 @@ begin
  on conflict(workspace_id,url) do nothing returning id into sid;
  if sid is null then select id into sid from public.market_radar_sources where workspace_id=ws and url=u;end if;
  end if;
+ update public.market_radar_sources set faro_evidence=jsonb_build_object('origin','CIP_FARO','received_at',now(),'observed_at',p->>'observed_at','rule_version',coalesce(p->>'rule_version','legacy-candidate'),'evidence_url',p->>'evidence_url','quote',left(p->>'evidence',500),'locations_declared',case when jsonb_typeof(p->'locations_declared')='array' then p->'locations_declared' else jsonb_build_array(jsonb_build_object('city',p->>'city','state',p->>'state')) end,'region_verified',false,'price_validated',false) where id=sid and workspace_id=ws;
  insert into cip_rota_bridge_private.receipts(event_id,source_id,payload) values(eid,sid,p);
  return jsonb_build_object('accepted',true,'duplicate',false,'event_id',eid,'source_id',sid);
 end;$$;

@@ -24,3 +24,13 @@ Validação inicial: 16 eventos aceitos, 12 fontes distintas, zero pendências e
 Amostra sem evidência não significa que a empresa não alugue. Rechecagem após sete dias para amostras concluídas e um dia para pendências, sempre priorizando domínios ainda não tentados. Registros sem site permanecem pendentes: o módulo não inventa um endereço. Referências do próprio grupo ficam excluídas. O painel do diretório consulta somente contagens e evidências públicas permitidas ao usuário da empresa.
 
 Universo inicial de Shopping: 497 registros, 19 do grupo excluídos, 478 referências externas, 205 domínios distintos e 107 registros sem site. Não equivale a 478 empresas únicas ou 205 páginas já verificadas.
+
+## Evolução de evidência v2
+
+Em instalações existentes, `rental-evolution.sql` (CIP) e `receiver-evolution.sql` (Rota) são os upgrades da versão anterior. Os arquivos iniciais `rental-scan.sql` e `receiver.sql` já refletem o esquema completo atual; não reaplicar os upgrades sobre uma instalação nova criada por esses arquivos.
+
+O scanner exige frase explícita de serviço: uma sequência de itens do menu como “Locação / Contato / Produtos Hospitalares” não basta. Links sem comprovação textual ficam como `rental_link_pending`. Redirecionamentos HTTPS são limitados ao mesmo domínio ou www, revalidam DNS e respeitam o máximo global de cinco requisições diretas por verificação. Não há aumento das chamadas ao buscador/modelo.
+
+Cada conclusão de scan passa a ter observação imutável por job em `rental_observations`, sem alterar observações anteriores. No Rota, `market_radar_sources.faro_evidence` conserva a última evidência do Faro, localidades declaradas e datas de recebimento/coleta separadas da análise nativa do radar. Não altera decisões de revisão, regiões confirmadas, preços, nem ativa fontes existentes desativadas. Recibos continuam deduplicados por evento/domínio.
+
+Validação: 364 testes JS passaram; testes SQL em rollback confirmaram histórico, reconhecimento de www, retenção de decisão manual/inatividade, metadados de região e deduplicação. Não foram disparadas pesquisas pagas de teste.
