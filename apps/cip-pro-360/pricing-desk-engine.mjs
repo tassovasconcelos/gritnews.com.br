@@ -15,3 +15,31 @@ export function boardScenario(item,policy,expense,fixed,strategy='protect_margin
 }
 export function safeCsv(rows){const clean=v=>{const s=String(v??'');return '"'+(/^[\s]*[=+\-@\t\r\n]/.test(s)?"'"+s:s).replace(/"/g,'""')+'"';};return '\uFEFF'+rows.map(row=>row.map(clean).join(';')).join('\r\n');}
 export function planExport(plans){return safeCsv([['PLANO_ASSISTIDO_NAO_EXECUTA_ERP','Empresa','SKU','Loja','Canal','Destino','Tabela','Preço anterior da origem','Preço planejado','Inicio_Brasilia','Fim_Brasilia','Responsavel','Estado','Revisao_ao_final'],...plans.map(p=>[p.id,p.company_id,p.sku,p.store_code,p.channel,p.destination,p.price_table,p.previous_price,p.new_price,new Date(p.start_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}),new Date(p.end_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}),p.owner_name,PLAN_STATES[p.state]??p.state,'Conferir tabela e aprovar eventual reversão; sem retorno automático'])]);}
+
+// Decision support only: the server remains responsible for approval and revalidation.
+export function decisionDossier(item,desk,expense,fixed,now=new Date()){
+ const blockers=[],pending=[],cost=n(item?.cost),price=n(item?.price),qty=n(item?.quantity),e=n(expense),f=n(fixed);
+ const stamp=Date.parse(desk?.source_at),age=Number.isFinite(stamp)?(now.getTime()-stamp)/3600000:null;
+ if(desk?.source!=='erp_approved')blockers.push('Conciliar e aprovar a carga financeira da empresa.');
+ if(desk?.source_fresh!==true||age===null||age>36||age< -5/60)blockers.push('Atualizar a origem: data válida e carga de até 36 horas.');
+ if(cost===null||cost<=0||price===null||price<=0||qty===null||qty<0||!item?.unit)blockers.push('Conferir custo, preço, saldo e unidade do SKU nesta loja.');
+ if(!desk?.policy)blockers.push('Publicar a regra financeira da diretoria.');
+ if(e===null||e<0||e>=100||f===null||f<0)blockers.push('Informar despesas completas e custo fixo por unidade; zero exige confirmação.');
+ const ref=item?.best_reference,refDay=ref?.observed_on?Date.parse(ref.observed_on+'T00:00:00-03:00'):NaN;
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+ const dayAge=(Date.parse(today+'T00:00:00-03:00')-refDay)/86400000;
+ const maxDays=n(desk?.config?.reference_days);
+ const ownSeller=/(^|[^a-z])prohospital([^a-z]|$)/i.test(ref?.competitor??'');
+ let https=false;try{const u=new URL(ref?.source_url);https=u.protocol==='https:'&&!u.username&&!u.password;}catch{}
+ const comparable=!!ref&&ref.active===true&&ref.equivalent===true&&ref.availability==='available'&&normalizedReference(ref)!==null&&String(ref.our_unit??'').trim().toUpperCase()===String(item?.unit??'').trim().toUpperCase()&&Number.isFinite(dayAge)&&dayAge>=0&&maxDays!==null&&dayAge<=maxDays&&https&&!ownSeller;
+ if(!comparable)pending.push(ownSeller?'Verificar se o vendedor PROHOSPITAL é operação própria antes de usá-lo como concorrente.':'Validar anúncio individual, vendedor, marca/modelo, embalagem, canal, praça, frete, disponibilidade e pagamento.');
+ pending.push('Identificar tabela vigente, reservas e custo de reposição antes de aplicar.','Integrar vendas líquidas por loja e período para medir giro; curva ABC isolada não mede velocidade.','Conciliar transferências, devoluções e ajustes separadamente de vendas; idade do lote exige data de entrada e saldo remanescente.');
+ const scenario=boardScenario({...item,best_reference:comparable?ref:null},desk?.policy,expense,fixed);
+ const unitContribution=cost>0&&price>0&&e!==null&&e>=0&&e<100&&f!==null&&f>=0?price*(1-e/100)-cost-f:null;
+ const sensitivity=[-10,-5,0,5].map(change=>{
+  const candidate=price>0?Math.round(price*(1+change/100)*100)/100:null;
+  const contribution=candidate>0&&unitContribution!==null?candidate*(1-e/100)-cost-f:null;
+  return {change,price:candidate,unitContribution:contribution,margin:contribution!==null?contribution/candidate*100:null,volumeChangeRequired:unitContribution>0&&contribution>0?(unitContribution/contribution-1)*100:null,belowFloor:scenario&&candidate!==null?candidate<scenario.floor:null};
+ });
+ return {status:blockers.length?'Preparação de dados':'Revisão assistida',blockers,pending,comparable,sourceAgeHours:age,scenario,unitContribution,sensitivity,stockCapital:cost>0&&qty!==null&&qty>=0?cost*qty:null,forecast:false,canExecute:false};
+}
