@@ -10,7 +10,7 @@ const SHELL=[
  './b2g-radar.mjs','./b2g-research.mjs','./b2g-research-ui.mjs','./b2g-discovery.mjs','./b2g-discovery-ui.mjs','./b2g-sources.mjs','./b2g-vocabulary.mjs'
 ];
 // Install icons is cached on demand; they are not required to open the login.
-const OPTIONAL=['./faro-hourly-ui.mjs','./faro-hourly.css','./icon-192.png','./market-radar-ui.mjs','./market-radar-engine.mjs','./market-radar.css','./icon-512.png','./presentation.mjs','./presentation.css','./pricing-desk-ui.mjs','./pricing-desk-engine.mjs','./pricing-desk.css'];
+const OPTIONAL=['./faro-hourly-ui.mjs','./faro-hourly.css','./icon-192.png','./market-radar-ui.mjs','./market-directory-ui.mjs','./market-radar-engine.mjs','./market-radar.css','./icon-512.png','./presentation.mjs','./presentation.css','./pricing-desk-ui.mjs','./pricing-desk-engine.mjs','./pricing-desk.css'];
 const shellPaths=new Set([...SHELL,...OPTIONAL].map(path=>new URL(path,self.location).pathname));
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{

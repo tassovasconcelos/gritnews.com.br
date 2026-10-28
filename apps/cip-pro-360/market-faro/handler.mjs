@@ -1,4 +1,4 @@
-import {validRadarRequest} from '../market-radar-engine.mjs';
+import {sourceUrl,validRadarRequest} from '../market-radar-engine.mjs';
 import {requestResearch} from '../market-radar/research.mjs';
 const reply=(status,data)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
 async function equal(a,b){if(typeof a!=='string'||typeof b!=='string'||a.length>200||b.length<32)return false;const encode=new TextEncoder(),[x,y]=await Promise.all([crypto.subtle.digest('SHA-256',encode.encode(a)),crypto.subtle.digest('SHA-256',encode.encode(b))]);let diff=0;const xx=new Uint8Array(x),yy=new Uint8Array(y);for(let i=0;i<xx.length;i++)diff|=xx[i]^yy[i];return diff===0;}
@@ -12,10 +12,13 @@ export function createFaroWorker({db,research=requestResearch}){return async req
  const results=await Promise.allSettled(claimed.data.slice(0,2).map(async job=>{
  try{
   if(!validRadarRequest({company:job.company,sku:job.sku,store:job.store,criteria:job.criteria,domains:job.domains,mode:'identity',consent:true}))throw Error('identity_required');
-  const result=await research({our:job.our,criteria:job.criteria,domains:job.domains,mode:'identity',monitoring:true,tracked_urls:job.tracked_urls,already_seen:[]},{key:cfg.data.ai_key,limits:{calls:2,tokens:3200}});
-  const saved=await db.rpc('cip_faro_finish',{p_job:job.job,p_lease:job.lease,p_offers:result.offers,p_meta:result.meta,p_failed:false});
+  const target=await db.rpc('cip_faro_directory_target',{p_job:job.job,p_lease:job.lease});if(target.error)throw Error('regional_source_unavailable');
+  const region=target.data??null,domains=region?[region.domain]:job.domains;
+  if(!validRadarRequest({company:job.company,sku:job.sku,store:job.store,criteria:job.criteria,domains,mode:'identity',consent:true}))throw Error('identity_required');
+  const result=await research({our:job.our,criteria:job.criteria,domains,region:region?.region,mode:'identity',discovery:false,monitoring:true,tracked_urls:(job.tracked_urls??[]).filter(u=>sourceUrl(u,domains)),already_seen:[]},{key:cfg.data.ai_key,limits:{calls:2,tokens:3200}});
+  const saved=await db.rpc('cip_faro_finish',{p_job:job.job,p_lease:job.lease,p_offers:result.offers,p_meta:{...result.meta,...(region?{directory_target:{id:region.id,domain:region.domain,region:region.region}}:{})},p_failed:false});
   if(saved.error)throw Error('research_not_saved');return {state:saved.data?.state??'completed',offers:result.offers.length};
- }catch(e){const error=['identity_required','search_not_completed','search_without_sources','invalid_search_output','provider_rate_limit','research_not_saved'].includes(e?.message)?e.message:'research_unavailable';
+ }catch(e){const error=['regional_source_unavailable','identity_required','search_not_completed','search_without_sources','invalid_search_output','provider_rate_limit','research_not_saved'].includes(e?.message)?e.message:'research_unavailable';
   const saved=await db.rpc('cip_faro_finish',{p_job:job.job,p_lease:job.lease,p_offers:[],p_meta:{error,origin:'faro_hourly',coverage:'sample'},p_failed:true});
   return {state:saved.error?'finish_unconfirmed':'failed',error};
  }

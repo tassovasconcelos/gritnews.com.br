@@ -222,5 +222,5 @@ document.getElementById('dismissAppUpdate').addEventListener('click',()=>{docume
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloadingForUpdate)location.reload();});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{if(reg.waiting)showAppUpdate(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showAppUpdate(worker);});});}).catch(()=>{installState.textContent='Instalação indisponível neste navegador agora. O acesso pelo endereço continua disponível.';}));}
 if(!navigator.onLine)updateConnectionState();
 </script>
-<script type="module" src="./cip-auth.js?v=pricing-dossier-20261028"></script>
+<script type="module" src="./cip-auth.js?v=regional-directory-20261028"></script>
 </body></html>
