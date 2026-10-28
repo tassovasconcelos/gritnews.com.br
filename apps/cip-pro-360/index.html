@@ -220,8 +220,8 @@ let waitingWorker=null,reloadingForUpdate=false;
 function showAppUpdate(worker){waitingWorker=worker;document.getElementById('appUpdateNotice').hidden=false;}
 document.getElementById('applyAppUpdate').addEventListener('click',()=>{if(!waitingWorker)return;reloadingForUpdate=true;waitingWorker.postMessage({type:'ACTIVATE_UPDATE'});document.getElementById('applyAppUpdate').disabled=true;});
 document.getElementById('dismissAppUpdate').addEventListener('click',()=>{document.getElementById('appUpdateNotice').hidden=true;});
-if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloadingForUpdate)location.reload();});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{if(reg.waiting)showAppUpdate(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showAppUpdate(worker);});});}).catch(()=>{installState.textContent='Instalação indisponível neste navegador agora. O acesso pelo endereço continua disponível.';}));}
+if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloadingForUpdate)location.reload();});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(reg=>{if(reg.waiting)showAppUpdate(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showAppUpdate(worker);});});}).catch(()=>{installState.textContent='Instalação indisponível neste navegador agora. O acesso pelo endereço continua disponível.';}));}
 if(!navigator.onLine)updateConnectionState();
 </script>
-<script type="module" src="./cip-auth.js?v=desk-stock-scope-20261028"></script>
+<script type="module" src="./cip-auth.js?v=desk-versioned-graph-20261028"></script>
 </body></html>

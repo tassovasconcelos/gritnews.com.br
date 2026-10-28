@@ -12,6 +12,16 @@ const LOGO = 'logo-grupo-prohospital.jpg';
 const MANIFEST = 'release-manifest.json';
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 
+// Version the entire dependency graph, including lazy imports and CSS. Versioning
+// only the entry script leaves canonical imports reusable in the browser module map.
+export function versionAssetReferences(text, commit, names = REQUIRED_FILES) {
+  commitSha(commit);
+  const allowed = new Set(names.filter(name => /\.(?:mjs|js|css)$/.test(name) && name !== 'sw.js'));
+  return text.replace(/(["'])(\.\/([a-zA-Z0-9._-]+\.(?:mjs|js|css)))(?:\?[^"'<>\s]*)?\1/g,
+    (whole, quote, relative, name) => allowed.has(name) ? `${quote}${relative}?cip_release=${commit}${quote}` : whole)
+    .replaceAll('__CIP_CLIENT_RELEASE__', commit);
+}
+
 function commitSha(value) {
   assert.match(value ?? '', /^[a-f0-9]{40}$/, 'A complete Git commit SHA is required');
   return value;
@@ -35,6 +45,9 @@ export function prepareRelease(source, output, commit) {
       const serviceWorker = bytes.toString('utf8');
       assert.equal((serviceWorker.match(/__CIP_RELEASE_ID__/g) || []).length, 1, 'Service worker release token is missing or duplicated');
       bytes = Buffer.from(serviceWorker.replace('__CIP_RELEASE_ID__', commit));
+    }
+    if (file !== 'sw.js' && /\.(?:html|mjs|js|css)$/.test(file)) {
+      bytes = Buffer.from(versionAssetReferences(bytes.toString('utf8'), commit, files));
     }
     assert.ok(bytes.length > 0, `Empty release file: ${file}`);
     if (file === LOGO) checkOfficialLogo(bytes);

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {test} from 'node:test';
-import {checkOfficialLogo, download, preflight, prepareRelease, requireHttps200, TARGET, validatePackage, verifyResponseBytes} from './release-check.mjs';
+import {checkOfficialLogo, download, preflight, prepareRelease, requireHttps200, TARGET, validatePackage, verifyResponseBytes, versionAssetReferences} from './release-check.mjs';
 
 const COMMIT = '56a0b7dca94b2616bd8f6fe112fa516ffc9bd253';
 function fixture(t) {
@@ -95,4 +95,25 @@ test('published-byte comparison rejects stale, truncated or modified content', (
   const local = Buffer.from('current release');
   verifyResponseBytes(Buffer.from(local), local, 'index.html');
   for (const remote of [Buffer.from('previous release'), Buffer.from('current'), Buffer.from('Current release')]) assert.throws(() => verifyResponseBytes(remote, local, 'index.html'), /Published bytes differ/);
+});
+
+test('versions static imports, lazy imports and styles through the same release graph',t=>{
+ const {source,output}=fixture(t);
+ fs.writeFileSync(path.join(source,'index.html'),'<script type="module" src="./cip-auth.js?v=old"></script><link href="./pricing-desk.css" rel="stylesheet">');
+ fs.writeFileSync(path.join(source,'cip-auth.js'),"import {mountPricing} from './pricing-ui.mjs'; import('./pricing-desk-ui.mjs');");
+ fs.writeFileSync(path.join(source,'pricing-desk-ui.mjs'),"import {evidenceView} from './pricing-evidence-view.mjs'; const version='__CIP_CLIENT_RELEASE__';");
+ prepareRelease(source,output,COMMIT);
+ for(const [file,target] of [['index.html','cip-auth.js'],['index.html','pricing-desk.css'],['cip-auth.js','pricing-ui.mjs'],['cip-auth.js','pricing-desk-ui.mjs'],['pricing-desk-ui.mjs','pricing-evidence-view.mjs']])assert.ok(fs.readFileSync(path.join(output,file),'utf8').includes('./'+target+'?cip_release='+COMMIT));
+ assert.ok(fs.readFileSync(path.join(output,'pricing-desk-ui.mjs'),'utf8').includes(COMMIT));
+ validatePackage(output,COMMIT,false);
+});
+test('new releases use different module identities and versioning is idempotent',()=>{
+ const source="import('./pricing-desk-ui.mjs');";const other='a'.repeat(40);
+ const first=versionAssetReferences(source,COMMIT),next=versionAssetReferences(first,other);
+ assert.notEqual(first,next);assert.equal(versionAssetReferences(first,COMMIT),first);
+ assert.ok(next.includes(other));assert.ok(!next.includes(COMMIT));
+});
+test('versioning leaves worker registration, API calls and external addresses alone',()=>{
+ const text="navigator.serviceWorker.register('./sw.js'); fetch('https://external.com/app.js'); fetch('./private.json'); import('./not-in-release.mjs');";
+ assert.equal(versionAssetReferences(text,COMMIT),text);
 });
