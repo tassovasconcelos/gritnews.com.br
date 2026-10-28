@@ -112,14 +112,14 @@ export function evidenceSource(record){
  const o=record?.offer??{},url=record?.url??o.url,seller=String(record?.seller??o.seller??'').trim(),reasons=[];let href=null;
  try{const d=publicDomain(new URL(url).hostname);if(d)href=sourceUrl(url,[d]);}catch{}
  if(!href)reasons.push('Link HTTPS consultável não identificado.');
- const generic=!seller||/nao identificado|nao informado|desconhecido|diversos vendedores|varios vendedores/.test(norm(seller))||['amazon','amazon com br','magalu','magazine luiza','mercado livre','mercadolivre','shopee','n a'].includes(norm(seller));
+ const generic=!seller||/nao identificado|nao informado|desconhecido|anunciante individual|sem vendedor|diversos vendedores|varios vendedores/.test(norm(seller))||['amazon','amazon com br','magalu','magazine luiza','mercado livre','mercadolivre','shopee','n a'].includes(norm(seller));
  if(/(?:^| )pronut(?: |$)|shopping prohospital|prohospital/.test(norm(seller)))reasons.push('Oferta do grupo Prohospital; não usar como concorrência externa.');
  if(generic)reasons.push('Vendedor específico não identificado.');
  if(href&&(/^https:\/\/lista\./i.test(href)||/^https:\/\/[^/]+\/?(?:[?#].*)?$/.test(href)||/^https:\/\/[^/]+\/(busca|search|pesquisa|loja|marcas|categorias?|collections)(?:\/|[?]|$)/i.test(href)||/\.(pdf|csv|xlsx?|jpg|png)(?:[?#]|$)/i.test(href)))reasons.push('Fonte de catálogo, perfil ou busca; falta anúncio individual.');
  if(o.quality?.basic_eligible!==true)reasons.push('Qualidade da correspondência pendente ou bloqueada.');
  if(typeof o.quote!=='string'||o.quote.trim().length<5)reasons.push('Trecho da evidência ausente.');
  if(o.currency!=='BRL'||typeof o.price!=='number'||!Number.isFinite(o.price)||o.price<=0)reasons.push('Preço total em reais não comprovado.');
- if(record?.state==='rejected')reasons.push('Oferta descartada na revisão.');
+ if(['rejected','alternative','superseded','quality_hold'].includes(record?.state))reasons.push('Oferta descartada, alternativa ou bloqueada para comparação.');
  return {qualified:reasons.length===0,href,seller:generic?null:seller,reasons};
 }
 export function specialSkus(value){const skus=[...new Set(String(value??'').split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean))];if(!skus.length||skus.length>10||skus.some(x=>x.length>80))throw Error('special_skus_required');return skus;}

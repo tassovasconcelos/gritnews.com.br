@@ -30,7 +30,7 @@ export function decisionDossier(item,desk,expense,fixed,now=new Date()){
  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
  const dayAge=(Date.parse(today+'T00:00:00-03:00')-refDay)/86400000;
  const maxDays=n(desk?.config?.reference_days);
- const ownSeller=/(^|[^a-z])prohospital([^a-z]|$)/i.test(ref?.competitor??'');
+ const ownSeller=/(^|[^a-z])(prohospital|pronut)([^a-z]|$)/i.test(ref?.competitor??'');
  let https=false;try{const u=new URL(ref?.source_url);const d=publicDomain(u.hostname);https=!!d&&!!sourceUrl(ref.source_url,[d])&&!!String(ref.competitor??'').trim()&&!/nao identificado|nao informado|desconhecido/.test(norm(ref.competitor));}catch{}
  const comparable=!!ref&&ref.active===true&&ref.equivalent===true&&ref.availability==='available'&&normalizedReference(ref)!==null&&String(ref.our_unit??'').trim().toUpperCase()===String(item?.unit??'').trim().toUpperCase()&&Number.isFinite(dayAge)&&dayAge>=0&&maxDays!==null&&dayAge<=maxDays&&https&&!ownSeller;
  if(!comparable)pending.push(ownSeller?'Verificar se o vendedor PROHOSPITAL é operação própria antes de usá-lo como concorrente.':'Validar anúncio individual, vendedor, marca/modelo, embalagem, canal, praça, frete, disponibilidade e pagamento.');
