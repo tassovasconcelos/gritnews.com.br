@@ -1,5 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 async function secret(sb:any,name:string){const {data}=await sb.rpc("platform_secret_get",{secret_name:name});return String(data||"").trim()}
@@ -9,6 +8,9 @@ Deno.serve(async(req)=>{try{
   const auth=req.headers.get("Authorization");if(!auth)return json({error:"unauthorized"},401);
   const sb=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const {data:{user},error}=await sb.auth.getUser(auth.replace("Bearer ",""));if(error||!user)return json({error:"unauthorized"},401);
+  if(user.app_metadata?.ops_password_required===true)return json({error:"password_change_required"},403);
+  const requestGuard=await createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_ANON_KEY")!,{global:{headers:{Authorization:auth}}}).rpc("ops_account_request_guard",{});
+  if(requestGuard.error)return json({error:"password_change_required"},403);
   const {organization_id}=await req.json();
   const {data:member}=await sb.from("srp_members").select("role,active").eq("organization_id",organization_id).eq("user_id",user.id).maybeSingle();
   if(!member?.active||member.role!=="owner")return json({error:"forbidden"},403);

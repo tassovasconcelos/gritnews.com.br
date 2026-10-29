@@ -135,7 +135,7 @@ function normalizeMarketingEvent(event: MarketingEvent): MarketingEvent {
 }
 
 function sendEvent({ name, params = {} }: MarketingEvent) {
-  if (new URLSearchParams(window.location.search).has('convite')) return;
+  if ((/^\/(app|admin|reset-password|login|auth|homologacao-gateway)(\/|$)/.test(window.location.pathname)||new URLSearchParams(window.location.search).has('convite'))) return;
   const attribution = readAttribution();
   const enriched = { ...attribution, ...params };
   window.dataLayer = window.dataLayer || [];
@@ -161,7 +161,7 @@ function sendEvent({ name, params = {} }: MarketingEvent) {
 }
 
 export function initMarketing() {
-  if (new URLSearchParams(window.location.search).has('convite')) return;
+  if ((/^\/(app|admin|reset-password|login|auth|homologacao-gateway)(\/|$)/.test(window.location.pathname)||new URLSearchParams(window.location.search).has('convite'))) return;
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
   bootstrapMarketingConsent();
@@ -210,6 +210,7 @@ export function initMarketing() {
 }
 
 export function trackMarketing(event: MarketingEvent) {
+  if (/^\/(app|admin|reset-password|login|auth|homologacao-gateway)(\/|$)/.test(window.location.pathname)) return;
   captureAttribution();
   const normalized = normalizeMarketingEvent(event);
   if (!initialized) {

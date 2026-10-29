@@ -171,3 +171,25 @@
 .ops-panel input[type="checkbox"] {
   width: auto;
 }
+.ops-account-confirmation { margin-top: 18px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
+.ops-account-confirmation p { font-size: 14px; line-height: 1.5; }
+.ops-account-confirmation button { width: 100%; padding: 12px; border-radius: 10px; cursor: pointer; }
+.ops-password-form label { display: grid; gap: 7px; margin: 12px 0; }
+.ops-password-form input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
+.ops-password-form button { width: 100%; padding: 13px; border: 0; border-radius: 10px; background: #ef6a19; color: white; font: inherit; font-weight: 700; cursor: pointer; }
+.ops-password-form button:disabled, .ops-account-confirmation button:disabled { opacity: .6; cursor: not-allowed; }
+.ops-table-scroll { width: 100%; overflow-x: auto; }
+.ops-accounts table { min-width: 680px; }
+.ops-accounts small { display: block; margin-top: 5px; color: #64748b; }
+.ops-form { display: grid; gap: 14px; margin-top: 22px; }
+.ops-form label { display: grid; gap: 7px; font-weight: 600; }
+.ops-form input:not([type=checkbox]), .ops-form select, .ops-form textarea, .ops-credential input { width: 100%; min-width: 0; box-sizing: border-box; padding: 11px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
+.ops-field-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 14px; }
+.ops-form .ops-check { display: flex; align-items: flex-start; gap: 9px; font-weight: 400; line-height: 1.5; }
+.ops-check input { margin-top: 5px; }
+.ops-credential { background: #fff7ed; border: 1px solid #fdba74; padding: 18px; border-radius: 14px; margin: 20px 0; }
+.ops-success-kpis { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 12px; }
+.ops-success-kpis article { display: grid; gap: 8px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+.ops-success-kpis strong { font-size: 1.3rem; color: #172b3f; }
+.ops-success-kpis small { line-height: 1.5; color: #64748b; }
+.ops-next-actions { line-height: 1.65; padding-left: 22px; }

@@ -1,5 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 const origins=new Set(['https://srpadeiro.gritnews.com.br','http://localhost:5173','http://localhost:4173']);
 Deno.serve(async req=>{
   const origin=req.headers.get('Origin')||'';
@@ -26,7 +25,7 @@ Deno.serve(async req=>{
     if(lookupError)return json({error:'Não foi possível validar o cliente.'},403);
     let userId=identity?.user_id;let invited=false;
     if(!userId){
-      const {data,error}=await sb.auth.admin.inviteUserByEmail(email,{redirectTo:'https://srpadeiro.gritnews.com.br/app'});
+      const {data,error}=await sb.auth.admin.inviteUserByEmail(email,{redirectTo:'https://srpadeiro.gritnews.com.br/app?mode=invite&operation_scope='+encodeURIComponent(org)});
       if(error||!data.user)return json({error:'O provedor não concluiu o convite. Confira a configuração de e-mail e tente novamente.'},502);
       userId=data.user.id;invited=true;
     }

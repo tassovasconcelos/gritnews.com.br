@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { LockKeyhole, Mail, UserRound } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import { AccountConfirmation, confirmationRedirect } from '@gritnews/operations';
 import { getAttribution,track } from './lib/tracking';
 
 type Mode = 'login' | 'signup' | 'forgot';
@@ -21,7 +22,9 @@ export default function Auth() {
 
     try {
       if (mode === 'forgot') {
-        const redirectTo = `${import.meta.env.VITE_APP_URL || window.location.origin}/reset-password`;
+        const target = new URL(confirmationRedirect(location.origin, location.search));
+        target.pathname='/reset-password';
+        const redirectTo=target.href;
         const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
         if (error) throw error;
         setMessage('Se o e-mail estiver cadastrado, enviaremos as instruções de recuperação.');
@@ -33,7 +36,7 @@ export default function Auth() {
         const { error } = await supabase.auth.signUp({
           email:normalizedEmail,
           password,
-          options: { data: { full_name: name.trim(), product: 'sr-padeiro', acquisition } },
+          options: { data: { full_name: name.trim(), product: 'sr-padeiro', acquisition }, emailRedirectTo: confirmationRedirect(location.origin, location.search) },
         });
         if (error) throw error;
         track('sign_up',{product:'sr-padeiro',source:acquisition.source,campaign:acquisition.campaign});
@@ -43,7 +46,7 @@ export default function Auth() {
 
       const { error } = await supabase.auth.signInWithPassword({ email:normalizedEmail, password });
       if (error) {
-        setMessage('E-mail ou senha inválidos. Se necessário, use “Esqueci minha senha”.');
+        setMessage(error.code==='email_not_confirmed' ? 'Confirme seu e-mail antes de entrar. Use a opção de reenviar confirmação abaixo.' : 'E-mail ou senha inválidos. Se necessário, use “Esqueci minha senha”.');
         return;
       }
     } catch (error) {
@@ -72,6 +75,7 @@ export default function Auth() {
         <div className="auth-links">
           {mode === 'login' ? <><button type="button" onClick={() => {setMode('forgot');setMessage('')}}>Esqueci minha senha</button><button type="button" onClick={() => {setMode('signup');setMessage('')}}>Criar conta</button></> : <button type="button" onClick={() => {setMode('login');setMessage('')}}>Voltar para entrar</button>}
         </div>
+        {mode==='login' && <AccountConfirmation client={supabase} email={email}/>}
         <small className="auth-note">Feito para padarias, mercadinhos, mercearias e conveniências.</small>
       </section>
     </main>

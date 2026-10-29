@@ -1,5 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
 const allowedOrigins = new Set([
   "https://srpadeiro.gritnews.com.br",
@@ -38,6 +37,9 @@ Deno.serve(async (req) => {
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: { user } } = await sb.auth.getUser(auth.replace("Bearer ", ""));
     if (!user) return json(req, { error: "unauthorized" }, 401);
+    if (user.app_metadata?.ops_password_required === true) return json(req, { error: "password_change_required" }, 403);
+  const requestGuard=await createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_ANON_KEY")!,{global:{headers:{Authorization:auth}}}).rpc("ops_account_request_guard",{});
+  if(requestGuard.error)return json(req, {error:"password_change_required"},403);
 
     const body = await req.json();
     const organizationId = String(body.organization_id || "").trim();
