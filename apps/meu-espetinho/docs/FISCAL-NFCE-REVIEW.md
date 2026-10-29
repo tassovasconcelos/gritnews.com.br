@@ -57,12 +57,14 @@ Executar na pasta do aplicativo:
 ```text
 pnpm test:fiscal
 pnpm build
+pnpm smoke
 ```
 
 - Suíte PostgreSQL PGlite aplica a migração fiscal integral contra fixture mínima do schema legado e executa a função real de fechamento com baixa de estoque versionada no repositório. Valida fechamento repetido com um só pagamento/documento, snapshot, bloqueio de edição/reabertura, RLS entre empresas, negativa para anônimo e membro inativo, configuração exclusiva do proprietário, negativa de emissão para atendente, negativa de resultado para cliente, consulta da mesma tentativa após unknown e preservação da obrigação após sucesso simulado.
 - Suíte do adaptador: sucesso determinístico, rejeição, timeout, dados vazios e bloqueio de produção.
 - Suíte de impressão HTML: identificação não fiscal, total, pagamento e escape de conteúdo injetado.
 - Compilação TypeScript/Vite validada; há aviso de bundle acima de 500 kB.
+- Suíte fiscal incluída no workflow `meu-espetinho-ci.yml` para revisão automática das próximas alterações.
 - O teste usa PostgreSQL embarcado com fixtures, não uma instalação completa do Supabase. Não comprova concorrência de múltiplas conexões, todas as migrações históricas nem JWT/RLS em projeto remoto.
 - Não foram executados: Edge Function no runtime Deno/HTTP real, navegação autenticada, impressora física, compartilhamento em celular, teste completo de fiado/limite, advisors contra projeto remoto, integração SVRS ou homologação fiscal oficial.
 
@@ -81,6 +83,7 @@ pnpm build
 | `scripts/fiscal.test.mjs` | Testes de banco, adaptador e recibo. |
 | `package.json`, `../../pnpm-lock.yaml` | Script e dependência fixa de PostgreSQL embarcado para teste. |
 | Este relatório | Evidências, riscos e critérios restantes. |
+| `../../.github/workflows/meu-espetinho-ci.yml` | Executa a suíte fiscal na integração contínua. |
 
 ## Pendências que impedem emissão real e produção
 
