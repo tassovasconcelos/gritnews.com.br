@@ -57,8 +57,9 @@ Deno.serve(async (req) => {
     if (organizationId) {
       const { data: member } = await sb.from("srp_members").select("role,active").eq("organization_id", organizationId).eq("user_id", user.id).maybeSingle();
       if (!member?.active || member.role !== "owner") return json(req, { error: "forbidden" }, 403);
-      const { data: org } = await sb.from("srp_organizations").select("id,name,activation_paid_at").eq("id", organizationId).maybeSingle();
+      const { data: org } = await sb.from("srp_organizations").select("id,name,activation_paid_at,environment").eq("id", organizationId).maybeSingle();
       if (!org) return json(req, { error: "organization_not_found" }, 404);
+  if (org.environment === "homologation") return json(req, { error: "billing_disabled_in_homologation" }, 409);
       product = "sr_padeiro";
       entityId = org.id;
       entityName = org.name;
@@ -150,4 +151,5 @@ Deno.serve(async (req) => {
     return json(req, { error: "internal_error" }, 500);
   }
 });
+
 
