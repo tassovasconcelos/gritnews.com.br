@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { parseCatalog, decimal, catalogTemplate } from "../src/catalog.ts";
+import { saleCatalog, storeInventory, catalogReadiness } from '../../../apps/sr-padeiro/src/lib/salesCatalog.ts';
+import { resolveOperationScope } from '../src/scope.ts';
 import {
   defaultPreferences,
   receiptLines,
@@ -20,6 +22,25 @@ const migration = new URL(
   "../../../apps/meu-espetinho/supabase/migrations/20261029141711_shared_operations_settings_catalog_team.sql",
   import.meta.url,
 );
+test('link direto: mantém a empresa solicitada e recusa outra empresa sem trocar de operação', () => {
+  const tenants=[{id:scope,name:'Cliente A'},{id:foreign,name:'Cliente B'}];
+  assert.equal(resolveOperationScope(tenants,foreign)?.name,'Cliente B');
+  assert.equal(resolveOperationScope(tenants,id(999)),null);
+  assert.equal(resolveOperationScope(tenants,null)?.id,scope);
+  assert.equal(resolveOperationScope([],scope),null);
+});
+test('reprodução: 102 produtos importados, 30 pendentes, liberação explícita e saldo por loja', () => {
+  const imported=Array.from({length:102},(_,n)=>({id:String(n),active:false,sale_price:1,fulfillment:n<30?'confirmar':n<75?'encomenda':'pronta_entrega'}));
+  assert.equal(saleCatalog(imported).length,0);
+  assert.deepEqual(catalogReadiness(imported,[],'loja-a'),{total:102,inactive:102,pending:30,available:0,reason:'release'});
+  const released=imported.map(p=>({...p,active:p.fulfillment!=='confirmar'}));
+  assert.equal(saleCatalog(released).length,72);
+  assert.equal(catalogReadiness(released,[],'loja-a').reason,'stock');
+  const inventory=[{store_id:'loja-b',product_id:'30',quantity:100},{store_id:'loja-a',product_id:'30',quantity:2}];
+  assert.equal(storeInventory(inventory,'loja-a')[0].quantity,2);
+  assert.equal(catalogReadiness(released,inventory,'loja-a').reason,'ready');
+  assert.equal(catalogReadiness(released,inventory,'loja-c').available,0);
+});
 async function fixture() {
   const db = new PGlite();
   await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;
@@ -58,6 +79,77 @@ async function fixture() {
   await db.exec(await readFile(migration, "utf8"));
   return db;
 }
+
+test('central: libera produtos conferidos sem criar estoque e protege outras empresas', async () => {
+  const db = await fixture();
+  try {
+    await db.exec(await readFile(new URL('../../../apps/meu-espetinho/supabase/migrations/20261029152119_operations_access_and_catalog_release.sql', import.meta.url), 'utf8'));
+    await db.exec(`insert into srp_products(id,organization_id,name,sale_price,active,fulfillment) values
+      ('${id(70)}','${scope}','Pão',1,false,'pronta_entrega'),
+      ('${id(71)}','${scope}','Bolo',10,false,'confirmar'),
+      ('${id(72)}','${foreign}','Outro',2,false,'encomenda');`);
+    await as(db, staff);
+    await assert.rejects(rpc(db,'ops_release_products',{s:scope,ids:[id(70)]}),/forbidden/);
+    await as(db, owner);
+    await assert.rejects(rpc(db,'ops_release_products',{s:scope,ids:[id(70),id(71)]}),/review_price/);
+    await assert.rejects(rpc(db,'ops_release_products',{s:scope,ids:[id(70),id(72)]}),/review_price/);
+    await db.exec('reset role');
+    assert.equal((await db.query(`select active from srp_products where id='${id(70)}'`)).rows[0].active,false);
+    await as(db, owner);
+    assert.equal(await rpc(db,'ops_release_products',{s:scope,ids:[id(70)]}),1);
+    assert.equal(await rpc(db,'ops_release_products',{s:scope,ids:[id(70)]}),0);
+    await db.exec('reset role');
+    assert.equal((await db.query(`select active from srp_products where id='${id(70)}'`)).rows[0].active,true);
+    assert.equal((await db.query('select count(*)::int as n from srp_inventory')).rows[0].n,0);
+  } finally { await db.close(); }
+});
+
+test('central: mudança de função é auditada e protege proprietário, própria conta e outra empresa', async () => {
+  const db=await fixture();
+  try {
+    await db.exec(await readFile(new URL('../../../apps/meu-espetinho/supabase/migrations/20261029152119_operations_access_and_catalog_release.sql',import.meta.url),'utf8'));
+    const args={a:'meu-espetinho',s:scope,u:staff,member_role:'cashier'};
+    await as(db,staff);await assert.rejects(rpc(db,'ops_set_role',args),/forbidden/);
+    await as(db,owner);
+    await assert.rejects(rpc(db,'ops_set_role',{...args,u:owner}),/protected_user/);
+    await assert.rejects(rpc(db,'ops_set_role',{...args,member_role:'owner'}),/invalid_role/);
+    await assert.rejects(rpc(db,'ops_set_role',{...args,s:foreign}),/forbidden/);
+    await rpc(db,'ops_set_role',args);
+    await rpc(db,'ops_set_role',{...args,a:'sr-padeiro',member_role:'stockist'});
+    await db.exec('reset role');
+    assert.equal((await db.query(`select role from tenant_users where user_id='${staff}'`)).rows[0].role,'cashier');
+    assert.equal((await db.query(`select role from srp_members where user_id='${staff}'`)).rows[0].role,'stockist');
+    assert.equal((await db.query("select count(*)::int as n from operation_audit where action='member_role_changed'")).rows[0].n,2);
+  } finally {await db.close();}
+});
+
+test('central: permuta de 12 meses, renovação, motivo e autorização nas duas operações', async () => {
+  const db = await fixture();
+  try {
+    await db.exec(`alter table tenants add column courtesy_ends_at timestamptz,add column courtesy_started_at timestamptz,add column courtesy_type text,add column courtesy_granted_by uuid,add column setup_status text default 'approved';
+      create table srp_access_control(organization_id uuid primary key,access_mode text,trial_starts_at timestamptz,trial_ends_at timestamptz,barter_until timestamptz,manual_release boolean,released_by uuid,released_at timestamptz,notes text,updated_at timestamptz default now());`);
+    await db.exec(await readFile(new URL('../../../apps/meu-espetinho/supabase/migrations/20261029152119_operations_access_and_catalog_release.sql', import.meta.url), 'utf8'));
+    const args={a:'meu-espetinho',s:scope,mode:'barter',amount:12,unit:'months',reason:'Contrato de permuta anual',renew:false};
+    await as(db, owner);
+    await assert.rejects(rpc(db,'ops_grant_access',args),/forbidden/);
+    await as(db, admin);
+    await assert.rejects(rpc(db,'ops_grant_access',{...args,amount:13}),/invalid_access/);
+    await assert.rejects(rpc(db,'ops_grant_access',{...args,reason:''}),/invalid_access/);
+    for(const a of ['meu-espetinho','sr-padeiro']) {
+      const result=await rpc(db,'ops_grant_access',{...args,a});
+      const span=(await db.query('select $1::timestamptz = $2::timestamptz + interval \'12 months\' as ok',[result.ends_at,result.starts_at])).rows[0].ok;
+      assert.equal(span,true);
+      const renewed=await rpc(db,'ops_grant_access',{...args,a,renew:true});
+      assert.equal(new Date(renewed.starts_at).getTime(),new Date(result.ends_at).getTime());
+    }
+    await db.exec(`reset role;update tenants set setup_status='suspended' where id='${scope}'`);
+    await as(db, admin);
+    await rpc(db,'ops_grant_access',args);
+    await db.exec('reset role');
+    assert.equal((await db.query(`select setup_status from tenants where id='${scope}'`)).rows[0].setup_status,'suspended');
+    assert.equal((await db.query("select count(*)::int as n from operation_audit where action='access_granted'")).rows[0].n,5);
+  } finally { await db.close(); }
+});
 async function as(db, user, role = "authenticated") {
   await db.exec(
     `reset role;select set_config('request.jwt.claim.sub','${user || ""}',false);set role ${role};`,

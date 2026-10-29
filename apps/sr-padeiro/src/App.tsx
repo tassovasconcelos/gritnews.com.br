@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Auth from './Auth';
-import { InviteAcceptance } from '@gritnews/operations';
+import { InviteAcceptance, InstallApp } from '@gritnews/operations';
 import Landing from './Landing';
 import SeoLanding,{isSeoPath} from './SeoLanding';
 import Admin from './Admin';
@@ -52,6 +52,7 @@ export default function App() {
     setLoading(false);
   }
   useEffect(()=>{supabase.auth.getSession().then(({data})=>hydrate(data.session));const {data}=supabase.auth.onAuthStateChange((_e,s)=>{setTimeout(()=>void hydrate(s),0)});return()=>data.subscription.unsubscribe()},[]);
+  if(path==='/instalar')return <InstallApp name="Sr. Padeiro"/>;
   if(path==='/'||path==='/index.html') return <Landing/>;
   if(isSeoPath(path)) return <SeoLanding path={path}/>;
   if(loading) return <div className="splash"><div className="brand-mark">SP</div><strong>Sr. Padeiro</strong></div>;

@@ -123,6 +123,32 @@
   max-width: 520px;
   margin: 40px auto;
 }
+.ops-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+}
+.ops-link-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 40%, #fff8ee);
+}
+.ops-link-card > strong { color: #17263e; font-size: 17px; }
+.ops-link-card label { width: 100%; }
+.ops-link-card input { font-family: ui-monospace, monospace; font-size: 12px; }
+.ops-link-card .ops-actions { margin-top: 12px; }
+.ops-link-card a {
+  padding: 11px 15px;
+  border-radius: 10px;
+  background: #17263e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.ops-link-card a:focus-visible { outline: 3px solid #f79d1e; outline-offset: 3px; }
 .ops-panel code {
   overflow-wrap: anywhere;
 }

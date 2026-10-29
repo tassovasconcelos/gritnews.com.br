@@ -51,9 +51,11 @@ export function TeamPanel({
     setInvites(r.data.invites);
   }, [client, app, scopeId]);
   useEffect(() => {
-    load().catch(() =>
+    load().catch((error: { code?: string }) =>
       setMessage(
-        "Não foi possível carregar a equipe. Verifique sua permissão.",
+        error?.code === 'PGRST202' || error?.code === '42883'
+          ? 'A central de usuários aguarda a atualização do banco. Solicite a publicação das funções de equipe ao administrador.'
+          : "Não foi possível carregar a equipe. Verifique sua permissão.",
       ),
     );
   }, [load]);
@@ -108,6 +110,17 @@ export function TeamPanel({
     } finally {
       setBusy(false);
     }
+  }
+  async function changeRole(m: Member, role: string) {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const r = await client.rpc('ops_set_role', { a: app, s: scopeId, u: m.user_id, member_role: role });
+      if (r.error) throw r.error;
+      await load(); onChanged?.();
+      setMessage('Função atualizada e registrada no histórico.');
+    } catch { setMessage('Não foi possível alterar a função. O proprietário e a própria conta são protegidos.'); }
+    finally { setBusy(false); }
   }
   async function revoke(i: Invite) {
     if (busy) return;
@@ -215,7 +228,7 @@ export function TeamPanel({
                   <br />
                   <small>{m.email}</small>
                 </td>
-                <td>{labels[m.role] || m.role}</td>
+                <td>{m.role === 'owner' ? labels.owner : <select aria-label={`Função de ${m.name || m.email}`} disabled={busy} value={m.role} onChange={e => changeRole(m, e.target.value)}>{(app === 'sr-padeiro' ? ['manager', 'cashier', 'stockist', 'viewer'] : ['manager', 'cashier', 'attendant']).map(role => <option key={role} value={role}>{labels[role]}</option>)}</select>}</td>
                 <td>{m.active ? "Ativo" : "Inativo"}</td>
                 <td>
                   {m.role !== "owner" && (

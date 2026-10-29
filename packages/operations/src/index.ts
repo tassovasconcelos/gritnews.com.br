@@ -5,3 +5,6 @@ export * from "./ReceiptOutput";
 export * from "./receipt";
 export * from "./catalog";
 export * from "./QuickProduct";
+export * from "./AccessLinks";
+export * from "./CatalogRelease";
+export * from "./scope";
