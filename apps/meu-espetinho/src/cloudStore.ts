@@ -13,7 +13,7 @@ export type CustomerCredit = {
 export type OperationUser = {
   userId: string;
   name: string;
-  role: 'owner' | 'manager' | 'attendant';
+  role: 'owner' | 'manager' | 'cashier' | 'attendant';
   active: boolean;
 };
 
@@ -109,7 +109,7 @@ export async function loadOperationUsers(tenantId:string):Promise<{users:Operati
   const ownerId=(tenantRes.data as any)?.owner_user_id as string|undefined;
   const ids=[...(ownerId?[ownerId]:[]),...(membersRes.data||[]).map((m:any)=>m.user_id)];const names=await profileMapFor(ids);const users:OperationUser[]=[];
   if(ownerId)users.push({userId:ownerId,name:names.get(ownerId)||'Proprietário',role:'owner',active:true});
-  for(const m of membersRes.data||[])users.push({userId:(m as any).user_id,name:names.get((m as any).user_id)||'Usuário',role:(m as any).role==='manager'?'manager':'attendant',active:Boolean((m as any).active)});
+  for(const m of membersRes.data||[])users.push({userId:(m as any).user_id,name:names.get((m as any).user_id)||'Usuário',role:(m as any).role==='manager'?'manager':(m as any).role==='cashier'?'cashier':'attendant',active:Boolean((m as any).active)});
   const activeUsers=users.filter(u=>u.active).length;return{users,summary:{activeUsers,includedUsers:3,extraUsers:Math.max(activeUsers-3,0),extraMonthlyAmount:Math.max(activeUsers-3,0)*39}};
 }
 export async function inviteOperationUser(tenantId:string,fullName:string,email:string,role:'manager'|'attendant'){if(!supabase)return{ok:false,error:'offline'};const{data,error}=await supabase.functions.invoke('invite-tenant-user',{body:{tenant_id:tenantId,full_name:fullName,email,role}});if(error)return{ok:false,error:error.message};if(data?.error)return{ok:false,error:data.error};return{ok:true,...data}}

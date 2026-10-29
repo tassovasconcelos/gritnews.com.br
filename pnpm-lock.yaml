@@ -179,6 +179,9 @@ importers:
       '@capacitor/ios':
         specifier: ^7.0.0
         version: 7.6.8(@capacitor/core@7.6.8)
+      '@electric-sql/pglite':
+        specifier: 0.3.14
+        version: 0.3.14
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.31
@@ -390,6 +393,9 @@ packages:
     resolution: {integrity: sha512-7AVqj46b26QikImQzWfsJmzG8NUJZBGkrVSuoeTo+SX/YH3hXH0MqwwFgMqMGHfa/BICDgSvTjM9miVFlq0+RQ==}
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
+
+  '@electric-sql/pglite@0.3.14':
+    resolution: {integrity: sha512-3DB258dhqdsArOI1fIt7cb9RpUOgcDg5hXWVgVHAeqVQ/qxtFy605QKs4gx6mFq3jWsSPqDN8TgSEsqC3OfV9Q==}
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -2927,6 +2933,8 @@ snapshots:
   '@capacitor/status-bar@7.0.6(@capacitor/core@7.6.8)':
     dependencies:
       '@capacitor/core': 7.6.8
+
+  '@electric-sql/pglite@0.3.14': {}
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
