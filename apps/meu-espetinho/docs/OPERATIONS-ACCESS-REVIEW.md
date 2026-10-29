@@ -44,3 +44,11 @@ Entrega de 29/10/2026 na branch `feat/meu-espetinho-fiscal-nfce`, PR #159. Atual
 4. Na ficha do cliente, conferir conta e papéis, gerar convite e testar seu aceite com conta autorizada. Conferir expiração e suspensão antes de liberar operação real.
 5. Na padaria, conferir os 72 itens de modalidade definida, selecionar apenas os aprovados e liberar. Resolver os 30 pendentes individualmente. Registrar saldos físicos por loja, sem estimativas; então validar venda, baixa de estoque e recibo em ambiente de teste.
 6. Validar instalação em Android/Chrome, iOS/Safari e computador. Homologar impressora e emissão fiscal separadamente antes da operação fiscal real.
+
+## Revisão de continuidade — 29/10/2026
+
+- Confirmadas as verificações do GitHub no commit `6043367`: builds e smoke das duas verticais aprovados. O status Vercel é de uma integração externa antiga; não representa a hospedagem atual.
+- Confirmado no banco compartilhado: as duas migrações administrativas do Sr. Padeiro constam no histórico; as três migrações fiscal/operacionais desta branch ainda não constam e `ops_team` não existe. Publicar apenas as interfaces manteria a falha de equipe.
+- Corrigida incompatibilidade com o fluxo npm da Hostinger: dependência local `file:../../packages/operations` e `.npmrc` com `install-links=true` nos dois aplicativos. Validado `npm install` e build de cada aplicativo em cópia limpa sem `node_modules` do workspace; ambos aprovados.
+- Reexecutados os 22 testes existentes: dez compartilhados, três fiscais e nove administrativos; todos aprovados. As simulações não comprovam emissão fiscal real.
+- Painel Hostinger alcançado, porém exige autenticação nesta sessão. Não houve merge, publicação dos aplicativos, aplicação de migração remota ou liberação de catálogo nesta revisão.

@@ -62,3 +62,9 @@ Nunca usar `service_role` no frontend.
 
 ## Gate comercial
 Só ativar mídia paga quando DNS + SSL + formulário + tracking + WhatsApp forem confirmados em produção.
+
+## Pacote operacional compartilhado — 29/10/2026
+
+Os dois aplicativos usam `file:../../packages/operations`. Preserve o monorepositório completo no checkout e o arquivo `.npmrc` de cada aplicativo (`install-links=true`). O npm materializa o pacote local e instala suas dependências; `workspace:*` não é aceito pelo instalador npm da hospedagem. Não publique apenas a pasta do aplicativo sem `packages/operations`. O fluxo pnpm permanece compatível com o lockfile da raiz.
+
+Antes de publicar o PR #159, validar e aplicar as migrações compartilhadas na ordem documentada em `apps/meu-espetinho/docs/OPERATIONS-ACCESS-REVIEW.md`. A mudança de instalação não publica banco nem libera clientes.

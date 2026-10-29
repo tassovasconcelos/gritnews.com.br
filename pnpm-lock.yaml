@@ -155,7 +155,7 @@ importers:
         specifier: ^7.0.0
         version: 7.0.6(@capacitor/core@7.6.8)
       '@gritnews/operations':
-        specifier: workspace:*
+        specifier: file:../../packages/operations
         version: link:../../packages/operations
       '@supabase/supabase-js':
         specifier: ^2.57.4
@@ -235,7 +235,7 @@ importers:
   apps/sr-padeiro:
     dependencies:
       '@gritnews/operations':
-        specifier: workspace:*
+        specifier: file:../../packages/operations
         version: link:../../packages/operations
       '@supabase/supabase-js':
         specifier: ^2.57.4
