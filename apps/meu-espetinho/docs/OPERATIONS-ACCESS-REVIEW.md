@@ -17,6 +17,7 @@ Entrega de 29/10/2026 na branch `feat/meu-espetinho-fiscal-nfce`, PR #159. Atual
 - Trial e permuta por dias ou até 12 meses de calendário, com motivo obrigatório. É possível iniciar hoje ou renovar a partir da validade atual. Não registra pagamento e não cria assinatura. Suspensão de estabelecimento no Meu Espetinho continua exigindo reativação explícita.
 - Links individuais de acesso e instalação com copiar/abrir nas fichas administrativas e nas configurações dos clientes. URL direta: `/app?operation_scope=<id>`. O endereço exige autenticação e autorização; não é uma credencial.
 - Página `/instalar?operation_scope=<id>` nos dois produtos, botão de instalação quando o navegador oferece, orientações para Android/computador e iOS, e retorno à empresa indicada. Ícones PNG reais em 192 e 512 px, derivados das marcas existentes, mais ícone de tela inicial. O Sr. Padeiro registra service worker sem armazenar dados de clientes; vendas precisam de conexão. A instalação não concede acesso.
+- No Meu Espetinho instalado, abrir o ícone preserva a sessão existente, que continua sendo validada pelo aplicativo e pelo banco. O comportamento de entrada pública no navegador é preservado. Não força uma saída local a cada abertura do aplicativo instalado.
 
 ## Arquivos principais
 

@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { parseCatalog, decimal, catalogTemplate } from "../src/catalog.ts";
 import { saleCatalog, storeInventory, catalogReadiness } from '../../../apps/sr-padeiro/src/lib/salesCatalog.ts';
-import { resolveOperationScope } from '../src/scope.ts';
+import { resolveOperationScope, preserveOperationSession } from '../src/scope.ts';
 import {
   defaultPreferences,
   receiptLines,
@@ -28,6 +28,10 @@ test('link direto: mantém a empresa solicitada e recusa outra empresa sem troca
   assert.equal(resolveOperationScope(tenants,id(999)),null);
   assert.equal(resolveOperationScope(tenants,null)?.id,scope);
   assert.equal(resolveOperationScope([],scope),null);
+  assert.equal(preserveOperationSession('',true),true);
+  assert.equal(preserveOperationSession('',false),false);
+  assert.equal(preserveOperationSession('?utm_source=teste',false),false);
+  assert.equal(preserveOperationSession(`?operation_scope=${scope}`,false),true);
 });
 test('reprodução: 102 produtos importados, 30 pendentes, liberação explícita e saldo por loja', () => {
   const imported=Array.from({length:102},(_,n)=>({id:String(n),active:false,sale_price:1,fulfillment:n<30?'confirmar':n<75?'encomenda':'pronta_entrega'}));
