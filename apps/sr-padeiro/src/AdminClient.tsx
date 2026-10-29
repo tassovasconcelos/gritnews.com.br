@@ -4,7 +4,7 @@ import { supabase } from './lib/supabase';
 import { adminAction,dateTime,money,modeNames,roleNames,type Detail,type Product } from './lib/adminApi';
 import { parseCatalog,type CatalogRow } from './lib/adminCatalog';
 import { useAdminDialog } from './lib/useAdminDialog';
-import { SettingsPanel, usePreferences, AccessLinks, CatalogRelease } from '@gritnews/operations';
+import { SettingsPanel, usePreferences, AccessLinks, CatalogRelease, AdminAccounts, ClientSuccessPanel } from '@gritnews/operations';
 
 type Run=(action:string,payload:Record<string,unknown>)=>Promise<boolean>;
 const tabs=[['overview','Visão geral'],['profile','Cadastro e marca'],['receipt','Recibo e impressora'],['team','Equipe e perfis'],['catalog','Produtos e cardápio'],['inventory','Estoque'],['cash','Caixa e vendas'],['history','Histórico']];
@@ -20,9 +20,11 @@ export default function AdminClient({orgId,onRefresh}:{orgId:string;onRefresh:()
     <AccessLinks scopeId={orgId}/><nav className="sa-tabs" aria-label="Ficha do cliente">{tabs.map(([id,label])=><button key={id} aria-current={id===tab?'page':undefined} onClick={()=>{setTab(id);setMessage('');setError('')}}>{label}</button>)}</nav>
     {error&&<div role="alert" className="sa-alert">{error}</div>}{message&&<div role="status" className="sa-success">{message}</div>}
     <div className="sa-panel" aria-busy={busy}>
+    {tab==='overview'&&<ClientSuccessPanel key={orgId} client={supabase} app="sr-padeiro" scopeId={orgId}/>}
     {tab==='overview'&&<Overview d={d} run={run} busy={busy} onTab={setTab}/>}
     {tab==='receipt'&&<AdminReceiptSettings key={orgId} d={d}/>}
     {tab==='profile'&&<Profile d={d} run={run} busy={busy}/>}
+    {tab==='team'&&<AdminAccounts key={orgId} client={supabase} app="sr-padeiro" scopeId={orgId}/>}
     {tab==='team'&&<Team d={d} run={run} busy={busy} onRefresh={load}/>}
     {tab==='catalog'&&<Catalog d={d} run={run} busy={busy}/>}
     {tab==='inventory'&&<Inventory d={d} run={run} busy={busy}/>}

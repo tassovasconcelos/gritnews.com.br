@@ -8,3 +8,7 @@ export * from "./QuickProduct";
 export * from "./AccessLinks";
 export * from "./CatalogRelease";
 export * from "./scope";
+export * from "./AccountConfirmation";
+export * from "./authLinks";
+export * from "./ManagedAccounts";
+export * from "./ClientSuccessPanel";

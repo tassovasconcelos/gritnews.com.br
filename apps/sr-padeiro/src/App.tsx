@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Auth from './Auth';
-import { InviteAcceptance, InstallApp } from '@gritnews/operations';
+import { InviteAcceptance, InstallApp, PasswordSetup, confirmationRedirect } from '@gritnews/operations';
 import Landing from './Landing';
 import SeoLanding,{isSeoPath} from './SeoLanding';
 import Admin from './Admin';
@@ -15,6 +15,7 @@ type Role='owner'|'manager'|'cashier'|'stockist'|'viewer';
 
 export default function App() {
   const path=window.location.pathname;
+  const [passwordSetup,setPasswordSetup]=useState(()=>path==='/reset-password'||new URLSearchParams(location.search).get('mode')==='invite'||['invite','recovery'].includes(new URLSearchParams(location.hash.slice(1)).get('type')||''));
   const supportTarget=new URLSearchParams(location.search).get('support_org');
   const [supportMode,setSupportMode]=useState(false);
   const [session,setSession]=useState<Session|null>(null); const [loading,setLoading]=useState(true); const [orgId,setOrgId]=useState<string|null>(null); const [role,setRole]=useState<Role>('viewer'); const [access,setAccess]=useState<string>('blocked'); const [isSuper,setIsSuper]=useState(false); const [environment,setEnvironment]=useState('production'); const [setupError,setSetupError]=useState('');
@@ -51,14 +52,15 @@ export default function App() {
     }
     setLoading(false);
   }
-  useEffect(()=>{supabase.auth.getSession().then(({data})=>hydrate(data.session));const {data}=supabase.auth.onAuthStateChange((_e,s)=>{setTimeout(()=>void hydrate(s),0)});return()=>data.subscription.unsubscribe()},[]);
+  useEffect(()=>{supabase.auth.getSession().then(({data})=>hydrate(data.session));const {data}=supabase.auth.onAuthStateChange((_e,s)=>{if(_e==='PASSWORD_RECOVERY')setPasswordSetup(true);setTimeout(()=>void hydrate(s),0)});return()=>data.subscription.unsubscribe()},[]);
   if(path==='/instalar')return <InstallApp name="Sr. Padeiro"/>;
-  if(path==='/'||path==='/index.html') return <Landing/>;
+  if(!passwordSetup&&(path==='/'||path==='/index.html')) return <Landing/>;
   if(isSeoPath(path)) return <SeoLanding path={path}/>;
   if(loading) return <div className="splash"><div className="brand-mark">SP</div><strong>Sr. Padeiro</strong></div>;
   const inviteToken=new URLSearchParams(location.search).get('convite');
   if(inviteToken)return <InviteAcceptance client={supabase} token={inviteToken}/>;
   if(!session) return <Auth/>;
+  if(passwordSetup)return <PasswordSetup client={supabase} onDone={()=>{const target=confirmationRedirect(location.origin,location.search);history.replaceState({},'',target);setPasswordSetup(false);void hydrate(session);}}/>;
   if(setupError)return <main className="auth-shell"><section className="auth-card"><h1>Acesso indisponível</h1><p>{setupError}</p><a href="/admin">Voltar à central</a></section></main>;
   if(path==='/homologacao-gateway') return isSuper?<GatewayHomologation/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p></section></main>;
   if(path.startsWith('/admin')) return isSuper?<Admin/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p><a className="btn-dark" href="/app">Voltar ao app</a></section></main>;
