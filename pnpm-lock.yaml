@@ -154,6 +154,9 @@ importers:
       '@capacitor/status-bar':
         specifier: ^7.0.0
         version: 7.0.6(@capacitor/core@7.6.8)
+      '@gritnews/operations':
+        specifier: workspace:*
+        version: link:../../packages/operations
       '@supabase/supabase-js':
         specifier: ^2.57.4
         version: 2.112.3
@@ -231,6 +234,9 @@ importers:
 
   apps/sr-padeiro:
     dependencies:
+      '@gritnews/operations':
+        specifier: workspace:*
+        version: link:../../packages/operations
       '@supabase/supabase-js':
         specifier: ^2.57.4
         version: 2.112.3
@@ -261,6 +267,19 @@ importers:
         version: 6.4.3(@types/node@22.20.1)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.12)
 
   packages/config: {}
+
+  packages/operations:
+    dependencies:
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+    devDependencies:
+      '@electric-sql/pglite':
+        specifier: 0.3.14
+        version: 0.3.14
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.31
 
   packages/types: {}
 

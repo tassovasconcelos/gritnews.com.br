@@ -76,7 +76,7 @@ export async function hydrateCloudState(tenantId: string): Promise<AppState | nu
     supabase.from('tenants').select('name,address,phone,logo_url').eq('id', tenantId).single(),
     supabase.from('categories').select('id,name').eq('tenant_id', tenantId),
     supabase.from('products').select('id,category_id,name,description,price,cost,image_url,active,stock_qty').eq('tenant_id', tenantId).order('created_at'),
-    supabase.from('orders').select('id,label,status,opened_at,customer_id,assigned_to,opened_by,closed_by').eq('tenant_id', tenantId).order('opened_at', { ascending: false }),
+    supabase.from('orders').select('id,label,status,opened_at,closed_at,customer_id,assigned_to,opened_by,closed_by').eq('tenant_id', tenantId).order('opened_at', { ascending: false }),
     supabase.from('order_items').select('order_id,product_id,product_name,unit_price,quantity,created_at').eq('tenant_id', tenantId),
     supabase.from('customers').select('id,name,phone').eq('tenant_id', tenantId),
   ]);
@@ -96,7 +96,7 @@ export async function hydrateCloudState(tenantId: string): Promise<AppState | nu
       id: o.id,label:o.label,customer:customer?.name||o.label,customerId:customer?.id,customerPhone:customer?.phone||undefined,
       source:customer?'customer':o.label.toLowerCase().startsWith('mesa ')?'table':'free',assignedTo:o.assigned_to||undefined,assignedName:o.assigned_to?names.get(o.assigned_to):undefined,
       openedBy:o.opened_by||undefined,openedByName:o.opened_by?names.get(o.opened_by):undefined,closedBy:o.closed_by||undefined,closedByName:o.closed_by?names.get(o.closed_by):undefined,
-      openedAt:o.opened_at,status:o.status==='closed'?'paid':'open',items:items.filter((i:any)=>i.order_id===o.id).map((i:any)=>({productId:i.product_id||`legacy-${o.id}-${i.product_name}`,name:i.product_name,qty:Number(i.quantity),unitPrice:Number(i.unit_price),createdAt:i.created_at||o.opened_at})),
+      openedAt:o.opened_at,closedAt:o.closed_at||undefined,status:o.status==='closed'?'paid':'open',items:items.filter((i:any)=>i.order_id===o.id).map((i:any)=>({productId:i.product_id||`legacy-${o.id}-${i.product_name}`,name:i.product_name,qty:Number(i.quantity),unitPrice:Number(i.unit_price),createdAt:i.created_at||o.opened_at})),
     } as Order;
   });
   const tenant = tenantRes.data as any;

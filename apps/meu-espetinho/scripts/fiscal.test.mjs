@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { simulateCeara } from '../supabase/functions/fiscal-nfce/simulator.mjs';
-import { receiptHtml } from '../src/receiptHtml.ts';
+import { renderReceipt, defaultPreferences } from '../../../packages/operations/src/receipt.ts';
 
 const tenant='10000000-0000-0000-0000-000000000001';
 const other='10000000-0000-0000-0000-000000000002';
@@ -87,9 +87,9 @@ test('simulator: success, rejection, timeout, repeated consultation and producti
  assert.equal((await simulateCeara({...d,snapshot:{items:[],total:0}})).status,'rejected');
 });
 test('thermal receipt identifies non-fiscal nature, totals, payment and escapes injected HTML',()=>{
- const html=receiptHtml({id:order,label:'<script>alert(1)</script>',openedAt:'2026-10-29T12:00:00Z',status:'paid',
-  items:[{productId:'x',name:'<img src=x onerror=alert(1)>',qty:2,unitPrice:10}]},
-  {businessName:'Empresa & Cia',address:'Rua <1>',whatsapp:'123'},'pix');
+ const html=renderReceipt({id:order,label:'<script>alert(1)</script>',date:'2026-10-29T12:00:00Z',payment:'PIX',total:20,
+  items:[{name:'<img src=x onerror=alert(1)>',quantity:2,unitPrice:10}]},
+  {...defaultPreferences,businessName:'Empresa & Cia',address:'Rua <1>',phone:'123'});
  assert.match(html,/RECIBO NÃO FISCAL/);assert.match(html,/Não substitui a NFC-e obrigatória/);
  assert.match(html,/20,00/);assert.match(html,/Pagamento: PIX/);
  assert.doesNotMatch(html,/<script|<img/);assert.match(html,/&lt;script&gt;/);assert.match(html,/Empresa &amp; Cia/);

@@ -25,6 +25,7 @@ export type Order = {
   closedBy?: string;
   closedByName?: string;
   openedAt: string;
+  closedAt?: string;
   items: OrderItem[];
   status: 'open' | 'paid';
 };

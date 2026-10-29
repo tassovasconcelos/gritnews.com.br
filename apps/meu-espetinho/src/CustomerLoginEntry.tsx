@@ -4,7 +4,7 @@ import { supabase } from './lib/supabase';
 
 export default function CustomerLoginEntry(){
   const params=new URLSearchParams(window.location.search);
-  const preserveSession=params.has('support_tenant')||params.get('reset')==='1'||params.has('mode');
+  const preserveSession=params.has('support_tenant')||params.get('reset')==='1'||params.has('mode')||params.has('convite')||params.has('operation_scope');
   const[ready,setReady]=useState(preserveSession);
 
   useEffect(()=>{

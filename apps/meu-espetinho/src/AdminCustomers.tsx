@@ -323,10 +323,10 @@ export default function AdminCustomers({ tenants, subs, onRefresh }: Props) {
     const reason = prompt("Motivo do acesso temporário:", "Suporte, treinamento ou configuração da loja");
     if (!reason) return;
     setBusy(`support-${t.id}`);
-    const { data, error } = await supabase.rpc("admin_start_support_access", { p_tenant_id: t.id, p_reason: reason });
+    const { data, error } = await supabase.rpc("ops_start_support", { a: "meu-espetinho", s: t.id, reason });
     setBusy(null);
-    if (error || !data?.ok) return alert("Não foi possível iniciar a sessão de suporte.");
-    window.open(`/app?support_tenant=${encodeURIComponent(t.id)}`, "_blank", "noopener,noreferrer");
+    if (error || !data?.expires_at) return alert("Não foi possível iniciar a sessão de suporte.");
+    window.location.assign(`/app?support_tenant=${encodeURIComponent(t.id)}&section=settings`);
   }
   const emailTemplates: Record<
     EmailKind,

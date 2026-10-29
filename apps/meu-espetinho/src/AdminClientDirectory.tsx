@@ -69,7 +69,7 @@ export default function AdminClientDirectory({tenants,subs,onRefresh}:Props){
   if(error||!data?.ok){setMsg('Não foi possível alterar o acesso do ambiente.');return}setMsg(next==='suspend'?'Ambiente suspenso.':'Ambiente reativado.');await refreshCurrent(detail.id);
  }
  async function support(){
-  const sb=supabase;if(!sb||!detail)return;const{data,error}=await sb.rpc('admin_start_support_access',{p_tenant_id:detail.id,p_reason:'Análise e configuração pelo Cliente 360'});if(error||!data?.ok){setMsg('Não foi possível abrir o suporte seguro.');return}window.open(`/app?support_tenant=${encodeURIComponent(detail.id)}`,'_blank','noopener,noreferrer');
+  const sb=supabase;if(!sb||!detail)return;const{data,error}=await sb.rpc('ops_start_support',{a:'meu-espetinho',s:detail.id,reason:'Análise e configuração pelo Cliente 360'});if(error||!data?.expires_at){setMsg('Não foi possível abrir o suporte seguro.');return}window.location.assign(`/app?support_tenant=${encodeURIComponent(detail.id)}&section=settings`);
  }
  function suggestedText(kind:'improvement'|'thanks'){
   if(!current)return;if(kind==='thanks'){setSubject('Obrigado por fazer parte do Meu Espetinho');setMessage('Olá! Passando para agradecer pela confiança no Meu Espetinho. Conte com a nossa equipe para continuar simplificando o dia a dia do seu negócio.');return}
