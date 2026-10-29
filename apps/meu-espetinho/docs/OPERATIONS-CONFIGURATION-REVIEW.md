@@ -13,7 +13,7 @@ Entrega de 29/10/2026 na branch `feat/meu-espetinho-fiscal-nfce`, continuando o 
 | Produtos | Cadastro/edição existente, busca e importação de cardápio | Cadastro rápido com estoque inicial, busca e importação de catálogo |
 | Segmento | Comandas e itens em UN | Balcão e unidades UN/KG/G/L/ML/PACOTE/CAIXA, quantidade fracionada editável no PDV |
 | Equipe | Proprietário, gerente, caixa e atendente | Proprietário, gerente, caixa, estoque e consulta |
-| Superadministrador | Cliente 360 / Clientes → suporte abre Configurações | Clientes e acessos → Configurar / dar suporte |
+| Superadministrador | Cliente 360 / Clientes → suporte abre Configurações | Central → ficha do cliente → Recibo e impressora ou Configurar / dar suporte |
 
 As configurações são persistidas por aplicativo e empresa. O mesmo identificador de empresa em outra vertical não mistura os dados. A logo personalizada é usada no cabeçalho da operação e no recibo; a opção “mostrar logo” controla a saída do recibo.
 
@@ -39,6 +39,8 @@ Espetinho de carne;12,00;Espetinhos;UN;50;5,20
 Preço e custo usam até duas casas decimais; estoque inicial aceita três. Obrigatórios: nome e preço positivo. Não há leitura de `.xlsx`, foto, PDF ou OCR nesta entrega: para planilhas, colar a tabela ou exportar CSV.
 
 O usuário vê a prévia e erros por linha e confirma explicitamente. Pode ignorar cadastros existentes ou atualizar preço, custo e categoria pelo nome exato, sem substituir estoque ou unidade existentes. Nomes ambíguos no banco bloqueiam o lote; nomes repetidos no arquivo também são recusados. No Meu Espetinho, outras unidades além de UN são rejeitadas na tela e no banco.
+
+Na padaria, a identidade inclui nome e variante, preservando tamanhos/sabores distintos. O CSV aceita `variante` e `modalidade`; produtos novos sem modalidade ficam inativos como “a confirmar”. O cadastro rápido oferece pronta entrega/encomenda/a confirmar, e a lista de produtos permite conferir e liberar a modalidade. A nova central administrativa, sua importação avançada CSV/JSON, identidade dos clientes e as proteções de cobrança em homologação foram preservadas.
 
 Importação e cadastro rápido usam uma transação de banco: categoria, produto e estoque inicial da padaria são gravados juntos. Qualquer linha inválida desfaz o lote. Um identificador de tentativa impede reimportação após perda de resposta; repetir sem editar consulta o mesmo lote. Uma trava por operação serializa importações simultâneas. Isso não adiciona uma restrição única global aos nomes cadastrados por outros caminhos.
 
@@ -69,6 +71,7 @@ O PDV do Sr. Padeiro passa a chamar a RPC transacional `srp_complete_sale` já e
 | --- | --- |
 | Módulo compartilhado | `pnpm --filter @gritnews/operations test`: cinco testes, com múltiplas asserções de parser, recibo e SQL/RLS |
 | Regressão fiscal | `pnpm --filter meu-espetinho test:fiscal`: três testes usando o novo renderizador compartilhado |
+| Central da padaria | `pnpm --filter sr-padeiro test:admin`: nove testes de catálogo, variantes, convite e bloqueio de cobrança em homologação |
 | Builds | TypeScript e Vite dos dois aplicativos |
 | Disponibilidade | Smoke test de cada aplicativo |
 | Navegador local | Salvar nome/rodapé/papel 58 mm, ocultar endereço, conferir recibo, prévia de dois produtos, confirmar lote em cliente simulado, prévia KG e bloqueio de preço inválido; sem erros de console observados |
@@ -76,7 +79,7 @@ O PDV do Sr. Padeiro passa a chamar a RPC transacional `srp_complete_sale` já e
 
 Os testes de SQL aplicam a migração integral em PostgreSQL PGlite, com fixtures dos contratos legados. Exercitam isolamento por empresa e aplicativo, negativa para atendente/anônimo, bloqueio de autopromoção, tipos de configuração inválidos, suporte e expiração, caminho de logo entre empresas, importação atômica, repetição da mesma tentativa, preservação de estoque, convite por e-mail verificado, negativa de proprietário, aceitação idempotente, cancelamento e desativação.
 
-**Limites:** a interface de teste usa um cliente simulado, não uma sessão autenticada real de cliente. PGlite tem uma conexão e não comprova corridas entre várias conexões. A consulta remota foi de esquema/políticas, sem escrita. Não foram executados fluxo real de confirmação por e-mail, impressora física, venda real, advisors ou migração remota. O Meu Espetinho mantém aviso de bundle acima de 500 kB.
+**Limites:** a interface de teste usa um cliente simulado, não uma sessão autenticada real de cliente. PGlite tem uma conexão e não comprova corridas entre várias conexões. A consulta remota foi de esquema/políticas, sem escrita. Não foram executados fluxo real de confirmação por e-mail, impressora física, venda real, advisors ou migração remota. Os builds mantêm aviso de bundle acima de 500 kB.
 
 ## Arquivos principais
 

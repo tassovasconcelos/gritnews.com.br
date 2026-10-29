@@ -5,6 +5,8 @@ export type CatalogRow = {
   unit: string;
   stock: number;
   cost: number | null;
+  variant?: string;
+  fulfillment?: string;
 };
 const normalize = (s: string) =>
   s
@@ -93,11 +95,17 @@ export function parseCatalog(text: string): {
       cost = field("custo") ? decimal(field("custo")) : null;
     const unit = (field("unidade") || "UN").toUpperCase(),
       category = field("categoria") || "Outros";
+    const variant = field("variante") || field("variant");
+    const fulfillment = normalize(
+      field("modalidade") || field("fulfillment") || "confirmar",
+    ).replace(/\s+/g, "_");
     if (
       values.length !== headers.length ||
       !name ||
       name.length > 120 ||
       category.length > 80 ||
+      variant.length > 120 ||
+      !["confirmar", "pronta_entrega", "encomenda"].includes(fulfillment) ||
       !Number.isFinite(price) ||
       price <= 0 ||
       price > 999999 ||
@@ -115,14 +123,25 @@ export function parseCatalog(text: string): {
       errors.push(
         `Linha ${i + 2}: confira nome, preço positivo, custo, estoque e unidade. Preço e custo usam até 2 casas decimais.`,
       );
-    else if (seen.has(normalize(name)))
+    else if (seen.has(normalize(name) + "|" + normalize(variant)))
       errors.push(`Linha ${i + 2}: produto repetido no arquivo (${name}).`);
     else {
-      seen.add(normalize(name));
-      rows.push({ name, price, category, unit, stock, cost });
+      seen.add(normalize(name) + "|" + normalize(variant));
+      rows.push({
+        name,
+        price,
+        category,
+        unit,
+        stock,
+        cost,
+        variant,
+        fulfillment,
+      });
     }
   });
   return { rows, errors };
 }
 export const catalogTemplate = (bakery: boolean) =>
-  `nome;preco;categoria;unidade;estoque;custo\n${bakery ? "Pão francês;18,90;Pães;KG;20;9,50" : "Espetinho de carne;12,00;Espetinhos;UN;50;5,20"}\n`;
+  bakery
+    ? "nome;preco;categoria;unidade;estoque;custo;variante;modalidade\nPão francês;18,90;Pães;KG;20;9,50;;confirmar\n"
+    : "nome;preco;categoria;unidade;estoque;custo\nEspetinho de carne;12,00;Espetinhos;UN;50;5,20\n";

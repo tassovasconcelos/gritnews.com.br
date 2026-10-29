@@ -38,7 +38,7 @@ async function fixture() {
  create table public.categories(id uuid primary key default gen_random_uuid(),tenant_id uuid,name text);
  create table public.products(id uuid primary key default gen_random_uuid(),tenant_id uuid,name text,price numeric(12,2),cost numeric(12,2),category_id uuid,stock_qty numeric,active boolean);
  create table public.srp_categories(id uuid primary key default gen_random_uuid(),organization_id uuid,name text);
- create table public.srp_products(id uuid primary key default gen_random_uuid(),organization_id uuid,name text,sale_price numeric(12,2),cost_price numeric(12,2),category_id uuid,unit text,active boolean);
+ create table public.srp_products(id uuid primary key default gen_random_uuid(),organization_id uuid,name text,variant text not null default '',fulfillment text not null default 'confirmar',sale_price numeric(12,2),cost_price numeric(12,2),category_id uuid,unit text,active boolean);
  create table public.srp_stores(id uuid primary key,organization_id uuid,active boolean,created_at timestamptz default now());
  create table public.srp_inventory(organization_id uuid,store_id uuid,product_id uuid,quantity numeric,minimum_quantity numeric,primary key(organization_id,store_id,product_id));
  create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
@@ -67,7 +67,7 @@ const rpc = async (db, name, args) => {
   const keys = Object.keys(args);
   return (
     await db.query(
-      `select public.${name}(${keys.map((_, i) => "$" + (i + 1)).join(",")}) as result`,
+      `select public.${name}(${keys.map((key, i) => key+" => $" + (i + 1)).join(",")}) as result`,
       Object.values(args),
     )
   ).rows[0].result;
@@ -302,6 +302,48 @@ test("database: imports are atomic and idempotent, preserve stock and isolate th
       rpc(db, "ops_import_catalog", { ...args, r: id(34) }),
       /forbidden/,
     );
+    await as(db, owner);
+    await rpc(db, "ops_import_catalog", {
+      a: "sr-padeiro",
+      s: scope,
+      r: id(36),
+      mode: "skip",
+      rows: [
+        {
+          name: "Bolo",
+          variant: "Pequeno",
+          fulfillment: "pronta_entrega",
+          price: 20,
+          category: "Bolos",
+          unit: "UN",
+          stock: 2,
+          cost: 8,
+        },
+        {
+          name: "Bolo",
+          variant: "Grande",
+          fulfillment: "encomenda",
+          price: 40,
+          category: "Bolos",
+          unit: "UN",
+          stock: 1,
+          cost: 16,
+        },
+      ],
+    });
+    await db.exec("reset role");
+    const variants = (
+      await db.query(
+        "select variant,active from srp_products where name='Bolo' order by variant",
+      )
+    ).rows;
+    assert.equal(variants.length, 2);
+    assert.ok(variants.every((v) => v.active));
+    assert.equal(
+      (await db.query("select active from srp_products where name='Pão'"))
+        .rows[0].active,
+      false,
+    );
     await as(db, other);
     await assert.rejects(
       rpc(db, "ops_import_catalog", { ...args, r: id(35) }),
@@ -371,7 +413,10 @@ test("database: invites bind to verified email, cannot grant owner, and protect 
     await as(db, owner);
     const team = await rpc(db, "ops_team", { a: "sr-padeiro", s: scope });
     assert.equal(team.members.filter((m) => m.user_id === newuser).length, 1);
-    assert.equal(team.members.find(m=>m.user_id===newuser).name,'Nova Pessoa');
+    assert.equal(
+      team.members.find((m) => m.user_id === newuser).name,
+      "Nova Pessoa",
+    );
     await assert.rejects(
       rpc(db, "ops_set_member", {
         a: "sr-padeiro",

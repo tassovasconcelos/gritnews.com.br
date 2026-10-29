@@ -15,13 +15,14 @@ Deno.serve(async(req)=>{
     const {organization_id}=await req.json();
     const {data:member}=await sb.from("srp_members").select("role,active").eq("organization_id",organization_id).eq("user_id",user.id).maybeSingle();
     if(!member?.active||member.role!=="owner")return json({error:"forbidden"},403);
-    const {data:org}=await sb.from("srp_organizations").select("id,name,activation_paid_at").eq("id",organization_id).maybeSingle();
+    const {data:org}=await sb.from("srp_organizations").select("id,name,activation_paid_at,environment").eq("id",organization_id).maybeSingle();
     if(!org)return json({error:"organization_not_found"},404);
+  if(org.environment==="homologation")return json({error:"billing_disabled_in_homologation"},409);
     if(!org.activation_paid_at)return json({error:"activation_required"},409);
 
-    const mode=(Deno.env.get("MERCADO_PAGO_MODE")||await secret(sb,"MERCADO_PAGO_MODE")||"production")==="test"?"test":"production";
+    const mode=(await secret(sb,"MERCADO_PAGO_MODE")||Deno.env.get("MERCADO_PAGO_MODE")||"production")==="test"?"test":"production";
     const tokenName=mode==="test"?"MERCADO_PAGO_TEST_ACCESS_TOKEN":"MERCADO_PAGO_ACCESS_TOKEN";
-    const accessToken=Deno.env.get(tokenName)||await secret(sb,tokenName);
+    const accessToken=await secret(sb,tokenName)||Deno.env.get(tokenName);
     if(!accessToken)return json({error:mode==="test"?"mercado_pago_test_not_configured":"mercado_pago_not_configured",mode},503);
 
     const externalReference=`srp_subscription:${org.id}`;
@@ -41,3 +42,5 @@ Deno.serve(async(req)=>{
     return json({checkout_url:checkoutUrl,subscription_id:data.id,status:data.status,mode});
   }catch(error){console.error(error);return json({error:"internal_error"},500)}
 });
+
+

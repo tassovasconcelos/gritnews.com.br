@@ -189,22 +189,24 @@ end $$;
 create function public.ops_set_member(a text,s uuid,u uuid,enabled boolean) returns void language sql security invoker set search_path='' as $$select private.ops_set_member(a,s,u,enabled)$$;
 
 create function private.ops_import_catalog(a text,s uuid,r uuid,rows jsonb,mode text default 'skip') returns jsonb language plpgsql security definer set search_path='' as $$
-declare item jsonb;n text;p numeric;c numeric;q numeric;cat text;unit text;pid uuid;cid uuid;store uuid;matches integer;created integer:=0;updated integer:=0;skipped integer:=0;result jsonb;
+declare item jsonb;n text;p numeric;c numeric;q numeric;cat text;unit text;v_variant text;v_fulfillment text;pid uuid;cid uuid;store uuid;matches integer;created integer:=0;updated integer:=0;skipped integer:=0;result jsonb;
 begin
  if not private.ops_catalog_access(a,s) then raise exception 'forbidden' using errcode='42501';end if;
  if r is null or rows is null or jsonb_typeof(rows)<>'array' or jsonb_array_length(rows) not between 1 and 500 or mode is null or mode not in ('skip','update') then raise exception 'invalid_import';end if;
  perform pg_advisory_xact_lock(hashtextextended(a||s::text,0));
  select i.result into result from public.operation_imports i where app=a and scope_id=s and request_id=r;
  if result is not null then return result;end if;
- if (select count(*) from jsonb_array_elements(rows))<>(select count(distinct lower(trim(x->>'name'))) from jsonb_array_elements(rows)x) then raise exception 'duplicate_names';end if;
+ if (select count(*) from jsonb_array_elements(rows))<>(select count(distinct (lower(trim(x->>'name'))||case when a='sr-padeiro' then '|'||lower(trim(coalesce(x->>'variant',''))) else '' end)) from jsonb_array_elements(rows)x) then raise exception 'duplicate_names';end if;
  if a='sr-padeiro' then select id into store from public.srp_stores where organization_id=s and active order by created_at,id limit 1;if store is null then raise exception 'store_required';end if;end if;
  for item in select value from jsonb_array_elements(rows) loop
   n:=trim(item->>'name');p:=(item->>'price')::numeric;c:=(item->>'cost')::numeric;q:=coalesce((item->>'stock')::numeric,0);cat:=coalesce(nullif(trim(item->>'category'),''),'Outros');unit:=coalesce(item->>'unit','UN');
+  v_variant:=trim(coalesce(item->>'variant',''));v_fulfillment:=coalesce(nullif(item->>'fulfillment',''),'confirmar');
+  if length(v_variant)>120 or v_fulfillment not in ('confirmar','pronta_entrega','encomenda') then raise exception 'invalid_bakery_product';end if;
   if n is null or length(n) not between 1 and 120 or length(cat)>80 or p is null or p<=0 or p>999999 or p<>round(p,2) or (c is not null and (c<0 or c>999999 or c<>round(c,2))) or q<0 or q>999999 or q<>round(q,3) or unit not in ('UN','KG','G','L','ML','PACOTE','CAIXA') then raise exception 'invalid_product';end if;
   if a='meu-espetinho' and unit<>'UN' then raise exception 'espetinho_unit_must_be_UN';end if;
   if a='meu-espetinho' then
    select count(*),(array_agg(id))[1] into matches,pid from public.products where tenant_id=s and lower(trim(name))=lower(n);
-  else select count(*),(array_agg(id))[1] into matches,pid from public.srp_products where organization_id=s and lower(trim(name))=lower(n);end if;
+  else select count(*),(array_agg(id))[1] into matches,pid from public.srp_products where organization_id=s and lower(trim(name))=lower(n) and lower(trim(variant))=lower(v_variant);end if;
   if matches>1 then raise exception 'ambiguous_product_name';end if;
   if matches=1 and mode='skip' then skipped:=skipped+1;continue;end if;
   if a='meu-espetinho' then
@@ -217,7 +219,7 @@ begin
    if cid is null then insert into public.srp_categories(organization_id,name) values(s,cat) returning id into cid;end if;
    if matches=1 then update public.srp_products set sale_price=p,cost_price=c,category_id=cid where id=pid and organization_id=s;
    else
-    insert into public.srp_products(organization_id,name,sale_price,cost_price,category_id,unit,active) values(s,n,p,c,cid,unit,true) returning id into pid;
+    insert into public.srp_products(organization_id,name,variant,fulfillment,sale_price,cost_price,category_id,unit,active) values(s,n,v_variant,v_fulfillment,p,c,cid,unit,v_fulfillment<>'confirmar') returning id into pid;
     insert into public.srp_inventory(organization_id,store_id,product_id,quantity,minimum_quantity) values(s,store,pid,q,0);
    end if;
   end if;

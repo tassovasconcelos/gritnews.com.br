@@ -70,6 +70,13 @@ export function CatalogImport({
       <h2>
         {app === "sr-padeiro" ? "Importar catálogo" : "Importar cardápio"}
       </h2>
+      {app === "sr-padeiro" && (
+        <p>
+          Colunas adicionais: variante e modalidade (pronta_entrega, encomenda
+          ou confirmar). Sem modalidade definida, novos produtos ficam inativos
+          até a conferência em Produtos.
+        </p>
+      )}
       <p>
         CSV de até 1 MB ou tabela copiada do Excel. Até 500 produtos. Colunas
         obrigatórias: nome e preco. Opcionais: categoria, unidade, estoque e
@@ -148,7 +155,10 @@ export function CatalogImport({
                 <tbody>
                   {parsed.rows.map((r, i) => (
                     <tr key={i}>
-                      <td>{r.name}</td>
+                      <td>
+                        {r.name}
+                        {r.variant ? ` • ${r.variant}` : ""}
+                      </td>
                       <td>
                         {r.price.toLocaleString("pt-BR", {
                           style: "currency",

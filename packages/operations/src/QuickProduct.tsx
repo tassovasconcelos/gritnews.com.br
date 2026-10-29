@@ -19,6 +19,8 @@ export function QuickProduct({
       unit: "UN",
       stock: "0",
       cost: "",
+      variant: "",
+      fulfillment: "pronta_entrega",
     }),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
@@ -109,6 +111,29 @@ export function QuickProduct({
                 ))}
               </select>
             </label>
+          )}
+          {app === "sr-padeiro" && (
+            <>
+              <label>
+                Variante / tamanho
+                <input
+                  maxLength={120}
+                  value={form.variant}
+                  onChange={(e) => change("variant", e.target.value)}
+                />
+              </label>
+              <label>
+                Modalidade
+                <select
+                  value={form.fulfillment}
+                  onChange={(e) => change("fulfillment", e.target.value)}
+                >
+                  <option value="pronta_entrega">Pronta entrega</option>
+                  <option value="encomenda">Encomenda</option>
+                  <option value="confirmar">A confirmar (inativo)</option>
+                </select>
+              </label>
+            </>
           )}
         </div>
         <div className="ops-actions">
