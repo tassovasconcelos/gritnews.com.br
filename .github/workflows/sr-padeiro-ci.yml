@@ -4,10 +4,14 @@ on:
   push:
     branches: [main]
     paths:
+      - 'packages/operations/**'
+      - 'pnpm-lock.yaml'
       - 'apps/sr-padeiro/**'
       - '.github/workflows/sr-padeiro-ci.yml'
   pull_request:
     paths:
+      - 'packages/operations/**'
+      - 'pnpm-lock.yaml'
       - 'apps/sr-padeiro/**'
       - '.github/workflows/sr-padeiro-ci.yml'
   workflow_dispatch:
@@ -47,5 +51,7 @@ jobs:
         run: pnpm run build
       - name: Admin validation and billing guard tests
         run: pnpm run test:admin
+      - name: Shared settings, catalog and access tests
+        run: pnpm --filter @gritnews/operations test
       - name: Smoke test
         run: pnpm run smoke

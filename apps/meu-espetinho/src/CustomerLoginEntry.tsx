@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import AppGate from './AppGate';
 import { supabase } from './lib/supabase';
+import { preserveOperationSession } from '@gritnews/operations';
 
 export default function CustomerLoginEntry(){
-  const params=new URLSearchParams(window.location.search);
-  const preserveSession=params.has('support_tenant')||params.get('reset')==='1'||params.has('mode');
+  const installed=window.matchMedia('(display-mode: standalone)').matches||(navigator as Navigator&{standalone?:boolean}).standalone===true;
+  const preserveSession=preserveOperationSession(window.location.search,installed);
   const[ready,setReady]=useState(preserveSession);
 
   useEffect(()=>{

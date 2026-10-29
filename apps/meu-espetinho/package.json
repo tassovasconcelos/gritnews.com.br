@@ -11,7 +11,8 @@
     "smoke": "node scripts/smoke-test.mjs",
     "mobile:sync": "npm run build && npx cap sync",
     "android": "npm run mobile:sync && npx cap open android",
-    "ios": "npm run mobile:sync && npx cap open ios"
+    "ios": "npm run mobile:sync && npx cap open ios",
+    "test:fiscal": "node --test scripts/fiscal.test.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^7.0.0",
@@ -24,12 +25,14 @@
     "express": "^5.1.0",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "@gritnews/operations": "file:../../packages/operations"
   },
   "devDependencies": {
     "@capacitor/android": "^7.0.0",
     "@capacitor/cli": "^7.0.0",
     "@capacitor/ios": "^7.0.0",
+    "@electric-sql/pglite": "0.3.14",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

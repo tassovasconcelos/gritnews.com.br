@@ -5,6 +5,7 @@ import { initRuntimeMarketing } from './lib/runtimeMarketing';
 const KEY = 'meu-espetinho-marketing-consent';
 
 async function activateMarketing(){
+  if(new URLSearchParams(location.search).has('convite'))return;
   updateMarketingConsent(true);
   await initRuntimeMarketing();
   initMarketing();
@@ -14,6 +15,7 @@ export default function MarketingConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if(new URLSearchParams(location.search).has('convite'))return;
     bootstrapMarketingConsent();
     const value = localStorage.getItem(KEY);
     if (value === 'accepted') {

@@ -1,0 +1,173 @@
+.ops-panel {
+  padding: 22px;
+  background: #fff;
+  color: #172033;
+  border: 1px solid #e4e7ec;
+  border-radius: 18px;
+  margin: 16px 0;
+  min-width: 0;
+}
+.ops-panel h2,
+.ops-panel h3 {
+  margin: 0 0 12px;
+}
+.ops-panel p {
+  line-height: 1.5;
+}
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.ops-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+.ops-panel input,
+.ops-panel select,
+.ops-panel textarea {
+  padding: 11px;
+  border: 1px solid #ccd2db;
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  min-width: 0;
+  font: inherit;
+}
+.ops-panel textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+.ops-panel button,
+.ops-button {
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  padding: 10px 14px;
+  background: #fff;
+  color: #172033;
+  cursor: pointer;
+  font: inherit;
+}
+.ops-panel button.ops-primary {
+  background: #172033;
+  color: white;
+}
+.ops-panel button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.ops-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+.ops-toggle {
+  flex-direction: row !important;
+  align-items: center;
+}
+.ops-preview {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 16px;
+  border: 1px dashed #b6bdc8;
+  background: #fff;
+  max-width: 340px;
+  font: 13px monospace;
+}
+.ops-preview img {
+  max-width: 140px;
+  max-height: 90px;
+  display: block;
+  margin: auto;
+}
+.ops-scroll {
+  max-height: 340px;
+  overflow: auto;
+}
+.ops-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+.ops-table th,
+.ops-table td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #e4e7ec;
+}
+.ops-status {
+  padding: 10px;
+  background: #f2f5f9;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.ops-support {
+  padding: 14px;
+  background: #fff3c8;
+  color: #422b00;
+  border: 1px solid #e2ba4f;
+  border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.ops-error {
+  color: #a11f1f;
+}
+.ops-invite {
+  padding: 24px;
+  max-width: 520px;
+  margin: 40px auto;
+}
+.ops-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+}
+.ops-link-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff 40%, #fff8ee);
+}
+.ops-link-card > strong { color: #17263e; font-size: 17px; }
+.ops-link-card label { width: 100%; }
+.ops-link-card input { font-family: ui-monospace, monospace; font-size: 12px; }
+.ops-link-card .ops-actions { margin-top: 12px; }
+.ops-link-card a {
+  padding: 11px 15px;
+  border-radius: 10px;
+  background: #17263e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.ops-link-card a:focus-visible { outline: 3px solid #f79d1e; outline-offset: 3px; }
+.ops-panel code {
+  overflow-wrap: anywhere;
+}
+.ops-receipt-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: #111a;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.ops-receipt-backdrop > .ops-panel {
+  width: min(600px, 100%);
+  box-sizing: border-box;
+}
+.ops-panel fieldset {
+  min-width: 0;
+}
+.ops-panel input[type="checkbox"] {
+  width: auto;
+}
