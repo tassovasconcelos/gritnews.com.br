@@ -104,8 +104,8 @@ end $$;
 create function public.ops_end_support(a text,s uuid) returns void language sql security invoker set search_path='' as $$select private.ops_end_support(a,s)$$;
 
 -- Restore role-based management: broad ALL membership policies permit escalation.
-drop policy if exists "tenant memberships" on public.tenant_users;
-drop policy if exists "tenant owner manages memberships" on public.tenant_users;
+-- Preserve legacy policy objects; write privileges are revoked below.
+
 create policy ops_members_read on public.tenant_users for select to authenticated using(private.ops_access('meu-espetinho',tenant_id));
 -- Writes go through the audited RPCs below; no client can promote itself.
 revoke insert,update,delete on public.tenant_users from authenticated;
@@ -236,8 +236,13 @@ create function public.ops_import_catalog(a text,s uuid,r uuid,rows jsonb,mode t
 create or replace function private.srp_role_allowed(org_id uuid,allowed_roles text[]) returns boolean language sql stable security definer set search_path='' as $$
  select private.ops_support('sr-padeiro',org_id) or exists(select 1 from public.srp_members where organization_id=org_id and user_id=auth.uid() and active and role=any(allowed_roles))
 $$;
-drop policy if exists srp_org_select on public.srp_organizations;
-create policy srp_org_select on public.srp_organizations for select to authenticated using(private.ops_access('sr-padeiro',id) or private.ops_super());
+do $policy$ begin
+ if exists(select 1 from pg_policies where schemaname='public' and tablename='srp_organizations' and policyname='srp_org_select') then
+  alter policy srp_org_select on public.srp_organizations to authenticated using(private.ops_access('sr-padeiro',id) or private.ops_super());
+ else
+  create policy srp_org_select on public.srp_organizations for select to authenticated using(private.ops_access('sr-padeiro',id) or private.ops_super());
+ end if;
+end $policy$;
 -- A scoped support session can also configure/test the existing fiscal module.
 create or replace function private.fiscal_access(t uuid,management boolean default false) returns boolean language sql stable security definer set search_path='' as $$
  select private.ops_support('meu-espetinho',t) or (auth.uid() is not null and (

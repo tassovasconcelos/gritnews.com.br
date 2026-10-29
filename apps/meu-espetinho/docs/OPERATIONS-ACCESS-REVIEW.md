@@ -1,6 +1,6 @@
 # Central de usuários, liberações e preparação de vendas
 
-Entrega de 29/10/2026 na branch `feat/meu-espetinho-fiscal-nfce`, PR #159. Atualizações preparadas para revisão; banco e clientes de produção não foram alterados. Não utiliza Vercel.
+Entrega de 29/10/2026 na branch `feat/meu-espetinho-fiscal-nfce`, PR #159. A base remota foi aplicada e testada na etapa de recuperação descrita ao final. Publicação das interfaces em verificação. Não utiliza Vercel.
 
 ## Diagnóstico e correções
 
@@ -52,3 +52,16 @@ Entrega de 29/10/2026 na branch `feat/meu-espetinho-fiscal-nfce`, PR #159. Atual
 - Corrigida incompatibilidade com o fluxo npm da Hostinger: dependência local `file:../../packages/operations` e `.npmrc` com `install-links=true` nos dois aplicativos. Validado `npm install` e build de cada aplicativo em cópia limpa sem `node_modules` do workspace; ambos aprovados.
 - Reexecutados os 22 testes existentes: dez compartilhados, três fiscais e nove administrativos; todos aprovados. As simulações não comprovam emissão fiscal real.
 - Painel Hostinger alcançado, porém exige autenticação nesta sessão. Não houve merge, publicação dos aplicativos, aplicação de migração remota ou liberação de catálogo nesta revisão.
+
+## Recuperação e validação remota — 29/10/2026
+
+A etapa de recuperação aplicou a migração fiscal (apenas homologação), as fundações compartilhadas e a liberação de catálogo no projeto gritnews. A chamada integral da migração compartilhada expirou sem alteração. A aplicação foi concluída em três partes rastreadas: `shared_operations_settings_support_foundation`, `shared_operations_team_invites` e `shared_operations_catalog_storage_permissions`. Chamadas que removiam políticas retornaram erro de estado da solicitação; foram preservados os objetos de política existentes. A escrita direta em `tenant_users` foi revogada, mantendo a gestão pelas RPCs auditadas; a política de leitura da padaria foi alterada sem remoção. O arquivo versionado preserva esse comportamento e suporta também uma base sem a política da padaria.
+
+Testes remotos transacionais, todos com rollback:
+- fechamento pela RPC real, repetição idempotente, pagamento único, snapshot fiscal e bloqueio de edição de itens fechados;
+- suporte com prazo, consulta de equipe nas duas verticais, preferências, importação de produto e repetição idempotente;
+- criação de convite manual sem envio de mensagem, encerramento de suporte e negativa sem autenticação.
+
+A consulta de permissões confirmou ausência de INSERT direto para authenticated em tenant_users. Advisors não apontaram novos endpoints públicos SECURITY DEFINER; as tabelas operation_imports e operation_invites permanecem sem política direta porque são acessadas pelas funções privadas e não recebem grants diretos aos clientes. Não houve envio à SEFAZ, venda de cliente, convite externo, liberação do catálogo real ou criação de estoque.
+
+O navegador Hostinger continuou indisponível por timeout mesmo após tentativa de reinicialização. A publicação será acionada pela integração GitHub existente e só poderá ser declarada concluída após conferir os arquivos servidos nos dois domínios.
