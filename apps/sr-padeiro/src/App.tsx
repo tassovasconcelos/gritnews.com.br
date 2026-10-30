@@ -31,6 +31,7 @@ export default function App() {
     ]);
     const superAdmin=Boolean(admin?.active&&String(admin.role||'').toLowerCase()==='superadmin');
     setIsSuper(superAdmin);
+    if(supportTarget&&(!superAdmin||(route.slug&&supportTarget!==requestedOrg))){setOrgId(null);setSetupError('Acesso de suporte indisponível para esta conta ou empresa.');setLoading(false);return;}
     if(supportTarget&&superAdmin&&(!route.slug||supportTarget===requestedOrg)){
       const [context,organization]=await Promise.all([supabase.rpc('ops_support_context',{a:'sr-padeiro',s:supportTarget}),supabase.from('srp_organizations').select('id,environment').eq('id',supportTarget).single()]);
       if(context.data!==true||organization.error){setSetupError('Sessão de suporte inválida ou expirada. Inicie novamente pela central.');setLoading(false);return;}

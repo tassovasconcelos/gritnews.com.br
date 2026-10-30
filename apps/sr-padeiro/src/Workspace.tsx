@@ -18,7 +18,7 @@ type Props={orgId:string;userId:string;role:Role;environment:string;access:strin
 const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 
 export default function Workspace({orgId,userId,role,environment,access,firstName,onSignOut,supportMode=false}:Props){
-  const [tab,setTab]=useState<'home'|'sell'|'products'|'cash'|'more'|'results'|'supply'>(role==='cashier'?'sell':role==='stockist'?'supply':'home');
+  const [tab,setTab]=useState<'home'|'sell'|'products'|'cash'|'more'|'results'|'supply'>(['owner','manager'].includes(role)&&new URLSearchParams(location.search).get('section')==='settings'?'more':role==='cashier'?'sell':role==='stockist'?'supply':'home');
   const loadVersion=useRef(0);const [stores,setStores]=useState<{id:string;name:string}[]>([]);const [cartCount,setCartCount]=useState(0);
   const [storeId,setStoreId]=useState<string|null>(null); const [brand,setBrand]=useState<Brand>({name:'Sr. Padeiro',logo_url:null,primary_color:'#F47A20',phone:null});
   const [products,setProducts]=useState<Product[]>([]); const [inventory,setInventory]=useState<Inventory[]>([]); const [todayTotal,setTodayTotal]=useState(0); const [todayCount,setTodayCount]=useState(0);

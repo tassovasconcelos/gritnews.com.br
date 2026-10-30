@@ -7,6 +7,9 @@
   margin: 16px 0;
   min-width: 0;
 }
+.ops-review fieldset { display: grid; gap: 12px; border: 1px solid #e4e7ec; border-radius: 12px; padding: 16px; min-width: 0; }
+.ops-review .ops-check { flex-direction: row; align-items: center; gap: 10px; }
+.ops-review .ops-check input { width: auto; flex: none; margin: 0; }
 .ops-panel h2,
 .ops-panel h3 {
   margin: 0 0 12px;
