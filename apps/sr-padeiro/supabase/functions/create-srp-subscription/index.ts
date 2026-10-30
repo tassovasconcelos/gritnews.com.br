@@ -20,6 +20,9 @@ Deno.serve(async(req)=>{
     const {data:org}=await sb.from("srp_organizations").select("id,name,activation_paid_at,environment").eq("id",organization_id).maybeSingle();
     if(!org)return json({error:"organization_not_found"},404);
   if(org.environment==="homologation")return json({error:"billing_disabled_in_homologation"},409);
+  const {data:policy,error:policyError}=await sb.from("srp_commercial_settings").select("allowed_providers").eq("organization_id",organization_id).maybeSingle();
+  if(policyError)return json({error:"billing_policy_unavailable"},503);
+  if(policy&&!policy.allowed_providers.includes("mercadopago"))return json({error:"provider_disabled"},409);
     if(!org.activation_paid_at)return json({error:"activation_required"},409);
 
     const mode=(await secret(sb,"MERCADO_PAGO_MODE")||Deno.env.get("MERCADO_PAGO_MODE")||"production")==="test"?"test":"production";
