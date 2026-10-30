@@ -1,3 +1,5 @@
+import Management from './Management';
+import './management.css';
 import { saleCatalog, storeInventory } from './lib/salesCatalog';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Boxes, Download, Home, LogOut, Menu, MessageCircle, Package, Plus, Search, Settings, ShoppingCart, Store, UserRound, WalletCards, X } from 'lucide-react';
@@ -13,47 +15,66 @@ type CartItem={product:Product;quantity:number};
 type Brand={name:string;logo_url:string|null;primary_color:string|null;phone:string|null};
 type Receipt={date:string;saleId?:string;items:CartItem[];total:number;payment:string;brand:Brand};
 
-type Props={orgId:string;userId:string;role:Role;environment:string;access:string;firstName:string;onSignOut:()=>void;supportMode?:boolean};
+type Props={orgId:string;userId:string;role:Role;environment:string;access:string;firstName:string;onSignOut:()=>void;supportMode?:boolean;managementReadOnly?:boolean};
 const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 
-export default function Workspace({orgId,userId,role,environment,access,firstName,onSignOut,supportMode=false}:Props){
-  const [tab,setTab]=useState<'home'|'sell'|'products'|'cash'|'more'>('home');
+export default function Workspace({orgId,userId,role,environment,access,firstName,onSignOut,supportMode=false,managementReadOnly=false}:Props){
+  const [tab,setTab]=useState<'home'|'sell'|'products'|'cash'|'more'|'stock'|'purchases'|'results'|'expenses'>('home');
+  const [stores,setStores]=useState<{id:string;name:string}[]>([]);
   const [storeId,setStoreId]=useState<string|null>(null); const [brand,setBrand]=useState<Brand>({name:'Sr. Padeiro',logo_url:null,primary_color:'#F47A20',phone:null});
   const [products,setProducts]=useState<Product[]>([]); const [inventory,setInventory]=useState<Inventory[]>([]); const [todayTotal,setTodayTotal]=useState(0); const [todayCount,setTodayCount]=useState(0);
   const [openCash,setOpenCash]=useState<any>(null); const [message,setMessage]=useState(''); const [receipt,setReceipt]=useState<Receipt|null>(null);
   const canSell=['owner','manager','cashier'].includes(role); const canCatalog=['owner','manager','stockist'].includes(role); const canCash=['owner','manager','cashier'].includes(role); const canBrand=['owner','manager'].includes(role);
 
   const operationPrefs=usePreferences(supabase,'sr-padeiro',orgId,{businessName:brand.name,logoUrl:brand.logo_url||'',phone:brand.phone||''});
+  const loadVersion=useRef(0);
+  const [operationLoading,setOperationLoading]=useState(true);
   async function load(){
-    const day=new Date(); day.setHours(0,0,0,0);
-    const [stores,org,prods,inv,sales,cash]=await Promise.all([
-      supabase.from('srp_stores').select('id').eq('organization_id',orgId).eq('active',true).order('created_at').order('id').limit(1).maybeSingle(),
-      supabase.from('srp_organizations').select('name,logo_url,primary_color,phone').eq('id',orgId).single(),
-      supabase.from('srp_products').select('id,name,variant,fulfillment,barcode,unit,sale_price,cost_price,active').eq('organization_id',orgId).order('name'),
-      supabase.from('srp_inventory').select('store_id,product_id,quantity,minimum_quantity').eq('organization_id',orgId),
-      supabase.from('srp_sales').select('total').eq('organization_id',orgId).eq('status','completed').gte('created_at',day.toISOString()),
-      supabase.from('srp_cash_registers').select('*').eq('organization_id',orgId).eq('status','open').order('opened_at',{ascending:false}).limit(1).maybeSingle()
-    ]);
-    if([stores,org,prods,inv,sales,cash].some(r=>r.error)){setMessage('Não foi possível atualizar toda a operação. Verifique a conexão e suas permissões.');return;}setStoreId(stores.data?.id||null); if(org.data)setBrand(org.data as Brand); setProducts((prods.data||[]) as Product[]); setInventory(storeInventory((inv.data||[]) as Inventory[],stores.data?.id||null)); setTodayTotal((sales.data||[]).reduce((s:any,v:any)=>s+Number(v.total),0)); setTodayCount((sales.data||[]).length); setOpenCash(cash.data||null);
+    const version=++loadVersion.current;setOperationLoading(true);
+    try {
+      const day=new Date(); day.setHours(0,0,0,0);
+      const [storeResult,org,prods,inv]=await Promise.all([
+        supabase.from('srp_stores').select('id,name').eq('organization_id',orgId).eq('active',true).order('created_at').order('id'),
+        supabase.from('srp_organizations').select('name,logo_url,primary_color,phone').eq('id',orgId).single(),
+        supabase.from('srp_products').select('id,name,variant,fulfillment,barcode,unit,sale_price,cost_price,active').eq('organization_id',orgId).order('name'),
+        supabase.from('srp_inventory').select('store_id,product_id,quantity,minimum_quantity').eq('organization_id',orgId)
+      ]);
+      if([storeResult,org,prods,inv].some(r=>r.error))throw new Error('load');
+      const selected=storeId&&storeResult.data?.some(s=>s.id===storeId)?storeId:storeResult.data?.[0]?.id||null;
+      if(!selected)throw new Error('store');
+      const [sales,cash]=await Promise.all([
+        supabase.from('srp_sales').select('total').eq('organization_id',orgId).eq('store_id',selected).eq('status','completed').gte('created_at',day.toISOString()),
+        supabase.from('srp_cash_registers').select('*').eq('organization_id',orgId).eq('store_id',selected).eq('status','open').order('opened_at',{ascending:false}).limit(1).maybeSingle()
+      ]);
+      if([sales,cash].some(r=>r.error))throw new Error('load');
+      if(version!==loadVersion.current)return;
+      setStores(storeResult.data||[]);setStoreId(selected);if(org.data)setBrand(org.data as Brand);setProducts((prods.data||[]) as Product[]);setInventory(storeInventory((inv.data||[]) as Inventory[],selected));setTodayTotal((sales.data||[]).reduce((s,v)=>s+Number(v.total),0));setTodayCount((sales.data||[]).length);setOpenCash(cash.data||null);
+    }catch{if(version===loadVersion.current)setMessage('Não foi possível atualizar toda a operação. Verifique a conexão e suas permissões.');}
+    finally{if(version===loadVersion.current)setOperationLoading(false);}
   }
-  useEffect(()=>{load()},[orgId]);
+  useEffect(()=>{void load();return()=>{loadVersion.current++;};},[orgId,storeId]);
   const lowStock=useMemo(()=>inventory.filter(i=>Number(i.quantity)<=Number(i.minimum_quantity)).length,[inventory]);
   const ticket=todayCount?todayTotal/todayCount:0;
 
-  return <div className="app-shell" style={{'--brand':brand.primary_color||'#F47A20'} as any}>
+  const management=['owner','manager'].includes(role)||managementReadOnly;
+  const navigation=[{key:'home',label:management?'Dashboard gerencial':'Início'},{key:'sell',label:'Frente de caixa / PDV',disabled:!canSell},{key:'products',label:'Catálogo de produtos'},{key:'stock',label:'Estoque e mínimos',disabled:!canCatalog&&!managementReadOnly},{key:'purchases',label:'Compra inteligente',disabled:!management},{key:'results',label:'Vendas e rentabilidade',disabled:!management},{key:'expenses',label:'Despesas da operação',disabled:!management},{key:'cash',label:'Controle de caixa',disabled:!['owner','manager','cashier','viewer'].includes(role)},{key:'more',label:'Equipe e configurações'}] as const;
+  return <div className="app-shell bakery-workspace" style={{'--brand':brand.primary_color||'#F47A20'} as any}>
     {environment==='homologation'&&<div className="workspace-message">Homologação: use somente dados de teste.</div>}
-    <header className="topbar"><div className="workspace-brand">{(operationPrefs.value.logoUrl||brand.logo_url)?<img src={operationPrefs.value.logoUrl||brand.logo_url||''} alt={brand.name}/>:<div className="brand-mark">SP</div>}<div><span className="eyebrow">{operationPrefs.value.businessName||brand.name} • {access}</span><h1>Bom dia, {firstName} 👋</h1></div></div><button className="icon-button" onClick={onSignOut} title="Sair"><LogOut size={19}/></button></header>
+    <header className="topbar"><div className="workspace-brand">{(operationPrefs.value.logoUrl||brand.logo_url)?<img src={operationPrefs.value.logoUrl||brand.logo_url||''} alt={brand.name}/>:<div className="brand-mark">SP</div>}<div><span className="eyebrow">{operationPrefs.value.businessName||brand.name} • {access}</span><h1>{management?'Gestão da padaria':'Operação da padaria'}</h1><small>Olá, {firstName} · {({owner:'Proprietário',manager:'Gestor',cashier:'Caixa',stockist:'Estoque',viewer:'Consulta'})[role]}</small></div></div><button className="icon-button" onClick={onSignOut} title="Sair"><LogOut size={19}/></button></header>
     {supportMode&&<SupportBanner client={supabase} app="sr-padeiro" scopeId={orgId}/>}
     {message&&<div className="workspace-message">{message}<button onClick={()=>setMessage('')}><X size={15}/></button></div>}
-    <main className="content">
-      {tab==='home'&&<HomeView enabled={canSell} total={todayTotal} count={todayCount} ticket={ticket} lowStock={lowStock} cash={openCash} onSell={()=>canSell&&setTab('sell')}/>}
-      {tab==='sell'&&<SellView orgId={orgId} storeId={storeId} userId={userId} products={products} inventory={inventory} cash={openCash} brand={brand} disabled={!canSell} onDone={(r)=>{setReceipt(r);load();setMessage('Venda concluída com sucesso.')}}/>}
+    <div className="bakery-layout"><aside className="bakery-sidebar"><span className="eyebrow">CENTRAL DA PADARIA</span><nav aria-label="Módulos da padaria">{navigation.map(n=><button key={n.key} disabled={'disabled' in n&&n.disabled} className={tab===n.key?'active':''} onClick={()=>setTab(n.key)}>{n.label}</button>)}</nav><p>Vendas, estoque e resultados em uma única operação.</p><label>Loja<select aria-label="Loja da operação" value={storeId||''} onChange={e=>{setOperationLoading(true);setOpenCash(null);setInventory([]);setReceipt(null);setStoreId(e.target.value);}}>{stores.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label></aside><main className="content">
+      {management&&['home','stock','purchases','results','expenses'].includes(tab)&&<Management key={`${orgId}-${storeId}`} orgId={orgId} storeId={storeId} screen={tab as 'home'|'stock'|'purchases'|'results'|'expenses'} onNavigate={setTab} onChange={load} readOnly={managementReadOnly}/>}
+      {!management&&tab==='stock'&&canCatalog&&<Management orgId={orgId} storeId={storeId} screen="stock" onNavigate={setTab} onChange={load} stockOnly/>}
+      {tab==='home'&&!management&&<HomeView enabled={canSell} total={todayTotal} count={todayCount} ticket={ticket} lowStock={lowStock} cash={openCash} onSell={()=>canSell&&setTab('sell')}/>}
+      {tab==='sell'&&operationLoading&&<p role="status">Atualizando loja e estoque...</p>}
+      {tab==='sell'&&!operationLoading&&<SellView orgId={orgId} storeId={storeId} userId={userId} products={products} inventory={inventory} cash={openCash} brand={brand} disabled={!canSell} onDone={(r)=>{setReceipt(r);load();setMessage('Venda concluída com sucesso.')}}/>}
       {tab==='products'&&canCatalog&&<><CatalogRelease client={supabase} scopeId={orgId} onDone={load}/><QuickProduct client={supabase} app="sr-padeiro" scopeId={orgId} onDone={load}/><CatalogImport client={supabase} app="sr-padeiro" scopeId={orgId} onDone={load}/></>}
       {tab==='products'&&<ProductsView orgId={orgId} storeId={storeId} products={products} inventory={inventory} editable={canCatalog} onChange={load} setMessage={setMessage}/>}
-      {tab==='cash'&&<CashView orgId={orgId} storeId={storeId} userId={userId} cash={openCash} enabled={canCash} onChange={load} setMessage={setMessage}/>}
+      {tab==='cash'&&!operationLoading&&<CashView orgId={orgId} storeId={storeId} userId={userId} cash={openCash} enabled={canCash} onChange={load} setMessage={setMessage}/>}
       {tab==='more'&&<><AccessLinks scopeId={orgId}/><section className="ops-panel"><h2>Configurações da operação</h2><p>Perfil: {role} • {operationPrefs.value.businessName||brand.name}</p></section>{canBrand&&<><SettingsPanel client={supabase} app="sr-padeiro" scopeId={orgId} preferences={operationPrefs.value} ready={operationPrefs.ready} error={operationPrefs.error} onSaved={operationPrefs.setValue}/><TeamPanel client={supabase} app="sr-padeiro" scopeId={orgId}/></>}{role==='owner'&&!supportMode&&environment!=='homologation'&&<SubscriptionCard orgId={orgId} compact/>}</>}
       {receipt&&<ReceiptOutput ready={operationPrefs.ready} error={operationPrefs.error} preferences={operationPrefs.value} data={{id:receipt.saleId,label:'Venda no balcão',date:receipt.date,items:receipt.items.map(i=>({name:productName(i.product),quantity:i.quantity,unitPrice:Number(i.product.sale_price),unit:i.product.unit})),total:receipt.total,payment:({pix:'PIX',cash:'Dinheiro',debit:'Débito',credit:'Crédito',credit_book:'Fiado'} as Record<string,string>)[receipt.payment]||receipt.payment,operator:firstName}} onClose={()=>setReceipt(null)}/>}
-    </main>
+    </main></div>
     <nav className="bottom-nav" aria-label="Navegação principal"><Nav active={tab==='home'} onClick={()=>setTab('home')} icon={<Home size={20}/>} label="Início"/><Nav active={tab==='sell'} disabled={!canSell} onClick={()=>setTab('sell')} icon={<ShoppingCart size={20}/>} label="Vender"/><Nav active={tab==='products'} onClick={()=>setTab('products')} icon={<Package size={20}/>} label="Produtos"/><Nav active={tab==='cash'} disabled={!['owner','manager','cashier','viewer'].includes(role)} onClick={()=>setTab('cash')} icon={<WalletCards size={20}/>} label="Caixa"/><Nav active={tab==='more'} onClick={()=>setTab('more')} icon={<Menu size={20}/>} label="Mais"/></nav>
   </div>
 }

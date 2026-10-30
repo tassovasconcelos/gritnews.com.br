@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "smoke": "node scripts/smoke-test.mjs",
-    "test:admin": "node --test scripts/test-admin-catalog.mjs scripts/test-admin-edge.mjs"
+    "test:admin": "node --test scripts/test-admin-catalog.mjs scripts/test-admin-edge.mjs scripts/test-management.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
