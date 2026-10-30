@@ -18,7 +18,7 @@ export default function AdminClient({orgId,onRefresh}:{orgId:string;onRefresh:()
   if(!detail)return <div className="sa-empty">{error?<p role="alert">{error}<button onClick={()=>void load()}>Tentar novamente</button></p>:'Carregando ficha do cliente…'}</div>;
   const d=detail;const o=d.organization;
   return <><header className="sa-detail-header"><div className="sa-detail-title">{o.logo_url?<img src={o.logo_url} alt=""/>:<div className="sa-avatar"><Package/></div>}<div><span className="sa-badge">{o.environment==='homologation'?'Homologação':'Produção'}</span><h2>{o.name}</h2><p>{o.contact_email||'Contato pendente'} · {modeNames[d.access?.access_mode||'']||'Sem acesso'}</p></div></div><button className="sa-outline" onClick={support}>Configurar / dar suporte <ExternalLink size={15}/></button></header>
-    <AccessLinks scopeId={orgId}/><nav className="sa-tabs" aria-label="Ficha do cliente">{tabs.map(([id,label])=><button key={id} aria-current={id===tab?'page':undefined} onClick={()=>{setTab(id);setMessage('');setError('')}}>{label}</button>)}</nav>
+    <AccessLinks client={supabase} app="sr-padeiro" scopeId={orgId}/><nav className="sa-tabs" aria-label="Ficha do cliente">{tabs.map(([id,label])=><button key={id} aria-current={id===tab?'page':undefined} onClick={()=>{setTab(id);setMessage('');setError('')}}>{label}</button>)}</nav>
     {error&&<div role="alert" className="sa-alert">{error}</div>}{message&&<div role="status" className="sa-success">{message}</div>}
     <div className="sa-panel" aria-busy={busy}>
     {tab==='overview'&&<ClientSuccessPanel key={orgId} client={supabase} app="sr-padeiro" scopeId={orgId}/>}

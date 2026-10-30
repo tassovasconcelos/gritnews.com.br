@@ -1,12 +1,14 @@
+import { customerRoute } from './customerRoute.ts';
 type ConfirmationClient = { auth: { resend: (values: {
   type: 'signup'; email: string; options: { emailRedirectTo: string };
 }) => Promise<{ error: unknown }> } };
 
-export function confirmationRedirect(origin: string, query: string) {
-  const target = new URL('/app', origin);
+export function confirmationRedirect(origin: string, query: string, path = '/app') {
+  const route = customerRoute(path);
+  const target = new URL(route.slug ? `/app/${route.slug}` : '/app', origin);
   const params = new URLSearchParams(query);
   const scope = params.get('operation_scope') || params.get('organization');
-  if (scope && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(scope)) {
+  if (!route.slug && scope && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(scope)) {
     target.searchParams.set('operation_scope', scope);
   }
   return target.href;

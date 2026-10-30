@@ -5,7 +5,7 @@ import { preserveOperationSession } from '@gritnews/operations';
 
 export default function CustomerLoginEntry(){
   const installed=window.matchMedia('(display-mode: standalone)').matches||(navigator as Navigator&{standalone?:boolean}).standalone===true;
-  const preserveSession=preserveOperationSession(window.location.search,installed);
+  const preserveSession=preserveOperationSession(window.location.search,installed,window.location.pathname);
   const[ready,setReady]=useState(preserveSession);
 
   useEffect(()=>{

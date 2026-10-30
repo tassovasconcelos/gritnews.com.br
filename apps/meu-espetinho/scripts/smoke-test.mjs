@@ -29,7 +29,7 @@ try {
   if (!health.ok || !health.dist) throw new Error(`Health inválido: ${JSON.stringify(health)}`);
   console.log('✓ /health', health);
 
-  for (const path of ['/', '/cadastro', '/app', '/admin']) {
+  for (const path of ['/', '/cadastro', '/app', '/app/orlandinhobar', '/instalar?cliente=orlandinhobar', '/admin']) {
     const r = await fetch(`${base}${path}`);
     const html = await r.text();
     if (r.status !== 200) throw new Error(`${path}: HTTP ${r.status}`);
