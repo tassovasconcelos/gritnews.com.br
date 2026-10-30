@@ -1,4 +1,4 @@
--- Requires the shared operations migrations and sr-padeiro/admin-console.sql.
+-- Requires shared operations, managed accounts/session revocation and admin-console.sql.
 create table public.srp_purchases (
  id uuid primary key default gen_random_uuid(),organization_id uuid not null references public.srp_organizations(id),
  store_id uuid not null references public.srp_stores(id),product_id uuid not null references public.srp_products(id),
@@ -14,6 +14,8 @@ revoke all on public.srp_purchases from public,anon,authenticated;
 grant select on public.srp_purchases to authenticated;
 create policy srp_purchases_read on public.srp_purchases for select to authenticated
  using(private.ops_catalog_access('sr-padeiro',organization_id) or private.ops_super());
+create policy srp_purchases_password_gate on public.srp_purchases as restrictive for all to authenticated
+ using(not private.ops_account_requires_change()) with check(not private.ops_account_requires_change());
 
 create table public.srp_commercial_settings (
  organization_id uuid primary key references public.srp_organizations(id),
@@ -29,6 +31,8 @@ revoke all on public.srp_commercial_settings from public,anon,authenticated;
 grant select on public.srp_commercial_settings to authenticated,service_role;
 create policy srp_commercial_read on public.srp_commercial_settings for select to authenticated
  using(private.ops_access('sr-padeiro',organization_id,true) or private.ops_super());
+create policy srp_commercial_password_gate on public.srp_commercial_settings as restrictive for all to authenticated
+ using(not private.ops_account_requires_change()) with check(not private.ops_account_requires_change());
 
 alter table public.srp_sale_items add column if not exists cost_price_snapshot numeric(14,2);
 create function private.srp_snapshot_cost() returns trigger language plpgsql security definer set search_path='' as $$
@@ -58,6 +62,7 @@ declare
  v_sales numeric; v_expenses numeric; v_cogs numeric; v_missing int; v_count int; v_reason text;
  v_providers text[]; v_preferred text; v_stage text;
 begin
+ perform public.ops_account_request_guard();
  if auth.uid() is null then raise exception 'forbidden' using errcode='42501'; end if;
  manager:=is_super or private.ops_access('sr-padeiro',p_org,true);
  catalog:=is_super or private.ops_catalog_access('sr-padeiro',p_org);
@@ -77,7 +82,7 @@ begin
     where organization_id=p_org and status='completed' and created_at>=v_start and created_at<v_end and (v_store is null or store_id=v_store);
    select coalesce(sum(amount),0) into v_expenses from public.srp_expenses where organization_id=p_org
     and created_at>=v_start and created_at<v_end and (v_store is null or store_id=v_store);
-   select coalesce(sum(i.quantity*i.cost_price_snapshot),0),count(*) filter(where i.cost_price_snapshot is null)
+   select coalesce(sum(round(i.quantity*i.cost_price_snapshot,2)),0),count(*) filter(where i.cost_price_snapshot is null)
     into v_cogs,v_missing from public.srp_sale_items i join public.srp_sales s on s.id=i.sale_id and s.organization_id=i.organization_id
     where s.organization_id=p_org and s.status='completed' and s.created_at>=v_start and s.created_at<v_end and (v_store is null or s.store_id=v_store);
    v_missing:=v_missing+(select count(*) from public.srp_sales s where s.organization_id=p_org and s.status='completed' and s.created_at>=v_start and s.created_at<v_end
@@ -89,8 +94,8 @@ begin
       where organization_id=p_org and status='completed' and created_at>=v_start and created_at<v_end and (v_store is null or store_id=v_store) group by 1)t),'[]'::jsonb),
     'payments',coalesce((select jsonb_agg(to_jsonb(t)) from (select p.method,sum(p.amount) as total from public.srp_sale_payments p join public.srp_sales s on s.id=p.sale_id and s.organization_id=p.organization_id
       where s.organization_id=p_org and s.status='completed' and s.created_at>=v_start and s.created_at<v_end and (v_store is null or s.store_id=v_store) group by 1)t),'[]'::jsonb),
-    'top_products',coalesce((select jsonb_agg(to_jsonb(t)) from (select p.name,p.variant,sum(i.quantity) as quantity,sum(i.total) as total from public.srp_sale_items i join public.srp_sales s on s.id=i.sale_id and s.organization_id=i.organization_id join public.srp_products p on p.id=i.product_id and p.organization_id=i.organization_id
-      where s.organization_id=p_org and s.status='completed' and s.created_at>=v_start and s.created_at<v_end and (v_store is null or s.store_id=v_store) group by p.id,p.name,p.variant order by sum(i.total) desc limit 10)t),'[]'::jsonb),
+    'top_products',coalesce((select jsonb_agg(to_jsonb(t)) from (select p.name,p.variant,p.unit,sum(i.quantity) as quantity,sum(i.total) as total from public.srp_sale_items i join public.srp_sales s on s.id=i.sale_id and s.organization_id=i.organization_id join public.srp_products p on p.id=i.product_id and p.organization_id=i.organization_id
+      where s.organization_id=p_org and s.status='completed' and s.created_at>=v_start and s.created_at<v_end and (v_store is null or s.store_id=v_store) group by p.id,p.name,p.variant,p.unit order by sum(i.total) desc limit 10)t),'[]'::jsonb),
     'sales',coalesce((select jsonb_agg(to_jsonb(t) order by t.created_at desc) from (select s.id,s.created_at,s.status,s.total,s.seller_id,coalesce(p.full_name,'Usuário') as seller_name from public.srp_sales s left join public.profiles p on p.id=s.seller_id where s.organization_id=p_org and s.created_at>=v_start and s.created_at<v_end and (v_store is null or s.store_id=v_store) order by s.created_at desc limit 100)t),'[]'::jsonb));
  elsif p_action='stock' then
    return jsonb_build_object('stores',coalesce((select jsonb_agg(jsonb_build_object('id',id,'name',name)) from public.srp_stores where organization_id=p_org and active),'[]'::jsonb),
@@ -146,7 +151,7 @@ begin
    if p_action='launch' then
      if not exists(select 1 from public.srp_commercial_settings where organization_id=p_org and onboarding_stage='ready')
        or not exists(select 1 from public.srp_members m join auth.users u on u.id=m.user_id where m.organization_id=p_org and m.active and m.role in ('owner','manager') and u.email_confirmed_at is not null)
-       or not exists(select 1 from public.srp_products p join public.srp_inventory i on i.product_id=p.id and i.organization_id=p.organization_id where p.organization_id=p_org and p.active and p.fulfillment<>'confirmar' and i.quantity>0)
+       or not exists(select 1 from public.srp_products p join public.srp_inventory i on i.product_id=p.id and i.organization_id=p.organization_id join public.srp_stores st on st.id=i.store_id and st.organization_id=p.organization_id and st.active where p.organization_id=p_org and p.active and p.fulfillment<>'confirmar' and i.quantity>0)
        then raise exception 'onboarding_not_ready'; end if;
      if exists(select 1 from public.srp_commercial_settings where organization_id=p_org and cardinality(allowed_providers)>0)
        and not exists(select 1 from public.srp_members m join auth.users u on u.id=m.user_id where m.organization_id=p_org and m.active and m.role='owner' and u.email_confirmed_at is not null)
@@ -165,6 +170,10 @@ begin
    insert into public.srp_operation_events(organization_id,user_id,event_name,metadata) values(p_org,auth.uid(),'commercial_'||p_action,jsonb_build_object('reason',v_reason));
  elsif p_action='commercial' then
    return jsonb_build_object('settings',coalesce((select to_jsonb(c) from public.srp_commercial_settings c where organization_id=p_org),jsonb_build_object('allowed_providers',array['asaas','mercadopago'],'preferred_provider','asaas','onboarding_stage','setup','notes','')),
+     'readiness',jsonb_build_object(
+       'confirmed_member',exists(select 1 from public.srp_members m join auth.users u on u.id=m.user_id where m.organization_id=p_org and m.active and m.role in ('owner','manager') and u.email_confirmed_at is not null),
+       'confirmed_owner',exists(select 1 from public.srp_members m join auth.users u on u.id=m.user_id where m.organization_id=p_org and m.active and m.role='owner' and u.email_confirmed_at is not null),
+       'ready_product',exists(select 1 from public.srp_products p join public.srp_inventory i on i.product_id=p.id and i.organization_id=p.organization_id join public.srp_stores st on st.id=i.store_id and st.organization_id=p.organization_id and st.active where p.organization_id=p_org and p.active and p.fulfillment<>'confirmar' and i.quantity>0)),
      'subscription',(select jsonb_build_object('status',status,'provider',provider,'monthly_amount',monthly_amount,'current_period_end',current_period_end) from public.srp_subscriptions where organization_id=p_org),
      'transactions',coalesce((select jsonb_agg(to_jsonb(t)) from (select kind,provider,status,amount,created_at from public.srp_billing_transactions where organization_id=p_org order by created_at desc limit 30)t),'[]'::jsonb));
  end if;
