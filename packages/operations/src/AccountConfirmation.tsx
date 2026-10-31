@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { currentCustomerPath } from './customerRoute';
 import { confirmationRedirect, resendSignupConfirmation } from './authLinks';
 
 type Client = Parameters<typeof resendSignupConfirmation>[0];
@@ -11,7 +12,7 @@ export function AccountConfirmation({ client, email }: { client: Client | null; 
     setBusy(true);
     setMessage('');
     try {
-      await resendSignupConfirmation(client, email, confirmationRedirect(location.origin, location.search));
+      await resendSignupConfirmation(client, email, confirmationRedirect(location.origin, location.search, currentCustomerPath()));
       setMessage('Se houver uma confirmação pendente, confira sua caixa de entrada e o spam.');
     } catch {
       setMessage('Não foi possível solicitar agora. Confira o e-mail e aguarde um minuto antes de tentar novamente.');

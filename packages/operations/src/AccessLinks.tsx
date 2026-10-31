@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
 import type { OperationApp } from './SettingsPanel';
+import { operationLinks, validCustomerSlug, rememberCustomer } from './customerRoute';
+export { operationLinks } from './customerRoute';
 
-export function operationLinks(origin: string, scopeId: string) {
-  const access = new URL('/app', origin);
-  access.searchParams.set('operation_scope', scopeId);
-  const install = new URL('/instalar', origin);
-  install.searchParams.set('operation_scope', scopeId);
-  return { access: access.href, install: install.href };
-}
-
-export function AccessLinks({ scopeId }: { scopeId: string }) {
-  const links = operationLinks(location.origin, scopeId);
+export function AccessLinks({ scopeId, client, app }: { scopeId: string; client: any; app: OperationApp }) {
+  const [route, setRoute] = useState<{scopeId: string; slug: string} | null>(null);
+  useEffect(() => {
+    let active = true;
+    setRoute(null);
+    client?.rpc('ops_customer_route', { a: app, s: scopeId }).then((r: any) => {
+      if (active && !r.error && r.data?.slug) setRoute({scopeId, slug:r.data.slug});
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [client, app, scopeId]);
+  const links = operationLinks(location.origin, scopeId, route?.scopeId === scopeId ? route.slug : null);
   const [message, setMessage] = useState('');
   return <section className="ops-panel ops-links"><h2>Acesso e instalação do cliente</h2><p>Compartilhe o acesso desta empresa. Cada pessoa entra com sua própria conta e precisa estar liberada na equipe.</p><div className="ops-link-grid">{[['Abrir operação', links.access, 'Vendas, caixa e rotina do negócio'], ['Instalar aplicativo', links.install, 'Um atalho na tela inicial do aparelho']].map(([label, url, description]) => <article key={label} className="ops-link-card"><strong>{label}</strong><p>{description}</p><label>Endereço para {label.toLowerCase()}<input readOnly value={url} onFocus={e => e.target.select()} /></label><div className="ops-actions"><a href={url}>{label} <span aria-hidden="true">↗</span></a><button onClick={() => navigator.clipboard.writeText(url).then(() => setMessage('Link copiado.')).catch(() => setMessage('Selecione e copie o endereço.'))}>Copiar link</button></div></article>)}</div><p role="status">{message}</p></section>;
 }
@@ -21,7 +24,9 @@ export function InstallApp({ name }: { name: string }) {
   const [installed, setInstalled] = useState(matchMedia('(display-mode: standalone)').matches);
   const [message, setMessage] = useState('');
   const scope = new URLSearchParams(location.search).get('operation_scope');
-  const access = scope ? operationLinks(location.origin, scope).access : '/app';
+  const slug = new URLSearchParams(location.search).get('cliente');
+  const access = slug && validCustomerSlug(slug) ? operationLinks(location.origin, '', slug).access : scope ? operationLinks(location.origin, scope).access : '/app';
+  useEffect(() => { rememberCustomer(slug); }, [slug]);
   useEffect(() => {
     const ready = (e: Event) => { e.preventDefault(); setEvent(e as InstallEvent); };
     const done = () => { setInstalled(true); setEvent(null); };

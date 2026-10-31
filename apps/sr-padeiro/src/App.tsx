@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Auth from './Auth';
-import { InviteAcceptance, InstallApp, PasswordSetup, confirmationRedirect } from '@gritnews/operations';
+import { InviteAcceptance, InstallApp, PasswordSetup, customerRoute, currentCustomerPath, rememberCustomer, confirmationRedirect } from '@gritnews/operations';
 import Landing from './Landing';
 import SeoLanding,{isSeoPath} from './SeoLanding';
 import Admin from './Admin';
@@ -15,14 +15,14 @@ type Role='owner'|'manager'|'cashier'|'stockist'|'viewer';
 
 export default function App() {
   const path=window.location.pathname;
-  const [passwordSetup,setPasswordSetup]=useState(()=>path==='/reset-password'||new URLSearchParams(location.search).get('mode')==='invite'||['invite','recovery'].includes(new URLSearchParams(location.hash.slice(1)).get('type')||''));
+  const [passwordSetup,setPasswordSetup]=useState(()=>path==='/reset-password'||['invite','recovery'].includes(new URLSearchParams(location.search).get('mode')||'')||['invite','recovery'].includes(new URLSearchParams(location.hash.slice(1)).get('type')||''));
   const supportTarget=new URLSearchParams(location.search).get('support_org');
   const [supportMode,setSupportMode]=useState(false);
   const [session,setSession]=useState<Session|null>(null); const [loading,setLoading]=useState(true); const [orgId,setOrgId]=useState<string|null>(null); const [role,setRole]=useState<Role>('viewer'); const [access,setAccess]=useState<string>('blocked'); const [isSuper,setIsSuper]=useState(false); const [environment,setEnvironment]=useState('production'); const [setupError,setSetupError]=useState('');
   async function hydrate(next:Session|null){
     setSession(next); setAccess('blocked'); setIsSuper(false);setSetupError('');setEnvironment('production');setLoading(true);setSupportMode(false);
     if(!next){setOrgId(null);setLoading(false);return}
-    const requestedOrg=new URLSearchParams(location.search).get('organization')||new URLSearchParams(location.search).get('operation_scope');
+    const route=customerRoute(currentCustomerPath());if(route.invalid){setOrgId(null);setSetupError('Endereço do cliente inválido.');setLoading(false);return;}let requestedOrg=new URLSearchParams(location.search).get('organization')||new URLSearchParams(location.search).get('operation_scope');if(route.slug){const resolved=await supabase.rpc('ops_customer_route',{a:'sr-padeiro',slug:route.slug});if(resolved.error||!resolved.data?.scope_id){setOrgId(null);setSetupError('Empresa indisponível para esta conta. Confira o endereço e sua liberação com o responsável.');setLoading(false);return;}rememberCustomer(route.slug);requestedOrg=resolved.data.scope_id;}
     let membershipQuery=supabase.from('srp_members').select('organization_id,role').eq('user_id',next.user.id).eq('active',true);
     if(requestedOrg)membershipQuery=membershipQuery.eq('organization_id',requestedOrg);
     const [{data:admin},{data:member}]=await Promise.all([
@@ -31,7 +31,8 @@ export default function App() {
     ]);
     const superAdmin=Boolean(admin?.active&&String(admin.role||'').toLowerCase()==='superadmin');
     setIsSuper(superAdmin);
-    if(supportTarget&&superAdmin){
+    if(supportTarget&&(!superAdmin||(route.slug&&supportTarget!==requestedOrg))){setOrgId(null);setSetupError('Acesso de suporte indisponível para esta conta ou empresa.');setLoading(false);return;}
+    if(supportTarget&&superAdmin&&(!route.slug||supportTarget===requestedOrg)){
       const [context,organization]=await Promise.all([supabase.rpc('ops_support_context',{a:'sr-padeiro',s:supportTarget}),supabase.from('srp_organizations').select('id,environment').eq('id',supportTarget).single()]);
       if(context.data!==true||organization.error){setSetupError('Sessão de suporte inválida ou expirada. Inicie novamente pela central.');setLoading(false);return;}
       setOrgId(supportTarget);setEnvironment(organization.data.environment);setRole('owner');setAccess('Suporte administrativo');setSupportMode(true);setLoading(false);return;
@@ -60,7 +61,7 @@ export default function App() {
   const inviteToken=new URLSearchParams(location.search).get('convite');
   if(inviteToken)return <InviteAcceptance client={supabase} token={inviteToken}/>;
   if(!session) return <Auth/>;
-  if(passwordSetup)return <PasswordSetup client={supabase} onDone={()=>{const target=confirmationRedirect(location.origin,location.search);history.replaceState({},'',target);setPasswordSetup(false);void hydrate(session);}}/>;
+  if(passwordSetup)return <PasswordSetup client={supabase} onDone={()=>{const target=confirmationRedirect(location.origin,location.search,currentCustomerPath());history.replaceState({},'',target);setPasswordSetup(false);void hydrate(session);}}/>;
   if(setupError)return <main className="auth-shell"><section className="auth-card"><h1>Acesso indisponível</h1><p>{setupError}</p><a href="/admin">Voltar à central</a></section></main>;
   if(path==='/homologacao-gateway') return isSuper?<GatewayHomologation/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p></section></main>;
   if(path.startsWith('/admin')) return isSuper?<Admin/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p><a className="btn-dark" href="/app">Voltar ao app</a></section></main>;
