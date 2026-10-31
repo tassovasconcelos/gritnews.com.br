@@ -34,10 +34,11 @@ create policy srp_commercial_read on public.srp_commercial_settings for select t
 create policy srp_commercial_password_gate on public.srp_commercial_settings as restrictive for all to authenticated
  using(not private.ops_account_requires_change()) with check(not private.ops_account_requires_change());
 
+alter table public.srp_products add column if not exists cost_reviewed boolean not null default false;
 alter table public.srp_sale_items add column if not exists cost_price_snapshot numeric(14,2);
 create function private.srp_snapshot_cost() returns trigger language plpgsql security definer set search_path='' as $$
 begin
- select p.cost_price into new.cost_price_snapshot from public.srp_products p where p.id=new.product_id and p.organization_id=new.organization_id;
+ select case when p.cost_reviewed or p.cost_price>0 then p.cost_price else null end into new.cost_price_snapshot from public.srp_products p where p.id=new.product_id and p.organization_id=new.organization_id;
  return new;
 end $$;
 revoke all on function private.srp_snapshot_cost() from public,anon,authenticated;
@@ -126,7 +127,7 @@ begin
        insert into public.srp_purchases(organization_id,store_id,product_id,request_id,quantity,unit_cost,supplier,document,created_by)
        values(p_org,v_store,v_product,v_request,v_qty,v_cost,trim(p_payload->>'supplier'),coalesce(p_payload->>'document',''),auth.uid()) returning id into v_id;
        update public.srp_inventory set quantity=quantity+v_qty,updated_at=now() where organization_id=p_org and store_id=v_store and product_id=v_product;
-       if coalesce((p_payload->>'update_cost')::boolean,false) then update public.srp_products set cost_price=v_cost where id=v_product and organization_id=p_org; end if;
+       if coalesce((p_payload->>'update_cost')::boolean,false) then update public.srp_products set cost_price=v_cost,cost_reviewed=true where id=v_product and organization_id=p_org; end if;
        insert into public.srp_inventory_movements(organization_id,store_id,product_id,movement_type,quantity,reference_id,reason,created_by)
        values(p_org,v_store,v_product,'purchase',v_qty,v_id,'Recebimento de compra',auth.uid());
      else

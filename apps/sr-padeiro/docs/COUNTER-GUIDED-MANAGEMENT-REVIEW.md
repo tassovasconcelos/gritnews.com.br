@@ -57,7 +57,7 @@ Metas, edições, pedidos, transições e conclusões registram o ator em `srp_o
 
 ## Verificação
 
-**62 testes aprovados:** 35 compartilhados (incluindo oito novos de pedidos/rascunho), 24 administrativos/Edge do Sr. Padeiro e três fiscais/recibo do Meu Espetinho. Os novos testes executam a migração real em Postgres local/PGlite e verificam:
+**70 testes aprovados:** 36 compartilhados (incluindo nove novos de pedidos/rascunho/integração), 31 administrativos/Edge/gestão do Sr. Padeiro e três fiscais/recibo do Meu Espetinho. Os novos testes executam a migração real em Postgres local/PGlite e verificam:
 
 - salvar/retomar, pronto, conclusão e repetição sem outra venda, pagamento ou baixa;
 - rollback por estoque insuficiente, caixa ausente e preço alterado;
@@ -68,19 +68,21 @@ Metas, edições, pedidos, transições e conclusões registram o ator em `srp_o
 - totais de gestão separados dos pedidos, permissão de meta e edição de preço/custo;
 - persistência de rascunho/tentativa separada por empresa, loja e usuário.
 
+A integração com a gestão mais recente da versão principal preserva estoque/mínimos, compra inteligente, despesas e resultados por loja. O recebimento e o relatório consolidado permanecem disponíveis em `PlatformManagement.tsx`, com estilos isolados. A edição e o recebimento com atualização de custo marcam sua revisão; custo zero confirmado é distinto de custo desconhecido. Um teste integrado executa a gestão e o atendimento juntos e verifica custo histórico, receita e saldo. A consulta do superadministrador mantém os controles de alteração desabilitados; a operação completa exige sessão de suporte autorizada.
+
 TypeScript, build e smoke do Sr. Padeiro aprovados. Permanece o aviso de tamanho do pacote JavaScript, já existente; esta entrega não representa teste de carga ou certificação de capacidade.
 
 No navegador, foram usados os componentes reais, autenticação/dados de catálogo de demonstração e RPC de pedidos/gestão conectado ao Postgres local com a migração desta entrega. Foram conferidos: rascunho após recarregar; salvar e retomar da fila; pronto; recebimento, recibo e redução de estoque; edição de custo resolvendo a tarefa gerencial; meta; encomenda com data/hora; celular 390×844, tablet 834×1112 e computador 1440×1100, sem transbordamento horizontal nas larguras medidas. Perfis de apresentação são simulados; a autorização foi testada no banco local.
 
 Uma resposta de conclusão foi descartada propositalmente pelo adaptador de teste após o commit local: ao recarregar e consultar a tentativa preservada, o aplicativo recuperou a venda existente e seu recibo. A fila continuou com apenas as duas vendas legítimas do roteiro e estoque correspondente, sem uma terceira venda pela retentativa. Nenhuma cobrança, mensagem, impressão física ou escrita em produção foi executada.
 
-![Gestão guiada no computador — demonstração local](guided-management-desktop.png)
+![Gestão guiada no computador — demonstração local](guided-management-integrated-desktop.png)
 
 ![Fila de pedidos no celular — demonstração local](counter-orders-mobile.png)
 
 ## Arquivos
 
-`src/Counter.tsx`, `src/GuidedManagement.tsx`, `src/counter.css`, `src/lib/counter.ts`, integração em `src/Workspace.tsx`, nova migração e testes em `packages/operations/tests/srp-counter.test.mjs`, `counterDraft.test.mjs` e `fixtures/srp-counter.mjs`.
+`src/PlatformManagement.tsx`, `src/platform-management.css`, `src/Counter.tsx`, `src/GuidedManagement.tsx`, `src/counter.css`, `src/lib/counter.ts`, integração em `src/Workspace.tsx`, nova migração e testes em `packages/operations/tests/srp-counter.test.mjs`, `counterDraft.test.mjs` e `fixtures/srp-counter.mjs`.
 
 ## Publicação coordenada — pendente de aprovação
 

@@ -44,7 +44,7 @@ begin
   if not catalog then raise exception 'forbidden' using errcode='42501';end if;
   qty:=(p_payload->>'price')::numeric;subtotal:=(p_payload->>'cost')::numeric;
   if qty is null or qty<=0 or qty>99999999 or qty='NaN'::numeric or qty<>round(qty,2) or (subtotal is not null and (subtotal<0 or subtotal>99999999 or subtotal='NaN'::numeric or subtotal<>round(subtotal,2))) then raise exception 'invalid_product_price';end if;
-  update public.srp_products set sale_price=qty,cost_price=subtotal where id=(p_payload->>'product_id')::uuid and organization_id=p_org returning * into product;
+  update public.srp_products set sale_price=qty,cost_price=subtotal,cost_reviewed=(subtotal is not null) where id=(p_payload->>'product_id')::uuid and organization_id=p_org returning * into product;
   if not found then raise exception 'invalid_product';end if;
   insert into public.srp_operation_events(organization_id,store_id,user_id,event_name,entity_type,entity_id,metadata) values(p_org,store,auth.uid(),'product_price_saved','product',product.id,jsonb_build_object('price',qty,'cost',subtotal));
   return to_jsonb(product);
@@ -68,7 +68,7 @@ begin
    'late_orders',(select count(*) from private.srp_counter_orders where organization_id=p_org and store_id=store and status in ('open','ready') and due_at<now()),
    'cash_open',exists(select 1 from public.srp_cash_registers where organization_id=p_org and store_id=store and status='open'),
    'pending_products',(select count(*) from public.srp_products where organization_id=p_org and (not active or fulfillment='confirmar')),
-   'missing_costs',(select count(*) from public.srp_products where organization_id=p_org and active and cost_price is null),
+   'missing_costs',(select count(*) from public.srp_products where organization_id=p_org and active and (cost_price is null or (cost_price=0 and not cost_reviewed))),
    'out_of_stock',(select count(*) from public.srp_products p where p.organization_id=p_org and p.active and p.fulfillment<>'confirmar' and not exists(select 1 from public.srp_inventory i where i.organization_id=p_org and i.store_id=store and i.product_id=p.id and i.quantity>0)),
    'low_stock',coalesce((select jsonb_agg(x) from(select p.name,i.quantity,i.minimum_quantity from public.srp_inventory i join public.srp_products p on p.id=i.product_id and p.organization_id=i.organization_id where i.organization_id=p_org and i.store_id=store and p.active and i.quantity<=i.minimum_quantity order by i.quantity limit 5)x),'[]'::jsonb));
  end if;

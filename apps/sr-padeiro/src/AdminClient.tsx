@@ -1,4 +1,4 @@
-import { Results, Supplies, Commercial } from './Management';
+import { Results, Supplies, Commercial } from './PlatformManagement';
 import { FormEvent,useEffect,useRef,useState } from 'react';
 import { CheckCircle2,ExternalLink,Package,Plus,Upload,Users,WalletCards } from 'lucide-react';
 import { supabase } from './lib/supabase';

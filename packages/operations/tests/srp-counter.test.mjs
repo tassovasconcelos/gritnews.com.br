@@ -1,5 +1,22 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {fixture,as,call,draft,id,owner,cashier,stockist,other,admin,org,foreign,store,foreignStore,product,foreignProduct,cash} from './fixtures/srp-counter.mjs';
+
+test('integração gestão e atendimento: custo zero revisado, custo desconhecido e histórico preservado',async()=>{
+ const db=await fixture({management:true});try{
+  await call(db,'product',{product_id:product,price:5,cost:0});
+  let overview=await call(db,'overview');assert.equal(overview.missing_costs,0);
+  await call(db,'save',draft());await call(db,'complete',{id:id(100),version:1,payment_method:'pix',cash_id:cash});
+  let report=(await db.query('select public.srp_management_report($1,$2,30) report',[org,store])).rows[0].report;
+  assert.equal(report.summary.sales,1);assert.equal(Number(report.summary.known_cost),0);assert.equal(report.summary.missing_cost_lines,0);
+  await call(db,'product',{product_id:product,price:5,cost:null});
+  overview=await call(db,'overview');assert.equal(overview.missing_costs,1);
+  await call(db,'save',draft(101));await call(db,'complete',{id:id(101),version:1,payment_method:'cash',cash_id:cash});
+  await call(db,'product',{product_id:product,price:5,cost:3});
+  report=(await db.query('select public.srp_management_report($1,$2,30) report',[org,store])).rows[0].report;
+  assert.equal(report.summary.sales,2);assert.equal(Number(report.summary.revenue),20);assert.equal(report.summary.missing_cost_lines,1);
+  assert.equal(Number(report.summary.known_cost),0);assert.equal(Number(report.stock.find(p=>p.id===product).quantity),6);
+ }finally{await db.close();}
+});
 test('pedidos: salvar, retomar, pronto e uma única venda em repetição',async()=>{const db=await fixture();try{const d=draft();const saved=await call(db,'save',d);assert.equal(Number(saved.total),10);assert.equal((await call(db,'save',d)).version,1);assert.equal((await call(db,'list')).open_count,1);const ready=await call(db,'ready',{id:d.id,version:1});assert.equal(ready.status,'ready');const args={id:d.id,version:2,cash_id:cash,payment_method:'pix'};const first=await call(db,'complete',args),again=await call(db,'complete',args);assert.equal(first.sale_id,again.sale_id);assert.equal((await call(db,'save',d)).status,'completed');assert.equal((await call(db,'get',{id:d.id})).status,'completed');await db.exec('reset role');assert.equal((await db.query('select count(*)::int n from srp_sales')).rows[0].n,1);assert.equal(Number((await db.query('select quantity from srp_inventory')).rows[0].quantity),8);assert.equal((await db.query('select count(*)::int n from srp_sale_payments')).rows[0].n,1);}finally{await db.close();}});
 
 test('pagamento: caixa, fiado, estoque, preço e rollback sem venda parcial',async()=>{const db=await fixture();try{const d=draft();await call(db,'save',d);await assert.rejects(call(db,'complete',{id:d.id,version:1,payment_method:'credit_book',cash_id:cash}),/identified_credit_required/);await assert.rejects(call(db,'complete',{id:d.id,version:1,payment_method:'pix'}),/open_cash_required/);await db.exec(`reset role;update srp_products set sale_price=6 where id='${product}'`);await as(db,owner);await assert.rejects(call(db,'complete',{id:d.id,version:1,payment_method:'cash',cash_id:cash}),/price_or_product_changed/);await call(db,'save',{...d,save_key:id(999),version:1,items:[{product_id:product,quantity:20}]});await assert.rejects(call(db,'complete',{id:d.id,version:2,payment_method:'cash',cash_id:cash}),/Estoque insuficiente/);await db.exec('reset role');assert.equal((await db.query('select count(*)::int n from srp_sales')).rows[0].n,0);assert.equal((await db.query('select count(*)::int n from srp_sale_payments')).rows[0].n,0);assert.equal(Number((await db.query('select quantity from srp_inventory')).rows[0].quantity),10);}finally{await db.close();}});
