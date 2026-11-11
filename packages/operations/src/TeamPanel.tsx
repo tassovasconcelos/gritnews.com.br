@@ -1,3 +1,4 @@
+import {operationAreas,supportOperationUrl} from './supportNavigation';
 import { useCallback, useEffect, useState } from "react";
 import type { OperationApp } from "./SettingsPanel";
 type Member = {
@@ -382,41 +383,12 @@ export function InviteAcceptance({
     </main>
   );
 }
-export function SupportBanner({
-  client,
-  app,
-  scopeId,
-}: {
-  client: any;
-  app: OperationApp;
-  scopeId: string;
-}) {
-  const [message, setMessage] = useState("");
-  useEffect(() => {
-    const timer = setInterval(async () => {
-      const r = await client.rpc("ops_support_context", { a: app, s: scopeId });
-      if (r.error)
-        setMessage("Não foi possível verificar a sessão de suporte.");
-      else if (r.data !== true) location.assign("/admin");
-    }, 30000);
-    return () => clearInterval(timer);
-  }, [client, app, scopeId]);
-  return (
-    <div className="ops-support">
-      <strong>
-        Suporte do superadministrador • sessão temporária e auditada
-      </strong>
-      <button
-        onClick={async () => {
-          const r = await client.rpc("ops_end_support", { a: app, s: scopeId });
-          if (r.error)
-            setMessage("Não foi possível encerrar. Tente novamente.");
-          else location.assign("/admin");
-        }}
-      >
-        Encerrar suporte
-      </button>
-      {message && <span role="alert">{message}</span>}
-    </div>
-  );
+export function SupportBanner({client,app,scopeId,name}:{client:any;app:OperationApp;scopeId:string;name?:string}) {
+ const[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+ useEffect(()=>{let active=true;async function check(){try{const r=await client.rpc('ops_support_context',{a:app,s:scopeId});if(!active)return;if(r.error)setMessage('Não foi possível verificar a sessão de suporte.');else if(r.data!==true)location.assign('/admin/operacoes');}catch{if(active)setMessage('Sem conexão para verificar o suporte. As permissões continuam sendo verificadas pelo servidor.');}}
+  void check();const timer=setInterval(()=>void check(),30000);return()=>{active=false;clearInterval(timer);};
+ },[client,app,scopeId]);
+ async function end(){if(busy)return;setBusy(true);setMessage('');try{const r=await client.rpc('ops_end_support',{a:app,s:scopeId});if(r.error)throw r.error;location.assign('/admin/operacoes');}catch{setMessage('Não foi possível encerrar. Tente novamente.');setBusy(false);}}
+ async function renew(){if(busy)return;setBusy(true);setMessage('');try{const r=await client.rpc('ops_start_support',{a:app,s:scopeId,reason:'Continuidade da implantação e configuração da operação'});if(r.error||!r.data?.expires_at)throw new Error('unavailable');setMessage('Suporte renovado e registrado na auditoria.');}catch{setMessage('Não foi possível renovar o suporte. Verifique a conexão e sua sessão.');}finally{setBusy(false);}}
+ return <aside className="ops-support" aria-label="Operação em suporte"><div><strong className="ops-support-name">Super Admin em operação • {name||'cliente selecionado'}</strong><small>Sessão temporária e auditada. Alterações serão aplicadas nesta empresa.</small></div><nav className="ops-support-nav" aria-label="Áreas da operação">{operationAreas.map(([id,label])=><a key={id} href={supportOperationUrl(app,scopeId,id,location.origin)}>{label}</a>)}</nav><a href="/admin/operacoes">Trocar cliente / plataforma</a><button disabled={busy} onClick={()=>void renew()}>Renovar suporte</button><button disabled={busy} onClick={()=>void end()}>Encerrar suporte</button>{message&&<span role="status">{message}</span>}</aside>;
 }

@@ -1,3 +1,4 @@
+import {operationSection,StartOperationSupport} from '@gritnews/operations';
 import Management from './Management';
 import './management.css';
 import Counter,{counter} from './Counter';
@@ -22,7 +23,7 @@ type Props={orgId:string;userId:string;role:Role;environment:string;access:strin
 const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 
 export default function Workspace({orgId,userId,role,environment,access,firstName,onSignOut,supportMode=false,managementReadOnly=false}:Props){
-  const [tab,setTab]=useState<'home'|'sell'|'products'|'cash'|'more'|'results'|'supply'|'stock'|'purchases'|'expenses'|'consolidated'>(['owner','manager'].includes(role)&&new URLSearchParams(location.search).get('section')==='settings'?'more':role==='cashier'?'sell':role==='stockist'?'supply':'home');
+  const [tab,setTab]=useState<'home'|'sell'|'products'|'cash'|'more'|'results'|'supply'|'stock'|'purchases'|'expenses'|'consolidated'>((operationSection('sr-padeiro',new URLSearchParams(location.search).get('section')) as 'home'|'sell'|'products'|'stock'|'purchases'|'more'|null)||(role==='cashier'?'sell':role==='stockist'?'supply':'home'));
   const loadVersion=useRef(0);const [stores,setStores]=useState<{id:string;name:string}[]>([]);const [cartCount,setCartCount]=useState(0);
   const [storeId,setStoreId]=useState<string|null>(null); const [brand,setBrand]=useState<Brand>({name:'Sr. Padeiro',logo_url:null,primary_color:'#F47A20',phone:null});
   const [products,setProducts]=useState<Product[]>([]); const [inventory,setInventory]=useState<Inventory[]>([]); const [todayTotal,setTodayTotal]=useState(0); const [todayCount,setTodayCount]=useState(0);
@@ -49,9 +50,9 @@ export default function Workspace({orgId,userId,role,environment,access,firstNam
   return <div className="app-shell" style={{'--brand':brand.primary_color||'#F47A20'} as any}>
     <aside className="workspace-sidebar"><strong>Sr. Padeiro</strong>{[['home','Visão geral'],['sell','Atendimento e venda'],['products','Produtos e cardápio'],...(canBrand?[['results','Vendas e resultados'],['purchases','Compra inteligente'],['expenses','Despesas'],['consolidated','Todas as lojas']]:[]),...((canCatalog||canBrand)?[['stock','Estoque e mínimos']]:[]),...(canCatalog?[['supply','Receber compras']]:[]),['cash','Caixa'],['more',canBrand?'Personalização e equipe':'Meu acesso']].map(([id,label])=><button key={id} className={tab===id?'active':''} disabled={(id==='sell'&&!canSell)||(id==='cash'&&role==='stockist')} onClick={()=>setTab(id as typeof tab)}>{label}</button>)}<small>Uma operação preparada para cuidar do negócio e de quem está no balcão.</small></aside>{environment==='homologation'&&<div className="workspace-message">Homologação: use somente dados de teste.</div>}
     <header className="topbar"><div className="workspace-brand">{(operationPrefs.value.logoUrl||brand.logo_url)?<img src={operationPrefs.value.logoUrl||brand.logo_url||''} alt={brand.name}/>:<div className="brand-mark">SP</div>}<div><span className="eyebrow">{operationPrefs.value.businessName||brand.name} • {access}</span><h1>Bom dia, {firstName} 👋</h1></div></div><label className="workspace-store">Loja em operação<select value={storeId||''} disabled={cartCount>0} onChange={e=>setStoreId(e.target.value)}>{stores.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label><button className="icon-button" onClick={onSignOut} title="Sair"><LogOut size={19}/></button></header>
-    {supportMode&&<SupportBanner client={supabase} app="sr-padeiro" scopeId={orgId}/>}
+    {supportMode&&<SupportBanner client={supabase} app="sr-padeiro" scopeId={orgId} name={brand.name}/>}
     {message&&<div className="workspace-message">{message}<button onClick={()=>setMessage('')}><X size={15}/></button></div>}
-    <main className="content">
+    <main className="content">{managementReadOnly&&<StartOperationSupport client={supabase} app="sr-padeiro" scopeId={orgId}/>}
       {tab==='home'&&canBrand&&<GuidedManagement orgId={orgId} storeId={storeId} onNavigate={setTab} readOnly={managementReadOnly}/>}
       {tab==='home'&&!canBrand&&<HomeView enabled={canSell} total={todayTotal} count={todayCount} ticket={ticket} lowStock={lowStock} cash={openCash} onSell={()=>canSell&&setTab('sell')}/>}
       {canSell&&storeId&&<div hidden={tab!=='sell'}><Counter key={storeId} onCartCount={setCartCount} orgId={orgId} storeId={storeId} userId={userId} products={products} inventory={inventory} cash={openCash} brand={brand} onCash={()=>setTab('cash')} onChanged={()=>void load()} onDone={setReceipt}/></div>}

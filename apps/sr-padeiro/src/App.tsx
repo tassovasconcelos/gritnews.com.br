@@ -1,3 +1,4 @@
+import {OperationHub} from '@gritnews/operations';
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Auth from './Auth';
@@ -64,7 +65,7 @@ export default function App() {
   if(passwordSetup)return <PasswordSetup client={supabase} onDone={()=>{const target=confirmationRedirect(location.origin,location.search,currentCustomerPath());history.replaceState({},'',target);setPasswordSetup(false);void hydrate(session);}}/>;
   if(setupError)return <main className="auth-shell"><section className="auth-card"><h1>Acesso indisponível</h1><p>{setupError}</p><a href="/admin">Voltar à central</a></section></main>;
   if(path==='/homologacao-gateway') return isSuper?<GatewayHomologation/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p></section></main>;
-  if(path.startsWith('/admin')) return isSuper?<Admin/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p><a className="btn-dark" href="/app">Voltar ao app</a></section></main>;
+  if(path.startsWith('/admin')) return isSuper?(path==='/admin/operacoes'?<OperationHub client={supabase} currentApp="sr-padeiro"/>:<Admin/>):<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p><a className="btn-dark" href="/app">Voltar ao app</a></section></main>;
   if(!orgId) return <Onboarding user={session.user} onDone={()=>hydrate(session)}/>;
   if(access==='blocked') return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">SP</div><h1>{environment==='homologation'?'Homologação aguardando liberação':'Continue usando o Sr. Padeiro'}</h1><p className="auth-copy">{environment==='homologation'?'Solicite à administração a renovação do período de teste. Não é necessário efetuar pagamento neste ambiente.':'Seu período de teste terminou. Assine para liberar novamente o ambiente após a confirmação do pagamento.'}</p>{environment!=='homologation'&&<SubscriptionCard orgId={orgId}/>}<a className="btn-outline" href="/">Voltar ao site</a><button className="auth-logout" onClick={()=>supabase.auth.signOut()}>Sair</button></section></main>;
   const firstName=session.user.user_metadata?.full_name?.split(' ')[0]||'empreendedor';

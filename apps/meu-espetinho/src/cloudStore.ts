@@ -69,9 +69,9 @@ async function profileMapFor(ids: string[]) {
   return new Map((data || []).map((p:any)=>[p.id,p.full_name || 'Usuário']));
 }
 
-export async function hydrateCloudState(tenantId: string): Promise<AppState | null> {
+export async function hydrateCloudState(tenantId: string,{seed=true}:{seed?:boolean}={}): Promise<AppState | null> {
   if (!supabase) return null;
-  await ensureSeedProducts(tenantId);
+  if(seed)await ensureSeedProducts(tenantId);
   const [tenantRes, categoriesRes, productsRes, ordersRes, itemsRes, customersRes] = await Promise.all([
     supabase.from('tenants').select('name,address,phone,logo_url').eq('id', tenantId).single(),
     supabase.from('categories').select('id,name').eq('tenant_id', tenantId),

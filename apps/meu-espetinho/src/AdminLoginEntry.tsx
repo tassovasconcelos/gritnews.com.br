@@ -1,3 +1,4 @@
+import {OperationHub} from '@gritnews/operations';
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Admin from './Admin';
@@ -15,6 +16,7 @@ export default function AdminLoginEntry(){
   const[session,setSession]=useState<Session|null>(null);
   const[allowed,setAllowed]=useState<boolean|null>(null);
   const path=window.location.pathname;
+  const isOperations=path==='/admin/operacoes';
   const isSecurityOps=path.startsWith('/admin/apps/security');
   const isGritLeads=path.startsWith('/admin/apps/leads');
   const isGritApps=path.startsWith('/admin/apps');
@@ -42,18 +44,19 @@ export default function AdminLoginEntry(){
   // oficial de login/recuperação e o listener acima libera a rota solicitada após autenticar.
   if(!session)return <Admin/>;
 
-  if((isGritApps||isGritLeads||isSecurityOps)&&!allowed){
+  if((isGritApps||isGritLeads||isSecurityOps||isOperations)&&!allowed){
     return <div className="admin-login"><div className="admin-login-card"><h1>Acesso protegido</h1><p>Esta operação exige permissão de Super Admin.</p><small>{session.user.email}</small><button onClick={()=>supabase?.auth.signOut()}>Sair</button></div></div>;
   }
 
+  if(isOperations)return <OperationHub client={supabase} currentApp="meu-espetinho"/>;
   if(isSecurityOps)return <SecurityOpsCenter/>;
   if(isGritLeads)return <GritLeadsCrm/>;
-  if(isGritApps)return <div style={{position:'relative'}}><div style={{position:'fixed',right:18,bottom:18,zIndex:9999,display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end'}}><a href="/admin/apps/security" style={{...quickStyle,background:'#334155'}}>Segurança & Operação</a><a href="/admin/apps/leads" style={{...quickStyle,background:'#0f766e'}}>Leads & Oportunidades</a></div><GritAppsAdmin/></div>;
+  if(isGritApps)return <div style={{position:'relative'}}><div style={{position:'fixed',right:18,bottom:18,zIndex:9999,display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end'}}><a href="/admin/operacoes" style={{...quickStyle,background:'#a34b14'}}>Operações dos clientes</a><a href="/admin/apps/security" style={{...quickStyle,background:'#334155'}}>Segurança & Operação</a><a href="/admin/apps/leads" style={{...quickStyle,background:'#0f766e'}}>Leads & Oportunidades</a></div><GritAppsAdmin/></div>;
 
   // /admin continua usando o painel completo, que também valida admin_users internamente.
   return <div style={{position:'relative'}}>
     <div style={{position:'fixed',right:18,bottom:18,zIndex:9999,display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end'}}>
-      <a href="/admin/apps/security" style={{...quickStyle,background:'#334155'}}>Segurança & Operação</a>
+      <a href="/admin/operacoes" style={{...quickStyle,background:'#a34b14'}}>Operações dos clientes</a><a href="/admin/apps/security" style={{...quickStyle,background:'#334155'}}>Segurança & Operação</a>
       <a href="/admin/apps/leads" style={{...quickStyle,background:'#0f766e'}}>Leads & Oportunidades</a>
       <a href="/admin/apps" style={{...quickStyle,background:'#111827'}} aria-label="Abrir Central de Apps GRIT">Central GRIT</a>
     </div>
