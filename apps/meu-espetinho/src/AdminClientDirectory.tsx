@@ -44,6 +44,7 @@ export default function AdminClientDirectory({tenants,subs,onRefresh}:Props){
   setDetail(data as Detail);if(data.courtesy_type==='tasting'||data.courtesy_type==='barter')setAccessType(data.courtesy_type);
  }
  async function refreshCurrent(id?:string){await onRefresh();await load();const target=id||detail?.id;if(target)await openClient(target,false)}
+ useEffect(()=>{const id=new URLSearchParams(location.search).get('client');if(id)void openClient(id);return()=>{requestVersion.current++;};},[]);
  const rows=useMemo(()=>tenants.map(t=>{const o=overview[t.id];const sub=subs.find(s=>s.tenant_id===t.id);return{t,o,sub}}).filter(x=>`${x.t.name} ${x.t.phone||''}`.toLowerCase().includes(query.toLowerCase())),[tenants,subs,overview,query]);
  const current=selected?rows.find(r=>r.t.id===selected):undefined;
  const courtesyActive=Boolean(detail?.courtesy_type&&detail?.courtesy_ends_at&&new Date(detail.courtesy_ends_at).getTime()>Date.now());

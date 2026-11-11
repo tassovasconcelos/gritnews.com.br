@@ -1,3 +1,4 @@
+import {operationAreas,startOperationSupport,type OperationArea} from './supportNavigation';
 import { useEffect, useState } from 'react';
 import type { OperationApp } from './SettingsPanel';
 
@@ -14,7 +15,8 @@ export const operationChecks = [
 export function SuperAdminOperation({ client, app, scopeId, name }: {
   client: any; app: OperationApp; scopeId: string; name: string;
 }) {
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState('Implantação e configuração da operação');
+  const [area,setArea]=useState<OperationArea>('home');
   const [notes, setNotes] = useState('');
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [status, setStatus] = useState('pending');
@@ -37,12 +39,8 @@ export function SuperAdminOperation({ client, app, scopeId, name }: {
     if (reason.trim().length < 3) { setMessage('Informe o motivo do acesso, com pelo menos 3 caracteres.'); return; }
     setBusy(true); setMessage('');
     try {
-      const r = await client.rpc('ops_start_support', { a: app, s: scopeId, reason: `${purpose}: ${reason.trim()}` });
-      if (r.error || !r.data?.expires_at) throw new Error('support_unavailable');
-      const target = new URL('/app', location.origin);
-      target.searchParams.set(app === 'sr-padeiro' ? 'support_org' : 'support_tenant', scopeId);
-      if (settings) target.searchParams.set('section', 'settings');
-      location.assign(target.href);
+      const target=await startOperationSupport(client,app,scopeId,settings?'settings':area,`${purpose}: ${reason.trim()}`,location.origin);
+      location.assign(target);
     } catch { setMessage('Não foi possível abrir a sessão auditada. Verifique suas permissões e tente novamente.'); setBusy(false); }
   }
   async function save() {
@@ -55,9 +53,10 @@ export function SuperAdminOperation({ client, app, scopeId, name }: {
     finally { setBusy(false); }
   }
   return <section id="superadmin-operation" className="ops-panel ops-review">
-    <h2>Operação assistida e homologação</h2><p><strong>{name}</strong> · acesso exclusivo do Super Admin, com a própria conta, por até uma hora. A sessão permite acompanhar e atuar nos cadastros, equipe, configurações, vendas, estoque e caixa.</p>
+    <h2>Entrar na operação do cliente</h2><a href="/admin/operacoes">Central de todas as operações</a><p><strong>{name}</strong> · acesso exclusivo do Super Admin, com a própria conta, por até uma hora. A sessão permite acompanhar e atuar nos cadastros, equipe, configurações, vendas, estoque e caixa.</p>
+    <label>Abrir diretamente em<select disabled={busy} value={area} onChange={e=>setArea(e.target.value as OperationArea)}>{operationAreas.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label>
     <label>Motivo do acesso<input value={reason} maxLength={240} onChange={e => setReason(e.target.value)} placeholder="Ex.: conferir permissões e treinar o fechamento de caixa" /></label>
-    <div className="ops-actions"><button disabled={busy} onClick={() => void open('Auditoria e acompanhamento')}>Entrar para auditar</button><button disabled={busy} onClick={() => void open('Suporte e configuração', true)}>Configurar e dar suporte</button><button disabled={busy} onClick={() => void open('Homologação operacional')}>Testar operação do cliente</button></div>
+    <div className="ops-actions"><button disabled={busy} onClick={() => void open('Auditoria e acompanhamento')}>Entrar na operação completa</button><button disabled={busy} onClick={() => void open('Suporte e configuração', true)}>Configurar e dar suporte</button><button disabled={busy} onClick={() => void open('Homologação operacional')}>Testar operação do cliente</button></div>
     <p>Você atuará na operação real selecionada. Alterações e vendas têm efeito nessa empresa. Para testes fictícios, utilize um cliente de homologação.</p>
     <fieldset disabled={!ready || busy}><legend>Conferência da operação</legend>
       {operationChecks.map(([key, label]) => <label className="ops-check" key={key}><input type="checkbox" checked={checks[key] === true} onChange={e => setChecks({ ...checks, [key]: e.target.checked })} />{label}</label>)}
