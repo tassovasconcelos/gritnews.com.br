@@ -43,7 +43,8 @@ begin
   if exists(select 1 from public.srp_customers where id=sid and organization_id<>p_org) then raise exception 'invalid_customer';end if;
   if v_phone<>'' and exists(select 1 from public.srp_customers where organization_id=p_org and regexp_replace(coalesce(srp_customers.phone,''),'[^0-9]','','g') in (v_phone,substring(v_phone from 3)) and id<>sid) then raise exception 'customer_phone_exists';end if;
   insert into public.srp_customers(id,organization_id,name,phone,whatsapp_opt_in) values(sid,p_org,n,nullif(v_phone,''),coalesce((p_payload->>'whatsapp_opt_in')::boolean,false))
-  on conflict(id) do update set name=excluded.name,phone=excluded.phone,whatsapp_opt_in=excluded.whatsapp_opt_in returning * into row;
+  on conflict(id) do update set name=excluded.name,phone=excluded.phone,whatsapp_opt_in=excluded.whatsapp_opt_in where srp_customers.organization_id=p_org returning * into row;
+  if not found then raise exception 'invalid_customer';end if;
   insert into public.srp_operation_events(organization_id,user_id,event_name,entity_type,entity_id,metadata) values(p_org,auth.uid(),'customer_saved','customer',sid,jsonb_build_object('whatsapp_opt_in',row.whatsapp_opt_in));
   return to_jsonb(row);
  elsif p_action='contact' then
@@ -234,4 +235,5 @@ begin
 end $$;
 
 notify pgrst,'reload schema';
+
 
