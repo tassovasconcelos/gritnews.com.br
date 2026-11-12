@@ -71,7 +71,7 @@ begin
   sid:=(p_payload->>'sale_id')::uuid;
   select to_jsonb(s) into result from public.srp_sales s where id=sid and organization_id=p_org and (store is null or store_id=store) and status='completed';
   if result is null then raise exception 'sale_not_found';end if;
-  return result||jsonb_build_object('customer',(select jsonb_build_object('id',id,'name',name,'phone',srp_customers.phone) from public.srp_customers where id=(result->>'customer_id')::uuid and organization_id=p_org),
+  return result||jsonb_build_object('operator_name',coalesce((select nullif(trim(raw_user_meta_data->>'full_name'),'') from auth.users where id=(result->>'seller_id')::uuid),'Equipe'),'customer',(select jsonb_build_object('id',id,'name',name,'phone',srp_customers.phone) from public.srp_customers where id=(result->>'customer_id')::uuid and organization_id=p_org),
    'items',coalesce((select items from private.srp_counter_orders where sale_id=sid and organization_id=p_org),
     (select jsonb_agg(jsonb_build_object('product_id',i.product_id,'name',coalesce(p.name,'Produto indisponível'),'unit',coalesce(p.unit,'UN'),'quantity',i.quantity,'unit_price',i.unit_price)) from public.srp_sale_items i left join public.srp_products p on p.id=i.product_id and p.organization_id=i.organization_id where i.sale_id=sid and i.organization_id=p_org)),
    'payments',(select jsonb_agg(jsonb_build_object('method',method,'amount',srp_sale_payments.amount)) from public.srp_sale_payments where sale_id=sid and organization_id=p_org));
@@ -235,5 +235,4 @@ begin
 end $$;
 
 notify pgrst,'reload schema';
-
 
