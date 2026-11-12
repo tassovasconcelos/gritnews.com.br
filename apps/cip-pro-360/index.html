@@ -136,7 +136,7 @@ const phases=[
  ['22 nov – 05 dez','Conversão B2B e Caderninho','Funil de cotações, motivos de perda e demandas de produtos ainda não atendidos.'],
  ['06–19 dez','Doquita e ações','Alertas baseados em evidências, tarefas, responsáveis e avaliação de resultados.'],
  ['20 dez – 16 jan','Piloto e homologação','Piloto em lojas selecionadas e distribuidora, testes, indicadores e plano de expansão.']
-]; const names={solucoes:'Todas as soluções',preferencias:'Acessibilidade e aplicativo',inicio:'Visão geral',cronograma:'Checklist e cronograma',doquita:'Doquita',varejo:'Shopping Prohospital',estoque:'Estoque Inteligente',precos:'Marca-passo de Preços',b2b:'Distribuidora Prohospital',cotacoes:'Cotações e Conversão',caderninho:'Caderninho Inteligente',integracoes:'Integrações e Acessos',procfit:'Procfit & relatórios',processos:'Processos vivos',mensageiro:'Doquita no Telegram',quartel:'Quartel dos Agentes',escola:'Escola dos Agentes','radar-b2g':'Radar B2G · Íris',concorrentes:'Concorrentes do Brasil','radar-mercado':'Radar B2B2C · Faro'};
+]; const names={solucoes:'Todas as soluções',preferencias:'Acessibilidade e aplicativo',inicio:'Visão geral',cronograma:'Checklist e cronograma',doquita:'Doquita',varejo:'Shopping Prohospital',estoque:'Estoque Inteligente',precos:'Marca-passo de Preços',b2b:'Distribuidora Prohospital',cotacoes:'Cotações e Conversão',caderninho:'Caderninho Inteligente',integracoes:'Integrações e Acessos',procfit:'Procfit & relatórios',processos:'Processos vivos',mensageiro:'Doquita no Telegram',performance:'Performance CIP | Tasso',quartel:'Quartel dos Agentes',escola:'Escola dos Agentes','radar-b2g':'Radar B2G · Íris',concorrentes:'Concorrentes do Brasil','radar-mercado':'Radar B2B2C · Faro'};
 const header=(title,subtitle)=>'<div class="row"><div><span class="eyebrow">CIP PRO 360° / '+title.toUpperCase()+'</span><h1 class="page-title">'+title+'</h1><p class="sub">'+subtitle+'</p></div></div><div class="info">ⓘ Cadastro de produtos integrado ao Procfit. Vendas e saldos automáticos ainda pendentes; estoques importados mostram a fonte e a data.</div>';
 const empty=(title,desc)=>'<div class="empty"><div style="font-size:25px;margin-bottom:10px">⌁</div><strong>'+title+'</strong><span>'+desc+'</span></div>';
 const metric=(label,value,sub)=>'<div class="card metric"><span class="label">'+label+'</span><b>'+value+'</b><small>'+sub+'</small></div>';
@@ -180,6 +180,7 @@ function navigate(page,{recordHistory=true}={}){
  else if(page==='preferencias'){h=window.cipPreferencesFrame?.()||''}
  else if(page==='procfit'){h=window.cipRenderERP?.()||'<p>Carregando relatórios…</p>'}
  else if(page==='apresentacao'){if(!['superadm','diretoria'].includes(window.cipAuth.role))return;h=window.cipRenderPresentation?.()||'<p>Carregando apresentação…</p>'}
+ else if(page==='performance'){h=window.cipRenderPerformance?.()||'<p>Carregando performance…</p>'}
  else if(page==='processos'){h=window.cipRenderProcesses?.()||'<p>Carregando processos…</p>'}
  else if(page==='mensageiro'){h=window.cipRenderBot?.()||'<p>Carregando mensageiro…</p>'}
  else if(['quartel','escola','radar-b2g'].includes(page)){h=window.cipRenderSquad?.(page)||'<p>Carregando o squad…</p>'}

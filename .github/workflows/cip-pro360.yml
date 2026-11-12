@@ -42,6 +42,9 @@ jobs:
           node --test apps/cip-pro-360/readiness.test.mjs
           node --check apps/cip-pro-360/sw.js
           node apps/cip-pro-360/cip-auth.test.mjs
+          node --test apps/cip-pro-360/performance-engine.test.mjs apps/cip-pro-360/performance-security.test.mjs apps/cip-pro-360/performance-reversals.test.mjs
+          node --check apps/cip-pro-360/performance-ui.mjs
+          node --check apps/cip-pro-360/performance-engine.mjs
           node apps/cip-pro-360/doquita-insights.test.mjs
           node --test apps/cip-pro-360/operational-analytics.test.mjs
           node apps/cip-pro-360/agents.test.mjs
@@ -116,11 +119,13 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
+  performance-qa:
+    uses: ./.github/workflows/cip-performance-qa.yml
   publish:
     # Explicit release commit allows audited deployment without changing unrelated sites.
     # Routine pushes continue to validate only.
     if: ${{ github.ref == 'refs/heads/cip/main' && ((github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[cip:publish]'))) }}
-    needs: validate
+    needs: [validate, performance-qa]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: cip-production
