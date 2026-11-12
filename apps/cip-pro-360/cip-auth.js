@@ -14,6 +14,7 @@ import {adminFrame,mountAdmin} from "./admin-ui.mjs";
 import {knowledgeContext} from "./academy-engine.mjs";
 import {summarizeDoquita} from "./doquita-insights.mjs";
 import {renderSquadPage,mountSquad} from "./agents-ui.mjs";
+import {performanceFrame,mountPerformance} from "./performance-ui.mjs";
 // CIP credentials stay in this tab. Never fall back to persistent localStorage.
 const authMemory=new Map();
 const authStorage={
@@ -60,6 +61,7 @@ window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPos
 window.cipRenderPricing=()=>pricingFrame();
 window.cipRenderMarket=()=>'<section data-market-loading><h1>Radar B2B2C · Faro</h1><p role="status">Carregando o radar…</p></section>';
 window.cipRenderPresentation=()=>'<section data-presentation-loading><h1>Apresentação executiva</h1><p role="status">Carregando a apresentação…</p></section>';
+window.cipRenderPerformance=()=>performanceFrame();
 window.cipHomeFrame=()=>homeFrame();window.cipSolutionsFrame=()=>solutionsFrame();window.cipPreferencesFrame=()=>preferencesFrame();window.cipNavigationChanged=(...args)=>navigationChanged(...args);
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g","precos"] };
 const $=id=>document.getElementById(id);
@@ -98,7 +100,7 @@ async function enter(){
   }
   if(!startClock()){await closeSession("Sessão encerrada por tempo de uso ou inatividade. Entre novamente.");return;}
   lastAccessCheck=Date.now();
-  const allowedRoutes=["inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro","concorrentes","radar-mercado",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
+  const allowedRoutes=["inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro","concorrentes","radar-mercado",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...(["superadm","diretoria","gestor"].includes(profile.role)&&companies.size?["performance"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelector('[data-presentation-menu]')?.classList.toggle('hide',!PRESENTATION_ROLES.includes(profile.role));
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
@@ -392,6 +394,7 @@ window.cipLoadPage=(page)=>{
  if(page==="cotacoes")reloadQuoteRows();
  if(page==="caderninho")reloadDemandRows();
  if(page==="estoque")reloadScenarios();
+ if(page==="performance"&&window.cipAuth?.allowedRoutes?.includes(page))mountPerformance({db:supabase,user,companies:[...companies],role:profile.role,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
  if(page==='precos'&&window.cipAuth?.allowedRoutes?.includes(page))mountPricing({db:supabase,companies:[...companies],canReview:['diretoria','superadm'].includes(profile?.role),onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});
 };
 window.addEventListener("cip:navigate",e=>window.cipLoadPage(e.detail.page));
