@@ -32,15 +32,16 @@ export function pillarProgress(row,pillar){
  return clamp(attained/desired,0,1.2);
 }
 export function scorecard(records=[],catalog=PILLARS){
- const best=new Map();
+ const best=new Map(),duplicates=new Set();
+ const mixed=new Set(records.map(r=>JSON.stringify([r.company_id,r.period_start,r.period_end]))).size>1;
  for(const r of records){
   if(!catalog.some(p=>p.code===r.metric_code))continue;
-  // Caller must scope records to one company + period; last record wins only after stable ordering.
+  if(best.has(r.metric_code))duplicates.add(r.metric_code);
   best.set(r.metric_code,r);
  }
  let weighted=0,covered=0;
  const pillars=catalog.map(p=>{
-  const row=best.get(p.code);
+  const row=mixed||duplicates.has(p.code)?null:best.get(p.code);
   const progress=pillarProgress(row,p);
   if(progress!==null){covered+=p.weight;weighted+=p.weight*progress;}
   return {...p,baseline:row?number(row.baseline):null,target:row?number(row.target):null,actual:row?number(row.actual):null,progress,points:progress===null?null:p.weight*progress,source:row?.source_kind??null,evidence:row?.evidence??null};
@@ -83,7 +84,8 @@ export function agentsSummary(samples=[]){
   decisionAfterMinutes:decisionCount?weightedAfter/decisionCount:null};
 }
 export function verifiedBenefits(events=[],approvals=[]){
- const byEvent=new Map();
+ const byEvent=new Map(),origins=new Map(),ids=new Map();
+ for(const e of events){const key=String(e.source_key??'').trim().toLowerCase();origins.set(key,(origins.get(key)||0)+1);ids.set(e.id,(ids.get(e.id)||0)+1);}
  for(const a of approvals){
   if(!byEvent.has(a.event_id))byEvent.set(a.event_id,[]);
   byEvent.get(a.event_id).push(a);
@@ -91,14 +93,16 @@ export function verifiedBenefits(events=[],approvals=[]){
  let approved=0,pending=0,rejected=0,netValidated=0,netSubmitted=0;
  const checked=[];
  for(const event of events){
-  const items=byEvent.get(event.id)||[];
+  const items=(byEvent.get(event.id)||[]).filter(a=>a.company_id===event.company_id);
+  const uniqueOrigin=origins.get(String(event.source_key??'').trim().toLowerCase())===1&&ids.get(event.id)===1;
   const rejectedDecision=items.some(a=>a.decision==='rejeitado');
   const finance=items.find(a=>a.review_role==='controladoria'&&a.decision==='aprovado');
   const board=items.find(a=>a.review_role==='diretoria'&&a.decision==='aprovado');
-  const ok=!rejectedDecision&&finance&&board&&finance.reviewer_id!==board.reviewer_id;
+  const ok=Boolean(event.created_by&&event.company_id&&event.source_key)&&uniqueOrigin&&!rejectedDecision&&finance&&board&&Boolean(finance.reviewer_id)&&Boolean(board.reviewer_id)&&finance.reviewer_id!==board.reviewer_id&&finance.reviewer_id!==event.created_by&&board.reviewer_id!==event.created_by;
   const gross=number(event.gross_value),cost=number(event.incremental_cost),reverse=number(event.reversals);
-  if([gross,cost,reverse].some(x=>x===null||x<0))continue;
-  const net=Math.round((gross-cost-reverse)*100)/100;
+  const attribution=number(event.attribution_pct);
+  if([gross,cost,reverse,attribution].some(x=>x===null||x<0)||attribution>100)continue;
+  const net=Math.round((gross*attribution/100-cost-reverse)*100)/100;
   netSubmitted+=net;
   if(ok){approved++;netValidated+=net;}else if(rejectedDecision)rejected++;else pending++;
   checked.push({...event,net,validation:ok?'validado':rejectedDecision?'rejeitado':'pendente'});

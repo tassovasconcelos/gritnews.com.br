@@ -23,9 +23,11 @@ export function performanceFrame(){
  +"</nav><div data-perf-panel></div></div>";
 }
 export function mountPerformance({db,user,companies=[],role,onDispose}){
+ companies=[...new Set(companies.filter(c=>Object.hasOwn(companiesNames,c)))];
  const root=document.getElementById('performanceRoot');if(!root)return;
  let alive=true,epoch=0,selected=companies[0]||'',month=currentMonth(),tab='visao';
- let data={kpis:[],processes:[],agents:[],benefits:[],approvals:[],reviewers:[]};
+ let data={kpis:[],processes:[],agents:[],benefits:[],approvals:[],reviewers:[],activity:[]};
+ let activityStatus='';
  let ready=false;
  const readOnly=!['superadm','diretoria'].includes(role);
  const $=sel=>root.querySelector(sel);
@@ -42,28 +44,43 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
  function scopedQuery(table){
   const period=range(month);
   let q=db.from(table).select('*').eq('period_start',period.start).eq('period_end',period.end);
-  return selected==='all'?q.in('company_id',scopes()):q.eq('company_id',selected);
+  return (selected==='all'?q.in('company_id',scopes()):q.eq('company_id',selected)).limit(1000);
  }
  async function load(){
   if(!isAlive())return;
-  const run=++epoch;ready=false;setMessage("Consultando registros do CIP para o período selecionado...");
+  const run=++epoch;ready=false;render();setMessage("Consultando registros do CIP para o período selecionado...");
   const p=range(month);
-  if(!p){setMessage('Período inválido.');return;}
+  if(!p||!scopes().length||scopes().some(c=>!companies.includes(c))){setMessage('Empresa ou período inválido.');return;}
   try{
    const q=[scopedQuery('cip_perf_kpi_records'),scopedQuery('cip_perf_process_samples'),
     scopedQuery('cip_perf_agent_samples'),scopedQuery('cip_perf_financial_events'),
-    db.from('cip_perf_reviewers').select('company_id,review_role,user_id').eq('user_id',user.id)];
+    db.from('cip_perf_reviewers').select('company_id,review_role,user_id').eq('user_id',user.id).eq('active',true)];
    const res=await Promise.all(q);
    if(run!==epoch||!isAlive())return;
    const fail=res.find(r=>r.error);if(fail){throw Error('Falha na consulta autorizada: '+(fail.error.message||'verifique acesso'));}
+   if(res.some(r=>r.data?.length>=1000))throw Error('Volume exige apuração paginada; totais parciais foram bloqueados');
    const items=res[3].data||[];let approvals={data:[]};
    if(items.length){
     approvals=await db.from('cip_perf_financial_approvals').select('event_id,reviewer_id,review_role,decision,company_id,created_at').in('event_id',items.map(x=>x.id));
     if(approvals.error)throw Error('Não foi possível confirmar os pareceres financeiros.');
+    if(approvals.data?.length>=1000)throw Error('Pareceres excedem o limite de apuração; total parcial bloqueado');
    }
    if(run!==epoch||!isAlive())return;
    data={kpis:res[0].data||[],processes:res[1].data||[],agents:res[2].data||[],benefits:items,approvals:approvals.data||[],
     reviewers:(res[4].data||[]).filter(r=>scopes().includes(r.company_id))};
+   let activity=[],activityMessage='';
+   // These immutable runtime logs already exist. They are not financial evidence or ERP execution.
+   try{
+    const nextMonth=new Date(p.end+'T12:00:00Z');nextMonth.setUTCDate(nextMonth.getUTCDate()+1);
+    const logs=await db.from('cip_agent_events').select('id,company_id,mission_id,event_type,created_at')
+     .in('company_id',scopes()).gte('created_at',p.start+'T00:00:00-03:00')
+     .lt('created_at',nextMonth.toISOString().slice(0,10)+'T00:00:00-03:00').order('created_at',{ascending:false}).limit(101);
+    if(logs.error)throw logs.error;
+    activity=(logs.data||[]).slice(0,100);
+    activityMessage=logs.data?.length>100?'Últimos 100 eventos; histórico parcial, sem totalização.':'Eventos registrados pelo runtime; sem inferência de resultado financeiro.';
+   }catch{activityMessage='Telemetria indisponível. Nenhuma atividade automática foi presumida.';}
+   if(run!==epoch||!isAlive())return;
+   data.activity=activity;activityStatus=activityMessage;
    ready=true;setMessage('Registros carregados. Dados informados manualmente permanecem provisórios até validação independente.');
    render();
   }catch(error){if(run!==epoch||!isAlive())return;ready=false;data={kpis:[],processes:[],agents:[],benefits:[],approvals:[],reviewers:[]};setMessage('Dados indisponíveis: '+(error.message||'falha de consulta')+'. Nenhum resultado foi presumido.');render();}
@@ -160,12 +177,18 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
     stat('Efetividade de ações',fmt(a.efficacyPct,'PCT'),'Execuções eficazes / executadas')+
     stat('Automação',fmt(a.automationPct,'PCT'),'Execuções automáticas / elegíveis')+"</div>"+
     "<div class='perf-split'>"+formShell('Nova medição de agentes e coordenação','agent',fields)+"<section class='perf-card'><h2>Agentes inteligentes</h2>"+info('Quantidade de pesquisas não é resultado. Medir evidências válidas, ações concluídas, velocidade de decisão e impactos auditados. Não classificar tarefas manuais como automáticas. A execução autônoma depende de integração e logs homologados.')+"</section></div>"+
-    "<section class='perf-card'><h2>Histórico de ações e agentes</h2>"+table(['Empresa','Agente','Análises','Recomendadas','Executadas','Eficazes','Efetividade','Automação'],rows)+"</section>";
+    "<section class='perf-card'><h2>Histórico de ações e agentes</h2>"+table(['Empresa','Agente','Análises','Recomendadas','Executadas','Eficazes','Efetividade','Automação'],rows)+"</section>"
+    +"<section class='perf-card'><h2>Rastreabilidade automática do runtime</h2>"+info(activityStatus)
+    +info('Ciclos e mudanças de missão são capturados pelo módulo de agentes. Uma missão medida não prova eficácia, integração Procfit, economia ou execução no ERP. Nenhum log entra automaticamente no score ou no livro financeiro.')
+    +table(['Empresa','Evento','Missão','Instante','Identificador'],(data.activity||[]).map(x=>'<tr><td>'+esc(companiesNames[x.company_id])+'</td><td>'+esc(x.event_type)+'</td><td>'+esc(x.mission_id||'—')+'</td><td>'+esc(x.created_at)+'</td><td>'+esc(x.id)+'</td></tr>'))+'</section>';
  }
  function benefits(){
   const summary=verifiedBenefits(data.benefits,data.approvals),s=scoreForCurrent(),bonus=s?bonusSimulation(s,summary):null;
   const fields=input('source_key','Identificador único da evidência','text',"minlength='8' maxlength='180' placeholder='ERP:PEDIDO:12345'")+
    select('benefit_type','Categoria',Object.entries(benefitNames))+
+   input('cip_action_ref','Referência da ação CIP','text',"minlength='8' maxlength='250'")+
+   input('baseline_reference','Referência do marco zero comparável','text',"minlength='12' maxlength='2000'")+
+   input('attribution_pct','Parcela do ganho bruto atribuível ao CIP (%)','number',"min='0' max='100' step='0.0001'")+
    input('gross_value','Benefício incremental bruto R$','number',"min='0' step='0.01'")+
    input('incremental_cost','Custo incremental R$','number',"min='0' step='0.01' value='0'")+
    input('reversals','Estornos/devoluções R$','number',"min='0' step='0.01' value='0'")+
@@ -176,7 +199,7 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
    const canReview=reviewer&&!already&&x.created_by!==user.id&&x.validation==='pendente';
    let signoff='';
    if(canReview)signoff="<form class='perf-review' data-perf-form='approval'><input type='hidden' name='event_id' value='"+esc(x.id)+"'><input type='hidden' name='company_id' value='"+esc(x.company_id)+"'><select name='decision'><option value='aprovado'>Aprovar</option><option value='rejeitado'>Rejeitar</option></select><input name='evidence_note' minlength='10' required placeholder='Justificativa verificável'><button class='btn secondary' type='submit'>Parecer</button></form>";
-   return "<tr><td>"+esc(companiesNames[x.company_id])+"</td><td>"+esc(x.source_key)+"<div class='perf-muted'>"+esc(x.description)+"</div></td><td>"+esc(benefitNames[x.benefit_type]||x.benefit_type)+"</td><td>"+fmt(x.gross_value,'BRL')+"</td><td>"+fmt(x.incremental_cost,'BRL')+"</td><td>"+fmt(x.reversals,'BRL')+"</td><td>"+fmt(x.net,'BRL')+"</td><td><span class='perf-state "+(x.validation==='validado'?'ok':x.validation==='rejeitado'?'no':'')+"'>"+esc(x.validation)+"</span>"+signoff+"</td></tr>";
+   return "<tr><td>"+esc(companiesNames[x.company_id])+"</td><td>"+esc(x.source_key)+"<div class='perf-muted'>"+esc(x.description)+"</div><div class='perf-muted'>Atribuição: "+esc(x.attribution_pct)+"% · Ação CIP: "+esc(x.cip_action_ref)+"<br>Marco zero: "+esc(x.baseline_reference)+"<br>Evidência: "+esc(x.evidence)+"</div></td><td>"+esc(benefitNames[x.benefit_type]||x.benefit_type)+"</td><td>"+fmt(x.gross_value,'BRL')+"</td><td>"+fmt(x.incremental_cost,'BRL')+"</td><td>"+fmt(x.reversals,'BRL')+"</td><td>"+fmt(x.net,'BRL')+"</td><td><span class='perf-state "+(x.validation==='validado'?'ok':x.validation==='rejeitado'?'no':'')+"'>"+esc(x.validation)+"</span>"+signoff+"</td></tr>";
   });
   return "<div class='perf-stat-grid'>"+stat('Ganho líquido submetido',data.benefits.length?fmt(summary.netSubmitted,'BRL'):'—','Não equivale a ganho aprovado')+
    stat('Ganho com dupla aprovação',data.benefits.length?fmt(summary.netValidated,'BRL'):'—','Controladoria + Diretoria')+
@@ -196,12 +219,13 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
    "<h3>Qualidade dos dados</h3>"+info('No momento os lançamentos nesta interface são manuais. Futuras leituras do ERP, processos e agentes precisam de contratos de dados, cobertura e logs antes de receberem selo de integração homologada.')+"</section></div>";
  }
  async function submit(form){
-  if(!isAlive())return;
+  if(!isAlive()||!ready||form.dataset.saving==='true')return;
+  if(!form.reportValidity())return;
   const action=form.dataset.perfForm;
   if(action!=='approval'&&(readOnly||selected==='all')){setMessage('Acesso somente leitura ou empresa não selecionada.');return;}
   const fd=new FormData(form);const raw=Object.fromEntries(fd.entries());const p=range(month);
   if(!p)return;
-  const numeric=(key)=>{const v=String(raw[key]??'').trim();return v===''?null:Number(v);};
+  const numeric=(key)=>{const v=String(raw[key]??'').trim();return v===''||!Number.isFinite(Number(v))?null:Number(v);};
   const note=String(raw.evidence||'').trim();
   if(action!=='approval'&&note.length<12){setMessage('Informe evidência verificável com pelo menos 12 caracteres.');return;}
   const common={company_id:selected,period_start:p.start,period_end:p.end,created_by:user.id,evidence:note};
@@ -213,8 +237,12 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
    if([base,target,actual].some(x=>x===null||!Number.isFinite(x))||pillarProgress({baseline:base,target,actual},metric)===null){
     setMessage('Marco zero, meta ou realizado inválidos. A meta precisa melhorar o baseline no sentido correto.');return;
    }
-   table='cip_perf_kpi_records';method='upsert';onConflict='company_id,metric_code,period_start,period_end';
+   table='cip_perf_kpi_records';
+   const existing=data.kpis.find(x=>x.company_id===selected&&x.metric_code===metric.code);
+   if(existing&&existing.created_by!==user.id){setMessage('Somente o autor pode atualizar este indicador.');return;}
+   if(existing){method='update';onConflict=existing.id;}
    payload={...common,metric_code:metric.code,baseline:base,target,actual,source_kind:'manual',notes:String(raw.notes||'')};
+   if(existing)payload={baseline:base,target,actual,source_kind:'manual',evidence:note,notes:String(raw.notes||''),updated_at:new Date().toISOString()};
   }else if(action==='process'){
    const keys=['baseline_minutes','current_minutes','monthly_executions','supervision_hours','rework_hours','monthly_productive_hours'];
    if(keys.some(k=>numeric(k)===null||numeric(k)<0)||numeric('monthly_productive_hours')<=0){setMessage('Preencha os tempos e volumes com números válidos.');return;}
@@ -231,9 +259,11 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
     actions_executed:numeric('actions_executed'),actions_effective:numeric('actions_effective'),tasks_eligible:numeric('tasks_eligible'),tasks_automatic:numeric('tasks_automatic'),
     before_decision_minutes:numeric('before_decision_minutes'),after_decision_minutes:numeric('after_decision_minutes'),source_kind:'manual'};
   }else if(action==='benefit'){
+   if(numeric('attribution_pct')===null||numeric('attribution_pct')<0||numeric('attribution_pct')>100){setMessage('Informe a atribuição comprovável ao CIP entre 0 e 100%.');return;}
    if(['gross_value','incremental_cost','reversals'].some(k=>numeric(k)===null||numeric(k)<0)){setMessage('Informe valores financeiros positivos ou zero.');return;}
    table='cip_perf_financial_events';payload={...common,source_key:String(raw.source_key).trim(),benefit_type:raw.benefit_type,description:String(raw.description).trim(),
-    gross_value:numeric('gross_value'),incremental_cost:numeric('incremental_cost'),reversals:numeric('reversals')};
+    gross_value:numeric('gross_value'),incremental_cost:numeric('incremental_cost'),reversals:numeric('reversals'),
+    cip_action_ref:String(raw.cip_action_ref||'').trim(),baseline_reference:String(raw.baseline_reference||'').trim(),attribution_pct:numeric('attribution_pct')};
   }else if(action==='approval'){
    const event=data.benefits.find(x=>x.id===raw.event_id&&x.company_id===raw.company_id);
    if(!event||event.created_by===user.id||!data.reviewers.some(x=>x.company_id===event.company_id)){setMessage('Parecer não autorizado para esta conta.');return;}
@@ -242,12 +272,14 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
    if(payload.evidence_note.length<10){setMessage('Informe uma justificativa verificável.');return;}
   }else return;
   try{
+   form.dataset.saving='true';form.querySelectorAll('button').forEach(b=>b.disabled=true);
    setMessage('Registrando lançamento autorizado...');
-   const q=db.from(table);const result=method==='upsert'?await q.upsert(payload,{onConflict}):await q.insert(payload);
+   const q=db.from(table);const result=method==='update'?await q.update(payload).eq('id',onConflict).select('id').single():await q.insert(payload);
    if(result.error)throw result.error;
    setMessage('Lançamento registrado. Recarregando a apuração provisória.');
    await load();
   }catch(error){setMessage('Não foi possível registrar: '+(error.message||'verifique permissões e duplicidade')+'.');}
+  finally{form.dataset.saving='false';form.querySelectorAll('button').forEach(b=>b.disabled=false);}
  }
  root.addEventListener('change',event=>{
   if(event.target.matches('[data-perf-company]')){selected=event.target.value;load();}

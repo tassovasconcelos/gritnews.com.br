@@ -1,0 +1,7 @@
+*.mjs text eol=lf
+*.test.mjs !text !eol
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+.htaccess text eol=lf

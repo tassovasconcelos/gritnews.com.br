@@ -38,15 +38,15 @@ test('agent effectiveness and automation use actual denominators',()=>{
  assert.equal(agentsSummary([]).efficacyPct,null);
 });
 test('financial gains are not approved without independent finance and board signoffs',()=>{
- const events=[{id:'e1',gross_value:30000,incremental_cost:5000,reversals:2000}];
- const a=[{event_id:'e1',review_role:'controladoria',decision:'aprovado',reviewer_id:'F'}];
+ const events=[{id:'e1',company_id:'shopping_prohospital',created_by:'author',source_key:'ERP:ORDER:1',attribution_pct:100,gross_value:30000,incremental_cost:5000,reversals:2000}];
+ const a=[{event_id:'e1',company_id:'shopping_prohospital',review_role:'controladoria',decision:'aprovado',reviewer_id:'F'}];
  assert.equal(verifiedBenefits(events,a).netValidated,0);
  assert.equal(verifiedBenefits(events,[...a,{event_id:'e1',review_role:'diretoria',decision:'aprovado',reviewer_id:'F'}]).approved,0);
- const result=verifiedBenefits(events,[...a,{event_id:'e1',review_role:'diretoria',decision:'aprovado',reviewer_id:'D'}]);
+ const result=verifiedBenefits(events,[...a,{event_id:'e1',company_id:'shopping_prohospital',review_role:'diretoria',decision:'aprovado',reviewer_id:'D'}]);
  assert.equal(result.approved,1);assert.equal(result.netValidated,23000);
 });
 test('duplicated or rejected approvals never validate a financial event',()=>{
- const events=[{id:'e',gross_value:1000,incremental_cost:100,reversals:0}];
+ const events=[{id:'e',attribution_pct:100,gross_value:1000,incremental_cost:100,reversals:0}];
  const a=[{event_id:'e',review_role:'controladoria',decision:'aprovado',reviewer_id:'F'},{event_id:'e',review_role:'diretoria',decision:'rejeitado',reviewer_id:'D'}];
  assert.equal(verifiedBenefits(events,a).netValidated,0);
  assert.equal(verifiedBenefits(events,a).rejected,1);

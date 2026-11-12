@@ -1,0 +1,55 @@
+name: CIP Performance - isolated browser and database tests
+on:
+  workflow_call:
+  pull_request:
+    branches: [cip/main]
+    paths: ['apps/cip-pro-360/**', '.github/workflows/cip-performance-qa.yml']
+  push:
+    branches: [feat/cip-indicadores-performance-tasso, cip/main]
+    paths: ['apps/cip-pro-360/**', '.github/workflows/cip-performance-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: npm install --prefix apps/cip-pro-360/qa --ignore-scripts --no-audit --no-fund
+      - run: node apps/cip-pro-360/qa/node_modules/playwright/cli.js install --with-deps chromium
+      - run: node --test apps/cip-pro-360/qa/performance.browser.test.mjs
+        env:
+          CIP_QA_ARTIFACTS: qa-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cip-performance-browser
+          path: qa-results/
+          if-no-files-found: ignore
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: cip_ephemeral_ci
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: cip_ephemeral_ci
+      PGHOST: localhost
+      PGUSER: postgres
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Test migrations and company access without production credentials
+        run: |
+          set -euo pipefail
+          for file in qa/database-bootstrap.sql schema/performance-tasso-v1.sql schema/performance-tasso-permissions.sql schema/performance-tasso-hardening.sql schema/performance-attribution.sql schema/performance-access.test.sql; do
+            psql -v ON_ERROR_STOP=1 -f "apps/cip-pro-360/$file"
+          done
