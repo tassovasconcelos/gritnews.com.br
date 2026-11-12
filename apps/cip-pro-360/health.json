@@ -1,0 +1,12 @@
+{
+  "app": "cip-pro360",
+  "stage": "agents-school-and-public-b2g",
+  "source": "github",
+  "auth": "Supabase integration",
+  "procfit": "pending",
+  "updated_at": "2026-10-18",
+  "release": "cip-2026-10-18-agents-b2g",
+  "doquita": "manual-records-readonly",
+  "mobile_navigation": "improved",
+  "authenticated_browser_homologation": "superadm-verified;restricted-profiles-pending"
+}

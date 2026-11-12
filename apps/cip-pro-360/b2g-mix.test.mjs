@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {officialURL,validateResearch,priceRecord,filterPrices} from './b2g-research.mjs';
+const q={action:'prices',type:'codigoPdm',code:'423',start:'2026-01-01',end:'2026-10-19'};
+test('federal national and federal state filters reach official service independently',()=>{let u=new URL(officialURL({...q,sphere:'F'}));assert.equal(u.searchParams.get('esfera'),'F');assert.equal(u.searchParams.has('estado'),false);u=new URL(officialURL({...q,sphere:'F',state:'SP'}));assert.equal(u.searchParams.get('esfera'),'F');assert.equal(u.searchParams.get('estado'),'SP');assert.throws(()=>validateResearch({...q,sphere:'federal'}));});
+test('pregao filtering requires explicit source object and never guesses from modality integers',()=>{const base={idCompra:'123',idCompraItem:'1231',precoUnitario:10,dataResultado:'2026-10-10',modalidade:5};const rows=[priceRecord({...base,objetoCompra:'Objeto: Pregão Eletrônico - andador'},'source'),priceRecord(base,'source')];assert.equal(filterPrices(rows,{pregao:true}).length,1);assert.equal(filterPrices(rows).length,2);});

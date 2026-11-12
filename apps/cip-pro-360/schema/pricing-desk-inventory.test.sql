@@ -1,0 +1,21 @@
+do $$declare d jsonb;r jsonb;expected numeric;older bigint;unknowns bigint;begin
+ perform set_config('request.jwt.claim.sub',(select owner_id::text from public.cip_faro_config where company_id='shopping_prohospital'),true);
+ d:=public.cip_mp_desk_inventory_get('shopping_prohospital','','','loja',0,'capital','all','source180');r:=d->'items'->0;
+ select max(a.quantity*a.unit_cost),count(*) into expected,older from public.cip_shopping_stock_rows a where a.company_id='shopping_prohospital' and a.quantity>0 and a.last_sale<a.as_of-180 and a.source_hash=(select source_hash from public.cip_shopping_stock_batches where company_id=a.company_id and status='reference_unreconciled' order by as_of desc,loaded_at desc,source_hash limit 1);
+ if (r->>'quantity')::numeric*(r->>'cost')::numeric is distinct from expected or (d->>'total')::bigint<>older then raise exception 'idle_value_global_query_failed';end if;
+ if exists(select 1 from jsonb_array_elements(d->'items')x where x->>'last_sale' is null or (x->>'days_since_sale_source')::integer<=180) then raise exception 'unknown_or_recent_sale_classified_idle';end if;
+ d:=public.cip_mp_desk_inventory_get('shopping_prohospital','','','loja',0,'quantity','all','source180');r:=d->'items'->0;
+ select max(a.quantity) into expected from public.cip_shopping_stock_rows a where a.company_id='shopping_prohospital' and a.quantity>0 and a.last_sale<a.as_of-180 and a.source_hash=(select source_hash from public.cip_shopping_stock_batches where company_id=a.company_id and status='reference_unreconciled' order by as_of desc,loaded_at desc,source_hash limit 1);
+ if (r->>'quantity')::numeric is distinct from expected then raise exception 'idle_quantity_global_query_failed';end if;
+ d:=public.cip_mp_desk_inventory_get('shopping_prohospital','','','loja',0,'capital','all','unknown');
+ if exists(select 1 from jsonb_array_elements(d->'items')x where x->>'last_sale' is not null) then raise exception 'unknown_filter_failed';end if;
+ unknowns:=(d->>'total')::bigint;
+ d:=public.cip_mp_desk_inventory_get('shopping_prohospital','','','loja',0,'capital','all','all');
+ if unknowns+older<>(d->>'total')::bigint then raise exception 'live_fixture_aging_partition_failed';end if;
+ if (d->>'aging_current_verified')::boolean then raise exception 'historical_source_claimed_current';end if;
+ if has_function_privilege('anon','public.cip_mp_desk_inventory_get(text,text,text,text,integer,text,text,text)','execute') then raise exception 'anonymous_access';end if;
+ perform set_config('request.jwt.claim.sub',gen_random_uuid()::text,true);
+ begin perform public.cip_mp_desk_inventory_get('shopping_prohospital');raise exception 'unauthorized';exception when raise_exception then if sqlerrm<>'authorized_company_required' then raise;end if;end;
+end;$$;
+select true inventory_filters_verified;
+rollback;

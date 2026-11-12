@@ -1,0 +1,183 @@
+name: CIP PRO 360 - Validate and optional Hostinger deploy
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publicar em cip.gritnews.com.br após configurar DNS, SSL e FTPS?'
+        required: true
+        type: boolean
+        default: false
+  push:
+    branches:
+      - cip/main
+    paths:
+      - 'apps/cip-pro-360/**'
+      - '.github/workflows/cip-pro360.yml'
+  pull_request:
+    branches:
+      - cip/main
+    paths:
+      - 'apps/cip-pro-360/**'
+      - '.github/workflows/cip-pro360.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cip-pro360-deploy
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Prepare isolated static app
+        shell: bash
+        run: |
+          set -euo pipefail
+          node apps/cip-pro-360/release-check.test.mjs
+          node --test apps/cip-pro-360/pwa.test.mjs apps/cip-pro-360/navigation.test.mjs
+          node --check apps/cip-pro-360/navigation-ui.mjs
+          node --test apps/cip-pro-360/readiness.test.mjs
+          node --check apps/cip-pro-360/sw.js
+          node apps/cip-pro-360/cip-auth.test.mjs
+          node apps/cip-pro-360/doquita-insights.test.mjs
+          node --test apps/cip-pro-360/operational-analytics.test.mjs
+          node apps/cip-pro-360/agents.test.mjs
+          node --test apps/cip-pro-360/agent-operations.test.mjs
+          node --check apps/cip-pro-360/agent-operations-ui.mjs
+          node --test apps/cip-pro-360/academy.test.mjs
+          node --test apps/cip-pro-360/admin.test.mjs
+          node --test apps/cip-pro-360/erp-engine.test.mjs
+          node --check apps/cip-pro-360/erp-ui.mjs
+          node --test apps/cip-pro-360/stock-reference.test.mjs
+          node --test apps/cip-pro-360/presentation.test.mjs
+          node --test apps/cip-pro-360/telegram/executive-reports.test.mjs
+          node --test apps/cip-pro-360/telegram/handler.test.mjs apps/cip-pro-360/telegram/response-style.test.mjs
+          node --check apps/cip-pro-360/pricing-ui.mjs
+          node --test apps/cip-pro-360/pricing-ui.test.mjs apps/cip-pro-360/pricing-desk.test.mjs apps/cip-pro-360/pricing-evidence-view.test.mjs
+          node --check apps/cip-pro-360/pricing-desk-ui.mjs
+          node --test apps/cip-pro-360/market-directory.test.mjs apps/cip-pro-360/market-specialties.test.mjs
+          node --check apps/cip-pro-360/market-watch-ui.mjs
+          node --check apps/cip-pro-360/market-directory-ui.mjs
+          node --test apps/cip-pro-360/market-radar.test.mjs apps/cip-pro-360/faro-hourly.test.mjs apps/cip-pro-360/market-faro/direct.test.mjs
+          node --check apps/cip-pro-360/faro-hourly-ui.mjs
+          node --check apps/cip-pro-360/market-radar-ui.mjs
+          node --check apps/cip-pro-360/shopping-position.mjs
+          node --check apps/cip-pro-360/stock-actions-ui.mjs
+          node --test apps/cip-pro-360/stock-action-engine.test.mjs
+          node --test apps/cip-pro-360/pricing-intelligence.test.mjs
+          node --test apps/cip-pro-360/pricing-engine.test.mjs
+          node --test apps/cip-pro-360/pricing-campaign-engine.test.mjs
+          node --test apps/cip-pro-360/campaign-planner-engine.test.mjs
+          node --check apps/cip-pro-360/procfit-catalog-ui.mjs
+          node --test apps/cip-pro-360/procfit-catalog.test.mjs
+          node --check apps/cip-pro-360/procfit-status-ui.mjs
+          node --test apps/cip-pro-360/procfit-gateway/*.test.mjs
+          node --test apps/cip-pro-360/process-engine.test.mjs apps/cip-pro-360/telegram/intents.test.mjs apps/cip-pro-360/telegram/setup.test.mjs apps/cip-pro-360/telegram/conversation.test.mjs apps/cip-pro-360/telegram/ai-readiness.test.mjs apps/cip-pro-360/telegram/stock-reference.test.mjs
+          node --test apps/cip-pro-360/process-consultant.test.mjs apps/cip-pro-360/process-assistant.test.mjs
+          node --check apps/cip-pro-360/process-ui.mjs
+          node --check apps/cip-pro-360/bot-ui.mjs
+          node --check apps/cip-pro-360/admin-ui.mjs
+          node --check apps/cip-pro-360/cip-activation.js
+          node --test apps/cip-pro-360/security-headers.test.mjs
+          npm ci --prefix apps/cip-pro-360/ingestion --ignore-scripts --no-audit --no-fund
+          node --test apps/cip-pro-360/ingestion/extract.test.mjs
+          node --check apps/cip-pro-360/academy-ui.mjs
+          node --check apps/cip-pro-360/agents-ui.mjs
+          node --check apps/cip-pro-360/b2g-radar.mjs
+          node --check apps/cip-pro-360/b2g-research-ui.mjs
+          node --check apps/cip-pro-360/b2g-discovery-ui.mjs
+          node --test apps/cip-pro-360/b2g-vocabulary.test.mjs apps/cip-pro-360/b2g-discovery.test.mjs apps/cip-pro-360/b2g-web-search.test.mjs apps/cip-pro-360/b2g-market-search.test.mjs
+          node --test apps/cip-pro-360/b2g-research.test.mjs apps/cip-pro-360/b2g-mix.test.mjs apps/cip-pro-360/b2g-precision.test.mjs
+          node --check apps/cip-pro-360/doquita-insights.mjs
+          node apps/cip-pro-360/grit-recovery.test.mjs
+          node apps/cip-pro-360/deploy/upload.test.mjs
+          node apps/cip-pro-360/release-check.mjs prepare apps/cip-pro-360 release "$GITHUB_SHA"
+          node --input-type=module --check < release/cip-auth.js
+          node --input-type=module --check < release/grit-recovery.js
+          node - <<'NODE'
+          const fs=require('node:fs'),vm=require('node:vm');
+          const html=fs.readFileSync('release/index.html','utf8');
+          const m=html.match(/<script>([\s\S]*?)<\/script>/);
+          if(!m)throw Error('Inline script missing');
+          new vm.Script(m[1]);
+          for(const value of ['cip-auth.js','cipQuoteRows','cipDemandRows','cipTimeline','cipSaveScenario']){
+            if(!html.includes(value))throw Error('Required element missing: '+value);
+          }
+          if(html.includes('onclick="showPreview()"'))throw Error('Public unauthenticated preview must be disabled');
+          console.log('CIP static app checks passed');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cip-pro360-static
+          path: release/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+  publish:
+    # Explicit release commit allows audited deployment without changing unrelated sites.
+    # Routine pushes continue to validate only.
+    if: ${{ github.ref == 'refs/heads/cip/main' && ((github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[cip:publish]'))) }}
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: cip-production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: cip-pro360-static
+          path: release/
+      - name: Verify release manifest and original official logo
+        shell: bash
+        run: |
+          set -euo pipefail
+          node apps/cip-pro-360/release-check.mjs validate release "$GITHUB_SHA"
+      - name: Validate isolated Hostinger target
+        env:
+          CIP_FTPS_HOST: ${{ secrets.CIP_FTPS_HOST }}
+          CIP_FTPS_USER: ${{ secrets.CIP_FTPS_USER }}
+          CIP_FTPS_PASSWORD: ${{ secrets.CIP_FTPS_PASSWORD }}
+          CIP_FTPS_DIR: ${{ secrets.CIP_FTPS_DIR }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${CIP_FTPS_HOST:?Missing CIP_FTPS_HOST}"
+          : "${CIP_FTPS_USER:?Missing CIP_FTPS_USER}"
+          : "${CIP_FTPS_PASSWORD:?Missing CIP_FTPS_PASSWORD}"
+          : "${CIP_FTPS_DIR:?Missing CIP_FTPS_DIR}"
+          case "$CIP_FTPS_DIR" in
+            public_html/|/public_html/)
+              case "$CIP_FTPS_USER" in
+                *.cip.gritnews.com.br) echo "Dedicated CIP website account and document root verified" ;;
+                *) echo "::error::CIP document root requires its dedicated website FTP account." ; exit 1;;
+              esac
+              ;;
+            public_html/cip/|/public_html/cip/|domains/gritnews.com.br/public_html/cip/|/domains/gritnews.com.br/public_html/cip/)
+              echo "FTPS directory scoped to CIP-only folder"
+              ;;
+            *) echo "::error::Refusing to deploy: directory not CIP-specific." ; exit 1;;
+          esac
+      - name: Verify CIP HTTPS before uploading
+        shell: bash
+        run: node apps/cip-pro-360/release-check.mjs preflight
+      - name: Install pinned FTPS client
+        run: npm ci --prefix apps/cip-pro-360/deploy --ignore-scripts --omit=dev --no-audit --no-fund
+      - name: Publish isolated CIP folder
+        env:
+          CIP_FTPS_HOST: ${{ secrets.CIP_FTPS_HOST }}
+          CIP_FTPS_USER: ${{ secrets.CIP_FTPS_USER }}
+          CIP_FTPS_PASSWORD: ${{ secrets.CIP_FTPS_PASSWORD }}
+          CIP_FTPS_DIR: ${{ secrets.CIP_FTPS_DIR }}
+        run: node apps/cip-pro-360/deploy/upload.mjs release "$GITHUB_SHA"
+      - name: Verify real address
+        shell: bash
+        run: |
+          set -euo pipefail
+          node apps/cip-pro-360/release-check.mjs smoke release "$GITHUB_SHA"
+

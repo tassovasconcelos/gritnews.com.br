@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "source": "Referências solicitadas pelo responsável e consultadas em fontes públicas",
+  "rows": [
+    {
+      "name": "Dellamed · loja própria",
+      "brand": "Dellamed",
+      "url": "https://www.dellamed.com.br/loja/",
+      "domain": "dellamed.com.br",
+      "kind": "retailer",
+      "categories": [
+        "mobility",
+        "orthoses",
+        "beds"
+      ],
+      "verification": "official_site",
+      "enabled": true,
+      "note": "Loja consultada com preços públicos; conferir SKU, modelo, variante e pagamento.",
+      "seller_hint": null,
+      "brand_token": "dellamed"
+    },
+    {
+      "name": "Dellamed · institucional",
+      "brand": "Dellamed",
+      "url": "https://www.dellamed.com.br/",
+      "domain": "dellamed.com.br",
+      "kind": "manufacturer",
+      "categories": [
+        "mobility",
+        "orthoses",
+        "beds"
+      ],
+      "verification": "official_site",
+      "enabled": false,
+      "note": "Referência institucional complementar; loja própria já participa do rodízio.",
+      "seller_hint": null,
+      "brand_token": "dellamed"
+    },
+    {
+      "name": "Dellamed · perfil Shopee",
+      "brand": "Dellamed",
+      "url": "https://shopee.com.br/dellamed",
+      "domain": "shopee.com.br",
+      "kind": "marketplace_store",
+      "categories": [
+        "mobility",
+        "orthoses",
+        "beds"
+      ],
+      "verification": "profile_seen",
+      "enabled": true,
+      "note": "Perfil consultado. Restringir ofertas ao vendedor Dellamed explicitamente identificado; não transferir reputação da plataforma nem presumir selo oficial.",
+      "seller_hint": "Dellamed",
+      "brand_token": "dellamed"
+    },
+    {
+      "name": "Dellamed · perfil Mercado Livre",
+      "brand": "Dellamed",
+      "url": "https://www.mercadolivre.com.br/loja/dellamed",
+      "domain": "mercadolivre.com.br",
+      "kind": "marketplace_store",
+      "categories": [
+        "mobility",
+        "orthoses",
+        "beds"
+      ],
+      "verification": "blocked",
+      "enabled": true,
+      "note": "URL fornecida pelo responsável; consulta pública retornou 403. Não contornar bloqueio. Identidade oficial do vendedor e oferta individual exigem confirmação.",
+      "seller_hint": "Dellamed",
+      "brand_token": "dellamed"
+    },
+    {
+      "name": "Supermedy · catálogo",
+      "brand": "Supermedy",
+      "url": "https://www.supermedy.com.br/loja",
+      "domain": "supermedy.com.br",
+      "kind": "manufacturer",
+      "categories": [
+        "mobility",
+        "consumption"
+      ],
+      "verification": "official_site",
+      "enabled": true,
+      "note": "Catálogo público; foco B2B. Preço pode exigir acesso comercial; não acessar portal autenticado nem inventar preço.",
+      "seller_hint": null,
+      "brand_token": "supermedy"
+    },
+    {
+      "name": "Hidrolight · produtos",
+      "brand": "Hidrolight",
+      "url": "https://hidrolight.com.br/produtos/",
+      "domain": "hidrolight.com.br",
+      "kind": "manufacturer",
+      "categories": [
+        "orthoses"
+      ],
+      "verification": "official_site",
+      "enabled": true,
+      "note": "Referência de identidade e especificação. Preço público não confirmado para todos os itens.",
+      "seller_hint": null,
+      "brand_token": "hidrolight"
+    },
+    {
+      "name": "Mercur · loja",
+      "brand": "Mercur",
+      "url": "https://loja.mercur.com.br/",
+      "domain": "loja.mercur.com.br",
+      "kind": "retailer",
+      "categories": [
+        "orthoses",
+        "mobility",
+        "wound"
+      ],
+      "verification": "official_site",
+      "enabled": true,
+      "note": "Distinguir código, tamanho, modelo e categoria de produto antes da comparação.",
+      "seller_hint": null,
+      "brand_token": "mercur"
+    },
+    {
+      "name": "Mercur · catálogo saúde",
+      "brand": "Mercur",
+      "url": "https://mercur.com.br/produtos/saude/",
+      "domain": "mercur.com.br",
+      "kind": "manufacturer",
+      "categories": [
+        "orthoses",
+        "mobility"
+      ],
+      "verification": "official_site",
+      "enabled": false,
+      "note": "Catálogo de identidade complementar à loja; sem duplicar rodadas automaticamente.",
+      "seller_hint": null,
+      "brand_token": "mercur"
+    },
+    {
+      "name": "Procirúrgica · referência do grupo",
+      "brand": "Procirúrgica",
+      "url": "https://www.procirurgica.com.br/",
+      "domain": "procirurgica.com.br",
+      "kind": "own_reference",
+      "categories": [
+        "mobility",
+        "beds",
+        "ostomy"
+      ],
+      "verification": "official_site",
+      "enabled": false,
+      "note": "Marca do Grupo Prohospital; separar venda, locação e catálogo. Não tratar como concorrente externo nem usar como referência concorrencial automática.",
+      "seller_hint": null,
+      "brand_token": "procirrgica"
+    },
+    {
+      "name": "Convatec · Brasil",
+      "brand": "Convatec",
+      "url": "https://www.convatec.com/pt-br/",
+      "domain": "convatec.com",
+      "kind": "manufacturer",
+      "categories": [
+        "ostomy",
+        "wound",
+        "consumption"
+      ],
+      "verification": "official_site",
+      "enabled": true,
+      "note": "Usar somente domínio público de produção. Especificação de sistema e códigos não substitui revisão técnica; preço pode não ser público.",
+      "seller_hint": null,
+      "brand_token": "convatec"
+    },
+    {
+      "name": "Coloplast · Brasil",
+      "brand": "Coloplast",
+      "url": "https://www.coloplast.com.br/",
+      "domain": "coloplast.com.br",
+      "kind": "manufacturer",
+      "categories": [
+        "ostomy",
+        "wound",
+        "consumption"
+      ],
+      "verification": "official_site",
+      "enabled": true,
+      "note": "Portal institucional; localizar catálogo público sem assumir preço, distribuição, estoque ou equivalência clínica.",
+      "seller_hint": null,
+      "brand_token": "coloplast"
+    },
+    {
+      "name": "Hollister · Brasil",
+      "brand": "Hollister",
+      "url": "https://www.hollister.com.br/pt-br",
+      "domain": "hollister.com.br",
+      "kind": "manufacturer",
+      "categories": [
+        "ostomy",
+        "consumption"
+      ],
+      "verification": "official_site",
+      "enabled": true,
+      "note": "Conferir estomia, sistema de uma/duas peças, flange, recorte, tipo de bolsa e referência do fabricante.",
+      "seller_hint": null,
+      "brand_token": "hollister"
+    },
+    {
+      "name": "B. Braun · Brasil",
+      "brand": "B. Braun",
+      "url": "https://www.bbraun.com.br/pt.html",
+      "domain": "bbraun.com.br",
+      "kind": "manufacturer",
+      "categories": [
+        "wound",
+        "consumption"
+      ],
+      "verification": "official_site",
+      "enabled": true,
+      "note": "Referência técnica institucional; condições B2B, registro, embalagem, esterilidade e preço precisam de evidência específica.",
+      "seller_hint": null,
+      "brand_token": "bbraun"
+    }
+  ]
+}

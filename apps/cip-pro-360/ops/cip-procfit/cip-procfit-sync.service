@@ -1,0 +1,18 @@
+[Unit]
+Description=CIP Procfit direct source verification
+Wants=network-online.target
+After=network-online.target openvpn-client@procfit.service
+Requires=openvpn-client@procfit.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/procfit/venv/bin/python /opt/cip-procfit/probe.py
+TimeoutStartSec=3min
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/cip-procfit
+StandardOutput=journal
+StandardError=journal

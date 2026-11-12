@@ -1,0 +1,6 @@
+{
+  "name": "cip-pro360-ftps-release",
+  "private": true,
+  "type": "module",
+  "dependencies": {"basic-ftp": "6.2.3"}
+}
