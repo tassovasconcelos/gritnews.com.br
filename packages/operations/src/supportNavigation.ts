@@ -1,3 +1,4 @@
+import {withOperationDeadline} from './request.ts';
 import type {OperationApp} from './SettingsPanel';
 
 export const operationPlatforms = {
@@ -16,6 +17,7 @@ const sections:Record<OperationApp,Record<OperationArea,string>> = {
 };
 export function operationSection(app:OperationApp,section:string|null):string|null {
   // Only existing screens can be selected; a URL never grants a role.
+  if(app==='sr-padeiro'&&['pos','cash','sales','customers','results','supply','expenses','consolidated'].includes(section||''))return section;
   if(section==='settings')return sections[app].settings;
   return Object.values(sections[app]).includes(section||'')?section:null;
 }
@@ -29,7 +31,7 @@ export function supportOperationUrl(app:OperationApp,id:string,area:OperationAre
 export async function startOperationSupport(client:any,app:OperationApp,id:string,area:OperationArea,reason:string,origin?:string) {
   const target=supportOperationUrl(app,id,area,origin);
   if(reason.trim().length<3||reason.trim().length>240)throw new Error('invalid_reason');
-  const r=await client.rpc('ops_start_support',{a:app,s:id,reason:`${operationAreas.find(a=>a[0]===area)?.[1]}: ${reason.trim()}`});
+  const r:any=await withOperationDeadline(client.rpc('ops_start_support',{a:app,s:id,reason:`${operationAreas.find(a=>a[0]===area)?.[1]}: ${reason.trim()}`}));
   if(r.error||!r.data?.expires_at||Date.parse(r.data.expires_at)<=Date.now()||!Number.isFinite(Date.parse(r.data.expires_at)))throw new Error('support_unavailable');
   return target;
 }
@@ -49,3 +51,4 @@ export async function loadOperationClients(client:any,product:'all'|OperationApp
   }));
   return {rows:results.flatMap(r=>r.rows) as OperationClient[],more:results.some(r=>r.more)};
 }
+

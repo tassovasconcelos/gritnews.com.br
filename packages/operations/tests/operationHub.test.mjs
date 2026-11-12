@@ -6,7 +6,8 @@ const require=createRequire(new URL('../../../apps/sr-padeiro/package.json',impo
 const ts=require('typescript');
 const src=fs.readFileSync(new URL('../src/supportNavigation.ts',import.meta.url),'utf8');
 const js=ts.transpileModule(src,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
-const mod={exports:{}};new Function('exports',js)(mod.exports);
+const request={exports:{}};new Function('exports',ts.transpileModule(fs.readFileSync(new URL('../src/request.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(request.exports);
+const mod={exports:{}};new Function('exports','require',js)(mod.exports,()=>request.exports);
 const {supportOperationUrl,operationSection,startOperationSupport,loadOperationClients}=mod.exports;
 const id='00000000-0000-4000-8000-000000000010';
 

@@ -1,0 +1,3 @@
+import React from 'react';import {createRoot} from 'react-dom/client';
+import Workspace from '../../src/Workspace';import '../../src/styles.css';import '../../src/workspace.css';
+createRoot(document.getElementById('root')!).render(<><p style={{padding:12,margin:0,background:'#253e32',color:'white'}}>Demonstração local · dados fictícios · banco de testes</p><Workspace orgId="00000000-0000-4000-8000-000000000010" userId="00000000-0000-4000-8000-000000000001" role={new URLSearchParams(location.search).has('consulta')?'viewer':'owner'} managementReadOnly={new URLSearchParams(location.search).has('consulta')} environment="homologation" access="Demonstração" firstName="Equipe" onSignOut={()=>{}}/></>);

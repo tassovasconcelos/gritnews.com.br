@@ -1,3 +1,4 @@
+import {withOperationDeadline} from './request.ts';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { PasswordSetup } from './AccountConfirmation';
 import type { OperationApp } from './SettingsPanel';
@@ -73,10 +74,10 @@ export function ManagedPasswordGate({ client, children }: { client: any; childre
     if (!client || !operational) { setState('ready'); return; }
     const current = ++version.current;
     try {
-      const { data, error } = await client.auth.getSession();
+      const { data, error }:any = await withOperationDeadline(client.auth.getSession());
       if (error) throw error;
       if (!data.session) { if (current === version.current) setState('ready'); return; }
-      const status = await accountAction(client, { action: 'status' });
+      const status = await withOperationDeadline(accountAction(client, { action: 'status' }));
       if (current !== version.current) return;
       setState(status.expired ? 'expired' : !status.fresh_session ? 'login' : status.required ? 'required' : 'ready');
     } catch { if (current === version.current) setState('error'); }
@@ -95,3 +96,4 @@ export function ManagedPasswordGate({ client, children }: { client: any; childre
   } } }} onDone={() => { setState('checking'); void check(); }} />;
   return <main className="ops-panel ops-invite"><h1>{state === 'login' ? 'Entre novamente na sua conta' : state === 'expired' ? 'Solicite uma nova senha temporária' : 'Não foi possível conferir seu acesso'}</h1><p>{state === 'login' ? 'Esta sessão é anterior à redefinição de senha. Saia e entre novamente com a senha atual da conta. Se recebeu uma senha temporária, use-a para criar sua senha pessoal.' : state === 'expired' ? 'A validade terminou. Peça ao Super Admin uma nova senha para continuar.' : 'Confira sua conexão e tente novamente.'}</p>{state === 'error' && <button onClick={() => { setState('checking'); void check(); }}>Tentar novamente</button>}<button onClick={async () => { await client.auth.signOut(); location.assign(location.pathname + location.search); }}>Sair e entrar novamente</button></main>;
 }
+
