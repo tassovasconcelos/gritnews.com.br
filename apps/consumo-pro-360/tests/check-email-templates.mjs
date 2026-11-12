@@ -6,7 +6,7 @@ for(const name of files){
  assert.match(html,/<html lang="pt-BR">/);
  assert.match(html,/<table role="presentation"/);
  assert.match(html,/GRUPO PROHOSPITAL/);
- assert.match(html,/CONSUMO PRO/);
+ assert.match(html,/Proconsumo/);
  assert.match(html,/GRIT Soluções e Negócios/);
  assert.match(html,/https:\/\/grupoprohospital\.com\.br\//);
  assert.match(html,/font-family:Arial/);

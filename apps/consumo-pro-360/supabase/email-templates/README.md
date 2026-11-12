@@ -1,11 +1,11 @@
-# CONSUMO PRO 360 | E-mails oficiais do Grupo Prohospital
+# Proconsumo | E-mails oficiais do Grupo Prohospital
 
 **Responsável pela tecnologia:** GRIT Soluções e Negócios  
 **Estado:** templates implementados no repositório; ainda é necessário publicar/validar os modelos no Supabase Auth e configurar/remeter via SMTP autorizado.
 
 ## Identidade
-- Assinatura de exibição sugerida: **Grupo Prohospital | CONSUMO PRO 360**
-- Nome da plataforma: **CONSUMO PRO 360 — Controle e Auditoria de Consumo**
+- Assinatura de exibição sugerida: **Grupo Prohospital | Proconsumo**
+- Nome da plataforma: **Proconsumo — Controle e Auditoria de Consumo**
 - Paleta: vermelho corporativo `#B1263A`, grafite `#252D38`, branco `#FFFFFF` e cinza `#F4F5F7`.
 - Identidade: cabeçalho tipográfico institucional; o **arquivo original do logo não foi incorporado**. Quando a equipe fornecer um ativo original publicamente servido sob HTTPS, substitua o bloco de texto pela imagem aprovada, mantendo alt e fallback. **Não recriar nem redesenhar a marca.**
 - Rodapé: Grupo Prohospital como emissor da comunicação; **Tecnologia e desenvolvimento: GRIT Soluções e Negócios**.
@@ -15,12 +15,12 @@
 
 | Arquivo | Painel Supabase Authentication > Email Templates | Assunto |
 |---|---|---|
-| `invite.html` | **Invite user** | CONSUMO PRO 360 \| Convite de acesso — Grupo Prohospital |
-| `confirmation.html` | **Confirm sign up** | CONSUMO PRO 360 \| Confirme seu e-mail |
-| `recovery.html` | **Reset password** | CONSUMO PRO 360 \| Redefinição segura de senha |
-| `magic_link.html` | **Magic link** | CONSUMO PRO 360 \| Seu acesso seguro |
-| `email_change.html` | **Change email address** | CONSUMO PRO 360 \| Confirme a alteração de e-mail |
-| `password_changed.html` | **Security notifications > Password changed** | CONSUMO PRO 360 \| Sua senha foi alterada |
+| `invite.html` | **Invite user** | Proconsumo \| Convite de acesso — Grupo Prohospital |
+| `confirmation.html` | **Confirm sign up** | Proconsumo \| Confirme seu e-mail |
+| `recovery.html` | **Reset password** | Proconsumo \| Redefinição segura de senha |
+| `magic_link.html` | **Magic link** | Proconsumo \| Seu acesso seguro |
+| `email_change.html` | **Change email address** | Proconsumo \| Confirme a alteração de e-mail |
+| `password_changed.html` | **Security notifications > Password changed** | Proconsumo \| Sua senha foi alterada |
 
 Os modelos utilizam somente os placeholders nativos:
 - `{{ .ConfirmationURL }}`: link individual, gerado pelo Auth em cada envio.
@@ -29,7 +29,7 @@ Os modelos utilizam somente os placeholders nativos:
 - `{{ .SiteURL }}`: URL do aplicativo definida no Supabase.
 
 ## Publicação no projeto correto
-1. Entrar no [Supabase Dashboard do CONSUMO PRO](https://supabase.com/dashboard/project/xscxwazanootrdtyrumb/auth/templates).
+1. Entrar no [Supabase Dashboard do Proconsumo](https://supabase.com/dashboard/project/xscxwazanootrdtyrumb/auth/templates).
 2. Abrir **Authentication > Email Templates**, escolher o evento, inserir assunto da tabela acima e colar o conteúdo do respectivo HTML.
 3. Em **Authentication > URL Configuration**, usar como Site URL **a URL de produção aprovada**; cadastrar somente os redirecionamentos necessários, com endereços HTTPS específicos. Evitar curingas amplos e domínios temporários não aprovados.
 4. Em **Authentication > SMTP Settings**, configurar remetente de domínio corporativo **verificado** e DNS SPF, DKIM e DMARC aprovados. O endereço de origem ainda precisa ser definido; **não presumir** que `noreply@grupoprohospital.com.br` já exista.

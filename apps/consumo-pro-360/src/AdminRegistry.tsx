@@ -108,7 +108,7 @@ export default function AdminRegistry({orgId,companyId,companies,departments,pro
     <button className="btn primary" disabled={saving}>Salvar limites</button></div></form>}
   </section>}
   {tab==="identidade"&&<>
-   {company&&<OperationSettings key={company.id} company={company as {id:string;name:string}} departments={departments} canConfigure={groupAdmin} onSaved={onOperationSaved}/>}<section className="panel brand-admin"><div className="panel-header"><h3>Identidade oficial do Grupo Prohospital</h3><ShieldCheck size={18}/></div>
+   {company&&<OperationSettings key={company.id} company={company as {id:string;name:string}} departments={departments} canConfigure={groupAdmin||techAdmin} canSetTarget={groupAdmin} onSaved={onOperationSaved}/>}<section className="panel brand-admin"><div className="panel-header"><h3>Identidade oficial do Grupo Prohospital</h3><ShieldCheck size={18}/></div>
    <p className="muted">Utilize o arquivo original autorizado nas versões branca ou transparente. O símbolo não deve ser redesenhado.</p>
    {brandLogo?<img className="official-logo brand-preview" src={brandLogo} alt="Marca oficial Grupo Prohospital"/>:<div className="empty"><ShieldCheck size={28}/><strong>Logo oficial aguardando upload</strong>
    <span>O administrador pode carregar o arquivo original fornecido pelo Grupo.</span></div>}

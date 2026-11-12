@@ -63,7 +63,7 @@ O padrão é dry-run. A ponte valida moeda, unidade, origem/destino, valores, fu
 - Consumo = baixas confirmadas menos devoluções; compras = recebimentos menos devoluções de compra. Cancelados são excluídos.
 - ABC por valor líquido de consumo, usando todas as linhas do período. A primeira faixa cobre 80%, B até 95%, C o restante. O item que cruza o limite permanece na faixa em que começou. Devoluções líquidas negativas não entram na base positiva da classificação.
 - Economia de preço = custo de referência menos custo atual em compras comparáveis. Referência: custo médio ponderado do último dia anterior com compras do mesmo produto/unidade/operação. Compras sem referência e devoluções não entram nessa comparação. Não é lucro, economia contábil auditada nem redução absoluta de despesas.
-- Meta percentual inicialmente **a definir**, sem inventar um percentual. A administração do Grupo configura a meta e os vínculos de aprovação.
+- Meta percentual inicialmente **a definir**, sem inventar um percentual. A administração do Grupo configura a meta. A administração e o suporte GRIT podem vincular contas que já tenham a alçada correta, sem conceder aprovação financeira ao suporte.
 - As somas e a ABC são calculadas no banco em todo o recorte. Detalhes exibem até 250 movimentos e últimas compras até 100 linhas, com limites explícitos no painel/exportação.
 
 ## Fluxo de operação e compras

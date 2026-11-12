@@ -33,6 +33,12 @@ do $$
 declare c public.cp_companies%rowtype;code text:=current_setting('proconsumo.test_code');p uuid;v uuid;b uuid;snapshot jsonb;po uuid;request_id uuid;
 begin
  select * into c from public.cp_companies where operation_key='distributor';
+ begin
+  perform public.cp_configure_operation(c.id,null,1);
+  raise exception 'Technical support changed financial target';
+ exception when raise_exception then
+  if sqlerrm='Technical support changed financial target' or sqlerrm not like 'A meta financeira%' then raise;end if;
+ end;
  select id into p from public.cp_products where organization_id=c.organization_id and procfit_code=code;
  select id into v from public.cp_suppliers where organization_id=c.organization_id and procfit_code=code;
  insert into public.cp_requests(company_id,department_id,code,created_by)

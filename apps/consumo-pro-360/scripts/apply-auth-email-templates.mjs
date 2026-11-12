@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// CONSUMO PRO 360: controlled publication of HTML email templates.
+// Proconsumo: controlled publication of HTML email templates.
 // Dry run by default, --apply only with authorized Supabase Management token.
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -9,16 +9,16 @@ const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const PROJECT="xscxwazanootrdtyrumb";
 const API="https://api.supabase.com/v1/projects/"+PROJECT+"/config/auth";
 if(process.env.SUPABASE_PROJECT_REF!==PROJECT){
- console.error("Abortado: SUPABASE_PROJECT_REF difere do CONSUMO PRO dedicado.");
+ console.error("Abortado: SUPABASE_PROJECT_REF difere do Proconsumo dedicado.");
  process.exit(2);
 }
 const targets=[
- ["invite","mailer_subjects_invite","mailer_templates_invite_content","CONSUMO PRO 360 | Convite de acesso — Grupo Prohospital"],
- ["confirmation","mailer_subjects_confirmation","mailer_templates_confirmation_content","CONSUMO PRO 360 | Confirme seu e-mail"],
- ["recovery","mailer_subjects_recovery","mailer_templates_recovery_content","CONSUMO PRO 360 | Redefinição segura de senha"],
- ["magic_link","mailer_subjects_magic_link","mailer_templates_magic_link_content","CONSUMO PRO 360 | Seu acesso seguro"],
- ["email_change","mailer_subjects_email_change","mailer_templates_email_change_content","CONSUMO PRO 360 | Confirme a alteração de e-mail"],
- ["password_changed","mailer_subjects_password_changed_notification","mailer_templates_password_changed_notification_content","CONSUMO PRO 360 | Sua senha foi alterada"]
+ ["invite","mailer_subjects_invite","mailer_templates_invite_content","Proconsumo | Convite de acesso — Grupo Prohospital"],
+ ["confirmation","mailer_subjects_confirmation","mailer_templates_confirmation_content","Proconsumo | Confirme seu e-mail"],
+ ["recovery","mailer_subjects_recovery","mailer_templates_recovery_content","Proconsumo | Redefinição segura de senha"],
+ ["magic_link","mailer_subjects_magic_link","mailer_templates_magic_link_content","Proconsumo | Seu acesso seguro"],
+ ["email_change","mailer_subjects_email_change","mailer_templates_email_change_content","Proconsumo | Confirme a alteração de e-mail"],
+ ["password_changed","mailer_subjects_password_changed_notification","mailer_templates_password_changed_notification_content","Proconsumo | Sua senha foi alterada"]
 ];
 const body={};
 for(const [name,subjectKey,htmlKey,subject] of targets){
@@ -50,5 +50,5 @@ if(!result.ok){
  console.error("Falha na publicação: HTTP "+result.status+". Verifique as permissões do projeto.");
  process.exit(1);
 }
-console.log("Modelos enviados à configuração Auth do CONSUMO PRO 360.");
+console.log("Modelos enviados à configuração Auth do Proconsumo.");
 console.log("Obrigatório homologar o envio de teste e o link real antes da operação.");
