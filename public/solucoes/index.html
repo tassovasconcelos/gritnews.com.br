@@ -256,12 +256,12 @@
    outro:{name:"Outros segmentos",product:"consultoria",message:"Consultoria GRIT + solução personalizada"}
  };
  var modal=document.getElementById("modal"),form=document.getElementById("leadForm"),status=document.getElementById("formStatus"),subBtn=document.getElementById("submitLead");
- var selectedSegment="padaria",lastFocus=null;
+ var selectedSegment="padaria",segmentExplicit=false,lastFocus=null;
  function qs(k){return new URLSearchParams(location.search).get(k)||""}
  function segmentChoose(key){if(!segments[key])return;selectedSegment=key;document.querySelectorAll("[data-segment]").forEach(function(el){var on=el.getAttribute("data-segment")===key;el.classList.toggle("active",on);el.setAttribute("aria-pressed",String(on));});document.getElementById("segmentRecommendation").textContent=segments[key].message;}
- function openForm(product){lastFocus=document.activeElement;document.getElementById("formSegment").value=selectedSegment;document.getElementById("product").value=product||segments[selectedSegment].product;var chosen=document.getElementById("product").selectedOptions[0];document.getElementById("formTitle").textContent=chosen&&chosen.value!=="diagnostico"?"Quer conhecer "+chosen.textContent+"?":"Vamos encontrar a solução para seu negócio?";modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";status.className="formstatus";status.textContent="";document.getElementById("name").focus();if(window.dataLayer)window.dataLayer.push({event:"grit_form_open",grit_product:document.getElementById("product").value,grit_segment:selectedSegment});}
+ function openForm(product){lastFocus=document.activeElement;var inferred={ "sr-padeiro":"padaria","meu-espetinho":"alimentacao","juridico":"juridico","ecommerce":"ecommerce","sac-4-0":"servicos" };if(!segmentExplicit&&inferred[product])segmentChoose(inferred[product]);document.getElementById("formSegment").value=selectedSegment;document.getElementById("product").value=product||segments[selectedSegment].product;var chosen=document.getElementById("product").selectedOptions[0];document.getElementById("formTitle").textContent=chosen&&chosen.value!=="diagnostico"?"Quer conhecer "+chosen.textContent+"?":"Vamos encontrar a solução para seu negócio?";modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";status.className="formstatus";status.textContent="";document.getElementById("name").focus();if(window.dataLayer)window.dataLayer.push({event:"grit_form_open",grit_product:document.getElementById("product").value,grit_segment:selectedSegment});}
  function closeForm(){modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.style.overflow="";if(lastFocus&&lastFocus.focus)lastFocus.focus();}
- document.querySelectorAll("[data-segment]").forEach(function(btn){btn.addEventListener("click",function(){segmentChoose(btn.getAttribute("data-segment"));})});
+ document.querySelectorAll("[data-segment]").forEach(function(btn){btn.addEventListener("click",function(){segmentExplicit=true;segmentChoose(btn.getAttribute("data-segment"));})});
  document.querySelectorAll("[data-lead]").forEach(function(btn){btn.addEventListener("click",function(){openForm(btn.getAttribute("data-lead"));})});
  document.getElementById("segmentCTA").addEventListener("click",function(){openForm(segments[selectedSegment].product)});
  document.getElementById("closeModal").addEventListener("click",closeForm);
@@ -270,7 +270,7 @@
  document.getElementById("menuBtn").addEventListener("click",function(){var nav=document.getElementById("nav");var o=nav.classList.toggle("open");this.setAttribute("aria-expanded",String(o))});
  document.querySelectorAll("#nav a").forEach(function(a){a.addEventListener("click",function(){document.getElementById("nav").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false")})});
  document.getElementById("year").textContent=String(new Date().getFullYear());
- var initial=qs("segmento")||qs("segment");if(segments[initial])segmentChoose(initial);else segmentChoose("padaria");
+ var initial=qs("segmento")||qs("segment");if(segments[initial]){segmentExplicit=true;segmentChoose(initial)}else segmentChoose("padaria");
  function showStatus(msg,isSuccess){status.textContent=msg;status.className="formstatus "+(isSuccess?"success":"error")}
  function limited(s,max){return String(s||"").trim().slice(0,max)}
  function safeParam(name,n){return limited(qs(name),n)}
