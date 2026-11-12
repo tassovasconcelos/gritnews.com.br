@@ -8,7 +8,8 @@ const fmt=(n,u)=>formatMetric(Number.isFinite(n)?n:null,u);
 function stat(title,value,subtitle){return "<div class='perf-stat'><small>"+esc(title)+"</small><strong>"+esc(value)+"</strong><span>"+esc(subtitle)+"</span></div>";}
 function table(headers,rows){if(!rows.length)return "<div class='perf-empty'>Nenhum registro neste período. Não há números operacionais a apresentar.</div>";return "<div class='perf-data-table'><table><thead><tr>"+headers.map(h=>"<th>"+esc(h)+"</th>").join('')+"</tr></thead><tbody>"+rows.join('')+"</tbody></table></div>";}
 function input(name,label,type='text',extra=''){
- return "<label>"+esc(label)+"<input name='"+esc(name)+"' type='"+esc(type)+"' "+extra+" required></label>";
+ const optional=['estimated_hour_cost','before_decision_minutes','after_decision_minutes'].includes(name);
+ return "<label>"+esc(label)+"<input name='"+esc(name)+"' type='"+esc(type)+"' "+extra+(optional?"":" required")+"></label>";
 }
 function select(name,label,options){return "<label>"+esc(label)+"<select name='"+esc(name)+"'>"+options.map(([val,title])=>"<option value='"+esc(val)+"'>"+esc(title)+"</option>").join('')+"</select></label>";}
 function evidence(){return "<label class='wide'>Evidência / referência verificável (obrigatória)<textarea name='evidence' minlength='12' maxlength='2000' placeholder='Fonte, relatório, vínculo ERP, protocolo ou documento verificável.' required></textarea></label>";}
