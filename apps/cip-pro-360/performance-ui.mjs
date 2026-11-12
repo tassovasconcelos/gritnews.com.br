@@ -27,7 +27,7 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
  const root=document.getElementById('performanceRoot');if(!root)return;
  let alive=true,epoch=0,selected=companies[0]||'',month=currentMonth(),tab='visao';
  let data={kpis:[],processes:[],agents:[],benefits:[],approvals:[],reviewers:[],activity:[]};
- let activityStatus='';
+ let activityStatus='',processActivityStatus='';
  let ready=false;
  const readOnly=!['superadm','diretoria'].includes(role);
  const $=sel=>root.querySelector(sel);
@@ -68,7 +68,7 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
    if(run!==epoch||!isAlive())return;
    data={kpis:res[0].data||[],processes:res[1].data||[],agents:res[2].data||[],benefits:items,approvals:approvals.data||[],
     reviewers:(res[4].data||[]).filter(r=>scopes().includes(r.company_id))};
-   let activity=[],activityMessage='';
+   let activity=[],activityMessage='',processActivity=[],processMessage='';
    // These immutable runtime logs already exist. They are not financial evidence or ERP execution.
    try{
     const nextMonth=new Date(p.end+'T12:00:00Z');nextMonth.setUTCDate(nextMonth.getUTCDate()+1);
@@ -79,8 +79,17 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
     activity=(logs.data||[]).slice(0,100);
     activityMessage=logs.data?.length>100?'Últimos 100 eventos; histórico parcial, sem totalização.':'Eventos registrados pelo runtime; sem inferência de resultado financeiro.';
    }catch{activityMessage='Telemetria indisponível. Nenhuma atividade automática foi presumida.';}
+   try{
+    const next=new Date(p.end+'T12:00:00Z');next.setUTCDate(next.getUTCDate()+1);
+    const logs=await db.from('cip_process_versions').select('process_id,company_id,version,title,created_at')
+     .in('company_id',scopes()).gte('created_at',p.start+'T00:00:00-03:00')
+     .lt('created_at',next.toISOString().slice(0,10)+'T00:00:00-03:00').order('created_at',{ascending:false}).limit(101);
+    if(logs.error)throw logs.error;
+    processActivity=(logs.data||[]).slice(0,100);
+    processMessage=logs.data?.length>100?'Últimas 100 versões; histórico parcial.':'Versões capturadas automaticamente ao salvar mapas.';
+   }catch{processMessage='Histórico de mapas indisponível; nenhuma execução foi presumida.';}
    if(run!==epoch||!isAlive())return;
-   data.activity=activity;activityStatus=activityMessage;
+   data.activity=activity;activityStatus=activityMessage;data.processActivity=processActivity;processActivityStatus=processMessage;
    ready=true;setMessage('Registros carregados. Dados informados manualmente permanecem provisórios até validação independente.');
    render();
   }catch(error){if(run!==epoch||!isAlive())return;ready=false;data={kpis:[],processes:[],agents:[],benefits:[],approvals:[],reviewers:[]};setMessage('Dados indisponíveis: '+(error.message||'falha de consulta')+'. Nenhum resultado foi presumido.');render();}
@@ -158,7 +167,9 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
   const top="<div class='perf-stat-grid'>"+stat('Horas líquidas poupadas',data.processes.length?fmt(p.netHours,'HOURS'):'—','(Antes − depois) × volume, menos supervisão/retrabalho')+
    stat('Capacidade equivalente',data.processes.length?fmt(p.fteEquivalent,'COUNT'):'—','FTE estimado, não empregados eliminados')+
    stat('Custo-hora ilustrativo',data.processes.length?fmt(p.indicativeLaborValue,'BRL'):'—','Não incorpora o benefício financeiro aprovado')+"</div>";
-  return top+"<div class='perf-split'>"+formShell('Nova medição de velocidade e trabalho','process',fields)+"<section class='perf-card'><h2>Critérios</h2>"+info('Medir operações do mesmo tipo, qualidade, dificuldade e volume. Descontar revisão humana, monitoramento e retrabalho. Ganho de capacidade só vira economia financeira se houver despesas comprovadamente reduzidas ou contratações evitadas, com pareceres independentes.')+"</section></div><section class='perf-card'><h2>Histórico de processos</h2>"+table(['Empresa','Processo','Antes','Depois','Execuções','Horas líquidas','FTE'],rows)+"</section>";
+  return top+"<div class='perf-split'>"+formShell('Nova medição de velocidade e trabalho','process',fields)+"<section class='perf-card'><h2>Critérios</h2>"+info('Medir operações do mesmo tipo, qualidade, dificuldade e volume. Descontar revisão humana, monitoramento e retrabalho. Ganho de capacidade só vira economia financeira se houver despesas comprovadamente reduzidas ou contratações evitadas, com pareceres independentes.')+"</section></div><section class='perf-card'><h2>Histórico de processos</h2>"+table(['Empresa','Processo','Antes','Depois','Execuções','Horas líquidas','FTE'],rows)+"</section>"
+   +"<section class='perf-card'><h2>Rastreabilidade dos mapas de processo</h2>"+info(processActivityStatus)+info('Salvar ou editar um mapa não comprova execução do processo, tempo poupado ou resultado no ERP.')
+   +table(['Empresa','Mapa','Versão','Instante','Identificador'],(data.processActivity||[]).map(x=>'<tr><td>'+esc(companiesNames[x.company_id])+'</td><td>'+esc(x.title)+'</td><td>'+esc(x.version)+'</td><td>'+esc(x.created_at)+'</td><td>'+esc(x.process_id)+'</td></tr>'))+'</section>';
  }
  function agents(){
   const a=agentsSummary(data.agents);
@@ -199,6 +210,13 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
    const canReview=reviewer&&!already&&x.created_by!==user.id&&x.validation==='pendente';
    let signoff='';
    if(canReview)signoff="<form class='perf-review' data-perf-form='approval'><input type='hidden' name='event_id' value='"+esc(x.id)+"'><input type='hidden' name='company_id' value='"+esc(x.company_id)+"'><select name='decision'><option value='aprovado'>Aprovar</option><option value='rejeitado'>Rejeitar</option></select><input name='evidence_note' minlength='10' required placeholder='Justificativa verificável'><button class='btn secondary' type='submit'>Parecer</button></form>";
+   if(!readOnly&&selected!=='all'&&x.event_kind!=='reversal'&&['validado','em_revisao'].includes(x.validation)){
+    signoff+="<details><summary>Registrar estorno vinculado</summary><form class='perf-form' data-perf-form='reversal'><input type='hidden' name='reverses_event_id' value='"+esc(x.id)+"'>"
+     +input('source_key','Origem única do estorno','text',"minlength='8' maxlength='180'")
+     +input('reversals','Valor a estornar (R$)','number',"min='0.01' step='0.01'")
+     +input('description','Motivo do estorno','text',"minlength='10' maxlength='250'")+evidence()
+     +"<p>Reabre a apuração original até revisão independente. Não apaga o benefício nem emite pagamento.</p><button class='btn secondary' type='submit'>Submeter estorno</button></form></details>";
+   }
    return "<tr><td>"+esc(companiesNames[x.company_id])+"</td><td>"+esc(x.source_key)+"<div class='perf-muted'>"+esc(x.description)+"</div><div class='perf-muted'>Atribuição: "+esc(x.attribution_pct)+"% · Ação CIP: "+esc(x.cip_action_ref)+"<br>Marco zero: "+esc(x.baseline_reference)+"<br>Evidência: "+esc(x.evidence)+"</div></td><td>"+esc(benefitNames[x.benefit_type]||x.benefit_type)+"</td><td>"+fmt(x.gross_value,'BRL')+"</td><td>"+fmt(x.incremental_cost,'BRL')+"</td><td>"+fmt(x.reversals,'BRL')+"</td><td>"+fmt(x.net,'BRL')+"</td><td><span class='perf-state "+(x.validation==='validado'?'ok':x.validation==='rejeitado'?'no':'')+"'>"+esc(x.validation)+"</span>"+signoff+"</td></tr>";
   });
   return "<div class='perf-stat-grid'>"+stat('Ganho líquido submetido',data.benefits.length?fmt(summary.netSubmitted,'BRL'):'—','Não equivale a ganho aprovado')+
@@ -206,7 +224,7 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
    stat('Prévia de participação (6%)',bonus?.available?fmt(bonus.amount,'BRL'):'—','Índice completo necessário; não gera pagamento')+"</div>"+
    "<div class='perf-split'>"+formShell('Registrar resultado financeiro incremental','benefit',fields)+
    "<section class='perf-card'><h2>Regras para bonificação</h2>"+info('Exigir base histórica e aprovação independente. O saldo de estoque liberado não é lucro; considerar apenas o custo financeiro comprovado. Nunca lançar duas vezes a mesma margem obtida no Caderninho ou na venda normal. Usar chave única por evento de origem. O percentual de 6% é uma referência de negociação, não contrato.')+
-   info('Atribuição: cada evento deve ter uma ação do CIP identificável, número rastreável, custos/reversões e uma prova verificável. Só há ganho validado após pareceres distintos de Controladoria e Diretoria.')+"</section></div>"+
+   info('Líquido = bruto incremental × atribuição / 100 − custos − estornos. Estorno vinculado reabre o período original: enquanto pendente, suspende o ganho do evento. Dois novos pareceres são necessários para deduzir o estorno e reapurar o saldo.')+"</section></div>"+
    "<section class='perf-card'><h2>Livro de benefícios e validações</h2>"+table(['Empresa','Origem / descrição','Tipo','Bruto','Custos','Estornos','Líquido','Situação'],rows)+"</section>";
  }
  function governance(){
@@ -258,6 +276,12 @@ export function mountPerformance({db,user,companies=[],role,onDispose}){
    table='cip_perf_agent_samples';payload={...common,agent_key:String(raw.agent_key).trim(),analyses:numeric('analyses'),actions_recommended:numeric('actions_recommended'),
     actions_executed:numeric('actions_executed'),actions_effective:numeric('actions_effective'),tasks_eligible:numeric('tasks_eligible'),tasks_automatic:numeric('tasks_automatic'),
     before_decision_minutes:numeric('before_decision_minutes'),after_decision_minutes:numeric('after_decision_minutes'),source_kind:'manual'};
+  }else if(action==='reversal'){
+   const original=data.benefits.find(x=>x.id===raw.reverses_event_id&&x.company_id===selected&&x.event_kind!=='reversal');
+   if(!original||numeric('reversals')===null||numeric('reversals')<=0){setMessage('Selecione benefício original autorizado e valor de estorno positivo.');return;}
+   table='cip_perf_financial_events';payload={...common,event_kind:'reversal',reverses_event_id:original.id,source_key:String(raw.source_key||'').trim(),
+    benefit_type:original.benefit_type,description:String(raw.description||'').trim(),gross_value:0,incremental_cost:0,reversals:numeric('reversals'),attribution_pct:0,
+    cip_action_ref:original.cip_action_ref,baseline_reference:original.baseline_reference};
   }else if(action==='benefit'){
    if(numeric('attribution_pct')===null||numeric('attribution_pct')<0||numeric('attribution_pct')>100){setMessage('Informe a atribuição comprovável ao CIP entre 0 e 100%.');return;}
    if(['gross_value','incremental_cost','reversals'].some(k=>numeric(k)===null||numeric(k)<0)){setMessage('Informe valores financeiros positivos ou zero.');return;}

@@ -107,6 +107,26 @@ export function verifiedBenefits(events=[],approvals=[]){
   if(ok){approved++;netValidated+=net;}else if(rejectedDecision)rejected++;else pending++;
   checked.push({...event,net,validation:ok?'validado':rejectedDecision?'rejeitado':'pendente'});
  }
+ const originals=new Map(checked.filter(e=>e.event_kind!=='reversal').map(e=>[e.id,e]));
+ const adjustments=checked.filter(e=>e.event_kind==='reversal');
+ for(const adjustment of adjustments){
+  const parent=originals.get(adjustment.reverses_event_id);
+  const matches=parent&&parent.company_id===adjustment.company_id&&parent.period_start===adjustment.period_start&&parent.period_end===adjustment.period_end;
+  const shape=Number(adjustment.gross_value)===0&&Number(adjustment.incremental_cost)===0&&Number(adjustment.attribution_pct)===0&&Number(adjustment.reversals)>0;
+  if(!matches||!shape){adjustment.validation='em_revisao';if(parent)parent.validation='em_revisao';}
+ }
+ for(const parent of originals.values()){
+  const linked=adjustments.filter(e=>e.reverses_event_id===parent.id&&e.validation!=='rejeitado');
+  const invalid=linked.some(e=>e.validation!=='validado')||linked.reduce((sum,e)=>sum+Number(e.reversals),0)>Math.max(0,parent.net);
+  if(linked.length&&(invalid||parent.validation!=='validado')){
+   if(parent.validation==='validado')parent.validation='em_revisao';
+   linked.forEach(e=>{if(e.validation==='validado')e.validation='em_revisao';});
+  }
+ }
+ approved=checked.filter(e=>e.validation==='validado').length;
+ rejected=checked.filter(e=>e.validation==='rejeitado').length;
+ pending=checked.length-approved-rejected;
+ netValidated=checked.filter(e=>e.validation==='validado').reduce((sum,e)=>sum+e.net,0);
  return {approved,pending,rejected,netValidated:Math.round(netValidated*100)/100,netSubmitted:Math.round(netSubmitted*100)/100,events:checked};
 }
 export function bonusSimulation(performance,finances,shareRate=0.06){

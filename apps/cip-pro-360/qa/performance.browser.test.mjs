@@ -55,6 +55,23 @@ test('Performance browser: mobile, forms, stale context, errors and read-only ac
   await page.evaluate(()=>{qa.fail=true;});await page.locator('[data-perf-refresh]').click();
   await page.getByRole('status').filter({hasText:'Dados indisponíveis'}).waitFor();
   assert.equal(await page.locator('[data-perf-form]').count(),0);
+  await page.evaluate(()=>{
+   qa.fail=false;qa.delay=0;qa.telemetryFail=true;
+   const month=document.querySelector('[data-perf-month]').value;
+   const end=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5)),0)).toISOString().slice(0,10);
+   qa.records=[{table:'cip_perf_financial_events',id:'gain',event_kind:'benefit',company_id:'shopping_prohospital',period_start:month+'-01',period_end:end,
+    created_by:'qa-actor',source_key:'QA:BROWSER:GAIN',gross_value:100,incremental_cost:0,reversals:0,attribution_pct:100,cip_action_ref:'QA:ACTION:1',baseline_reference:'Baseline sintetica de teste',evidence:'Evidencia sintetica',description:'Beneficio sintetico de teste',benefit_type:'margem_incremental'},
+    ...['controladoria','diretoria'].map((review_role,i)=>({table:'cip_perf_financial_approvals',event_id:'gain',company_id:'shopping_prohospital',review_role,reviewer_id:'reviewer-'+i,decision:'aprovado'}))];
+  });
+  await page.locator('[data-perf-company]').selectOption('shopping_prohospital');await page.getByRole('status').filter({hasText:'Registros carregados'}).waitFor();
+  await page.locator('[data-perf-tab="agentes"]').click();await page.getByText('Telemetria indisponível.',{exact:false}).waitFor();
+  await page.locator('[data-perf-tab="beneficios"]').click();await page.getByText('Registrar estorno vinculado',{exact:true}).click();
+  const reverse=page.locator('[data-perf-form="reversal"]');
+  await reverse.locator('[name=source_key]').fill('QA:BROWSER:REVERSAL');await reverse.locator('[name=reversals]').fill('20');
+  await reverse.locator('[name=description]').fill('Correcao sintetica de teste');await reverse.locator('[name=evidence]').fill('Evidencia de estorno sintetica');
+  await reverse.getByRole('button',{name:'Submeter estorno'}).click();await page.getByRole('status').filter({hasText:'Registros carregados'}).waitFor();
+  assert.equal(await page.evaluate(()=>qa.writes.at(-1).payload.reverses_event_id),'gain');
+  await page.getByText('em_revisao',{exact:true}).waitFor();
   await page.goto(url+'/?role=gestor');await page.getByRole('status').filter({hasText:'Registros carregados'}).waitFor();
   await page.locator('[data-perf-company]').selectOption('shopping_prohospital');await page.getByRole('status').filter({hasText:'Registros carregados'}).waitFor();
   for(const tab of ['indicadores','processos','agentes','beneficios']){

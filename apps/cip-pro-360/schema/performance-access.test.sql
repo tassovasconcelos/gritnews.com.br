@@ -69,6 +69,22 @@ begin
  values(e,'shopping_prohospital','diretoria','aprovado','Parecer de fixture revertido');
  if (select count(*) from public.cip_perf_financial_approvals where event_id=e)<>2 then raise exception 'independent reviews missing'; end if;
  execute 'reset role';
+ perform set_config('request.jwt.claim.sub',a::text,true);
+ execute 'set local role authenticated';
+ insert into public.cip_perf_financial_events(company_id,source_key,period_start,period_end,benefit_type,description,gross_value,evidence,cip_action_ref,baseline_reference,attribution_pct,event_kind,reverses_event_id,reversals)
+ values('shopping_prohospital','QA:REVERSE:1','2026-11-01','2026-11-30','margem_incremental','Estorno de fixture revertido',0,'Fixture de teste revertido','QA:ACTION:1','Baseline de fixture revertida',0,'reversal',e,20);
+ begin
+ insert into public.cip_perf_financial_events(company_id,source_key,period_start,period_end,benefit_type,description,gross_value,evidence,cip_action_ref,baseline_reference,attribution_pct,event_kind,reverses_event_id,reversals)
+ values('shopping_prohospital','QA:REVERSE:EXCESS','2026-11-01','2026-11-30','margem_incremental','Excesso deve ser bloqueado',0,'Fixture de teste revertido','QA:ACTION:1','Baseline de fixture revertida',0,'reversal',e,90);
+ raise exception 'excess reversal accepted'; exception when check_violation then null; end;
+ begin
+ insert into public.cip_perf_financial_events(company_id,source_key,period_start,period_end,benefit_type,description,gross_value,evidence,cip_action_ref,baseline_reference,attribution_pct,event_kind,reverses_event_id,reversals)
+ values('distribuidora_prohospital','QA:REVERSE:CROSS','2026-11-01','2026-11-30','margem_incremental','Outra empresa deve falhar',0,'Fixture de teste revertido','QA:ACTION:1','Baseline de fixture revertida',0,'reversal',e,10);
+ raise exception 'cross company reversal accepted'; exception when check_violation then null; end;
+ begin
+ update public.cip_perf_financial_events set gross_value=0 where id=e;
+ raise exception 'immutable benefit changed'; exception when insufficient_privilege then null; end;
+ execute 'reset role';
  perform set_config('request.jwt.claim.sub',o::text,true);
  execute 'set local role authenticated';
  if exists(select 1 from public.cip_perf_financial_events) then raise exception 'unauthorized rows visible'; end if;

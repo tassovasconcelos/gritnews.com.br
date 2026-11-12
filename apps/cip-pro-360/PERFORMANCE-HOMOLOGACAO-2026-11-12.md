@@ -25,6 +25,7 @@ Migrações aplicadas via conector Supabase:
 
 1. `cip_perf_hardening_company_manual_origin` — SQL em `schema/performance-tasso-hardening.sql`.
 2. `cip_perf_explicit_incremental_attribution` — SQL em `schema/performance-attribution.sql`.
+3. `cip_perf_linked_reversal_reassessment` — SQL em `schema/performance-reversals.sql`.
 
 `schema/performance-access.test.sql` executado no projeto real com identidades sintéticas e transação revertida. Verifica superadm, diretoria, gestor, usuário sem acesso, anon, empresa diferente, fonte indevidamente certificada, autoaprovação, autodesignação, chave duplicada, trilha de auditoria e dois pareceres independentes. Resultado: passou. As fixtures não persistiram.
 
@@ -35,6 +36,16 @@ Após rollback: 0 KPIs, 0 benefícios financeiros, 0 revisores. Nenhum valor foi
 O banco contém 164 eventos `cycle_completed` na consulta de auditoria, sem eventos de execução/revisão de missão observados nessa contagem. A tela agora consulta `cip_agent_events` automaticamente, respeitando empresa, período e RLS, exibindo identificador, missão, tipo e timestamp. Mostra até 100 eventos e identifica histórico parcial. Falha de logs não gera atividade presumida nem elimina as medições manuais.
 
 Isso comprova registros de ciclos internos, não eficácia, economia ou integração Procfit homologada. Não há promoção automática de logs a score/benefício. Tempo real de execução de processos e encadeamento alerta → análise → decisão → execução → revisão ainda precisam de instrumentação e homologação.
+
+A rastreabilidade de processos agora também consulta as versões de mapas salvas, com empresa, título, versão, identificador e instante. O banco contém 14 versões na auditoria desta rodada; salvar mapas não comprova execução de processos.
+
+## Estornos vinculados e reapuração
+
+Estorno é novo evento imutável, vinculado ao benefício original e ao seu período/empresa. O banco exige original com dois pareceres independentes, impede vínculo entre empresas/períodos e reserva o saldo para impedir estornos acima do líquido original. A criação é serializada por benefício com trava transacional. Estornos rejeitados liberam a reserva sem apagar histórico.
+
+Enquanto qualquer estorno válido estiver pendente, o motor suspende o ganho do benefício original na prévia. Após dois novos pareceres independentes, desconta o valor uma única vez. Um estorno rejeitado não altera o ganho original. Eventos órfãos, incompatíveis e valores excessivos não geram benefício validado.
+
+Testes: quatro casos de cálculo, cenário de submissão/reabertura no navegador e assertions no Supabase real para estorno válido, excesso, empresa diferente e tentativa de alterar o evento original. Fixtures revertidas. A suite da raiz do aplicativo passou com 375 testes após essa evolução. O fechamento contábil e tratamento de períodos oficialmente fechados ainda exigem aceite da Controladoria; não existe pagamento automatizado.
 
 ## Testes reproduzíveis
 
@@ -50,7 +61,9 @@ Isso comprova registros de ciclos internos, não eficácia, economia ou integra�
 2. Definir e homologar baselines, metas, escopos e amostragem de Shopping/Distribuidora; carregar evidências reais reconciliadas.
 3. Homologar login/sessão de contas reais e fluxo completo na aplicação integrada. Testes de UI sintética + RLS real não substituem esse aceite.
 4. Conciliar documentos econômicos entre módulos e estabelecer chave canônica no sistema de origem; variantes de referência documental distintas ainda exigem revisão humana.
-5. Implementar reversões vinculadas ao evento original e reapuração de períodos fechados. O campo de estorno na submissão não substitui esse fluxo append-only.
+5. Homologar com a Controladoria as reversões vinculadas e a reapuração, incluindo regras de fechamento contábil e comunicação de períodos reabertos. A implementação técnica passou nos testes, mas não houve aceite financeiro real.
 6. Instrumentar execuções reais de processos, ações, decisões e revisão; processos desenhados/salvos não equivalem a processos executados. Procfit não homologado.
 7. Homologar o modelo contratual da simulação; nenhum pagamento habilitado.
 8. Confirmar CI no commit final, alvo FTPS isolado, HTTP/hashes e aceite autenticado antes de qualquer publicação. Esta rodada não utilizou credenciais Hostinger nem alterou outros sites.
+
+O commit `73c8bce4f00d1907222d5b7dfb351175852da327` passou no CI completo: [validação CIP, navegador e banco](https://github.com/tassovasconcelos/gritnews.com.br/actions/runs/43226901983), com publicação ignorada. Evolução de estornos/versões de processos registrada em commit subsequente, cujo CI deve ser conferido no PR.

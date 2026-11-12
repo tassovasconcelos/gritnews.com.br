@@ -50,6 +50,6 @@ jobs:
       - name: Test migrations and company access without production credentials
         run: |
           set -euo pipefail
-          for file in qa/database-bootstrap.sql schema/performance-tasso-v1.sql schema/performance-tasso-permissions.sql schema/performance-tasso-hardening.sql schema/performance-attribution.sql schema/performance-access.test.sql; do
+          for file in qa/database-bootstrap.sql schema/performance-tasso-v1.sql schema/performance-tasso-permissions.sql schema/performance-tasso-hardening.sql schema/performance-attribution.sql schema/performance-reversals.sql schema/performance-access.test.sql; do
             psql -v ON_ERROR_STOP=1 -f "apps/cip-pro-360/$file"
           done
