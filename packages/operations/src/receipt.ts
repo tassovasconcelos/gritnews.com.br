@@ -131,3 +131,11 @@ export async function printReceipt(d: ReceiptData, p: ReceiptPreferences) {
   w.focus();
   w.print();
 }
+
+/** Opens a user-reviewed message. No transport, webhook or delivery claim. */
+export function whatsAppReceiptUrl(phone:string, text:string):string {
+ let number=phone.replace(/[^0-9]/g,'');
+ if(number.length===10||number.length===11)number='55'+number;
+ if(!/^55[1-9][0-9]{9,10}$/.test(number))throw new Error('Informe um WhatsApp brasileiro com DDD.');
+ return 'https://wa.me/'+number+'?text='+encodeURIComponent(text);
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   printReceipt,
   receiptLines,
+  whatsAppReceiptUrl,
   safeLogo,
   type ReceiptData,
   type ReceiptPreferences,
@@ -11,6 +12,7 @@ export function ReceiptOutput({
   preferences,
   onClose,
   onFiscal,
+  whatsAppPhone,
   ready = true,
   error = "",
 }: {
@@ -18,10 +20,12 @@ export function ReceiptOutput({
   preferences: ReceiptPreferences;
   onClose: () => void;
   onFiscal?: () => void;
+  whatsAppPhone?: string;
   ready?: boolean;
   error?: string;
 }) {
   const [message, setMessage] = useState("");
+  const [phone,setPhone]=useState(whatsAppPhone||'');
   const dialog = useRef<HTMLElement>(null);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -116,8 +120,8 @@ export function ReceiptOutput({
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();
           if (e.key === "Tab") {
-            const buttons = dialog.current?.querySelectorAll<HTMLButtonElement>(
-              "button:not(:disabled)",
+            const buttons = dialog.current?.querySelectorAll<HTMLElement>(
+              "button:not(:disabled),input:not(:disabled)",
             );
             if (!buttons?.length) return;
             const first = buttons[0],
@@ -141,6 +145,7 @@ export function ReceiptOutput({
           )}
           {lines.join("\n")}
         </div>
+        {whatsAppPhone!==undefined&&<div><label>WhatsApp do cliente com DDD<input type="tel" inputMode="tel" value={phone} maxLength={20} onChange={e=>setPhone(e.target.value)} placeholder="Confira o destinatário"/></label><p>Confira o número e o cupom. O WhatsApp abrirá para você revisar e enviar.</p><button disabled={!ready} onClick={()=>{try{const url=whatsAppReceiptUrl(phone,lines.join('\n'));const opened=window.open(url,'_blank');if(opened)opened.opener=null;setMessage(opened?'WhatsApp aberto para revisão. O envio deve ser confirmado por você.':'Permita a abertura do WhatsApp neste navegador.');}catch(e){setMessage(e instanceof Error?e.message:'Confira o número.');}}}>Abrir cupom no WhatsApp</button></div>}
         <div className="ops-actions">
           <button
             className="ops-primary"

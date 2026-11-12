@@ -27,7 +27,7 @@ export function OperationHub({client,currentApp}:{client:any;currentApp:Operatio
   </main>;
 }
 
-export function StartOperationSupport({client,app,scopeId}:{client:any;app:OperationApp;scopeId:string}) {
+export function StartOperationSupport({client,app,scopeId,area='settings'}:{client:any;app:OperationApp;scopeId:string;area?:OperationArea}) {
  const[busy,setBusy]=useState(false),[error,setError]=useState('');
- return <section className="ops-panel"><h2>Configurar esta operação</h2><p>Você está em consulta. Entre no suporte para cadastrar produtos, importar cardápio, preparar estoque, usuários, logo e impressão.</p><button disabled={busy} onClick={async()=>{setBusy(true);setError('');try{location.assign(await startOperationSupport(client,app,scopeId,'settings','Implantação e configuração pela operação do cliente',location.origin));}catch{setBusy(false);setError('Não foi possível iniciar o suporte. Entre novamente ou tente pela central.');}}}>{busy?'Abrindo suporte…':'Entrar na operação completa'}</button> <a href="/admin/operacoes">Todos os clientes e operações</a>{error&&<p role="alert">{error}</p>}</section>;
+ return <section className="ops-panel"><h2>Configurar esta operação</h2><p>Você está em consulta. Entre no suporte para cadastrar produtos, importar cardápio, preparar estoque, usuários, logo e impressão.</p><button disabled={busy} onClick={async()=>{setBusy(true);setError('');try{location.assign(await startOperationSupport(client,app,scopeId,area,'Implantação e configuração pela operação do cliente',location.origin));}catch{setBusy(false);setError('Não foi possível iniciar o suporte. Entre novamente ou tente pela central.');}}}>{busy?'Abrindo suporte…':'Entrar na operação completa'}</button> <a href="/admin/operacoes">Todos os clientes e operações</a>{error&&<p role="alert">{error}</p>}</section>;
 }

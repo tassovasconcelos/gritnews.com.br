@@ -1,3 +1,4 @@
+import {withDeadline} from './lib/request';
 import {OperationHub} from '@gritnews/operations';
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
@@ -20,7 +21,8 @@ export default function App() {
   const supportTarget=new URLSearchParams(location.search).get('support_org');
   const [supportMode,setSupportMode]=useState(false);
   const [session,setSession]=useState<Session|null>(null); const [loading,setLoading]=useState(true); const [orgId,setOrgId]=useState<string|null>(null); const [role,setRole]=useState<Role>('viewer'); const [access,setAccess]=useState<string>('blocked'); const [isSuper,setIsSuper]=useState(false); const [environment,setEnvironment]=useState('production'); const [setupError,setSetupError]=useState('');
-  async function hydrate(next:Session|null){
+  async function hydrate(next:Session|null){try{await withDeadline(hydrateContext(next),18000);}catch{setSetupError('Não foi possível preparar seu acesso. Confira a conexão e tente novamente.');setLoading(false);}}
+  async function hydrateContext(next:Session|null){
     setSession(next); setAccess('blocked'); setIsSuper(false);setSetupError('');setEnvironment('production');setLoading(true);setSupportMode(false);
     if(!next){setOrgId(null);setLoading(false);return}
     const route=customerRoute(currentCustomerPath());if(route.invalid){setOrgId(null);setSetupError('Endereço do cliente inválido.');setLoading(false);return;}let requestedOrg=new URLSearchParams(location.search).get('organization')||new URLSearchParams(location.search).get('operation_scope');if(route.slug){const resolved=await supabase.rpc('ops_customer_route',{a:'sr-padeiro',slug:route.slug});if(resolved.error||!resolved.data?.scope_id){setOrgId(null);setSetupError('Empresa indisponível para esta conta. Confira o endereço e sua liberação com o responsável.');setLoading(false);return;}rememberCustomer(route.slug);requestedOrg=resolved.data.scope_id;}
@@ -54,7 +56,7 @@ export default function App() {
     }
     setLoading(false);
   }
-  useEffect(()=>{supabase.auth.getSession().then(({data})=>hydrate(data.session));const {data}=supabase.auth.onAuthStateChange((_e,s)=>{if(_e==='PASSWORD_RECOVERY')setPasswordSetup(true);setTimeout(()=>void hydrate(s),0)});return()=>data.subscription.unsubscribe()},[]);
+  useEffect(()=>{withDeadline(supabase.auth.getSession()).then(({data})=>hydrate(data.session)).catch(()=>{setSetupError('Não foi possível conferir sua sessão. Recarregue a página.');setLoading(false);});const {data}=supabase.auth.onAuthStateChange((_e,s)=>{if(_e==='PASSWORD_RECOVERY')setPasswordSetup(true);setTimeout(()=>void hydrate(s),0)});return()=>data.subscription.unsubscribe()},[]);
   if(path==='/instalar')return <InstallApp name="Sr. Padeiro"/>;
   if(!passwordSetup&&(path==='/'||path==='/index.html')) return <Landing/>;
   if(isSeoPath(path)) return <SeoLanding path={path}/>;
@@ -63,7 +65,7 @@ export default function App() {
   if(inviteToken)return <InviteAcceptance client={supabase} token={inviteToken}/>;
   if(!session) return <Auth/>;
   if(passwordSetup)return <PasswordSetup client={supabase} onDone={()=>{const target=confirmationRedirect(location.origin,location.search,currentCustomerPath());history.replaceState({},'',target);setPasswordSetup(false);void hydrate(session);}}/>;
-  if(setupError)return <main className="auth-shell"><section className="auth-card"><h1>Acesso indisponível</h1><p>{setupError}</p><a href="/admin">Voltar à central</a></section></main>;
+  if(setupError)return <main className="auth-shell"><section className="auth-card"><h1>Acesso indisponível</h1><p>{setupError}</p><button onClick={()=>void hydrate(session)}>Tentar novamente</button><a href="/admin">Voltar à central</a></section></main>;
   if(path==='/homologacao-gateway') return isSuper?<GatewayHomologation/>:<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p></section></main>;
   if(path.startsWith('/admin')) return isSuper?(path==='/admin/operacoes'?<OperationHub client={supabase} currentApp="sr-padeiro"/>:<Admin/>):<main className="auth-shell"><section className="auth-card"><h1>Acesso restrito</h1><p>Esta área é exclusiva do Super Admin.</p><a className="btn-dark" href="/app">Voltar ao app</a></section></main>;
   if(!orgId) return <Onboarding user={session.user} onDone={()=>hydrate(session)}/>;
