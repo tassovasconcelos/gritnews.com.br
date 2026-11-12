@@ -10,7 +10,7 @@ test('cliente, pedido e venda: vínculo, histórico, recibo e repetição preser
  const d={...draft(),customer_id:c.id};await call(db,'save',d);const done=await call(db,'complete',{id:d.id,version:1,cash_id:cash,payment_method:'cash'});
  assert.equal((await call(db,'complete',{id:d.id,version:1,cash_id:cash,payment_method:'cash'})).sale_id,done.sale_id);
  const history=await retailCall(db,'sales',{customer_id:c.id,days:30});assert.equal(history.rows.length,1);
- const receipt=await retailCall(db,'receipt',{sale_id:done.sale_id});assert.equal(receipt.customer.id,c.id);assert.equal(receipt.items[0].name,'Pão');
+ await as(db,cashier);const receipt=await retailCall(db,'receipt',{sale_id:done.sale_id});assert.equal(receipt.operator_name,'Atendente da venda');assert.equal(receipt.customer.id,c.id);assert.equal(receipt.items[0].name,'Pão');
  const detail=await retailCall(db,'customer',{customer_id:c.id});assert.equal(detail.summary.visits,1);assert.equal(Number(detail.summary.total),10);
  const contact={id:id(701),customer_id:c.id,note:'Preferência informada no balcão'};await retailCall(db,'contact',contact);await retailCall(db,'contact',contact);
  assert.equal((await retailCall(db,'customer',{customer_id:c.id})).contacts.length,1);
@@ -45,3 +45,4 @@ test('caixa: dinheiro esperado exclui PIX, fechamento idempotente, abertura úni
  await as(db,stockist);await assert.rejects(retailCall(db,'cash_close',{id:id(800),amount:5}),/forbidden/);
  }finally{await db.close();}
 });
+
