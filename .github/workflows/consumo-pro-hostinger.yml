@@ -127,10 +127,10 @@ jobs:
         shell: bash
         run: |
           python3 -m py_compile scripts/provision_hostinger.py scripts/deploy_hostinger_api.py
-          python3 -m unittest discover -s tests -p 'test_hostinger_provision.py' -v
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
           bash -n scripts/verify_hostinger.sh
       - name: Verify intelligent travel route calculation
-        run: node --test tests/test-async-read.mjs tests/test-travel-engine.mjs
+        run: node --test tests/test-async-read.mjs tests/test-procurement-evidence.mjs tests/test-travel-engine.mjs
       - name: Type check and build
         run: |
           npm run check
@@ -152,7 +152,7 @@ jobs:
           node -e "const fs=require('node:fs'); const m=JSON.parse(fs.readFileSync('dist/manifest.webmanifest','utf8')); if(m.start_url!=='/app'||m.display!=='standalone') process.exit(1)"
           test -s dist/offline.html
           test -s dist/offline.css
-          node -e "const fs=require('node:fs'); fs.writeFileSync('dist/release.json',JSON.stringify({application:'consumo-pro-360',commit:process.env.GITHUB_SHA,releaseTarget:'hostinger'},null,2)+'\n')"
+          node -e "const fs=require('node:fs'); fs.writeFileSync('dist/release.json',JSON.stringify({application:'consumo-pro-360',productName:'Proconsumo',commit:process.env.GITHUB_SHA,releaseTarget:'hostinger'},null,2)+'\n')"
       - name: Store installable release archive
         if: env.RELEASE_READY == 'true'
         uses: actions/upload-artifact@v4

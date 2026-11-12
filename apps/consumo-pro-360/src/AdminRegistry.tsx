@@ -2,6 +2,7 @@ import {useEffect,useState} from "react";
 import {Building2, Users, Package, Truck, Layers3, Wallet, ShieldCheck, Plus, RefreshCw, Search, Download} from "lucide-react";
 import {readWithDeadline} from "./lib/async-read.mjs";
 import {db} from "./lib/supabase";
+import OperationSettings from "./OperationSettings";
 import UserManagement from "./UserManagement";
 
 type Rec=Record<string,any>;
@@ -13,11 +14,14 @@ const label:Record<Tab,string>={
 const tabs:Tab[]=["setores","unidades","produtos","fornecedores","orcamentos","usuarios","identidade"];
 const fmt=(n:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n);
 export default function AdminRegistry({orgId,companyId,companies,departments,products,suppliers,canAdmin,groupAdmin,techAdmin,
- onView,onReload,brandLogo,onUpload}:{
+ onView,onReload,brandLogo,onUpload,onOperationSaved}:{
  orgId:string;companyId:string;companies:Rec[];departments:Rec[];products:Rec[];suppliers:Rec[];
- canAdmin:boolean;groupAdmin:boolean;techAdmin:boolean;onView:(view:"products"|"suppliers")=>void;
- onReload:()=>Promise<void>;brandLogo:string;onUpload:(file:File|null)=>Promise<void>;
+ canAdmin:boolean;groupAdmin:boolean;techAdmin:boolean;onView:(view:"products"|"suppliers"|"analytics")=>void;
+ onOperationSaved:()=>Promise<void>;onReload:()=>Promise<void>;brandLogo:string;onUpload:(file:File|null)=>Promise<void>;
 }){
+ const company=companies.find(c=>c.id===companyId);
+ const retail=company?.operation_key==="retail";
+ const tabLabel=(id:Tab)=>id==="setores"&&retail?"Lojas":label[id];
  const [tab,setTab]=useState<Tab>("usuarios");
  const [filter,setFilter]=useState("");
  const [units,setUnits]=useState<Rec[]>([]);
@@ -60,12 +64,12 @@ export default function AdminRegistry({orgId,companyId,companies,departments,pro
   <span className="registry-access">{techAdmin?"Superadmin GRIT":groupAdmin?"Administração do Grupo":"Acesso controlado"}</span></header>
   <nav className="registry-tabs" aria-label="Módulos de gestão">{tabs.map(t=><button key={t} type="button" aria-current={tab===t?"page":undefined}
    className={tab===t?"selected":""} onClick={()=>{setTab(t);setMessage("");setError("");setFilter("");}}>
-   {label[t]}</button>)}</nav>
+   {tabLabel(t)}</button>)}</nav>
   {message&&<p className="notice success">{message}</p>}
   {error&&<p className="notice error">{error}</p>}
   {tab==="usuarios"&&<UserManagement orgId={orgId} companies={companies} departments={departments} groupAdmin={groupAdmin} techAdmin={techAdmin}/>}
   {(tab==="setores"||tab==="unidades"||tab==="produtos"||tab==="fornecedores")&&<section className="panel">
-   <header className="panel-header"><h3>{label[tab]} do Grupo</h3>
+   <header className="panel-header"><h3>{tabLabel(tab)} do Grupo</h3>
    {(tab==="produtos"||tab==="fornecedores")&&<button className="btn primary small" onClick={()=>onView(tab==="produtos"?"products":"suppliers")}>Abrir módulo <Plus size={15}/></button>}</header>
    <div className="registry-toolbar"><label className="registry-search"><Search size={17}/><input aria-label={"Buscar "+label[tab]} value={filter}
     placeholder="Buscar nesta lista..." onChange={e=>setFilter(e.target.value)}/></label>
@@ -78,8 +82,8 @@ export default function AdminRegistry({orgId,companyId,companies,departments,pro
     </div>)}</div>:<div className="empty"><Layers3 size={26}/><strong>Nenhum registro por aqui</strong>
     <span>Os registros só aparecem quando estiverem efetivamente cadastrados.</span></div>}
    {canAdmin&&tab==="setores"&&<form className="registry-create" onSubmit={e=>{e.preventDefault();if(!db)return;
-    void action(()=>db!.rpc("cp_admin_department",{p_company:companyId,p_name:name,p_budget:null,p_threshold:0}),"Setor criado. A política financeira deverá ser definida pelo responsável.");}}>
-    <strong>Novo setor</strong><div><input required minLength={2} aria-label="Nome do setor" placeholder="Nome do setor" value={name} onChange={e=>setName(e.target.value)}/>
+    void action(()=>db!.rpc("cp_admin_department",{p_company:companyId,p_name:name,p_budget:null,p_threshold:0}),(retail?"Loja cadastrada.":"Setor criado.")+" A política financeira deverá ser definida pelo responsável.");}}>
+    <strong>Novo {retail?"cadastro de loja":"setor"}</strong><div><input required minLength={2} aria-label={retail?"Nome da loja":"Nome do setor"} placeholder={retail?"Nome da loja":"Nome do setor"} value={name} onChange={e=>setName(e.target.value)}/>
     <button className="btn primary" disabled={saving}>+ Cadastrar</button></div></form>}
    {canAdmin&&tab==="unidades"&&<form className="registry-create" onSubmit={e=>{e.preventDefault();if(!db)return;
     void action(()=>db!.rpc("cp_admin_unit",{p_company:companyId,p_name:name,p_code:unitCode||null,p_city:city||null,p_state:uf||null}),"Unidade cadastrada e auditada.");}}>
@@ -103,13 +107,15 @@ export default function AdminRegistry({orgId,companyId,companies,departments,pro
     <input aria-label="Alçada financeira em reais" type="number" min="0" step=".01" value={threshold} onChange={e=>setThreshold(e.target.value)}/>
     <button className="btn primary" disabled={saving}>Salvar limites</button></div></form>}
   </section>}
-  {tab==="identidade"&&<><section className="panel brand-admin"><div className="panel-header"><h3>Identidade oficial do Grupo Prohospital</h3><ShieldCheck size={18}/></div>
+  {tab==="identidade"&&<>
+   {company&&<OperationSettings key={company.id} company={company as {id:string;name:string}} departments={departments} canConfigure={groupAdmin} onSaved={onOperationSaved}/>}<section className="panel brand-admin"><div className="panel-header"><h3>Identidade oficial do Grupo Prohospital</h3><ShieldCheck size={18}/></div>
    <p className="muted">Utilize o arquivo original autorizado nas versões branca ou transparente. O símbolo não deve ser redesenhado.</p>
    {brandLogo?<img className="official-logo brand-preview" src={brandLogo} alt="Marca oficial Grupo Prohospital"/>:<div className="empty"><ShieldCheck size={28}/><strong>Logo oficial aguardando upload</strong>
    <span>O administrador pode carregar o arquivo original fornecido pelo Grupo.</span></div>}
    {canAdmin&&<label className="brand-upload">Enviar logomarca original (PNG, JPG ou WebP, até 2 MB)<input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void onUpload(e.target.files?.[0]||null)}/></label>}
    </section><section className="panel"><div className="panel-header"><h3>Saúde das integrações</h3><RefreshCw size={17}/></div>
-   {["ERP Procfit","Envio SMTP de cotações","OCR de notas fiscais","IA generativa NEXO","Validação SEFAZ"].map(x=><div className="registry-list-row" key={x}>
+   <div className="registry-list-row"><div><strong>ERP Procfit · view SQL</strong><span>Consulte a data do último lote recebido e os indicadores no painel de decisões.</span></div><button className="btn secondary" onClick={()=>onView("analytics")}>Ver integração Procfit</button></div>
+   {["Envio SMTP de cotações","OCR de notas fiscais","IA generativa NEXO","Validação SEFAZ"].map(x=><div className="registry-list-row" key={x}>
     <div className="registry-icon"><ShieldCheck size={17}/></div><div><strong>{x}</strong><span>Não conectado / não homologado</span></div></div>)}
    </section></>}
   </div>;

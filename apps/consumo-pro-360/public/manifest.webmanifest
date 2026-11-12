@@ -1,6 +1,6 @@
 {
-  "name": "CONSUMO PRO 360 | Grupo Prohospital",
-  "short_name": "Consumo Pro",
+  "name": "Proconsumo | Grupo Prohospital",
+  "short_name": "Proconsumo",
   "description": "Solicite materiais e acompanhe seus pedidos no Grupo Prohospital",
   "start_url": "/app",
   "display": "standalone",

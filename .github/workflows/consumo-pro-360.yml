@@ -32,7 +32,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           npm audit --audit-level=high
       - name: Travel intelligence regression tests
-        run: node --test tests/test-async-read.mjs tests/test-travel-engine.mjs
+        run: node --test tests/test-async-read.mjs tests/test-procurement-evidence.mjs tests/test-travel-engine.mjs
       - name: Typecheck and build
         run: npm run build
       - name: Validate email templates
@@ -40,7 +40,7 @@ jobs:
       - name: Test Hostinger API provisioning safety
         shell: bash
         run: |
-          python3 -m unittest discover -s tests -p 'test_hostinger_provision.py' -v
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
           python3 -m py_compile scripts/provision_hostinger.py
           bash -n scripts/verify_hostinger.sh
       - name: Assert portable Hostinger PWA bundle

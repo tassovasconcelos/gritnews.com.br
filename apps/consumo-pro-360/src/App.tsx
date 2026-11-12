@@ -14,12 +14,16 @@ const MarketLab=lazy(()=>import("./MarketLab"));
 const AdminRegistry=lazy(()=>import("./AdminRegistry"));
 import RequestComposer from "./RequestComposer";
 import MobileRequestPortal from "./MobileRequestPortal";
+import OperationSwitcher from "./OperationSwitcher";
+import "./proconsumo.css";
+const ProcfitDashboard=lazy(()=>import("./ProcfitDashboard"));
 import { readNFe, type FiscalLine } from "./lib/nfe";
 
-type View = "overview"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"lab"|"travel"|"audit"|"admin";
+type View = "overview"|"analytics"|"requests"|"approvals"|"stock"|"products"|"invoices"|"suppliers"|"quotes"|"nexo"|"lab"|"travel"|"audit"|"admin";
 type Rec = Record<string,any>;
 const nav: {id:View;label:string;icon:any}[] = [
  {id:"overview",label:"Visão geral",icon:LayoutDashboard},
+ {id:"analytics",label:"Procfit · Decisões",icon:BarChart3},
  {id:"requests",label:"Solicitações",icon:ClipboardList},
  {id:"approvals",label:"Aprovações",icon:CheckCircle2},
  {id:"stock",label:"Almoxarifado",icon:Boxes},
@@ -181,10 +185,11 @@ export default function App(){
  const isAdmin=hasRole(["group_admin","grit_superadmin"]);
  const visibleNav=nav.filter(item=>{
   if(item.id==="overview"||item.id==="requests"||item.id==="products")return true;
+  if(item.id==="analytics")return hasRole(["group_admin","director","controller","finance","buyer","grit_superadmin"]);
   if(item.id==="approvals")return hasRole(["manager","finance","director","group_admin"]);
   if(item.id==="stock")return hasRole(["warehouse","controller","group_admin","director","grit_superadmin"]);
   if(item.id==="invoices")return hasRole(["warehouse","buyer","finance","group_admin","grit_superadmin"]);
-  if(item.id==="suppliers"||item.id==="quotes")return hasRole(["buyer","group_admin"]);
+  if(item.id==="suppliers"||item.id==="quotes")return hasRole(["buyer","group_admin","director","controller","finance","grit_superadmin"]);
   if(item.id==="nexo"||item.id==="audit")return hasRole(["controller","finance","director","group_admin","grit_superadmin"]);
   if(item.id==="lab"||item.id==="travel")return hasRole(["group_admin","director","controller","buyer","finance","manager","grit_superadmin"]);
   if(item.id==="admin")return hasRole(["group_admin","grit_superadmin"]);
@@ -209,7 +214,7 @@ export default function App(){
  },[]);
  const groupAdmin=hasRole(["group_admin"]);
  const techAdmin=hasRole(["grit_superadmin"]);
- const canApprove=hasRole(["manager","group_admin","director"]);
+ const canApprove=hasRole(["manager","group_admin","director"])&&companies.some(c=>c.id===companyId&&c.requisition_approver_user_id===user?.id);
  const canFinance=hasRole(["finance","group_admin","director"]);
  const canWarehouse=hasRole(["warehouse","group_admin"]);
  const canBuy=hasRole(["buyer","group_admin"]);
@@ -277,8 +282,8 @@ export default function App(){
  useEffect(()=>{if(warehouses.length&&!warehousePick)setWarehousePick(warehouses[0].id);},[warehouses,warehousePick]);
  const permittedDepartments=useMemo(()=>departments.filter(d=>members.some(m=>m.active&&m.organization_id===orgId&&(!m.company_id||m.company_id===companyId)&&(!m.department_id||m.department_id===d.id))),[departments,members,companyId,orgId]);
  useEffect(()=>{
-  if(permittedDepartments.length&&!permittedDepartments.some(d=>d.id===reqDepartment))
-   setReqDepartment(permittedDepartments[0].id);
+  if(!permittedDepartments.some(d=>d.id===reqDepartment))
+   setReqDepartment(permittedDepartments[0]?.id||"");
  },[permittedDepartments,reqDepartment]);
 
  async function uploadBrand(f:File|null){
@@ -371,6 +376,8 @@ export default function App(){
   finally{setBusy(false);}
  }
  const selectedCompany=companies.find((c)=>c.id===companyId);
+ const retail=selectedCompany?.operation_key==="retail";
+ const destinationLabel=retail?"Loja":"Setor";
  const productName=(id:string)=>products.find((p)=>p.id===id)?.name||"SKU indisponível";
  const departmentName=(id:string)=>departments.find((d)=>d.id===id)?.name||"Setor";
  const stockAvailable=(p:string)=>stock.filter((s)=>s.product_id===p).reduce((n,s)=>n+Number(s.physical)-Number(s.reserved),0);
@@ -523,7 +530,7 @@ export default function App(){
  };
 
  if(!configured)return <div className="setup-screen">
-  <div className="setup-mark">CP<span>360</span></div><h1>CONSUMO PRO 360</h1>
+  <div className="setup-mark">PRO<span>consumo</span></div><h1>Proconsumo</h1>
   <p>Base de aplicação GRIT configurada. Falta conectar o projeto Supabase dedicado para ativar login e dados reais.</p>
   <div className="setup-step"><Lock size={19}/> Configure <code>VITE_SUPABASE_URL</code> e <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> somente no ambiente de publicação.</div>
   <small>Grupo Prohospital · Tecnologia e desenvolvimento: GRIT Soluções e Negócios</small>
@@ -539,18 +546,18 @@ export default function App(){
    </div><div className="developer">Tecnologia e desenvolvimento <strong>GRIT Soluções e Negócios</strong></div>
   </div>
   <div className="auth-form-wrap"><form className="auth-card" onSubmit={login}>
-   <div className="logo-box">CP<span>360</span></div><h2>Acessar plataforma</h2>
+   <div className="logo-box">PRO<span>consumo</span></div><h2>Acessar plataforma</h2>
    <p>Entre com sua conta corporativa autorizada.</p>
    {notice&&<div className="notice error">{notice}</div>}
    <label>E-mail corporativo<input autoComplete="email" type="email" required value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="nome@empresa.com.br"/></label>
    <label>Senha<input autoComplete="current-password" type="password" required value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••••"/></label>
-   <button className="btn primary full" disabled={loginBusy}>{loginBusy?"Validando…":"Entrar no CONSUMO PRO"}<ChevronRight size={18}/></button>
+   <button className="btn primary full" disabled={loginBusy}>{loginBusy?"Validando…":"Entrar no Proconsumo"}<ChevronRight size={18}/></button>
    <button type="button" className="link-button centered" disabled={loginBusy||!email.trim()} onClick={recoverPassword}>Esqueci minha senha</button>
    <div className="muted centered"><Lock size={13}/> Acesso restrito a colaboradores autorizados</div>
   </form></div>
  </div>;
  if(!membershipReady)return <div className="loading-screen">Consultando permissões de acesso…</div>;
- if(!members.length||!companies.length)return <div className="setup-screen"><div className="setup-mark">CP<span>360</span></div>
+ if(!members.length||!companies.length)return <div className="setup-screen"><div className="setup-mark">PRO<span>consumo</span></div>
   <h1>Conta autenticada</h1><p>Seu usuário ainda não possui vínculo ativo com o Grupo, empresa ou setor.</p>
   <p>Conta conectada: <strong>{user.email}</strong>. Caso a liberação tenha sido recente, atualize as permissões abaixo. Nenhuma permissão é atribuída sem validação.</p>
   <button className="btn primary" disabled={busy} onClick={()=>void refreshCorporateAccess()}>
@@ -564,7 +571,7 @@ export default function App(){
  if(mobilePortal)return <MobileRequestPortal key={companyId} logo={brandLogo} email={user.email||""} company={selectedCompany?.name||"Sua empresa"} companies={companies as {id:string;name:string}[]} companyId={companyId} onCompany={id=>{setCompanyId(id);setOrgId(companies.find(c=>c.id===id)?.organization_id||"");}} products={products as {id:string;name:string;sku:string;unit:string;active:boolean}[]} departments={permittedDepartments as {id:string;name:string}[]} requests={requests.filter(r=>r.created_by===user.id) as {id:string;code:string;department_id:string;status:string;created_at:string;updated_at:string}[]} lines={requestLines as {id:string;request_id:string;product_id:string;quantity:number}[]} department={reqDepartment} setDepartment={setReqDepartment} items={reqItems} setItems={setReqItems} busy={busy} loading={loading} notice={notice} composing={modal==="new-request"} onCompose={()=>{setNotice("");setModal("new-request");}} onClose={()=>{if(!busy)setModal("");}} submit={submitReq} refresh={()=>void reload()} logout={()=>void logout()}/>;
  return <div className="app-shell">
   <aside className={"sidebar "+(menuOpen?"visible":"")}>
-   <div className="sidebar-brand"><div className="brand-square">CP<span>360</span></div><div><b>CONSUMO PRO</b>{brandLogo?<img className="official-logo" src={brandLogo} alt="Marca original do Grupo Prohospital"/>:<small>GRUPO PROHOSPITAL</small>}</div></div>
+   <div className="sidebar-brand"><div className="brand-square">PRO<span>consumo</span></div><div><b>Proconsumo</b>{brandLogo?<img className="official-logo" src={brandLogo} alt="Marca original do Grupo Prohospital"/>:<small>GRUPO PROHOSPITAL</small>}</div></div>
    <div className="side-caption">GESTÃO & OPERAÇÃO</div>
    <nav aria-label="Navegação principal">{visibleNav.map((item)=>{const I=item.icon;return <button key={item.id}
     className={"nav-item "+(view===item.id?"active":"")} onClick={()=>{navigate(item.id);setMenuOpen(false);}}>
@@ -584,6 +591,7 @@ export default function App(){
      <button title="Sair" aria-label="Sair" className="icon-button" onClick={logout}><LogOut size={18}/></button></div>
    </header>
    <main className="content">
+    <OperationSwitcher companies={companies as {id:string;name:string}[]} currentId={companyId} onChange={id=>{setCompanyId(id);setOrgId(companies.find(c=>c.id===id)?.organization_id||"");}} disabled={busy}/>
     <div className="page-heading"><div><div className="eyebrow dark">CONTROLE & INTELIGÊNCIA · {selectedCompany?.name}</div>
      <h1>{nav.find((n)=>n.id===view)?.label}</h1>
      <p>{view==="overview"?"Visibilidade financeira e operacional do consumo corporativo.":view==="nexo"?"Recomendações objetivas com evidências verificáveis.":view==="lab"?"Novas práticas, hipóteses testáveis e aprendizados auditados.":view==="travel"?"Pesquisa de tarifas, roteiros e custo total das viagens corporativas.":"Operação conectada a empresas, setores e responsáveis."}</p></div>
@@ -606,14 +614,16 @@ export default function App(){
       {view!=="overview"&&<label className="search"><Search size={16}/><input placeholder="Buscar registros..." value={search} onChange={(e)=>setSearch(e.target.value)}/></label>}
      <div className="filter-context"><Building2 size={15}/> {selectedCompany?.name}</div>
     </div>}
+    {view==="analytics"&&selectedCompany&&<ProcfitDashboard key={companyId} company={selectedCompany as {id:string;name:string}}/>}
     {view==="overview"&&<>
+     {canControl&&<section className="panel"><h3>Procfit · visão de decisão</h3><p>Analise notas, últimas compras, curva ABC, preços e metas por {destinationLabel.toLowerCase()}.</p><button className="btn secondary" onClick={()=>navigate("analytics")}>Abrir dashboard Procfit</button></section>}
      <div className="kpis">
       <div className="kpi"><span>Consumo do período</span><b>{canControl?currency(consumed):"Acesso restrito"}</b><small>Baixas efetivamente entregues</small><div className="kpi-icon"><BarChart3 size={19}/></div></div>
       <div className="kpi"><span>Compras recebidas</span><b>{canControl?currency(purchase):"Acesso restrito"}</b><small>Entradas vinculadas às notas fiscais</small><div className="kpi-icon"><FileText size={19}/></div></div>
       <div className="kpi"><span>Valor em estoque</span><b>{canControl?currency(stockValue):"Acesso restrito"}</b><small>Valorização pelo custo médio</small><div className="kpi-icon"><Boxes size={19}/></div></div>
       <div className="kpi"><span>Demandas em andamento</span><b>{number(pending.length)}</b><small>{number(belowMin.length)} SKU(s) abaixo do mínimo</small><div className="kpi-icon"><ClipboardList size={19}/></div></div>
      </div>
-     <div className="two-cols"><section className="panel"><div className="panel-header"><h3>Consumo por setor</h3><span className="muted">Custo das entregas confirmadas</span></div>
+     <div className="two-cols"><section className="panel"><div className="panel-header"><h3>Consumo por {destinationLabel.toLowerCase()}</h3><span className="muted">Custo das entregas confirmadas</span></div>
       {canControl&&spendByDept.some((d)=>d.total>0)?<div className="sector-chart">{spendByDept.filter((d)=>d.total>0).slice(0,7).map((d)=>{
        const max=Math.max(...spendByDept.map((x)=>x.total),1);
        return <div className="bar-row" key={d.name}><div><span>{d.name}</span><strong>{currency(d.total)}</strong></div>
@@ -624,7 +634,7 @@ export default function App(){
        <Empty title="Nenhum alerta calculado" detail="Aplique parâmetros mínimos de estoque e orçamentos para monitoramento automático."/>}</section>
      </div>
      <section className="panel"><div className="panel-header"><h3>Últimas solicitações</h3><button className="link-button" onClick={()=>navigate("requests")}>Ver todas <ChevronRight size={16}/></button></div>
-      {requests.length?<div className="table-scroll"><table><thead><tr><th>Protocolo</th><th>Setor</th><th>Emissão</th><th>Status</th><th>Valor estimado</th></tr></thead>
+      {requests.length?<div className="table-scroll"><table><thead><tr><th>Protocolo</th><th>{destinationLabel}</th><th>Emissão</th><th>Status</th><th>Valor estimado</th></tr></thead>
        <tbody>{[...requests].sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,5).map((r)=><tr key={r.id}>
         <td className="strong-cell">{r.code}</td><td>{departmentName(r.department_id)}</td><td>{date(r.created_at)}</td>
         <td><Pill value={r.status}/></td><td>{canControl?currency(requestValue(r.id)):"—"}</td></tr>)}</tbody></table></div>:
@@ -659,7 +669,7 @@ export default function App(){
         <td>{products.find((p)=>p.id===s.product_id)?.unit}</td></tr>)}</tbody></table></div>:
        <Empty title="Estoque inicial não registrado" detail="O administrador precisa cadastrar um depósito, depois lançar o inventário com custo e justificativa."/>}</section>
      <section className="panel"><div className="panel-header"><h3>Últimas movimentações</h3></div>{events.length?<div className="table-scroll">
-      <table><thead><tr><th>Data</th><th>Operação</th><th>Produto</th><th>Variação</th><th>Setor</th></tr></thead><tbody>
+      <table><thead><tr><th>Data</th><th>Operação</th><th>Produto</th><th>Variação</th><th>{destinationLabel}</th></tr></thead><tbody>
       {[...events].sort((a,b)=>b.occurred_at.localeCompare(a.occurred_at)).slice(0,80).map((e)=><tr key={e.id}>
        <td>{date(e.occurred_at)}</td><td>{({receipt:"Entrada NF",opening:"Inventário inicial",delivery:"Entrega",adjustment:"Ajuste"} as Rec)[e.event_type]}</td>
        <td>{productName(e.product_id)}</td><td className={Number(e.quantity_change)>=0?"positive":"negative"}>{number(Number(e.quantity_change))}</td>
@@ -692,7 +702,7 @@ export default function App(){
       <p>Auditoria preventiva baseada em estoques, orçamentos, entregas e custos reais. Nenhuma decisão financeira é automática.</p></div></section>
       <div className="subhead"><h3>Recomendações e desvios</h3><span>{alerts.length} alerta(s) calculados · motor de regras verificáveis</span></div>
       {alerts.length?<div className="alert-cards">{alerts.map((a,i)=><article className="recommendation" key={i}><span className="recommendation-tag">ANÁLISE DE CONTROLE</span>
-       <h3>{a.title}</h3><p>{a.description}</p><footer><span>Fonte: registros do CONSUMO PRO</span><button className="btn secondary small" onClick={()=>setView(a.title.includes("Estoque")?"stock":"approvals")}>Investigar <ChevronRight size={15}/></button></footer>
+       <h3>{a.title}</h3><p>{a.description}</p><footer><span>Fonte: registros do Proconsumo</span><button className="btn secondary small" onClick={()=>setView(a.title.includes("Estoque")?"stock":"approvals")}>Investigar <ChevronRight size={15}/></button></footer>
        </article>)}</div>:<Empty title="Sem desvios confirmados" detail="O NEXO começará a apontar desvios assim que houver consumo histórico e parâmetros de controle."/>}
       <div className="info-strip"><BrainCircuit size={18}/> Análises atuais por regras de negócio; IA generativa externa está aguardando integração segura no servidor.</div>
      </div>}
@@ -704,12 +714,12 @@ export default function App(){
     {view==="lab"&&<MarketLab companyId={companyId} userId={user.id} onTravel={()=>navigate("travel")}
       inventoryCount={products.length} pendingRequests={pending.length}/>}
     {view==="travel"&&<TravelIntelligence companyId={companyId} userId={user.id}/>}
-    {view==="admin"&&<AdminRegistry orgId={orgId} companyId={companyId} companies={companies}
+    {view==="admin"&&<AdminRegistry onOperationSaved={async()=>{await refreshCorporateAccess();await reload();}} orgId={orgId} companyId={companyId} companies={companies}
      departments={departments} products={products} suppliers={suppliers} canAdmin={isAdmin}
      groupAdmin={groupAdmin} techAdmin={techAdmin} brandLogo={brandLogo}
      onReload={reload} onUpload={uploadBrand} onView={setView}/>}
    </main>
-   <footer className="app-footer">CONSUMO PRO 360 · Grupo Prohospital <span>Desenvolvimento & tecnologia: <strong>GRIT Soluções e Negócios</strong></span></footer>
+   <footer className="app-footer">Proconsumo · Grupo Prohospital <span>Desenvolvimento & tecnologia: <strong>GRIT Soluções e Negócios</strong></span></footer>
   </div>
   <nav className="mobile-bottom" aria-label="Navegação móvel">
    {(["overview","requests","approvals","travel","admin"] as View[]).map(id=>nav.find(n=>n.id===id)!).filter(n=>visibleNav.some(v=>v.id===n.id)).map((n)=>{const I=n.icon;return <button key={n.id} className={view===n.id?"active":""} onClick={()=>navigate(n.id)}>
@@ -725,7 +735,7 @@ export default function App(){
     <div className="form-footer"><button className="btn secondary" type="button" onClick={()=>setModal("")}>Cancelar</button><button disabled={busy||newPassword.length<12||newPassword!==confirmPassword} className="btn primary">Salvar senha</button></div>
    </form>
   </Modal>}
-  {modal==="new-request"&&<Modal title="Nova solicitação de materiais" onClose={()=>{if(!busy)setModal("");}}><RequestComposer products={products as {id:string;name:string;sku:string;unit:string;active:boolean}[]} departments={permittedDepartments as {id:string;name:string}[]} department={reqDepartment} setDepartment={setReqDepartment} items={reqItems} setItems={setReqItems} busy={busy} submit={submitReq} cancel={()=>setModal("")}/></Modal>}
+  {modal==="new-request"&&<Modal title="Nova solicitação de materiais" onClose={()=>{if(!busy)setModal("");}}><RequestComposer destinationLabel={destinationLabel} products={products as {id:string;name:string;sku:string;unit:string;active:boolean}[]} departments={permittedDepartments as {id:string;name:string}[]} department={reqDepartment} setDepartment={setReqDepartment} items={reqItems} setItems={setReqItems} busy={busy} submit={submitReq} cancel={()=>setModal("")}/></Modal>}
 
   {(modal==="decision"||modal==="finance")&&<Modal title={modal==="finance"?"Aprovação financeira":"Decisão da gerência"} onClose={()=>setModal("")}>
     <p>Pedido <strong>{requests.find((r)=>r.id===actionId)?.code}</strong>. Toda decisão registra usuário, horário e justificativa.</p>

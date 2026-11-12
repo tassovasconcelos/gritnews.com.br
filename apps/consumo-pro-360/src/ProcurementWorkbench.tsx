@@ -1,15 +1,14 @@
 import { useCallback,useEffect,useMemo,useState } from "react";
 import { AlertTriangle, Check, CircleDollarSign, Plus, RefreshCw, Scale, ShieldCheck, X } from "lucide-react";
 import { db } from "./lib/supabase";
+import {landedCost,supplierCoverage as coverage,dossierHtml} from "./lib/procurement-evidence.mjs";
 
 type Rec=Record<string,any>;
 type Props={companyId:string; batches:Rec[]; products:Rec[]; suppliers:Rec[];
  canBuy:boolean;canFinance:boolean;onChanged:()=>Promise<void>};
 const money=(v:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(v);
 const num=(v:number)=>new Intl.NumberFormat("pt-BR",{maximumFractionDigits:4}).format(v);
-const cost=(o:Rec)=>
- Number(o.quantity||0)*Number(o.unit_price||0)/Number(o.unit_factor||1)+
- Number(o.freight||0)+Number(o.extra_tax||0)-Number(o.discount_total||0);
+const cost=landedCost;
 
 export default function ProcurementWorkbench({companyId,batches,products,suppliers,canBuy,canFinance,onChanged}:Props){
  const [batchId,setBatchId]=useState("");
@@ -20,6 +19,7 @@ export default function ProcurementWorkbench({companyId,batches,products,supplie
  const [message,setMessage]=useState("");
  const [item,setItem]=useState({product_id:"",quantity:1});
  const [offer,setOffer]=useState({supplier_id:"",product_id:"",unit_price:0,unit_factor:1,freight:0,extra_tax:0,discount_total:0,delivery_days:7,payment_days:30,brand:"",technical_compliant:true,notes:""});
+ const [criteria,setCriteria]=useState("");
  const [decision,setDecision]=useState("");
  const [decisionReason,setDecisionReason]=useState("");
  useEffect(()=>{setBatchId("");setLines([]);setOffers([]);setOrders([]);setMessage("");},[companyId]);
@@ -42,13 +42,7 @@ export default function ProcurementWorkbench({companyId,batches,products,supplie
  const productName=(id:string)=>products.find(p=>p.id===id)?.name||"Produto indisponível";
  const unit=(id:string)=>products.find(p=>p.id===id)?.unit||"UN";
  const supplierName=(id:string)=>suppliers.find(s=>s.id===id)?.name||"Fornecedor";
- const supplierCoverage=useMemo(()=>{
-  const map=new Map<string,number>();
-  for(const o of offers.filter(x=>x.status==="received"&&x.technical_compliant)){
-   map.set(o.supplier_id,(map.get(o.supplier_id)||0)+1);
-  }
-  return map;
- },[offers]);
+ const supplierCoverage=useMemo(()=>coverage(offers,lines),[offers,lines]);
  async function action(label:string,run:()=>PromiseLike<{error:any}>,clear?:()=>void){
   setBusy(true);setMessage("");
   try{
@@ -91,7 +85,7 @@ export default function ProcurementWorkbench({companyId,batches,products,supplie
    </div></div>
   {message&&<div className={"notice "+(message.startsWith("Falha")||message.startsWith("Não")?"error":"success")}>{message}<button type="button" className="icon-button" onClick={()=>setMessage("")}><X size={15}/></button></div>}
   <label className="wide">Campanha em análise
-   <select value={batchId} onChange={e=>setBatchId(e.target.value)}>
+   <select value={batchId} onChange={e=>{setBatchId(e.target.value);setCriteria("");}}>
     <option value="">Selecione uma campanha de cotação</option>
     {batches.map(b=><option key={b.id} value={b.id}>{b.title} · {b.status}</option>)}
    </select>
@@ -121,7 +115,7 @@ export default function ProcurementWorkbench({companyId,batches,products,supplie
        <p className="muted">Inclua os materiais antes de comparar fornecedores.</p>}
     </div>
    </div>
-   {canBuy&&lines.length>0&&<form className="proc-form procurement-offer" onSubmit={record}>
+   {canBuy&&active.status==="draft"&&lines.length>0&&<form className="proc-form procurement-offer" onSubmit={record}>
     <h3><CircleDollarSign size={18}/> Registrar proposta recebida</h3>
     <p className="muted">Informe dados comprovados do fornecedor. Os valores são convertidos para a unidade base; esta ação não envia solicitações.</p>
     <div className="form-grid">
@@ -159,8 +153,8 @@ export default function ProcurementWorkbench({companyId,batches,products,supplie
     </div>
     <label className="proc-check"><input type="checkbox" checked={offer.technical_compliant}
      onChange={e=>setOffer({...offer,technical_compliant:e.target.checked})}/>Atende às especificações técnicas mínimas</label>
-    <label>Observação / referência da proposta
-     <textarea value={offer.notes} rows={2} onChange={e=>setOffer({...offer,notes:e.target.value})}/></label>
+    <label>Referência obrigatória da proposta / condições comerciais
+     <textarea required minLength={3} value={offer.notes} rows={2} onChange={e=>setOffer({...offer,notes:e.target.value})}/></label>
     {offer.product_id&&<div className="proc-simulation"><span>Preço normalizado: <b>{money(offer.unit_price/(offer.unit_factor||1))}/{unit(offer.product_id)}</b></span>
      <span>Custo posto estimado: <b>{money(Math.max(0,(Number(lines.find(l=>l.product_id===offer.product_id)?.quantity)||0)*offer.unit_price/(offer.unit_factor||1)+offer.freight+offer.extra_tax-offer.discount_total))}</b></span></div>}
     <button disabled={busy||!offer.product_id||!offer.supplier_id} className="btn primary">Registrar proposta</button>
@@ -175,7 +169,12 @@ export default function ProcurementWorkbench({companyId,batches,products,supplie
      <td>{q.payment_days??"—"} dias</td><td>{q.technical_compliant?<span className="positive">Conforme</span>:<span className="negative">Não conforme</span>}</td>
     </tr>)}</tbody></table></div>:
     <p className="muted">Sem propostas recebidas. Registre preços fornecidos para iniciar a equalização. Compare valores somente dentro do mesmo SKU.</p>}
-   {canBuy&&ranked.length>0&&<div className="proc-award">
+   <section className="pro-dossier"><h3>Formalização obrigatória por Compras</h3>
+    <p>{active.formalized_at?"Dossiê fechado em "+new Date(active.formalized_at).toLocaleString("pt-BR")+". Propostas e critérios preservados na auditoria.":"Revise as ofertas, documente a escolha e formalize o dossiê antes de propor o pedido. Se houver um único fornecedor ou a escolha não for o menor custo, explique o motivo."}</p>
+    {!active.formalized_at&&canBuy&&<><label>Critérios, fornecedor recomendado e justificativa<textarea minLength={20} value={criteria} onChange={e=>setCriteria(e.target.value)} placeholder="Especificação, preço posto, prazo, pagamento e justificativa da escolha"/></label><button className="btn primary" disabled={busy||criteria.trim().length<20||!lines.length||!ranked.length} onClick={()=>{if(db)void action("Dossiê formalizado e registrado na auditoria.",()=>db!.rpc("cp_formalize_quote",{p_batch:batchId,p_reason:criteria}));}}>Formalizar cotação</button></>}
+    {active.formalized_at&&<button className="btn secondary" onClick={()=>{try{const url=URL.createObjectURL(new Blob([dossierHtml(active)],{type:"text/html;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="proconsumo-dossie-"+batchId+".html";a.click();URL.revokeObjectURL(url);}catch{setMessage("Formalize a cotação antes de exportar o dossiê.");}}}>Baixar dossiê de cotação</button>}
+   </section>
+   {canBuy&&active.formalized_at&&ranked.length>0&&<div className="proc-award">
     <h3>Propor pedido de compra para aprovação financeira</h3>
     <p>O fornecedor deve cobrir todos os itens da campanha com propostas conformes. A proposta não representa compra aprovada.</p>
     <div className="proc-award-list">{suppliers.filter(s=>supplierCoverage.has(s.id)).map(s=>{
