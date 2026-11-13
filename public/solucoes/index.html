@@ -104,6 +104,29 @@ html{scroll-padding-top:85px}
 html:not(.js) .captureCard select:invalid{color:#6b7e91}
 @media(max-width:980px){.hero .shell{grid-template-columns:1fr;gap:30px}.captureCard{max-width:740px;width:100%;margin-inline:auto}.hero .shell{padding-top:55px}}
 @media(max-width:650px){.hero .shell{padding:36px 0 45px}.hero h1{font-size:clamp(2.38rem,10vw,3.2rem)}.captureHead{padding:23px 18px 14px}.captureForm{padding:16px 17px 20px}.captureForm .formrow{grid-template-columns:1fr}.captureHead h2{font-size:1.55rem}.mobileLead{display:block}.captureCard{border-radius:19px}.hero .actions .btn{width:100%}}
+
+.caseSpot{background:#f3f7f9}
+.spotGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.spotCard{border:1px solid #dce5eb;background:white;box-shadow:0 12px 38px #10294210;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.spotMedia{height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:22px}
+.spotPad{background:linear-gradient(125deg,#fff4dc,#fff);color:#643f23}
+.spotPad .spotLogoText{font-size:2.15rem;font-weight:950;letter-spacing:-.07em}
+.spotPad span{font-size:.76rem;color:#9d6c36}
+.spotLegal{background:#0c1640}.spotLegal img{max-height:134px;object-fit:contain;max-width:100%;border-radius:7px}
+.spotPets{background:#f0f3e7}.spotPets img{max-height:144px;object-fit:contain;max-width:95%}
+.spotBody{padding:22px;display:flex;flex-direction:column;gap:9px;flex:1}
+.spotTag{text-transform:uppercase;font-size:.68rem;letter-spacing:.12em;font-weight:900;color:#ca6115}
+.spotBody h3{font-size:1.22rem;letter-spacing:-.03em;margin:0}
+.spotBody p{color:#55697e;font-size:.88rem;margin:0 0 9px;flex:1}
+.spotLink{color:#bd5d16;font-size:.85rem;font-weight:850}
+.spotLink:hover{text-decoration:underline}
+.spotNote{font-size:.73rem;text-align:center;color:#637385;margin:17px auto 0}
+.quickHelp{margin-top:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.quickHelp>span{font-size:.74rem;color:#bad0de;font-weight:750;margin-right:6px}
+.quickHelp>a{font-size:.73rem;padding:6px 9px;border:1px solid #66829b;border-radius:20px;color:#d5e5f3;background:#ffffff0a}
+.quickHelp>a:hover{border-color:#ff8b2f;color:#ffab68}
+@media(max-width:920px){.spotGrid{grid-template-columns:1fr}.spotCard{flex-direction:row}.spotMedia{width:37%;height:auto;min-height:190px;flex-shrink:0}}
+@media(max-width:650px){.spotCard{flex-direction:column}.spotMedia{height:170px;width:100%;min-height:0}.quickHelp>a{font-size:.72rem}}
 </style>
 </head>
 <body>
@@ -120,10 +143,14 @@ html:not(.js) .captureCard select:invalid{color:#6b7e91}
   <div class="shell">
     <div>
       <div class="heroBrand"><img loading="eager" src="/brand/grit/logos/grit-logo-horizontal-negativo.svg" alt="Logomarca oficial GRIT Soluções e Negócios"><span class="eyebrow">Para quem empreende</span></div>
-      <h1>Empresário, sua empresa precisa <span class="accent">crescer.</span> Não viver apagando incêndios.</h1>
-      <p>Vendas paradas? Estoque sem controle? Clientes sem resposta? Gestão na planilha? A GRIT une inteligência comercial, tecnologia e IA para resolver problemas reais de pequenas, médias e grandes empresas.</p>
+      <h1>Empresário, sua empresa merece <span class="accent">crescer sem depender de você para tudo.</span></h1>
+      <p>Você trabalha o dia inteiro e ainda perde oportunidades no WhatsApp, no estoque ou no atendimento? <strong>Sua empresa não precisa de mais improviso.</strong> Precisa de clareza, controle e tecnologia que funcione no dia a dia.</p>
       <div class="actions"><a type="button" class="btn btn-primary" href="#captar" data-interest="diagnostico">Descobrir a solução ideal <span class="arrow">↗</span></a><a class="btn btn-ghost" href="#segmentos">Ver meu segmento ↓</a></div>
-      <div class="miniNotes"><span>Conversa inicial sem compromisso</span><span>Para comércio e serviços</span><span>Soluções prontas e sob medida</span></div><div class="featureRibbon"><span>✦ CRM e Prospecção</span><span>✦ Gestão de Vendas</span><span>✦ Sites & Branding</span><span>✦ Automação com IA</span></div>
+      <div class="miniNotes"><span>Conversa inicial sem compromisso</span><span>Para comércio e serviços</span><span>Soluções prontas e sob medida</span></div><div class="featureRibbon"><span>✦ CRM e Prospecção</span><span>✦ Gestão de Vendas</span><span>✦ Sites & Branding</span><span>✦ Automação com IA</span></div><div class="quickHelp" aria-label="Escolha seu desafio"><span>Qual desafio parece com o seu?</span>
+<a href="#captar" data-pain="Perco contatos e propostas no WhatsApp.">Perco clientes no WhatsApp</a>
+<a href="#captar" data-pain="Não tenho clareza do estoque, custos e lucro da empresa.">Não sei quanto realmente lucro</a>
+<a href="#captar" data-pain="Quero melhorar minha marca, meu site e gerar mais leads.">Quero atrair mais clientes</a>
+</div>
     </div>
     <div class="captureCard" id="captar">
   <div class="captureHead">
@@ -291,9 +318,18 @@ html:not(.js) .captureCard select:invalid{color:#6b7e91}
 </div>
 <div class="assuranceLine">✓ Atendimento humano e proposta adequada à realidade da empresa. As funcionalidades finais dependem do produto, do plano e da implantação contratada.</div>
 </div></section>
-<section class="section painSection"><div class="shell"><div class="sectionHead"><span class="eyebrow">Fala, empresário</span><h2>Qual dessas frases parece escrita para sua empresa?</h2><p>O primeiro passo para crescer é parar de normalizar o problema.</p></div>
+<section class="section painSection"><div class="shell"><div class="sectionHead"><span class="eyebrow">Fala, empresário</span><h2>Empresário, qual destas situações tira seu sono?</h2><p>Reconhecer o problema é o primeiro passo. A GRIT ajuda você a construir a solução.</p></div>
 <div class="painGrid"><div class="painTile"><b>“Eu vendo, mas não sei quanto sobra.”</b><p>Precisamos olhar margem, custos e indicadores, não só faturamento.</p></div><div class="painTile"><b>“Meu WhatsApp não para, mas as propostas esfriam.”</b><p>Precisamos organizar o atendimento e cada próximo contato.</p></div><div class="painTile"><b>“Sem mim, a empresa não anda.”</b><p>Precisamos de rotina, processos, responsabilidades e visibilidade.</p></div><div class="painTile"><b>“Meu estoque vira uma surpresa.”</b><p>Precisamos de cadastros, movimentações e alertas de reposição.</p></div><div class="painTile"><b>“A equipe corre, mas nada é medido.”</b><p>Precisamos de acompanhamento, metas e indicadores compreensíveis.</p></div><div class="painTile"><b>“Quero crescer, mas não sei por onde.”</b><p>Precisamos de um diagnóstico prático, com prioridades claras.</p></div></div>
 <div style="text-align:center;margin-top:32px"><a class="btn btn-primary" type="button" href="#captar" data-interest="diagnostico">Essa é a minha realidade. Quero conversar ↗</a></div>
+</div></section>
+<section class="section caseSpot" id="cases-em-destaque"><div class="shell">
+<div class="sectionHead"><span class="eyebrow">Mais que promessas: projetos com identidade</span><h2>Por trás de cada sistema,<br><span class="accent">existe um negócio de verdade.</span></h2><p>A GRIT cria soluções sob medida para desafios que empresários enfrentam diariamente. Conheça exemplos do nosso portfólio.</p></div>
+<div class="spotGrid">
+ <article class="spotCard"><div class="spotMedia spotPad"><div class="spotLogoText">Sr. Padeiro</div><span>Padarias e conveniências</span></div><div class="spotBody"><span class="spotTag">Projeto piloto</span><h3>Delícias do Pão</h3><p>Organização da rotina de atendimento, vendas, produtos, caixa e estoque com uma ferramenta pensada para a padaria.</p><a href="#captar" class="spotLink" data-interest="sr-padeiro">Quero essa evolução na minha padaria ↗</a></div></article>
+ <article class="spotCard"><div class="spotMedia spotLegal"><img src="/solucoes/assets/moacir-rocha-oficial-usuario.webp" alt="Marca oficial Dr. Moacir Rocha" loading="lazy"></div><div class="spotBody"><span class="spotTag">Identidade + Tecnologia jurídica</span><h3>Dr. Moacir Rocha</h3><p>Marca, presença digital e desenvolvimento de soluções para CRM, propostas e acompanhamento comercial do escritório.</p><a href="#captar" class="spotLink" data-interest="juridico">Quero uma solução profissional ↗</a></div></article>
+ <article class="spotCard"><div class="spotMedia spotPets"><img src="/solucoes/assets/tenpets-oficial-usuario.webp" alt="Marca oficial TenPets" loading="lazy"></div><div class="spotBody"><span class="spotTag">E-commerce e gestão</span><h3>TenPets</h3><p>Projeto que demonstra nossa atuação na criação de controle e organização para negócios digitais e comércio eletrônico.</p><a href="#captar" class="spotLink" data-interest="ecommerce">Quero organizar minha loja virtual ↗</a></div></article>
+</div>
+<p class="spotNote">Exemplos de projetos e aplicações da GRIT. Não divulgamos percentuais de desempenho nem depoimentos sem comprovação e autorização.</p>
 </div></section>
 <section class="section section-alt" id="experiencia"><div class="shell"><div class="sectionHead"><span class="eyebrow">Experiência aplicada</span><h2>Não somos apenas uma página vendendo software.</h2><p>Construímos soluções a partir da rotina real das empresas, da operação ao comercial.</p></div>
 <div class="caseGrid">
@@ -352,6 +388,7 @@ document.querySelectorAll("[data-interest]").forEach(function(link){link.addEven
  if(!explicit&&infer[p])choose(infer[p],false);
  if(window.dataLayer)window.dataLayer.push({event:"grit_lead_interest",interest:p});
 })});
+document.querySelectorAll("[data-pain]").forEach(function(link){link.addEventListener("click",function(){if(byId("pain"))byId("pain").value=link.getAttribute("data-pain")||"";productSelect.value=link.getAttribute("data-pain").includes("marca")?"marca-site":"diagnostico";})});
 var segcta=byId("segmentCTA");if(segcta)segcta.addEventListener("click",function(){if(selected&&segments[selected]){segmentSelect.value=selected;productSelect.value=segments[selected].product}});
 segmentSelect.addEventListener("change",function(){explicit=true;choose(segmentSelect.value,false)});
 var menubtn=byId("menuBtn"),nav=byId("nav");if(menubtn&&nav){menubtn.addEventListener("click",function(){var opened=nav.classList.toggle("open");menubtn.setAttribute("aria-expanded",String(opened))});nav.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){nav.classList.remove("open");menubtn.setAttribute("aria-expanded","false")})})}
