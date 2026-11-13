@@ -213,6 +213,27 @@ async function startServer() {
     return res.redirect(302, `${CANONICAL_ORIGIN}/solucoes/${query}`);
   });
 
+  // Same-origin form submission also works behind hosting CSP form-action 'self'.
+  app.post('/api/commercial-lead', express.text({ type: 'application/x-www-form-urlencoded', limit: '16kb' }), async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    if (typeof req.body !== 'string') return res.status(415).send('Formato de formulário inválido.');
+    const origin = req.headers.origin;
+    if (origin && ![CANONICAL_ORIGIN, 'https://www.gritnews.com.br'].includes(origin)) {
+      return res.status(403).send('Origem inválida.');
+    }
+    try {
+      const result = await fetch('https://pcrwtoddavpvkaxwtstc.supabase.co/functions/v1/commercial-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: CANONICAL_ORIGIN },
+        body: req.body,
+        signal: AbortSignal.timeout(15000),
+      });
+      return res.status(result.status).type('html').send(await result.text());
+    } catch {
+      return res.status(502).type('html').send('<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Envio indisponível | GRIT</title><h1>Não foi possível confirmar o envio.</h1><p>Tente novamente em alguns minutos ou escreva para gritsolucoes@gmail.com.</p><a href="/solucoes/#captar">Voltar ao formulário</a></html>');
+    }
+  });
+
   app.get("/api/health", (_req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.json({ status: "ok", app: "GRIT NEWS" });
@@ -390,4 +411,3 @@ async function startServer() {
 startServer().catch((err) => {
   console.error("Failed to start server:", err);
 });
-

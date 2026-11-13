@@ -28,7 +28,7 @@ for(const dir of required){
   assert((html.match(/<h1\b/g)||[]).length===1,path+': h1 ausente ou duplicado');
   assert(/<meta name="description"\s+content="/.test(html),path+': meta description ausente');
   assert(/name="consent_lgpd"/.test(html),path+': consentimento comercial ausente');
-  assert(/functions\/v1\/commercial-lead/.test(html),path+': captura de lead ausente');
+  assert(/(?:functions\/v1\/commercial-lead|api\/commercial-lead)/.test(html),path+': captura de lead ausente');
   const ld=html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   assert(Boolean(ld),path+': dados estruturados ausentes');
   if(ld){try{JSON.parse(ld[1])}catch{fail.push(path+': dados estruturados invalidos')}}
