@@ -201,6 +201,18 @@ async function startServer() {
     return res.sendFile(meuEspetinhoIndex);
   });
 
+  // Keep legacy content/checkout query routes; campaign and segment parameters
+  // follow the visitor into the commercial landing without losing attribution.
+  app.get("/", (req, res, next) => {
+    if (!["gritnews.com.br", "www.gritnews.com.br"].includes(requestHost(req))) return next();
+    const legacyKeys = ['view', 'subdomain', 'artigo', 'article', 'noticia', 'art', 'slug', 'id',
+      'categoria', 'category', 'cat', 'autor', 'author', 'parceiro', 'partner', 'tag', 'busca', 'search', 'q'];
+    if (legacyKeys.some(key => Object.prototype.hasOwnProperty.call(req.query, key))) return next();
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    res.setHeader('Cache-Control', 'no-store');
+    return res.redirect(302, `${CANONICAL_ORIGIN}/solucoes/${query}`);
+  });
+
   app.get("/api/health", (_req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.json({ status: "ok", app: "GRIT NEWS" });
@@ -378,3 +390,4 @@ async function startServer() {
 startServer().catch((err) => {
   console.error("Failed to start server:", err);
 });
+

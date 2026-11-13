@@ -4,7 +4,7 @@ if (!manager) throw new Error('Run the build through npm or pnpm.');
 const env = {...process.env};
 // npm's inherited prefix can otherwise install the parent as a dependency.
 for (const key of Object.keys(env)) if (/^npm_config_|^npm_package_/i.test(key)) delete env[key];
-if (/[/\\]pnpm\.(?:cjs|js)$/i.test(manager)) {
+if (/[/\\]pnpm\.(?:cjs|mjs|js)$/i.test(manager)) {
   execFileSync(process.execPath,[manager,'--filter','meu-espetinho','build'],{stdio:'inherit',env});
 } else {
   const cwd = new URL('../apps/meu-espetinho/',import.meta.url);
@@ -25,3 +25,4 @@ for (const page of ['index.html', 'acesso.html']) {
   cpSync(resolve(projectRoot, 'apps', 'link-uniao', page), resolve(surveyOut, page));
 }
 console.log('GRIT Link União survey assets copied to dist/uniao');
+
