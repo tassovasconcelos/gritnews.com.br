@@ -65,6 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, 
         <nav className="hidden lg:flex items-center gap-1 text-sm font-bold text-slate-200">
           <button onClick={onNavigateHome} className="px-3 py-2 rounded-lg text-[#FB7A18]">Início</button>
           <button onClick={() => goSection('solucoes')} className="px-3 py-2 rounded-lg hover:text-[#FF6A00] hover:bg-white/5">Soluções</button>
+          <a href="/solucoes/" className="px-3 py-2 rounded-lg hover:text-[#FF6A00] hover:bg-white/5">IA para empresas</a>
           <button onClick={() => goSection('metodo')} className="px-3 py-2 rounded-lg hover:text-[#FF6A00] hover:bg-white/5">Método</button>
           <button onClick={() => goSection('produtos')} className="px-3 py-2 rounded-lg hover:text-[#FF6A00] hover:bg-white/5">Produtos</button>
           <div className="relative">
@@ -104,6 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({ categories, activeCategorySlug, 
           <div className="max-w-7xl mx-auto px-4 py-4 space-y-2">
             <button onClick={onNavigateHome} className="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-white/5">Início</button>
             <button onClick={() => goSection('solucoes')} className="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-white/5">Soluções</button>
+            <a href="/solucoes/" className="block w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-white/5">IA, automação e CRM para empresas</a>
             <button onClick={() => goSection('metodo')} className="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-white/5">Método</button>
             <button onClick={() => goSection('produtos')} className="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-white/5">Produtos</button>
             <button onClick={goInsights} className="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-white/5">GRIT Insights / News</button>
