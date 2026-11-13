@@ -32,6 +32,7 @@ jobs:
           if [ -f package.json ]; then
             pnpm install --frozen-lockfile
             pnpm run test:security
+            pnpm run test:seo
             pnpm run build
           else
             echo "No root package.json; repository validation skipped."
