@@ -114,60 +114,124 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const featuredArticles = articles.slice(0, 3);
 
   const goToDiagnostic = () => {
-    document.getElementById('diagnostico')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('captar')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <div className="bg-white text-[#071A2A]">
-      <section className="relative overflow-hidden bg-[#061C2D] text-white">
-        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_75%_25%,rgba(255,106,0,.28),transparent_32%),radial-gradient(circle_at_70%_80%,rgba(20,94,219,.22),transparent_34%)]" />
-        <div className="relative max-w-7xl mx-auto px-4 py-20 lg:py-28 grid lg:grid-cols-[1.05fr_.95fr] gap-14 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 text-[#FF7A18] text-xs font-black uppercase tracking-[0.18em] mb-6">
-              <Sparkles className="w-4 h-4" />
-              Inteligência comercial • tecnologia • execução
-            </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.05em] leading-[0.95] mb-7">
-              Transformamos complexidade em <span className="text-[#FF6A00]">movimento.</span>
+      <section id="inicio" className="relative overflow-hidden bg-[#081A30] text-white">
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_73%_10%,rgba(251,122,24,.14),transparent_43%),linear-gradient(125deg,#081A30,#14334D)]" />
+        <div className="relative max-w-7xl mx-auto px-4 py-12 lg:py-20 grid lg:grid-cols-[1fr_.96fr] gap-9 lg:gap-12 items-start">
+          <div className="lg:pt-8">
+            <p className="text-[#FF9B4B] text-xs md:text-sm font-black uppercase tracking-[0.12em] mb-5">GRIT Soluções e Negócios • Impulsionando o crescimento</p>
+            <h1 className="text-4xl sm:text-5xl lg:text-[66px] font-black tracking-[-.055em] leading-[1.04] max-w-2xl">
+              Empresário, sua empresa merece <span className="text-[#FB7A18]">crescer sem depender de você para tudo.</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-2xl mb-8">
-              A GRIT transforma gargalos comerciais e operacionais em processos claros, tecnologia útil e indicadores que orientam a próxima decisão.
+            <p className="text-base md:text-lg text-slate-200 leading-relaxed mt-6 max-w-xl">
+              Clientes perdidos no WhatsApp? Estoque sem controle? Vendas sem acompanhamento?
+              Transformamos esses desafios em gestão, tecnologia, automação e inteligência artificial útil para sua empresa.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 mb-10">
-              <button onClick={goToDiagnostic} className="bg-[#FF6A00] hover:bg-[#e65f00] text-white font-extrabold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-950/20">
-                Conte seu desafio <ArrowRight className="w-4 h-4" />
-              </button>
-              <a href="#solucoes" className="border border-white/25 hover:bg-white/10 text-white font-bold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all">
-                Explorar soluções <ChevronRight className="w-4 h-4" />
+            <div className="flex flex-wrap gap-3 mt-7">
+              <a href="#captar" className="bg-[#FB7A18] hover:bg-[#ff9a49] text-[#10243A] font-extrabold px-6 py-4 rounded-xl flex items-center justify-center gap-2">
+                Quero melhorar meu negócio <ArrowRight className="w-4 h-4" />
+              </a>
+              <a href="/solucoes/" className="border border-white/40 hover:bg-white/10 text-white font-bold px-6 py-4 rounded-xl flex items-center justify-center gap-2">
+                Conhecer as soluções <ArrowRight className="w-4 h-4" />
               </a>
             </div>
-            <div className="grid sm:grid-cols-3 gap-3 text-xs text-slate-300">
-              <div className="flex gap-2 items-start"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0" /><span>Diagnóstico antes da ferramenta.</span></div>
-              <div className="flex gap-2 items-start"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0" /><span>Implantação antes da promessa.</span></div>
-              <div className="flex gap-2 items-start"><CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0" /><span>Evolução orientada por dados.</span></div>
+            <div className="flex flex-wrap gap-2 mt-7">
+              {['Padarias e conveniências', 'Bares e restaurantes', 'Lojas e e-commerce', 'Escritórios e serviços'].map((label) => (
+                <a key={label} href="#captar" className="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs text-slate-200 hover:border-[#FB7A18]">{label}</a>
+              ))}
             </div>
+            <p className="mt-7 text-xs text-slate-300">✓ Conversa inicial sem compromisso &nbsp; ✓ Soluções prontas e personalizadas &nbsp; ✓ Atendimento humano</p>
           </div>
-
-          <div className="relative">
-            <div className="rounded-[2rem] border border-white/10 bg-[#0A263B]/80 backdrop-blur p-5 shadow-2xl">
-              <div className="flex items-center justify-between mb-5">
-                <div><p className="text-xs text-slate-400 uppercase tracking-widest font-bold">GRIT Intelligence</p><h3 className="text-xl font-black mt-1">Visão integrada do crescimento</h3></div>
-                <div className="w-10 h-10 rounded-xl bg-[#FF6A00]/15 flex items-center justify-center"><BrainCircuit className="w-5 h-5 text-[#FF6A00]" /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                {['Aquisição', 'Oportunidades', 'Conversão', 'Recorrência'].map((label, idx) => (
-                  <div key={label} className="rounded-2xl bg-[#071A2A] border border-white/5 p-4">
-                    <p className="text-[11px] text-slate-400 mb-3">{label}</p>
-                    <div className="h-2 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-[#FF6A00]" style={{ width: `${48 + idx * 12}%` }} /></div>
-                    <p className="text-[10px] text-slate-500 mt-2">Dados reais após integração</p>
-                  </div>
-                ))}
-              </div>
-              <div className="rounded-2xl bg-white p-5 text-[#071A2A]">
-                <div className="flex items-center justify-between gap-4"><div><p className="text-xs text-[#6B7780]">Princípio GRIT</p><p className="font-black text-lg mt-1">Medimos antes de prometer.</p></div><BarChart3 className="w-8 h-8 text-[#FF6A00]" /></div>
-              </div>
+          <form id="captar" method="POST" action="https://pcrwtoddavpvkaxwtstc.supabase.co/functions/v1/commercial-lead"
+            className="bg-white text-[#142B42] rounded-[26px] shadow-2xl overflow-hidden border border-white/20" aria-label="Solicitar atendimento GRIT">
+            <div className="bg-[#FFF5E9] px-6 py-6">
+              <span className="inline-block bg-[#FFE6CA] text-[#A34C0C] rounded-full px-3 py-1 text-xs font-extrabold">Diagnóstico inicial para o seu negócio</span>
+              <h2 className="text-2xl md:text-3xl font-black tracking-[-.035em] leading-tight mt-3">Diga o que sua empresa precisa. <span className="text-[#DA6817]">A GRIT ajuda a encontrar o caminho.</span></h2>
+              <p className="text-sm text-[#596C7E] mt-2">Leva cerca de um minuto. O contato será feito sobre a solução escolhida.</p>
             </div>
+            <div className="px-6 py-6 space-y-3">
+              <input type="hidden" name="source" value="grit-home" />
+              <input type="hidden" name="medium" value="site" />
+              <input type="hidden" name="campaign" value="grit-home-conversao-pme" />
+              <input type="hidden" name="source_type" value="grit_landing_segment" />
+              <input type="hidden" name="source_form_id" value="grit-solucoes-360" />
+              <input type="hidden" name="privacy_notice_url" value="https://gritnews.com.br/solucoes/privacidade.html" />
+              <input type="hidden" name="consent_version" value="grit-home-2026-11" />
+              <input type="hidden" name="landing_page" value="https://gritnews.com.br/" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="block text-xs font-extrabold">Seu nome *
+                  <input name="name" required maxLength={120} autoComplete="name" placeholder="Como podemos chamar você?"
+                    className="block w-full mt-1 border border-slate-300 bg-white p-3 rounded-lg text-sm text-[#142B42]" />
+                </label>
+                <label className="block text-xs font-extrabold">WhatsApp com DDD *
+                  <input name="whatsapp" required type="tel" inputMode="tel" maxLength={22} autoComplete="tel" placeholder="(85) 99999-9999"
+                    className="block w-full mt-1 border border-slate-300 bg-white p-3 rounded-lg text-sm text-[#142B42]" />
+                </label>
+              </div>
+              <label className="block text-xs font-extrabold">Qual é o seu negócio? *
+                <select name="segment" required defaultValue="" className="block w-full mt-1 border border-slate-300 bg-white p-3 rounded-lg text-sm text-[#142B42]">
+                  <option value="" disabled>Selecione seu segmento</option>
+                  <option value="padaria">Padaria e confeitaria</option>
+                  <option value="mercadinho">Mercadinho e conveniência</option>
+                  <option value="alimentacao">Espetinho, hamburgueria, bar ou restaurante</option>
+                  <option value="varejo">Lojas e varejo</option>
+                  <option value="ecommerce">E-commerce e loja virtual</option>
+                  <option value="juridico">Escritório de advocacia</option>
+                  <option value="saude">Saúde e equipamentos</option>
+                  <option value="servicos">Prestação de serviços</option>
+                  <option value="outro">Outro segmento</option>
+                </select>
+              </label>
+              <label className="block text-xs font-extrabold">Qual solução mais interessa? *
+                <select name="product" required defaultValue="diagnostico" className="block w-full mt-1 border border-slate-300 bg-white p-3 rounded-lg text-sm text-[#142B42]">
+                  <option value="diagnostico">Quero uma recomendação da GRIT</option>
+                  <option value="sr-padeiro">Sr. Padeiro — padarias</option>
+                  <option value="meu-espetinho">Meu Espetinho — alimentação</option>
+                  <option value="sac-4-0">SAC 4.0 — atendimento</option>
+                  <option value="crm-ia">CRM, prospecção e IA</option>
+                  <option value="ecommerce">Gestão de e-commerce</option>
+                  <option value="marca-site">Sites e landing pages</option>
+                  <option value="branding">Logomarca e identidade visual</option>
+                  <option value="juridico">Soluções para escritórios jurídicos</option>
+                  <option value="consultoria">Consultoria e automação</option>
+                  <option value="bi">Indicadores, dados e BI</option>
+                  <option value="propostas">Propostas comerciais</option>
+                </select>
+              </label>
+              <label className="block text-xs font-extrabold">O que mais precisa melhorar?
+                <textarea name="message" maxLength={600} rows={2} placeholder="Ex.: preciso vender mais e organizar meus clientes"
+                  className="block w-full mt-1 border border-slate-300 bg-white p-3 rounded-lg text-sm text-[#142B42]" />
+              </label>
+              <div className="absolute -left-[9999px]" aria-hidden="true"><label htmlFor="grit-website-honey">Não preencher</label><input id="grit-website-honey" name="website" tabIndex={-1} autoComplete="off" /></div>
+              <label className="flex items-start gap-2 text-xs text-slate-600 leading-relaxed">
+                <input type="checkbox" name="consent_lgpd" value="true" required className="mt-1 accent-[#FB7A18]" />
+                <span>Autorizo a GRIT a entrar em contato pelo WhatsApp sobre esta solicitação e estou ciente da <a href="/solucoes/privacidade.html" target="_blank" rel="noopener noreferrer" className="underline text-[#AD520C]">política de privacidade</a>. *</span>
+              </label>
+              <button type="submit" className="w-full min-h-14 bg-[#FB7A18] hover:bg-[#ff9b4b] text-[#081A30] font-black rounded-xl px-4 py-3 flex justify-center items-center gap-2">
+                Quero receber o contato da GRIT <ArrowRight className="w-5 h-5" />
+              </button>
+              <p className="text-[11px] text-center text-slate-500">Sem obrigação de contratar. Atendimento comercial com seus dados protegidos.</p>
+            </div>
+          </form>
+        </div>
+      </section>
+      <section className="bg-[#F4F7FA] border-b border-slate-200 py-10" aria-label="Projetos e experiências GRIT">
+        <div className="max-w-7xl mx-auto px-4">
+          <p className="text-xs text-[#D46414] uppercase font-black tracking-[.15em]">Experiência aplicada • Projetos e negócios reais</p>
+          <h2 className="text-2xl md:text-3xl font-black text-[#10273D] mt-2 mb-6">Tecnologia que entende o dia a dia do empresário.</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center text-center min-h-36"><strong className="text-[#17354E] text-sm">Distribuidora Prohospital</strong><span className="text-xs text-slate-500 mt-2">Distribuição B2B e gestão comercial</span></div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center text-center min-h-36"><strong className="text-[#17354E] text-sm">Shopping Prohospital</strong><span className="text-xs text-slate-500 mt-2">Varejo e soluções operacionais</span></div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center text-center min-h-36"><img src="/solucoes/assets/sr-padeiro.svg" alt="Sr. Padeiro" className="max-h-16 w-full object-contain" /><span className="text-xs text-slate-500 mt-2">Padarias e conveniências</span></div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center text-center min-h-36"><img src="/solucoes/assets/meu-espetinho.svg" alt="Meu Espetinho" className="max-h-16 w-full object-contain" /><span className="text-xs text-slate-500 mt-2">Bares e alimentação</span></div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center text-center min-h-36"><img src="/solucoes/assets/tenpets-oficial-usuario.webp" alt="TenPets" className="max-h-16 w-full object-contain" /><span className="text-xs text-slate-500 mt-2">Projeto de e-commerce</span></div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center text-center min-h-36"><img src="/solucoes/assets/moacir-rocha-oficial-usuario.webp" alt="Dr. Moacir Rocha" className="max-h-16 w-full object-contain" /><span className="text-xs text-slate-500 mt-2">Tecnologia jurídica</span></div>
           </div>
+          <p className="text-[11px] text-slate-500 mt-4">Referências a projetos e experiências. Não representam depoimentos, aval formal ou resultados atribuídos a terceiros.</p>
         </div>
       </section>
 
