@@ -96,7 +96,7 @@ async function startServer() {
           "base-uri 'self'",
           "object-src 'none'",
           "frame-ancestors 'none'",
-          "form-action 'self' https://*.mercadopago.com https://www.mercadopago.com",
+          "form-action 'self' https://pcrwtoddavpvkaxwtstc.supabase.co https://*.mercadopago.com https://www.mercadopago.com",
           "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https:",
