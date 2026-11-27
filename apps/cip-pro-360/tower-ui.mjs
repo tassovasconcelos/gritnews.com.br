@@ -23,10 +23,10 @@ export function towerFrame(){
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
      <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
    </div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Encaminhamentos registrados aparecem na visão geral.</span></div>
-   <details class="ct-demo"><summary>Sala de reuniões · demonstração interativa</summary><div class="ct-office-simulation">
-    <button type="button" class="ct-small-button" data-ct-simulate aria-pressed="false">Simular rotina</button>
+   <details class="ct-demo"><summary>Sala de reuniões · colaboração guiada</summary><div class="ct-office-simulation">
+    <button type="button" class="ct-small-button" data-ct-simulate aria-pressed="false">Iniciar visita guiada</button>
     <button type="button" class="ct-small-button" data-ct-sim-step hidden>Próxima interação</button>
-    <p data-ct-sim-status role="status">Demonstração sem alterações nos registros do CIP.</p>
+    <p data-ct-sim-status role="status">Conheça a colaboração entre os departamentos em seis cenas ilustrativas.</p>
    </div></details>
   </section>
  </div></section>
@@ -54,7 +54,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  $('[data-ct-company]').innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(companyNames[c]||c)}</option>`).join('');
  $('[data-ct-company]').value=company;
  const central=$('[data-ct-command]');central.disabled=!allowedRoutes.includes('acoes');
- function showView(next){if(!['overview','agents','pricing'].includes(next))return; if(view==='agents'&&next!=='agents')stopSimulation();view=next;root.querySelectorAll('[data-ct-pane]').forEach(p=>p.hidden=p.dataset.ctPane!==next);root.querySelectorAll('[data-ct-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ctView===next)));$('[data-ct-shared]').hidden=next==='pricing';if(next!=='agents')$('[data-ct-drawer]').hidden=true;}
+ function showView(next){if(!['overview','agents','pricing'].includes(next))return; if(view==='agents'&&next!=='agents')stopSimulation();view=next;root.querySelectorAll('[data-ct-pane]').forEach(p=>p.hidden=p.dataset.ctPane!==next);root.querySelectorAll('[data-ct-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ctView===next)));$('[data-ct-shared]').hidden=next==='pricing';if(next!=='agents')$('[data-ct-drawer]').hidden=true;officeController?.refreshMotion?.();}
  const unavailable='<div class="ct-none">Nenhuma evidência consultável nesta fonte, ou acesso indisponível.</div>';
  function renderMetrics(){
    $('[data-ct-metrics]').innerHTML=towerMetrics(counts,tasks).map(m=>m.id==='tower_tasks'?{...m,label:'Pendências na amostra',value:taskSourceReady?tasks.filter(t=>!['concluida','descartada'].includes(t.status)).length:null,unit:'até 100 registros consultados'}:m).map(m=>`<article class="ct-kpi"><small>${esc(m.label)}</small><strong>${number(m.value)}</strong><span>${esc(m.unit)}</span></article>`).join('');
@@ -108,7 +108,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  function showHandoff(task){
   const agent=agentById(task.agent_code);
   $('[data-ct-handoff-status]').textContent='Encaminhamento humano registrado para '+agent.name+' · '+date(task.created_at)+'. Movimento ilustrativo.';
-  if(!simulating)officeController?.visit(agentById('doquita'),agent,{real:true,source:'Central de Ações'});
+  if(!simulating&&view==='agents')officeController?.visit(agentById('doquita'),agent,{real:true,source:'Central de Ações',recordTitle:task.title});
  }
  function highlightDesks(origin,destination){
   for(const desk of root.querySelectorAll('.ct-agent-hotspot')){
@@ -146,7 +146,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   simulating=false;
   $('[data-ct-handoff-marker]').hidden=true;
   highlightDesks();
-  $('[data-ct-simulate]').textContent='Simular rotina';
+  $('[data-ct-simulate]').textContent='Iniciar visita guiada';
   $('[data-ct-simulate]').setAttribute('aria-pressed','false');
   $('[data-ct-sim-step]').hidden=true;
   $('[data-ct-sim-status]').textContent=message;
@@ -154,15 +154,16 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  function nextInteraction(){
   window.clearTimeout(simulationTimer);
   if(!live()||simulationStep>=OFFICE_SCENARIO.length){
-   stopSimulation('Simulação concluída. Os registros da Central podem ser consultados no botão acima.');
+   stopSimulation('Visita concluída. Consulte as evidências de cada especialista para decisões reais.');
    return;
   }
   const scene=OFFICE_SCENARIO[simulationStep++];
   const origin=agentById(scene.from), destination=agentById(scene.to);
   highlightDesks(origin,destination);
-  $('[data-ct-sim-status]').textContent='Simulação · '+origin.name+' → '+destination.name+' · '+scene.description;
+  $('[data-ct-sim-status]').textContent='Cena '+simulationStep+' de '+OFFICE_SCENARIO.length+' · '+origin.name+' → '+destination.name+' · '+scene.description;
   animateVisit(origin,destination,true);
-  // Demonstration advances only when requested by the user.
+  // Automatically advance only during the explicitly requested guided visit.
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)simulationTimer=window.setTimeout(()=>{if(simulating&&view==='agents'&&document.visibilityState==='visible')nextInteraction();else if(simulating)stopSimulation();},10000);
  }
  async function count(kind){
   const {count,error}=await db.from(TOWER_SOURCE_TABLES[kind]).select('*',{count:'exact',head:true}).eq('company_id',company);
@@ -243,10 +244,11 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
    if(simulating){stopSimulation();return;}
    simulating=true;
    simulationStep=0;
-   $('[data-ct-simulate]').textContent='Encerrar simulação';
+   $('[data-ct-simulate]').textContent='Encerrar visita';
    $('[data-ct-simulate]').setAttribute('aria-pressed','true');
    $('[data-ct-sim-step]').hidden=false;
    nextInteraction();
+   $('[data-ct-flow]')?.scrollIntoView({block:'nearest',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
    return;
   }
   if(e.target.closest('[data-ct-sim-step]')&&simulating){nextInteraction();return;}
