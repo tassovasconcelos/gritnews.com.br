@@ -1,5 +1,5 @@
 export const SOLUTIONS=[
- ['consumo','Central de Consumo e Continuidade','Comece por aqui','Monitore tokens, custos, créditos, provedores, orçamento e saúde 24/7 dos agentes e infraestrutura.','activity','consumo tokens creditos api openai gemini claude deepseek hermes custo gastos supabase hostinger orcamento alertas'],
+ ['consumo','Central de Consumo','Comece por aqui','Acompanhe tokens, créditos e custos dos agentes.','activity','consumo tokens creditos api ia custos alertas'],
  ['acoes','Central de Ações e Aprovações','Comece por aqui','Sugestões do Estoque, Radar, agentes e campanhas, com evidências, responsáveis e aprovação auditável.','activity','central acoes aprovacao inteligencia recomendacoes alertas concorrentes pesquisa promocoes campanhas workflow decisao'],
  ['torre','Torre de Comando CIP360','Comece por aqui','Sala visual dos agentes: marque prioridades, analise fontes autorizadas, acompanhe ações e gere relatórios.','team','torre comando cip360 painel agentes marca passo estoque compras radar preco inteligencia relatorio'],
  ['inicio','Visão geral','Comece por aqui','Uma visão do ambiente e dos seus atalhos.','home','inicio painel dashboard resumo'],
