@@ -1,3 +1,4 @@
+import {mountOffice3D} from './tower-office-3d.mjs';
 // CIP360 Live Office: representation is NOT proof of autonomous execution.
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const OFFICE_PEOPLE=Object.freeze({
@@ -104,7 +105,7 @@ function mountPhotoMotion({stage,photo,canvas,button,status}){
   button.setAttribute('aria-pressed',String(ready&&enabled));button.textContent=enabled?'Pausar movimentos':'Ativar movimentos';
   button.disabled=!ready;status.textContent=!ready?'Cenário estático':enabled?'Movimentos ilustrativos ativados':'Movimentos pausados';
  }
- const canRun=()=>alive&&ready&&enabled&&visible&&document.visibilityState==='visible'&&stage.isConnected&&stage.getClientRects().length>0;
+ const canRun=()=>alive&&ready&&enabled&&visible&&document.visibilityState==='visible'&&stage.isConnected&&stage.getClientRects().length>0&&!stage.closest('.ct-model-active');
  function draw(now){
   raf=0;if(!canRun()){clear();return;}
   if(now-last>=45){
@@ -150,7 +151,7 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  room.querySelector('.ct-office-official')?.remove();
  room.classList.add('ct-studio','ct-panorama-office');
  const layer=document.createElement('div');layer.className='ct-live-room';
- layer.innerHTML='<div class="ct-panorama-stage"><img class="ct-panorama-image" src="./command-room.svg" alt="Escritório ilustrativo da Torre de Comando Prohospital, profissionais e estações de trabalho"><canvas class="ct-photo-motion" aria-hidden="true"></canvas><div class="ct-panorama-lights" aria-hidden="true"></div><div class="ct-panorama-controls" aria-label="Estações do escritório"></div></div><div class="ct-panorama-shortcuts" aria-label="Mais especialistas"></div><div class="ct-panorama-status"><span data-ct-live-time>Consultando último ciclo…</span><span data-ct-motion-status>Cenário ilustrativo</span><button type="button" class="ct-motion-toggle" data-ct-motion-toggle aria-pressed="false">Ativar movimentos</button></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient" role="status" hidden><small data-ct-live-mode></small><div class="ct-meeting-visual" aria-hidden="true"><span data-ct-meeting-from></span><i></i><span data-ct-meeting-to></span></div><strong data-ct-flow-title></strong><span data-ct-flow-detail></span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
+ layer.innerHTML='<div class="ct-room-mode"><button type="button" data-ct-scene-toggle aria-pressed="false">Explorar sala 3D</button><div data-ct-camera hidden><button type="button" data-ct-camera-left aria-label="Girar para a esquerda">←</button><button type="button" data-ct-camera-reset>Centralizar</button><button type="button" data-ct-camera-right aria-label="Girar para a direita">→</button></div></div><div class="ct-panorama-stage"><canvas class="ct-room-3d" aria-hidden="true" hidden></canvas><img class="ct-panorama-image" src="./command-room.svg" alt="Escritório ilustrativo da Torre de Comando Prohospital, profissionais e estações de trabalho"><canvas class="ct-photo-motion" aria-hidden="true"></canvas><div class="ct-panorama-lights" aria-hidden="true"></div><div class="ct-panorama-controls" aria-label="Estações do escritório"></div></div><div class="ct-panorama-shortcuts" aria-label="Mais especialistas"></div><div class="ct-panorama-status"><span data-ct-live-time>Consultando último ciclo…</span><span data-ct-motion-status>Cenário ilustrativo</span><button type="button" class="ct-motion-toggle" data-ct-motion-toggle aria-pressed="false">Ativar movimentos</button></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient" role="status" hidden><small data-ct-live-mode></small><div class="ct-meeting-visual" aria-hidden="true"><span data-ct-meeting-from></span><i></i><span data-ct-meeting-to></span></div><strong data-ct-flow-title></strong><span data-ct-flow-detail></span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
  const controls=layer.querySelector('.ct-panorama-controls'),shortcuts=layer.querySelector('.ct-panorama-shortcuts');
  for(const p of people){
   const button=buttons.get(p.id);if(!button)continue;
@@ -162,10 +163,28 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  }
  room.prepend(layer);
  const motion=mountPhotoMotion({stage:layer.querySelector('.ct-panorama-stage'),photo:layer.querySelector('.ct-panorama-image'),canvas:layer.querySelector('.ct-photo-motion'),button:layer.querySelector('[data-ct-motion-toggle]'),status:layer.querySelector('[data-ct-motion-status]')});
+ const sceneCanvas=layer.querySelector('.ct-room-3d');
+ const sceneToggle=layer.querySelector('[data-ct-scene-toggle]');
+ const camera=layer.querySelector('[data-ct-camera]');
+ let model;
+ sceneToggle.addEventListener('click',()=>{
+  const enabled=sceneCanvas.hidden;
+  if(enabled&&!model)model=mountOffice3D(sceneCanvas,people);
+  if(enabled&&!model){sceneToggle.disabled=true;sceneToggle.textContent='Sala 3D indisponível';return;}
+  sceneCanvas.hidden=!enabled;camera.hidden=!enabled;
+  room.classList.toggle('ct-model-active',enabled);
+  sceneToggle.setAttribute('aria-pressed',String(enabled));
+  sceneToggle.textContent=enabled?'Voltar ao panorama':'Explorar sala 3D';
+  if(enabled)model.select(selected);
+  motion.refresh();
+ });
+ layer.querySelector('[data-ct-camera-left]').addEventListener('click',()=>model?.turn(-.12));
+ layer.querySelector('[data-ct-camera-right]').addEventListener('click',()=>model?.turn(.12));
+ layer.querySelector('[data-ct-camera-reset]').addEventListener('click',()=>model?.reset());
  const flow=layer.querySelector('[data-ct-flow]'),label=layer.querySelector('[data-ct-live-mode]'),title=layer.querySelector('[data-ct-flow-title]'),detail=layer.querySelector('[data-ct-flow-detail]');
  const live=()=>alive&&root.isConnected;
  function stop(){
-  flow.hidden=true;window.clearTimeout(timer);timer=null;motion.setActive(selected?[selected]:[]);
+  flow.hidden=true;model?.showExchange(null);window.clearTimeout(timer);timer=null;motion.setActive(selected?[selected]:[]);
   for(const b of buttons.values())b.classList.remove('ct-visit-origin','ct-visit-destination');
   flow.dataset.mode='ambient';
  }
@@ -176,7 +195,7 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
   layer.querySelector('[data-ct-meeting-from]').innerHTML=portrait(byId(from.id));layer.querySelector('[data-ct-meeting-to]').innerHTML=portrait(byId(to.id));
   const scenario=scenes?.find(s=>s.from===from.id&&s.to===to.id);
   detail.textContent=real?(recordTitle||'Encaminhamento registrado na Central de Ações.')+' · Cena representativa, não comprova reunião.':scenario?.description||'Demonstração de colaboração.';
-  motion.setActive([from.id,to.id]);
+  motion.setActive([from.id,to.id]);model?.showExchange({from:from.id,to:to.id,real});
   buttons.get(from.id)?.classList.add('ct-visit-origin');buttons.get(to.id)?.classList.add('ct-visit-destination');
   if(real)timer=window.setTimeout(stop,7000);return true;
  }
@@ -190,9 +209,10 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
    b.dataset.pending=String(taskSourceReady&&n>0);
   }
  }
- function setSelected(id){selected=id;if(flow.hidden)motion.setActive([id]);for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}}
+ function setSelected(id){selected=id;model?.select(id);if(flow.hidden)motion.setActive([id]);for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}}
  function setCompany(){stop();motion.setActive([]);for(const b of buttons.values()){b.querySelector('[data-ct-records]').textContent='Consultando registros';b.dataset.pending='false';b.title=byId(b.dataset.ctAgent).area;}layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';}
  function destroy(){alive=false;stop();motion.destroy();layer.remove();}
+ sceneToggle.click();
  onDispose?.(destroy);
  return {visit,setEvents,setSelected,setCompany,stop,destroy,refreshMotion:motion.refresh,demoTick:()=>false};
 }
