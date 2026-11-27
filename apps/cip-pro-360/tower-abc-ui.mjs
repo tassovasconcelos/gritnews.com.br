@@ -22,7 +22,7 @@ export function abcWorkbenchFrame(){
     <form data-abc-find class="ct-abc-find"><input name="q" maxlength="100" placeholder="SKU ou produto (mín. 2 letras)" aria-label="SKU ou produto" required><input name="category" maxlength="80" placeholder="Categoria (opcional)" aria-label="Filtrar categoria"><select name="curve" aria-label="Filtrar curva"><option value="">ABC</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select><button class="btn" type="submit">Pesquisar</button></form>
     <p class="ct-hint" data-abc-search-note>Base de estoque autorizada; pesquisar não consulta marketplace automaticamente.</p>
     <div data-abc-products class="ct-abc-products"><div class="ct-none">Pesquise um produto para ver custos e preços da última carga disponível.</div></div>
-    <div data-abc-product-tag></div>
+    <div data-abc-product-tag></div><div data-abc-competitors class="ct-abc-competitors"></div>
     <div class="ct-abc-source-status" data-abc-source>Base ABC por produto: aguardando consulta da empresa selecionada.</div>
    </section>
    <section class="ct-abc-calculation"><h3>2 · Monte hipóteses verificáveis</h3>
@@ -96,14 +96,14 @@ export function parseABCcsv(text){
 export function mountAbcWorkbench({root,db,user,companies,getCompany,getCanWrite,onDispose}){
  const $=s=>root.querySelector(s);
  let active=true,request=0,company=getCompany(),batch=null,products=[],selected=null,abc=null,
-  references=[],currentResult=null,saving=false,importing=false,history=[];
+  references=[],marketCandidates=[],currentResult=null,saving=false,importing=false,history=[];
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
  if(onDispose)onDispose(()=>{active=false;request++;});
  const status=(text,where='[data-abc-calc-status]')=>{const target=$(where);if(live()&&target)target.textContent=text;};
  function clearProduct(){
-  products=[];selected=null;abc=null;references=[];currentResult=null;
+  products=[];selected=null;abc=null;references=[];marketCandidates=[];currentResult=null;
   $('[data-abc-products]').innerHTML='<div class="ct-none">Pesquise um SKU ou descrição.</div>';
-  $('[data-abc-product-tag]').textContent='';
+  $('[data-abc-product-tag]').textContent='';$('[data-abc-competitors]').textContent='';
   $('[data-abc-results]').innerHTML='<div class="ct-none">Escolha um produto, informe custos e margens e simule as estratégias.</div>';
   $('[data-abc-calc]').reset();
   status('');
@@ -152,7 +152,7 @@ export function mountAbcWorkbench({root,db,user,companies,getCompany,getCanWrite
  }
  async function choose(index){
   const p=products[index];if(!p)return;
-  const token=++request;selected=p;abc=null;references=[];currentResult=null;
+  const token=++request;selected=p;abc=null;references=[];marketCandidates=[];currentResult=null;
   const form=$('[data-abc-calc]');form.reset();
   form.elements.currentPrice.value=p.sale_price??'';
   form.elements.cost.value=p.unit_cost??'';
@@ -161,12 +161,25 @@ export function mountAbcWorkbench({root,db,user,companies,getCompany,getCanWrite
     .eq('import_id',batch.id).eq('company_id',company).eq('sku',p.sku).maybeSingle():Promise.resolve({data:null,error:null});
   const refQuery=db.from('cip_mp_market_refs').select('normalized_price,equivalent,active,availability,observed_on,source_url,competitor,channel')
     .eq('company_id',company).eq('sku',p.sku).eq('equivalent',true).eq('active',true).order('observed_on',{ascending:false}).limit(5);
-  const [a,r]=await Promise.all([abcQuery,refQuery]);
+  const candidateQuery=db.from('cip_market_offers').select('sku,seller,url,offer,state,created_at').eq('company_id',company).eq('sku',p.sku).order('created_at',{ascending:false}).limit(4);
+  const [a,r,m]=await Promise.all([abcQuery,refQuery,candidateQuery]);
   if(!live()||token!==request)return;
   abc=a.error?null:a.data;
   references=r.error?[]:r.data||[];
+  marketCandidates=m.error?[]:m.data||[];
   const curve=abc?.curve||p.curve||'—';
   $('[data-abc-product-tag]').innerHTML=`<div class="ct-abc-selected"><strong>Produto selecionado: ${esc(p.description)}</strong><span>SKU ${esc(p.sku)} · Curva ${esc(curve)} · Categoria ${esc(p.product_group||'não informada')} · Loja ${esc(p.store_code||'—')}</span><span>Carga histórica: ${esc(p.as_of||'sem data')} · Referências concorrentes elegíveis: ${references.length}</span></div>`;
+  $('[data-abc-competitors]').innerHTML=marketCandidates.length?
+    '<h4>Radar digital · ofertas candidatas (não homologadas)</h4>'+
+    marketCandidates.map(o=>{
+      const p=o.offer||{},src=String(o.url||'');let href='#';
+      try{const u=new URL(src);if(u.protocol==='https:'&&u.username===''&&u.password==='')href=u.href;}catch{}
+      const price=p.price!==null&&p.price!==undefined&&Number.isFinite(Number(p.price))?cash(p.price):'Sem preço público';
+      return '<div class="ct-abc-competitor"><strong>'+esc(o.seller||'Vendedor não confirmado')+'</strong><span>'+price+
+        ' · '+esc(p.match?.kind||'similaridade pendente')+' · '+esc(o.state)+
+        ' · '+esc(new Date(o.created_at).toLocaleDateString('pt-BR'))+'</span>'+
+        (href!=='#'?'<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">Conferir evidência</a>':'')+'</div>';
+    }).join(''):'<p class="ct-hint">Nenhuma oferta candidata associada ao SKU consultado.</p>';
   status('Produto carregado. Preencha despesas, comissão e margens antes de simular; a origem precisa de atualização.');
  }
  function compute(){
