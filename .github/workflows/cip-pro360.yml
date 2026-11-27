@@ -47,6 +47,8 @@ jobs:
           node --test apps/cip-pro-360/tower-pricing-engine.test.mjs
           node --test apps/cip-pro-360/command-center-engine.test.mjs
           node --test apps/cip-pro-360/ops-consumption-engine.test.mjs
+          node --test apps/cip-pro-360/billing-connectors/providers.test.mjs
+          node --check apps/cip-pro-360/billing-connectors/providers.mjs
           node --check apps/cip-pro-360/ops-consumption-engine.mjs
           node --check apps/cip-pro-360/ops-consumption-ui.mjs
           node --check apps/cip-pro-360/command-center-ui.mjs
