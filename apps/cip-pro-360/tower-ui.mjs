@@ -52,7 +52,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  function showView(next){if(!['overview','agents','pricing'].includes(next))return; if(view==='agents'&&next!=='agents')stopSimulation();view=next;root.querySelectorAll('[data-ct-pane]').forEach(p=>p.hidden=p.dataset.ctPane!==next);root.querySelectorAll('[data-ct-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ctView===next)));}
  const unavailable='<div class="ct-none">Nenhuma evidência consultável nesta fonte, ou acesso indisponível.</div>';
  function renderMetrics(){
-   $('[data-ct-metrics]').innerHTML=towerMetrics(counts,tasks).map(m=>`<article class="ct-kpi"><small>${esc(m.label)}</small><strong>${number(m.value)}</strong><span>${esc(m.unit)}</span></article>`).join('');
+   $('[data-ct-metrics]').innerHTML=towerMetrics(counts,tasks).map(m=>m.id==='tower_tasks'?{...m,label:'Pendências na amostra',value:taskSourceReady?tasks.filter(t=>!['concluida','descartada'].includes(t.status)).length:null,unit:'até 100 registros consultados'}:m).map(m=>`<article class="ct-kpi"><small>${esc(m.label)}</small><strong>${number(m.value)}</strong><span>${esc(m.unit)}</span></article>`).join('');
  }
  function renderAlerts(){
   const rows=[...stocks.map(x=>({sku:x.sku,state:x.state,description:x.description,date:x.updated_at,origin:'Análise do estoque',agent:'estoque'})),
@@ -98,7 +98,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   root.querySelectorAll('.ct-agent-hotspot').forEach(el=>el.classList.toggle('ct-selected',el.dataset.ctAgent===selected));
   officeController?.setSelected(selected);
  }
- function render(){renderMetrics();renderAlerts();renderTasks();renderAgent();officeController?.setEvents({tasks,cycle:lastCycle});}
+ function render(){renderMetrics();renderAlerts();renderTasks();renderAgent();officeController?.setEvents({tasks,cycle:lastCycle,taskSourceReady});}
  function showHandoff(task){
   const agent=agentById(task.agent_code);
   $('[data-ct-handoff-status]').textContent='Encaminhamento humano registrado para '+agent.name+' · '+date(task.created_at)+'. Movimento ilustrativo.';
@@ -261,7 +261,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  });
  officeController=mountLiveOffice({root,agents:TOWER_AGENTS,scenes:OFFICE_SCENARIO,onDispose,onSelect:id=>{selected=id;renderAgent();}});
  const workbench=mountAbcWorkbench({root,db,user,companies,getCompany:()=>company,getCanWrite:()=>canWrite,onDispose});
- const poll=window.setInterval(()=>{if(live()&&document.visibilityState==='visible')load();},90000);
+ const poll=window.setInterval(()=>{if(live()&&document.visibilityState==='visible'&&!root.querySelector('.ct-task-edit[open],.ct-new-task[open]')&&!root.contains(document.activeElement?.closest('input,textarea,select')))load();},90000);
  if(onDispose)onDispose(()=>window.clearInterval(poll));
  load();
 }
