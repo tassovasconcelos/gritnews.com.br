@@ -120,7 +120,7 @@ test('HTTP 429 classification separates billing exhaustion and throttling withou
  for(const code of ['insufficient_quota','credit_balance_exhausted','organization_spend_limit_exceeded',
   'project_spend_limit_exceeded','organization_usage_limit_exceeded']){
   const r=Response.json({error:{type:'invalid_request_error',code,message:'confidential provider payload'}},{status:429});
-  assert.deepEqual(await classifyResearchProviderError(r),{error:'provider_quota_exhausted',retryAfterSeconds:0});
+  assert.deepEqual(await classifyResearchProviderError(r),{error:'provider_quota_exhausted',retryAfterSeconds:null});
  }
  assert.equal((await classifyResearchProviderError(Response.json({error:{code:'slow_down'}},{status:429,headers:{'retry-after':'90'}}))).error,'provider_rate_limit');
  assert.equal((await classifyResearchProviderError(Response.json({error:{type:'rate_limit_error',code:'rate_limit_exceeded'}},{status:429}))).error,'provider_rate_limit');
