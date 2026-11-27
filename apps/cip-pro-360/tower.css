@@ -196,3 +196,8 @@
 .ct-abc-find select{border:1px solid #dce0e7;border-radius:8px;padding:8px;min-width:63px}
 .ct-abc-find input[name=category]{max-width:132px}
 @media(max-width:650px){.ct-abc-find{display:grid;grid-template-columns:1fr 1fr}.ct-abc-find input[name=q]{grid-column:1/-1}.ct-abc-find input[name=category]{max-width:none}}
+
+.ct-agent-intelligence{border:1px solid #dfd9f4;background:linear-gradient(110deg,#f8f5ff,#fffafc);padding:11px;margin:10px 0;border-radius:10px;font-size:11px}
+.ct-agent-intelligence small{display:block;color:#8462a2;font-size:10px;font-weight:900;letter-spacing:.7px}
+.ct-agent-intelligence p{line-height:1.45;margin:7px 0;color:#3e3c4a}
+.ct-agent-intelligence span{color:#857c92;font-size:10px}
