@@ -70,3 +70,38 @@ A publicação de produção depende de teste de PR, homologação de login e au
 - [ ] Conferir fontes parciais e dados ausentes, sem KPIs fabricados.
 - [ ] Executar CI e preparar pacote de publicação versionado.
 - [ ] Publicar após testes e verificar URL com HTTP 200/SSL/login, registrando evidência.
+
+## Evolução operacional — marca-passo, curva ABC, cenários e vida nos agentes (27/11/2026)
+
+A nova área é integrada à rota protegida **Torre de Comando CIP360** e aos módulos comerciais existentes. Foram adicionados:
+
+1. **Visual da central** com operadores SVG animados, microinterações dos 12 especialistas, respeito ao modo de movimento reduzido, marca original preservada, fluxo executivo detectar → simular → coordenar → medir.
+2. **Mesa de margem por SKU** diretamente na Torre: busca no estoque existente por código/descrição, filtro por categoria/curva, recuperação por lote importado quando o item não está na posição de estoque, visualização de saldo, custo, preço, loja e data da fonte.
+3. **Ingestão ABC segura** dos 6.514 SKUs do arquivo anexo (A=3.545, B=1.803, C=1.166). A importação CSV em lote utiliza SHA-256, progresso, validação de cabeçalhos/duplicidade, RLS por empresa, auditoria e autorização de escrita. Lote incompleto ou com distribuição inesperada é bloqueado no servidor. O arquivo completo não foi commitado no GitHub (dados comerciais privados) e ainda deve ser importado por usuário autorizado para o destino correto.
+4. **Quatro cenários financeiros**: proteção de margem, competitivo (somente com referência equivalente, HTTPS, ativa, disponível e recente), promoção controlada e campanha de giro; cálculo de contribuição unitária, piso de margem hipotético, preço alvo, diferença de preço, volumes, custos e ponto de equilíbrio. Não existem promessas de vendas incrementais: os resultados totais exigem volumes informados.
+5. **Radar digital por SKU**: consulta às ofertas candidatas existentes em `cip_market_offers` com data, preço quando publicado, vendedor, classe de similaridade e link externo de evidência; não converte candidatos em referências homologadas automaticamente.
+6. **Cenários versionados e auditáveis** no `cip_tower_price_scenarios` com estado fixo `simulacao`; o botão encaminhar cria tarefa humana em `cip_tower_tasks` em vez de alterar ERP/PDV/canal.
+7. **Contexto real dos especialistas**: a Torre consulta o último ciclo de `cip_agent_cycles` e exibe a análise original, horário e sinalização de fonte histórica/stale. Os contadores são reconsultados a cada 90 segundos enquanto a aba estiver visível. Isso **não** equivale a uma coleta de concorrentes a cada 90 segundos, nem à execução de tarefas.
+8. **Interface responsiva** e representação visual de direção executiva, com uma demonstração offline separada no chat; módulos do CIP requerem login existente e permissões de cada empresa.
+
+### Premissas e bloqueios de preço
+- A planilha contém as colunas `LUCRO`, `DESPESA`, `COMISSAO` sem notas explicativas; o usuário pode utilizá-las **somente como hipótese explícita** e deve submetê-las à homologação financeira antes de automatizar políticas de preço.
+- O estoque Shopping utilizado na busca tem data de 19/10/2026, com 28.187 registros de origem; não é custo/preço atual em 27/11. Para B2B, cenários manuais são possíveis até a reconciliação de custo e preço.
+- Referências candidatas do Mercado Livre, outros sites e marketplaces não podem ser tomadas como produto idêntico nem estoque confirmado. Frete, impostos, pack/unit, localização, horário e validade devem compor a revisão.
+- A economia e a bonificação de Tasso não são geradas por cenários; só benefícios líquidos aprovados pela Controladoria e Diretoria serão elegíveis, sob regras contratuais.
+- As integrações automáticas com Procfit/PDV/marketplaces continuam independentes e **não homologadas** para escrita/publicação de preços. O comportamento corrente é simular e encaminhar.
+
+### Migrações adicionais aplicadas
+- `cip360_abc_precificacao_interativa_v1`: `cip_abc_import_batches`, `cip_abc_products`, `cip_tower_price_scenarios` com políticas RLS e auditoria, e RPC `cip_abc_finish_import`.
+- `cip360_torre_abc_batch_integrity_v1`: bloqueio servidor de lotes incompletos, identidade entre lote e empresa e restrição de referência em cenários, além de evidência de conclusão de tarefas.
+
+### Homologação adicional pendente
+- [x] Inspeção da ABC e validação de totais/campos por curva.
+- [x] Teste SQL revertido: impedir lote ABC pronto sem itens; permitir finalização após carga de contagem correta e checar isolamento do usuário não autorizado.
+- [x] Testes de engine/importação/simulador na esteira automatizada; verificar o último workflow do PR para confirmação.
+- [x] Demonstração offline testada em Chromium desktop e celular (navegação, busca, fórmula de preços, campanha e registro de tarefa simulada), sem erros JavaScript e sem overflow horizontal.
+- [ ] Homologação real no navegador dos formulários e importação no CIP autenticado, com usuário Shopping e Distribuidora.
+- [ ] Confirmar origem da planilha ABC (empresa e vigência), importar 6.514 itens por empresa correta, conferir por SKU e reconciliar com Procfit.
+- [ ] Validar política por curva/categoria, despesas, comissões, promoções e alçadas com a Controladoria.
+- [ ] Homologar integrações externas e agendamento de agentes com logs de execução verificáveis.
+- [ ] Aprovar PR, integrar na branch protegida `cip/main`, configurar/revisar Hostinger e executar deploy isolado com smoke test HTTP/SSL/login.
