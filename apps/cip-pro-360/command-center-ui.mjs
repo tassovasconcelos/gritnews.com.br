@@ -1,4 +1,4 @@
-import {COMMAND_KINDS,DECISION_STATES,availableActions,evidenceStatus,freshness,rankFeed,insightCounters,safeCsv,safeExternalUrl} from './command-center-engine.mjs';
+import {COMMAND_KINDS,DECISION_STATES,availableActions,evidenceStatus,freshness,rankFeed,insightCounters,safeCsv,safeExternalUrl,faroHealth} from './command-center-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const when=v=>v?new Date(v).toLocaleString('pt-BR'):'Sem data';
 const money=v=>v===null||v===undefined||!Number.isFinite(Number(v))?'Não informado':Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -8,7 +8,7 @@ const key=x=>x.source_kind+':'+x.source_ref;
 export function commandCenterFrame(){
  return '<section class="cc" id="cipCommandCenter" aria-labelledby="ccTitle">'+
  '<header class="cc-head"><div class="cc-brand"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial Grupo Prohospital"><div><small>CIP360 · INTELIGÊNCIA COMERCIAL</small><h1 id="ccTitle">Central de Ações</h1><p>Da evidência à decisão supervisionada · Shopping e Distribuidora</p></div></div><div class="cc-head-controls"><label>Empresa<select data-cc-company></select></label><button class="btn secondary" type="button" data-cc-reload>Atualizar fontes</button></div></header>'+
- '<p class="cc-notice" data-cc-status role="status">Consultando fontes...</p>'+
+ '<p class="cc-notice" data-cc-status role="status">Consultando fontes...</p><div class="cc-radar-health" data-cc-health aria-live="polite"></div>'+
  '<section class="cc-squad"><div class="cc-section-title"><div><small>CONSELHO DE INTELIGÊNCIA</small><h2>Agentes trabalhando com dados rastreáveis</h2><p>Diagnósticos efetivamente registrados no último ciclo; não são análises inventadas.</p></div><span data-cc-cycle-time></span></div><div data-cc-agents class="cc-squad-grid"></div></section>'+
  '<div class="cc-stats" data-cc-stats></div>'+
  '<div class="cc-cols"><section class="cc-opportunities"><div class="cc-section-title"><div><small>RADAR DE OPORTUNIDADES</small><h2>Sugestões fundamentadas</h2><p>Estoque, concorrência, missões e campanhas, com fonte e data.</p></div><button class="btn secondary" type="button" data-cc-export>Exportar CSV</button></div>'+
@@ -25,7 +25,7 @@ export function commandCenterFrame(){
 export function mountCommandCenter({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipCommandCenter');if(!root)return;
  const $=s=>root.querySelector(s),live=()=>alive&&root.isConnected&&window.cipAuth?.email===user.email;
- let company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0]||'',alive=true,seq=0,canManage=false,feed=[],decisions=[],cycle=null,busy=false,kind='todos',term='',state='todos';
+ let company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0]||'',alive=true,seq=0,canManage=false,feed=[],decisions=[],cycle=null,faroConfig=null,busy=false,kind='todos',term='',state='todos';
  const decisionMap=()=>new Map(decisions.map(d=>[key(d),d]));
  const visible=()=>{const m=decisionMap();return rankFeed(feed,kind,term).filter(r=>state==='todos'||(m.get(key(r))?.state||'pendente')===state);};
  const notice=t=>{if(live())$('[data-cc-status]').textContent=t;};
@@ -66,6 +66,10 @@ export function mountCommandCenter({db,user,companies=[],allowedRoutes=[],onDisp
    '<article><small>'+row[0]+'</small><strong>'+row[1].toLocaleString('pt-BR')+'</strong><span>'+row[2]+'</span></article>').join('');
   $('[data-cc-feed]').innerHTML=rows.length?rows.slice(0,90).map(r=>card(r,m.get(key(r)))).join(''):'<p class="cc-empty">Nenhuma oportunidade para o filtro selecionado.</p>';
   renderAgents();
+  const newestRadar=feed.filter(x=>x.source_kind==='radar').map(x=>x.source_at).filter(Boolean).sort().at(-1)||null;
+  const health=faroHealth(faroConfig,newestRadar);
+  const box=$('[data-cc-health]');box.dataset.health=health.state;
+  box.innerHTML='<strong>'+esc(health.label)+'</strong><span>'+esc(health.detail)+'</span>';
  }
  async function load(){
   if(!live()||!company)return;
@@ -74,14 +78,15 @@ export function mountCommandCenter({db,user,companies=[],allowedRoutes=[],onDisp
    db.from('cip_command_feed').select('company_id,source_kind,source_ref,sku,title,recommendation,action_type,priority,source_at,quality,source_url,market_price,market_shipping,availability,evidence').eq('company_id',company).order('source_at',{ascending:false}).limit(120),
    db.from('cip_command_decisions').select('id,company_id,source_kind,source_ref,state,owner_name,review_note,version,updated_at').eq('company_id',company).order('updated_at',{ascending:false}).limit(250),
    db.from('cip_agent_cycles').select('created_at,report').eq('company_id',company).order('created_at',{ascending:false}).limit(1),
-   db.rpc('cip_agent_can_manage',{p_company:company})
+   db.rpc('cip_agent_can_manage',{p_company:company}),
+   db.from('cip_faro_config').select('enabled,failure_streak,circuit_until,last_sync_at').eq('company_id',company).maybeSingle()
   ]);
   if(!live()||id!==seq)return;
   const result=i=>r[i].status==='fulfilled'?r[i].value:{error:{message:'Falha de conexão'}};
-  const [a,b,c,d]=[result(0),result(1),result(2),result(3)];
-  feed=a.error?[]:a.data||[];decisions=b.error?[]:b.data||[];cycle=c.error?null:c.data?.[0]||null;canManage=!d.error&&d.data===true;
+  const [a,b,c,d,e]=[result(0),result(1),result(2),result(3),result(4)];
+  feed=a.error?[]:a.data||[];decisions=b.error?[]:b.data||[];cycle=c.error?null:c.data?.[0]||null;canManage=!d.error&&d.data===true;faroConfig=e.error?null:e.data||null;
   render();
-  const failures=[a,b,c,d].filter(x=>x.error).length;
+  const failures=[a,b,c,d,e].filter(x=>x.error).length;
   notice(failures?'Algumas fontes falharam. Não inferir resultados.':'Consulta às '+new Date().toLocaleTimeString('pt-BR')+
    '. '+feed.length+' eventos; novos dados dependem dos jobs reais do CIP.');
  }
