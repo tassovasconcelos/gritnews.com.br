@@ -22,7 +22,10 @@ export function verifiedReference(input,now=new Date(),maxAgeDays=7){
  const p=num(input?.normalized_price),age=Date.parse(String(input?.observed_on||'')+'T12:00:00Z');
  const nowDay=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate(),12);
  const days=Number.isFinite(age)?Math.floor((nowDay-age)/86400000):null;
+ const url=String(input?.source_url||'');let safeUrl=false;
+ try{const u=new URL(url);safeUrl=u.protocol==='https:'&&!u.username&&!u.password;}catch{}
  const reason=!(p>0)?'Preço equivalente indisponível':
+  !safeUrl?'Link de evidência HTTPS ausente ou inválido':
   !input?.equivalent?'Produto/unidade não homologados':
   input?.active!==true?'Referência inativa':
   !['disponivel','em_estoque','available'].includes(String(input?.availability||'').toLowerCase())?'Disponibilidade não confirmada':
@@ -45,6 +48,9 @@ export function priceScenarios(input){
  const competitor=verifiedReference(input?.competitor);
  const compPrice=competitor.price;
  if(!competitor.valid)warnings.push('Concorrência: '+competitor.reason+'. Dados manuais não se tornam evidência homologada.');
+ if(competitor.valid&&competitor.price<floor)warnings.push('Preço equivalente abaixo do piso simulado: não acompanhar o concorrente sem decisão financeira.');
+ const availableQty=num(input?.availableUnits);
+ if(availableQty!==null&&availableQty<=0)warnings.push('Saldo disponível igual a zero: campanhas e promoções bloqueadas até reposição confirmada.');
  const proposed={
   protecao:Math.max(price,target),
   competitivo:compPrice!==null?Math.max(floor,Math.min(compPrice,target)):null,
@@ -60,13 +66,17 @@ export function priceScenarios(input){
   const priceVal=Math.max(.01,Math.ceil(candidate*100-1e-8)/100);
   const after=contribution(priceVal,cost,expense,commission,fixed);
   const belowFloor=priceVal<floor-.001,stockLimit=num(input?.availableUnits);
+  const invalidCompetition=kind==='competitivo'&&(compPrice===null||compPrice<floor);
+  const noCampaignStock=['promocao','campanha'].includes(kind)&&stockLimit!==null&&stockLimit<=0;
   let quantity=(kind==='campanha'||kind==='promocao')?projectedUnits:currentUnits;
   const projectedQuantityValid=quantity!==null&&quantity>=0;
   if(stockLimit!==null&&stockLimit>=0&&projectedQuantityValid)quantity=Math.min(quantity,stockLimit);
   const grossValue=projectedQuantityValid?money(after.contributionUnit*quantity-(kind==='campanha'?scenarioCosts:0)):null;
   const baselineValue=currentUnits!==null&&currentUnits>=0?money(before.contributionUnit*currentUnits):null;
   const incremental=(grossValue!==null&&baselineValue!==null)?money(grossValue-baselineValue):null;
-  return {kind,available:!belowFloor,suggestedPrice:priceVal,floor,marginPct:after.marginPct,
+  return {kind,available:!belowFloor&&!invalidCompetition&&!noCampaignStock,
+    reason:invalidCompetition?'Concorrente abaixo do piso ou não homologado':noCampaignStock?'Estoque insuficiente para promover':belowFloor?'Preço abaixo do piso':'',
+    suggestedPrice:priceVal,floor,marginPct:after.marginPct,
     contributionUnit:after.contributionUnit,priceChangePct:round((priceVal/price-1)*100,2),
     quantityScenario:projectedQuantityValid?quantity:null,
     expectedContribution:grossValue,baselineContribution:baselineValue,scenarioDifference:incremental,
