@@ -1,5 +1,5 @@
 import {abcWorkbenchFrame,mountAbcWorkbench} from './tower-abc-ui.mjs';
-import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight,towerHandoff} from './tower-engine.mjs';
+import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight,towerHandoff,OFFICE_SCENARIO} from './tower-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const companyNames={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
 const statusName=s=>TOWER_ACTION_STATUSES.find(x=>x[0]===s)?.[1]||s;
@@ -16,6 +16,11 @@ export function towerFrame(){
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" style="--left:${a.x}%;--top:${a.y}%" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
      <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
    </div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Escritório ilustrativo · movimento sinaliza um encaminhamento registrado</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div>
+   <div class="ct-office-simulation">
+    <button type="button" class="ct-small-button" data-ct-simulate aria-pressed="false">Simular rotina</button>
+    <button type="button" class="ct-small-button" data-ct-sim-step hidden>Próxima interação</button>
+    <p data-ct-sim-status role="status">Demonstração de colaboração sem alterações nos registros do CIP.</p>
+   </div>
   </section><aside class="ct-agent-info" data-ct-detail aria-live="polite">Selecione um agente.</aside>
  </div>
  <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Carregando dados...</section>
@@ -30,10 +35,10 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipTower');if(!root)return;
  let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='marca_passo';
  let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null;
- let seenHandoffs, handoffAnimation;
+ let seenHandoffs, handoffAnimation, simulationTimer, simulationStep=0, simulating=false;
  const $=sel=>root.querySelector(sel);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
- if(onDispose)onDispose(()=>{active=false;stamp++;handoffAnimation?.cancel();});
+ if(onDispose)onDispose(()=>{active=false;stamp++;stopSimulation();});
  $('[data-ct-company]').innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(companyNames[c]||c)}</option>`).join('');
  $('[data-ct-company]').value=company;
  const unavailable='<div class="ct-none">Nenhuma evidência consultável nesta fonte, ou acesso indisponível.</div>';
@@ -83,23 +88,61 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  function showHandoff(task){
   const agent=agentById(task.agent_code);
   $('[data-ct-handoff-status]').textContent='Encaminhamento humano registrado para '+agent.name+' · '+date(task.created_at)+'. Movimento ilustrativo.';
-  if(agent.id==='doquita'||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  const origin=agentById('doquita');
+  if(!simulating)animateVisit(agentById('doquita'),agent);
+ }
+ function highlightDesks(origin,destination){
+  for(const desk of root.querySelectorAll('.ct-agent-hotspot')){
+   desk.classList.toggle('ct-visit-origin',desk.dataset.ctAgent===origin?.id);
+   desk.classList.toggle('ct-visit-destination',desk.dataset.ctAgent===destination?.id);
+  }
+ }
+ function animateVisit(origin,agent,roundTrip=false){
+  if(origin.id===agent.id||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const room=$('.ct-office-visual');
   const marker=$('[data-ct-handoff-marker]');
   if(!marker.animate)return;
   handoffAnimation?.cancel();
-  marker.textContent=agent.icon;
+  marker.style.left='calc('+origin.x+'% - 15px)';
+  marker.style.top='calc('+origin.y+'% - 15px)';
   marker.hidden=false;
   const distanceX=room.clientWidth*(agent.x-origin.x)/100;
   const distanceY=room.clientHeight*(agent.y-origin.y)/100;
-  const animation=marker.animate([
-   {transform:'translate(0, 0)'},
-   {transform:'translate('+distanceX+'px, '+distanceY+'px)',offset:.8},
-   {transform:'translate('+distanceX+'px, '+distanceY+'px)',opacity:0}
-  ],{duration:1900,easing:'ease-in-out'});
+  const start='translate(0, 0)';
+  const arrival='translate('+distanceX+'px, '+distanceY+'px)';
+  const animation=marker.animate(roundTrip?[
+   {transform:start},{transform:arrival,offset:.35},
+   {transform:arrival,offset:.66},{transform:start,opacity:0}
+  ]:[
+   {transform:start},{transform:arrival,offset:.8},{transform:arrival,opacity:0}
+  ],{duration:roundTrip?3600:1900,easing:'ease-in-out'});
   handoffAnimation=animation;
   animation.onfinish=()=>{if(handoffAnimation===animation)marker.hidden=true;};
+ }
+ function stopSimulation(message='Demonstração de colaboração sem alterações nos registros do CIP.'){
+  window.clearTimeout(simulationTimer);
+  handoffAnimation?.cancel();
+  simulating=false;
+  $('[data-ct-handoff-marker]').hidden=true;
+  highlightDesks();
+  $('[data-ct-simulate]').textContent='Simular rotina';
+  $('[data-ct-simulate]').setAttribute('aria-pressed','false');
+  $('[data-ct-sim-step]').hidden=true;
+  $('[data-ct-sim-status]').textContent=message;
+ }
+ function nextInteraction(){
+  window.clearTimeout(simulationTimer);
+  if(!live()||simulationStep>=OFFICE_SCENARIO.length){
+   stopSimulation('Simulação concluída. Os registros da Central podem ser consultados no botão acima.');
+   return;
+  }
+  const scene=OFFICE_SCENARIO[simulationStep++];
+  const origin=agentById(scene.from), destination=agentById(scene.to);
+  highlightDesks(origin,destination);
+  $('[data-ct-sim-status]').textContent='Simulação · '+origin.name+' → '+destination.name+' · '+scene.description;
+  animateVisit(origin,destination,true);
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+   simulationTimer=window.setTimeout(nextInteraction,6500);
+  }
  }
  async function count(kind){
   const {count,error}=await db.from(TOWER_SOURCE_TABLES[kind]).select('*',{count:'exact',head:true}).eq('company_id',company);
@@ -174,6 +217,17 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   const nav=e.target.closest('[data-ct-go]');if(nav){const r=nav.dataset.ctGo;if(allowedRoutes.includes(r))window.navigate(r);return;}
   if(e.target.closest('[data-ct-report]')){report();return;}
   if(e.target.closest('[data-ct-command]')&&allowedRoutes.includes('acoes')){window.navigate('acoes');return;}
+  if(e.target.closest('[data-ct-simulate]')){
+   if(simulating){stopSimulation();return;}
+   simulating=true;
+   simulationStep=0;
+   $('[data-ct-simulate]').textContent='Encerrar simulação';
+   $('[data-ct-simulate]').setAttribute('aria-pressed','true');
+   $('[data-ct-sim-step]').hidden=false;
+   nextInteraction();
+   return;
+  }
+  if(e.target.closest('[data-ct-sim-step]')&&simulating){nextInteraction();return;}
   if(e.target.closest('[data-ct-open-desk]')){workbench?.open();return;}
   const save=e.target.closest('[data-ct-task-save]');if(save)saveTask(save.dataset.ctTaskSave);
  });
@@ -182,8 +236,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   if(!companies.includes(e.target.value)||company===e.target.value)return;
   company=e.target.value;
   seenHandoffs=undefined;
-  handoffAnimation?.cancel();
-  $('[data-ct-handoff-marker]').hidden=true;
+  stopSimulation();
   $('[data-ct-handoff-status]').textContent='Escritório ilustrativo · movimento sinaliza um encaminhamento registrado';
   workbench?.setCompany();
   load();

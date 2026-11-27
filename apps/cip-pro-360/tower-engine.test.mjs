@@ -1,6 +1,14 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {towerAgentCycleInsight,ABC_REFERENCE,TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,exportTowerCsv,agentById,towerHandoff} from './tower-engine.mjs';
+import {towerAgentCycleInsight,ABC_REFERENCE,TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,exportTowerCsv,agentById,towerHandoff,OFFICE_SCENARIO} from './tower-engine.mjs';
+
+test('all simulated interactions connect distinct agents with real desks and modules',()=>{
+ for(const scene of OFFICE_SCENARIO){
+  assert.notEqual(scene.from,scene.to);
+  for(const id of [scene.from,scene.to])assert.ok(agentById(id)?.route);
+  assert.ok(scene.description);
+ }
+});
 
 test('office signals only unseen recent Central handoffs for the selected company',()=>{
  const now=Date.parse('2026-11-27T15:00:00Z');

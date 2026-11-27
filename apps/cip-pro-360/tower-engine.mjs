@@ -47,6 +47,15 @@ export function exportTowerCsv(tasks=[],company='',agent=''){
 }
 export function agentById(id){return TOWER_AGENTS.find(a=>a.id===id)||null;}
 
+export const OFFICE_SCENARIO=Object.freeze([
+ {from:'caderninho',to:'estoque',description:'Uma procura não atendida chega ao Estoque para checar cobertura.'},
+ {from:'estoque',to:'transferencias',description:'Estoque e Transferências avaliam disponibilidade entre unidades.'},
+ {from:'radar_digital',to:'marca_passo',description:'Radar entrega uma oferta candidata ao Marca-passo para conferir equivalência e frete.'},
+ {from:'marca_passo',to:'campanhas',description:'Marca-passo compartilha as premissas de margem com Campanhas.'},
+ {from:'campanhas',to:'doquita',description:'Doquita reúne a proposta e as evidências para decisão humana na Central.'},
+ {from:'vendas_b2b',to:'doquita',description:'Vendas compartilha o retorno comercial para revisão de eficácia.'}
+]);
+
 export function towerHandoff(tasks, company, previous, now=Date.now()){
  const current=tasks.filter(task=>task.company_id===company&&task.source_module==='command_center'&&
   task.id&&task.source_reference&&agentById(task.agent_code));
