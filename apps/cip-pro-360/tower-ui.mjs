@@ -1,4 +1,4 @@
-import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,agentById} from './tower-engine.mjs';
+import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById} from './tower-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const companyNames={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
 const statusName=s=>TOWER_ACTION_STATUSES.find(x=>x[0]===s)?.[1]||s;
@@ -52,6 +52,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   const ownTasks=tasks.filter(t=>t.agent_code===selected),allowed=allowedRoutes.includes(a.route);
   $('[data-ct-detail]').innerHTML=`<div class="ct-agent-header"><div class="ct-agent-icon">${esc(a.icon)}</div><div><small>AGENTE ESPECIALISTA</small><h2>${esc(a.name)}</h2><p>${esc(a.area)}</p></div></div>
    <div class="ct-agent-source">${esc(numberText)}<small>Origem: ${esc(TOWER_SOURCE_TABLES[a.source])}; registros não significam decisões já executadas.</small></div>
+   ◊{selected==='marca_passo'?§<div class="ct-abc"><strong>Planilha ABC de referência · ◊{ABC_REFERENCE.total.toLocaleString('pt-BR')} SKUs</strong><div>◊{ABC_REFERENCE.curves.map(c=>§<span>Curva ◊{c.curve}: ◊{c.products.toLocaleString('pt-BR')} itens · LUCRO ◊{c.lucro} · DESPESA ◊{c.despesa} · COMISSÃO ◊{c.comissao}</span>§).join('')}</div><small>Campos preservados do arquivo original; valores e significado de margem mínima ainda não homologados para precificação.</small></div>§:''}
    <h3>Funções e responsabilidades</h3><ul>${a.functions.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
    <div class="ct-agent-buttons"><button class="btn" type="button" data-ct-go="${esc(a.route)}" ${!allowed?'disabled':''}>Abrir módulo</button><button class="btn secondary" type="button" data-ct-report>Exportar relatório</button></div>
    ${allowed?'':'<p class="ct-hint">Seu perfil não tem permissão para o módulo de destino.</p>'}
