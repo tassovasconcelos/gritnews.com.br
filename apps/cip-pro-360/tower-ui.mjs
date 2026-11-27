@@ -11,8 +11,8 @@ export function towerFrame(){
  return `<div id="cipTower" class="ct">
  <header class="ct-head"><div class="ct-logo"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial Grupo Prohospital"><div><strong>CIP<span>360</span></strong><small>Torre de Comando Prohospital</small></div></div><div class="ct-head-control"><label>Operação <select data-ct-company></select></label><span>SESSÃO AUTENTICADA</span></div></header>
  <div class="ct-banner" role="status">Consultando fontes do CIP...</div>
- <nav class="ct-view-nav" aria-label="Áreas da Torre"><button type="button" data-ct-view="overview" aria-pressed="true">Visão geral</button><button type="button" data-ct-view="agents" aria-pressed="false">Especialistas</button><button type="button" data-ct-view="pricing" aria-pressed="false">Preços e margem</button></nav>
- <section data-ct-pane="overview" class="ct-view-pane">
+ <nav class="ct-view-nav" aria-label="Áreas da Torre"><button type="button" data-ct-view="agents" aria-pressed="true">Escritório vivo</button><button type="button" data-ct-view="overview" aria-pressed="false">Visão gerencial</button><button type="button" data-ct-view="pricing" aria-pressed="false">Preços e margem</button></nav>
+ <section data-ct-pane="overview" class="ct-view-pane" hidden>
   <div class="ct-executive-hero"><div class="ct-hero-content"><small>CIP360 · GESTÃO COMERCIAL</small><h1>Torre de Comando</h1><p>O que precisa de atenção agora?</p><p class="ct-hero-meta" data-ct-summary role="status">Consultando encaminhamentos e alertas...</p><div class="ct-hero-actions"><button type="button" class="ct-hero-primary" data-ct-command>Abrir Central de Ações</button><button type="button" class="ct-hero-secondary" data-ct-agent="doquita">Consultar Doquita 360</button></div></div><div class="ct-hero-portrait" aria-hidden="true">${portrait(officePeople(TOWER_AGENTS).find(p=>p.id==='doquita'))}<span>Doquita 360</span></div></div>
   <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Consultando fontes...</section>
   <div class="ct-lower">
@@ -20,14 +20,14 @@ export function towerFrame(){
    <section class="ct-box"><div class="ct-box-head"><div><h2>Alertas e oportunidades</h2><p>Estoque e mercado. Confira a origem antes de decidir.</p></div></div><div data-ct-alerts>Consultando...</div></section>
   </div>
  </section>
- <section data-ct-pane="agents" class="ct-view-pane" hidden>
+ <section data-ct-pane="agents" class="ct-view-pane">
  <div class="ct-layout">
-  <section class="ct-office"><div class="ct-office-top"><div><h2>Especialistas</h2><p>Escolha uma área e consulte o agente responsável.</p></div></div>
+  <section class="ct-office"><div class="ct-office-top"><div><small class="ct-office-eyebrow">INTELIGÊNCIA QUE APROXIMA</small><h1>Escritório vivo</h1><p>Visite os departamentos e converse com os especialistas por meio de seus módulos.</p></div><button class="ct-small-button" type="button" data-ct-view="overview">Ver decisões e indicadores</button></div>
    <div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
      <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
    </div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Encaminhamentos registrados aparecem na visão geral.</span></div>
-   <details class="ct-demo"><summary>Ver demonstração de colaboração</summary><div class="ct-office-simulation">
+   <details class="ct-demo" open><summary>Sala de reuniões · demonstração interativa</summary><div class="ct-office-simulation">
     <button type="button" class="ct-small-button" data-ct-simulate aria-pressed="false">Simular rotina</button>
     <button type="button" class="ct-small-button" data-ct-sim-step hidden>Próxima interação</button>
     <p data-ct-sim-status role="status">Demonstração sem alterações nos registros do CIP.</p>
@@ -41,7 +41,7 @@ export function towerFrame(){
 export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipTower');if(!root)return;
  let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='doquita';
- let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null,taskSourceReady=false,taskFilter='open',view='overview';
+ let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null,taskSourceReady=false,taskFilter='open',view='agents';
  let seenHandoffs, handoffAnimation, simulationTimer, simulationStep=0, simulating=false,officeController;
  const $=sel=>root.querySelector(sel);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
