@@ -45,3 +45,17 @@ Testes transacionais no banco (rollback): criação, aprovação sem avaliação
 - Busca `cip_academy_search` consulta somente extrações completas, aprovadas, atuais e permitidas para a empresa. Resultados retornam até 20 trechos, com origem.
 - Edge Function `cip-academy-ingest`: valida sessão e permissão da empresa para chamadas do app; cron usa token próprio protegido no Vault. A chave privilegiada permanece no servidor.
 - Verificação da fila e estado: `cip_academy_ingestion_jobs`; evidência da leitura: `cip_academy_extractions`.
+
+## Hermes e distribuição por especialista
+
+O Conselho consulta a Academia sob a sessão do gestor e entrega a cada especialista apenas a sua seção de habilidades, orientações vigentes e trechos. Cada trecho traz ID do material, versão da extração e localizador. Se a busca por objetivo não encontra trechos, a consulta oferece as referências recentes do mesmo especialista. O Conselho continua consultivo.
+
+O runtime Hermes pode consultar um agente por vez com `POST /functions/v1/cip-agent-council`, usando a chave pública do projeto e uma sessão de usuário com permissão de gestão na empresa. Corpo JSON:
+
+```json
+{"action":"learning","company":"shopping_prohospital","agent":"compras","query":"reposição por segmento"}
+```
+
+Esta consulta é somente leitura e independe de modelo, saldo de IA ou ciclo recente. Ela respeita o recorte de habilidades vigentes do CIP e devolve trechos, não o binário original. Use os IDs nas recomendações e consulte o endpoint novamente antes de reutilizar uma lição. Não persista material de uma empresa no espaço de outra. O ambiente externo do Hermes precisa ser configurado separadamente.
+
+Para iniciar a curadoria, use identidade e história institucional para Doquita e RufasIA, histórico por segmento e oportunidades para Elo e Atlas, giro e idade do estoque para Giro, demanda e prazo para Nexo, margem líquida por canal para Prisma e Cifra, referências comparáveis para Faro e retorno de clientes para Lia. Vincule a cada lição período, fonte, limite de decisão e cenário de teste. Prefira dados agregados ou anonimizados para documentos de vendas e clientes.
