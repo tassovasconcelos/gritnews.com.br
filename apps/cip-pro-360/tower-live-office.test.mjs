@@ -134,3 +134,37 @@ test('guided collaboration is opt-in and keeps the original station and data pan
  assert.equal((html.match(/class="ct-agent-hotspot"/g)||[]).length,12);
  assert.equal((html.match(/data-ct-metrics/g)||[]).length,1);
 });
+
+import {officeProjection,mountOffice3D} from './tower-office-3d.mjs';
+
+test('room projection rotates depth and lifts taller geometry',()=>{
+ const a=officeProjection(0,[3,0,2]);
+ const b=officeProjection(.3,[3,0,2]);
+ assert.notEqual(a[0],b[0]);
+ assert.notEqual(a[2],b[2]);
+ assert.equal(officeProjection(0,[3,2,2])[1],a[1]-98);
+ assert.equal(mountOffice3D({getContext:()=>null},TOWER_AGENTS),null);
+});
+
+test('model draws twelve selectable stations and represents real and guided handoffs',()=>{
+ const strokes=[];
+ const fills=[];
+ const canvas={getContext:()=>({
+  beginPath(){},closePath(){},moveTo(){},lineTo(){},quadraticCurveTo(){},arc(){},
+  fillRect(){},fillText(text){fills.push(text);},fill(){},setLineDash(){},
+  stroke(){strokes.push(this.strokeStyle);},
+  createLinearGradient(){return {addColorStop(){}};}
+ })};
+ const model=mountOffice3D(canvas,TOWER_AGENTS);
+ const from=TOWER_AGENTS[0].id,to=TOWER_AGENTS.at(-1).id;
+ model.select(to);
+ model.showExchange({from,to,real:false});
+ model.showExchange({from,to,real:true});
+ model.turn(.12);
+ model.reset();
+ model.showExchange(null);
+ assert.equal(canvas.width,1100);
+ assert.deepEqual(fills.slice(0,3),['AÇÕES E DECISÕES','APRENDIZADO','SUGESTÕES']);
+ assert.ok(strokes.includes('#ffc68d'));
+ assert.ok(strokes.includes('#70eee0'));
+});

@@ -246,3 +246,19 @@
 .ct .ct-panorama-office .ct-studio-flow[data-mode="demo"] .ct-flow-track i{animation-duration:10s}
 @media(max-width:760px){.ct .ct-photo-motion{height:auto;width:100%}.ct .ct-panorama-lights{bottom:auto;aspect-ratio:1221/542}.ct .ct-motion-toggle{min-height:40px}.ct .ct-panorama-status{align-items:center}.ct .ct-panorama-office .ct-studio-flow{padding:12px}}
 @media(prefers-reduced-motion:reduce){.ct .ct-panorama-lights,.ct .ct-meeting-visual>i:after,.ct .ct-panorama-office .ct-flow-track i{animation:none!important}}
+
+/* Navigable model and keyboard-accessible station controls. */
+.ct-room-mode{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;background:#131d2d;padding:10px 14px}
+.ct-room-mode [data-ct-camera]{display:flex;gap:5px}
+.ct-room-mode [hidden],.ct-room-3d[hidden]{display:none!important}
+.ct-room-mode button{min-height:42px;border:1px solid #56657b;border-radius:8px;background:#26364f;color:#f6f8fd;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.ct-room-mode button:hover,.ct-room-mode button[aria-pressed="true"]{background:#374d6d;border-color:#86c2d1}
+.ct .ct-model-active .ct-panorama-stage{aspect-ratio:auto;background:#141f30}
+.ct-room-3d{display:block;width:100%;height:auto}
+.ct .ct-model-active .ct-panorama-image,.ct .ct-model-active .ct-photo-motion,.ct .ct-model-active .ct-panorama-lights,.ct .ct-model-active [data-ct-motion-toggle],.ct .ct-model-active [data-ct-motion-status]{display:none}
+.ct .ct-model-active .ct-panorama-controls{position:relative;inset:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(135px,100%),1fr));gap:7px;padding:12px;background:#182436}
+.ct .ct-model-active .ct-agent-hotspot.ct-panorama-pin{position:relative;inset:auto;display:flex;gap:6px;align-items:center;justify-content:flex-start;width:100%;min-height:42px;height:auto;transform:none;padding:7px 9px;border:1px solid #63768d;border-radius:8px;background:#26364f;color:#fff;white-space:normal;text-align:left}
+.ct .ct-model-active .ct-panorama-pin>span{position:static!important;width:auto!important;height:auto!important;clip-path:none!important;white-space:normal!important;overflow:visible!important}
+.ct .ct-model-active .ct-panorama-pin.ct-selected,.ct .ct-model-active .ct-panorama-pin.ct-visit-destination{border-color:#ffca86;background:#394c65}
+.ct .ct-model-active .ct-panorama-shortcuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr));background:#172235}
+.ct .ct-model-active .ct-agent-hotspot.ct-panorama-extra{min-height:42px}
