@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {OFFICE_PEOPLE,officePeople,movementWaypoints,officeModeLabel,officeGroups,portrait,workstation,PANORAMA_STATIONS} from './tower-live-office.mjs';
+import {OFFICE_PEOPLE,officePeople,movementWaypoints,officeModeLabel,officeGroups,portrait,workstation,PANORAMA_STATIONS,PHOTO_MOTION_REGIONS,motionOffset} from './tower-live-office.mjs';
 import {TOWER_AGENTS,OFFICE_SCENARIO} from './tower-engine.mjs';
 
 test('all twelve specialist desks have a consistent professional operator and coordinate',()=>{
@@ -103,4 +103,34 @@ test('default office and shared KPIs are visible, specialist details and pricing
  assert.equal((html.match(/data-ct-metrics/g)||[]).length,1);
  assert.equal((html.match(/class="ct-agent-hotspot"/g)||[]).length,12);
  assert.doesNotMatch(html,/28,6%|352\.107|125\.289/);
+});
+
+test('photographic motion stays in approved panorama and does not cover station controls',()=>{
+ assert.equal(PHOTO_MOTION_REGIONS.length,14);
+ const ids=new Set(TOWER_AGENTS.map(a=>a.id));
+ for(const r of PHOTO_MOTION_REGIONS){
+  assert.ok(ids.has(r.id));
+  assert.ok(['head','hands'].includes(r.kind));
+  assert.ok(r.x>=0&&r.y>=0&&r.x+r.w<=1221&&r.y+r.h<=542);
+  for(const station of Object.values(PANORAMA_STATIONS)){
+   const x=(station.x-station.w/2)*12.21,y=(station.y-4.55)*5.42,w=station.w*12.21,h=9.1*5.42;
+   assert.ok(r.x+r.w<=x||r.x>=x+w||r.y+r.h<=y||r.y>=y+h, r.id+' intersects station');
+  }
+ }
+});
+test('micro-motion is bounded, ambient is subtle, and motion can be disabled',()=>{
+ for(const r of PHOTO_MOTION_REGIONS)for(let t=0;t<40;t+=.1){
+  const active=motionOffset(r,t,[r.id],true),ambient=motionOffset(r,t,[],true),off=motionOffset(r,t,[],false);
+  assert.ok(Math.abs(active.dx)<=2.301&&Math.abs(active.dy)<=1.251);
+  assert.ok(Math.abs(ambient.dx)<=1&&Math.abs(ambient.dy)<=.526);
+  assert.equal(Math.abs(off.dx),0);assert.equal(Math.abs(off.dy),0);
+ }
+});
+test('guided collaboration is opt-in and keeps the original station and data panels',()=>{
+ const html=towerFrame();
+ assert.match(html,/Iniciar visita guiada/);
+ assert.match(html,/seis cenas ilustrativas/);
+ assert.match(html,/data-ct-sim-step hidden/);
+ assert.equal((html.match(/class="ct-agent-hotspot"/g)||[]).length,12);
+ assert.equal((html.match(/data-ct-metrics/g)||[]).length,1);
 });
