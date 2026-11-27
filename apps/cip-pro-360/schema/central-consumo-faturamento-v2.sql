@@ -9,6 +9,8 @@ alter table public.cip_ops_usage_events
  add column latency_ms integer check (latency_ms >= 0);
 
 grant insert on public.cip_ops_billing_snapshots to service_role;
+grant select(company_id,provider,source,observed_at,period_month)
+ on public.cip_ops_billing_snapshots to service_role;
 
 create view public.cip_ops_verified_monthly_spend
  with (security_invoker=true,security_barrier=true) as

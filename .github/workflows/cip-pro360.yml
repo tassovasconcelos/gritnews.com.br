@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          docker run --detach --rm --name cip-finops-db --env POSTGRES_HOST_AUTH_METHOD=trust postgres:17
+          docker run --detach --rm --name cip-finops-db --env POSTGRES_HOST_AUTH_METHOD=trust postgres:17@sha256:97fb53376be3e4fb1a8a61421daa69dcc3bf2fa39bda3259f5245f9a455af1a9
           trap 'docker stop cip-finops-db' EXIT
           for attempt in {1..30}; do
             if docker exec cip-finops-db pg_isready -h 127.0.0.1 -U postgres; then break; fi
