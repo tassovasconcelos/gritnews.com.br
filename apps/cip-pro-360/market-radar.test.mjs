@@ -1,6 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {validGtin,publicDomain,sourceUrl,validRadarRequest,productMatch,comparablePrice,quotedPrices} from './market-radar-engine.mjs';
-import {researchRequest,parseResearch,requestResearch} from './market-radar/research.mjs';
+import {researchRequest,parseResearch,requestResearch,classifyResearchProviderError} from './market-radar/research.mjs';
 import {createRadarHandler} from './market-radar/handler.mjs';
 const criteria={brand:'Medix',model:'M100',type:'luva nitrílica',size:'',our_pack_units:100};
 const context={our:{description:'Luva nitrílica Medix',unit:'CX100',price:999,cost:1234},criteria,domains:['medjet.com.br'],mode:'identity'};
@@ -45,7 +45,7 @@ test('parser accepts only actually searched sources, removes duplicates and pres
 });
 test('research sends only the official API request and does not leak provider errors or secrets',async()=>{
  let url,payload;const result=await requestResearch(context,{key:'unit-secret',fetcher:async(u,o)=>{url=u;payload=JSON.parse(o.body);return Response.json(response());}});assert.equal(result.offers.length,1);assert.equal(url,'https://api.openai.com/v1/responses');assert.equal(payload.store,false);
- await assert.rejects(requestResearch(context,{key:'unit-secret',fetcher:async()=>Response.json({secret:'unit-secret'},{status:429})}),/provider_rate_limit/);
+ await assert.rejects(requestResearch(context,{key:'unit-secret',fetcher:async()=>Response.json({error:{type:'rate_limit_error',code:'rate_limit_exceeded'},secret:'unit-secret'},{status:429})}),/provider_rate_limit/);
 });
 const request={company:'shopping_prohospital',sku:'TEST',store:'1',criteria,domains:['medjet.com.br'],mode:'identity',consent:true};
 test('research input cannot omit consent, inject hidden economics, invent domains or malformed GTINs',()=>{
@@ -114,4 +114,17 @@ test('opening a Faro product reveals evidence, supports interactive markup simul
  click({marketScenarioDesk:'offer-one'});assert.deepEqual(window.cipPricingPick,{company:'shopping_prohospital',sku:'123',store:10});assert.deepEqual(navigations,['precos']);
  dispose.forEach(f=>f());const before=node('[data-market-evidence]').focusCount;mountMarketRadar(root,{db:{rpc:async(name,args)=>name==='cip_mp_desk_get'?{data:{items:[]}}:db.rpc(name,args)},companies:['shopping_prohospital'],onDispose:f=>dispose.push(f),pick:{company:'shopping_prohospital',sku:'123',store:'10'}});await new Promise(resolve=>setImmediate(resolve));assert.ok(node('[data-market-evidence]').focusCount>before);assert.match(node('[data-market-status]').textContent,/não localizado/);assert.match(node('[data-market-offers]').innerHTML,/Custo positivo da loja não disponível/);
  }finally{dispose.forEach(f=>f());root.isConnected=false;globalThis.document=previous.document;globalThis.window=previous.window;}
+});
+
+test('HTTP 429 classification separates billing exhaustion and throttling without logging raw provider data',async()=>{
+ for(const code of ['insufficient_quota','credit_balance_exhausted','organization_spend_limit_exceeded',
+  'project_spend_limit_exceeded','organization_usage_limit_exceeded']){
+  const r=Response.json({error:{type:'invalid_request_error',code,message:'confidential provider payload'}},{status:429});
+  assert.deepEqual(await classifyResearchProviderError(r),{error:'provider_quota_exhausted',retryAfterSeconds:0});
+ }
+ assert.equal((await classifyResearchProviderError(Response.json({error:{code:'slow_down'}},{status:429,headers:{'retry-after':'90'}}))).error,'provider_rate_limit');
+ assert.equal((await classifyResearchProviderError(Response.json({error:{type:'rate_limit_error',code:'rate_limit_exceeded'}},{status:429}))).error,'provider_rate_limit');
+ assert.equal((await classifyResearchProviderError(Response.json({error:{message:'internal text without a code'}},{status:429}))).error,'provider_429_unclassified');
+ assert.equal((await classifyResearchProviderError(Response.json({error:{code:'server_is_overloaded'}},{status:503}))).error,'provider_capacity_unavailable');
+ await assert.rejects(requestResearch(context,{key:'unit-secret',fetcher:async()=>Response.json({error:{code:'insufficient_quota',message:'secret-DO-NOT-LEAK'}},{status:429})}),/^Error: provider_quota_exhausted$/);
 });
