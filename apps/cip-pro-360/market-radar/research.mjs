@@ -59,7 +59,8 @@ export async function classifyResearchProviderError(response){
   'project_spend_limit_exceeded','organization_usage_limit_exceeded','billing_hard_limit_reached',
   'billing_not_active','payment_required']);
  const limit=new Set(['rate_limit_exceeded','rate_limit_error','slow_down','requests']);
- const rateWait=Number(response?.headers?.get?.('retry-after'));
+ const rawRetryAfter=response?.headers?.get?.('retry-after');
+ const rateWait=rawRetryAfter==null?NaN:Number(rawRetryAfter);
  const retryAfterSeconds=Number.isFinite(rateWait)&&rateWait>=0?Math.min(86400,Math.ceil(rateWait)):null;
  const billingIssue=billing.has(providerCode)||billing.has(providerType);
  const throttled=limit.has(providerCode)||limit.has(providerType);
