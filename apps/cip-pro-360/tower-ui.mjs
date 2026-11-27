@@ -1,5 +1,5 @@
 import {abcWorkbenchFrame,mountAbcWorkbench} from './tower-abc-ui.mjs';
-import {mountLiveOffice} from './tower-live-office.mjs';
+import {mountLiveOffice,officePeople,portrait} from './tower-live-office.mjs';
 import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight,towerHandoff,OFFICE_SCENARIO} from './tower-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const companyNames={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
@@ -10,39 +10,46 @@ const date=s=>s?new Date(s).toLocaleString('pt-BR'):'—';
 export function towerFrame(){
  return `<div id="cipTower" class="ct">
  <header class="ct-head"><div class="ct-logo"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial Grupo Prohospital"><div><strong>CIP<span>360</span></strong><small>Torre de Comando Prohospital</small></div></div><div class="ct-head-control"><label>Operação <select data-ct-company></select></label><span>SESSÃO AUTENTICADA</span></div></header>
- <div class="ct-banner" role="status">Carregando registros de origem do CIP. Não há valores financeiros demonstrativos neste painel.</div>
- <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Carregando dados...</section>
+ <div class="ct-banner" role="status">Consultando fontes do CIP...</div>
+ <nav class="ct-view-nav" aria-label="Áreas da Torre"><button type="button" data-ct-view="overview" aria-pressed="true">Visão geral</button><button type="button" data-ct-view="agents" aria-pressed="false">Especialistas</button><button type="button" data-ct-view="pricing" aria-pressed="false">Preços e margem</button></nav>
+ <section data-ct-pane="overview" class="ct-view-pane">
+  <div class="ct-executive-hero"><div class="ct-hero-content"><small>CIP360 · GESTÃO COMERCIAL</small><h1>Torre de Comando</h1><p>O que precisa de atenção agora?</p><p class="ct-hero-meta" data-ct-summary role="status">Consultando encaminhamentos e alertas...</p><div class="ct-hero-actions"><button type="button" class="ct-hero-primary" data-ct-command>Abrir Central de Ações</button><button type="button" class="ct-hero-secondary" data-ct-agent="doquita">Consultar Doquita 360</button></div></div><div class="ct-hero-portrait" aria-hidden="true">${portrait(officePeople(TOWER_AGENTS).find(p=>p.id==='doquita'))}<span>Doquita 360</span></div></div>
+  <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Consultando fontes...</section>
+  <div class="ct-lower">
+   <section class="ct-box"><div class="ct-box-head"><div><h2>Ações para acompanhar</h2><p>Prioridades e responsáveis nos registros consultados.</p></div><span data-ct-count>—</span></div><div class="ct-task-filter"><label>Mostrar <select data-ct-task-filter><option value="open">Pendentes</option><option value="all">Todos os registros</option></select></label></div><div data-ct-tasks>Consultando...</div></section>
+   <section class="ct-box"><div class="ct-box-head"><div><h2>Alertas e oportunidades</h2><p>Estoque e mercado. Confira a origem antes de decidir.</p></div></div><div data-ct-alerts>Consultando...</div></section>
+  </div>
+ </section>
+ <section data-ct-pane="agents" class="ct-view-pane" hidden>
  <div class="ct-layout">
-  <section class="ct-office"><div class="ct-office-top"><div><span>INTELIGÊNCIA COMERCIAL, ESTOQUE E PRECIFICAÇÃO</span><h1>Torre de Comando</h1><p>Visão executiva para transformar dados em decisões. Escolha um especialista e acompanhe as evidências.</p></div><small>SHOPPING + DISTRIBUIDORA</small></div>
+  <section class="ct-office"><div class="ct-office-top"><div><h2>Especialistas</h2><p>Escolha uma área e consulte o agente responsável.</p></div></div>
    <div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
-     ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" style="--left:${a.x}%;--top:${a.y}%" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
+     ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
      <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
-   </div><div class="ct-live-event-panel"><div><small>CENTRAL DE ENCAMINHAMENTOS</small><h3>Atividades registradas</h3><p>Últimos encaminhamentos registrados na Central.</p></div><div class="ct-live-events" data-ct-live-events><p>Consultando eventos...</p></div></div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Colaboração representativa · consulte os registros para confirmar ações</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div>
-   <div class="ct-office-simulation">
+   </div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Encaminhamentos registrados aparecem na visão geral.</span></div>
+   <details class="ct-demo"><summary>Ver demonstração de colaboração</summary><div class="ct-office-simulation">
     <button type="button" class="ct-small-button" data-ct-simulate aria-pressed="false">Simular rotina</button>
     <button type="button" class="ct-small-button" data-ct-sim-step hidden>Próxima interação</button>
-    <p data-ct-sim-status role="status">Demonstração de colaboração sem alterações nos registros do CIP.</p>
-   </div>
+    <p data-ct-sim-status role="status">Demonstração sem alterações nos registros do CIP.</p>
+   </div></details>
   </section><aside class="ct-agent-info" data-ct-detail aria-live="polite">Selecione um agente.</aside>
- </div>
-
- ${abcWorkbenchFrame()}
- <div class="ct-lower">
-  <section class="ct-box"><div class="ct-box-head"><div><h2>Alertas e oportunidades</h2><p>Registros de estoque e mercado — conferir fonte, equivalência e data antes de executar.</p></div><span>FONTES CIP</span></div><div data-ct-alerts>Buscando...</div></section>
-  <section class="ct-box"><div class="ct-box-head"><div><h2>Encaminhamentos registrados</h2><p>Tarefas humanas com evidências e trilha de auditoria.</p></div><span data-ct-count>—</span></div><div data-ct-tasks>Buscando...</div></section>
- </div><p class="ct-disclaimer">Ambiente operacional: números exibidos são registros de origem ou ficam indisponíveis (—). A representação de agentes não comprova execução automática nem ganho financeiro realizado.</p>
+ </div></section>
+ <section data-ct-pane="pricing" class="ct-view-pane" hidden>${abcWorkbenchFrame()}</section>
+ <p class="ct-disclaimer">Ambiente operacional: números exibidos são registros de origem ou ficam indisponíveis (—). A representação de agentes não comprova execução automática nem ganho financeiro realizado.</p>
  </div>`;
 }
 export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipTower');if(!root)return;
  let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='doquita';
- let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null;
+ let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null,taskSourceReady=false,taskFilter='open',view='overview';
  let seenHandoffs, handoffAnimation, simulationTimer, simulationStep=0, simulating=false,officeController;
  const $=sel=>root.querySelector(sel);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
  if(onDispose)onDispose(()=>{active=false;stamp++;stopSimulation();});
  $('[data-ct-company]').innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(companyNames[c]||c)}</option>`).join('');
  $('[data-ct-company]').value=company;
+ const central=$('[data-ct-command]');central.disabled=!allowedRoutes.includes('acoes');
+ function showView(next){if(!['overview','agents','pricing'].includes(next))return; if(view==='agents'&&next!=='agents')stopSimulation();view=next;root.querySelectorAll('[data-ct-pane]').forEach(p=>p.hidden=p.dataset.ctPane!==next);root.querySelectorAll('[data-ct-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ctView===next)));}
  const unavailable='<div class="ct-none">Nenhuma evidência consultável nesta fonte, ou acesso indisponível.</div>';
  function renderMetrics(){
    $('[data-ct-metrics]').innerHTML=towerMetrics(counts,tasks).map(m=>`<article class="ct-kpi"><small>${esc(m.label)}</small><strong>${number(m.value)}</strong><span>${esc(m.unit)}</span></article>`).join('');
@@ -53,9 +60,13 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   $('[data-ct-alerts]').innerHTML=rows.length?rows.map(x=>`<article class="ct-alert"><b>!</b><div><strong>${esc(x.sku||'Sem SKU')}</strong><p>${esc(x.description||'Conferência de origem pendente.')}</p><small>${esc(x.origin)} · ${esc(x.state||'sem status')} · ${esc(date(x.date))}</small></div><button class="ct-small-button" data-ct-agent="${x.agent}">Analisar</button></article>`).join(''):unavailable;
  }
  function renderTasks(){
-  $('[data-ct-count]').textContent=tasks.length+' registro(s)';
-  $('[data-ct-tasks]').innerHTML=tasks.length?tasks.slice(0,25).map(t=>`<article class="ct-task"><div class="ct-task-title"><strong>${esc(t.title)}</strong><span>${esc(statusName(t.status))}</span></div><p>${esc(t.description||'Sem descrição')}</p><small>${esc(agentById(t.agent_code)?.name||t.agent_code)} · ${esc(t.owner_name||'Não atribuído')} · ${esc(date(t.updated_at))}</small>
-  ${canWrite?`<div class="ct-task-form"><label>Estado<select data-ct-task-status="${esc(t.id)}">${TOWER_ACTION_STATUSES.map(([v,label])=>`<option value="${v}" ${v===t.status?'selected':''}>${esc(label)}</option>`).join('')}</select></label><label>Evidência<input type="text" maxlength="2000" data-ct-task-evidence="${esc(t.id)}" value="${esc(t.evidence_note||'')}" placeholder="Obrigatória para concluir"></label><button class="ct-small-button" type="button" data-ct-task-save="${esc(t.id)}">Salvar</button></div>`:''}</article>`).join(''):unavailable;
+  const pending=tasks.filter(t=>!['concluida','descartada'].includes(t.status));
+  const rank={critica:0,alta:1,normal:2,baixa:3};
+  const rows=(taskFilter==='all'?tasks:pending).slice().sort((a,b)=>(rank[a.priority]??4)-(rank[b.priority]??4));
+  $('[data-ct-count]').textContent=taskSourceReady?rows.length+' na amostra':'—';
+  $('[data-ct-summary]').textContent=taskSourceReady?pending.length+' ação(ões) pendente(s) nos '+tasks.length+' registros consultados.':'A fonte de encaminhamentos está indisponível.';
+  $('[data-ct-tasks]').innerHTML=!taskSourceReady?unavailable:rows.length?rows.slice(0,25).map(t=>`<article class="ct-task"><div class="ct-task-title"><strong>${esc(t.title)}</strong><span>${esc(t.priority||"normal")} · ${esc(statusName(t.status))}</span></div><p>${esc(t.description||'Sem descrição')}</p><small>${esc(agentById(t.agent_code)?.name||t.agent_code)} · ${esc(t.owner_name||'Não atribuído')} · ${esc(date(t.updated_at))}</small>
+  ${canWrite?`<details class="ct-task-edit"><summary>Atualizar ação</summary><div class="ct-task-form"><label>Estado<select data-ct-task-status="${esc(t.id)}">${TOWER_ACTION_STATUSES.map(([v,label])=>`<option value="${v}" ${v===t.status?'selected':''}>${esc(label)}</option>`).join('')}</select></label><label>Evidência<input type="text" maxlength="2000" data-ct-task-evidence="${esc(t.id)}" value="${esc(t.evidence_note||'')}" placeholder="Obrigatória para concluir"></label><button class="ct-small-button" type="button" data-ct-task-save="${esc(t.id)}">Salvar</button></div></details>`:''}</article>`).join('')+(rows.length>25?'<p class="ct-hint">Exibindo 25 registros prioritários. Consulte a Central de Ações para detalhes.</p>':''):'<p class="ct-none">Nenhum registro para este filtro.</p>';
  }
  function renderAgent(){
   const a=agentById(selected);if(!a)return;
@@ -70,7 +81,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
    <div class="ct-agent-source">${esc(numberText)}<small>Origem: ${esc(TOWER_SOURCE_TABLES[a.source])}; registros não significam decisões já executadas.</small></div>
    ${analysisMarkup}
    ${abcMarkup}
-   <h3>Funções e responsabilidades</h3><ul>${a.functions.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
+   <details class="ct-agent-functions"><summary>Funções e responsabilidades</summary><ul>${a.functions.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></details>
    <div class="ct-agent-buttons"><button class="btn" type="button" data-ct-go="${esc(a.route)}" ${!allowed?'disabled':''}>Abrir módulo</button><button class="btn secondary" type="button" data-ct-report>Exportar relatório</button></div>
    ${['marca_passo','campanhas','radar_digital','produtos'].includes(selected)?'<button class="ct-open-desk" type="button" data-ct-open-desk>Explorar margem, ABC e campanhas</button>':''}
    ${allowed?'':'<p class="ct-hint">Seu perfil não tem permissão para o módulo de destino.</p>'}
@@ -145,9 +156,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   highlightDesks(origin,destination);
   $('[data-ct-sim-status]').textContent='Simulação · '+origin.name+' → '+destination.name+' · '+scene.description;
   animateVisit(origin,destination,true);
-  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-   simulationTimer=window.setTimeout(nextInteraction,6500);
-  }
+  // Demonstration advances only when requested by the user.
  }
  async function count(kind){
   const {count,error}=await db.from(TOWER_SOURCE_TABLES[kind]).select('*',{count:'exact',head:true}).eq('company_id',company);
@@ -156,7 +165,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  async function load(){
   if(!live()||!company)return;
   const token=++stamp;
-  counts={};tasks=[];stocks=[];offers=[];canWrite=false;loadErrors=[];lastCycle=null;
+  counts={};tasks=[];stocks=[];offers=[];canWrite=false;loadErrors=[];lastCycle=null;taskSourceReady=false;
   $('[data-ct-metrics]').textContent='Consultando fontes...';
   const kinds=['stock_actions','market_offers','faro_signals','directory','price_plans','campaigns','demands','quotes','missions','tower_tasks'];
   const results=await Promise.allSettled([
@@ -174,7 +183,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   });
   const j=kinds.length;
   if(results[j].status==='fulfilled'&&!results[j].value.error){
-   tasks=results[j].value.data||[];
+   tasks=results[j].value.data||[];taskSourceReady=true;
    const {seen,latest}=towerHandoff(tasks,company,seenHandoffs);
    seenHandoffs=seen;
    if(latest)showHandoff(latest);
@@ -218,7 +227,8 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   await load();
  }
  root.addEventListener('click',e=>{
-  const hit=e.target.closest('[data-ct-agent],[data-ct-live-event]');if(hit){const agent=hit.dataset.ctAgent||hit.dataset.ctLiveEvent;if(agentById(agent)){selected=agent;renderAgent();if(window.matchMedia('(max-width: 1180px)').matches)$('[data-ct-detail]').scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}return;}
+  const tab=e.target.closest('[data-ct-view]');if(tab){showView(tab.dataset.ctView);return;}
+  const hit=e.target.closest('[data-ct-agent],[data-ct-live-event]');if(hit){const agent=hit.dataset.ctAgent||hit.dataset.ctLiveEvent;if(agentById(agent)){selected=agent;showView('agents');renderAgent();if(window.matchMedia('(max-width: 1180px)').matches)$('[data-ct-detail]').scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}return;}
   const nav=e.target.closest('[data-ct-go]');if(nav){const r=nav.dataset.ctGo;if(allowedRoutes.includes(r))window.navigate(r);return;}
   if(e.target.closest('[data-ct-report]')){report();return;}
   if(e.target.closest('[data-ct-command]')&&allowedRoutes.includes('acoes')){window.navigate('acoes');return;}
@@ -233,17 +243,18 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
    return;
   }
   if(e.target.closest('[data-ct-sim-step]')&&simulating){nextInteraction();return;}
-  if(e.target.closest('[data-ct-open-desk]')){workbench?.open();return;}
+  if(e.target.closest('[data-ct-open-desk]')){showView('pricing');workbench?.open();return;}
   const save=e.target.closest('[data-ct-task-save]');if(save)saveTask(save.dataset.ctTaskSave);
  });
  root.addEventListener('submit',e=>{if(e.target.matches('[data-ct-create]')){e.preventDefault();createTask(e.target);}});
+ $('[data-ct-task-filter]').addEventListener('change',e=>{taskFilter=e.target.value;renderTasks();});
  $('[data-ct-company]').addEventListener('change',e=>{
   if(!companies.includes(e.target.value)||company===e.target.value)return;
   company=e.target.value;
   seenHandoffs=undefined;
   stopSimulation();
   officeController?.setCompany();
-  counts={};tasks=[];stocks=[];offers=[];canWrite=false;lastCycle=null;renderMetrics();renderAlerts();renderTasks();renderAgent();
+  counts={};tasks=[];stocks=[];offers=[];canWrite=false;lastCycle=null;taskSourceReady=false;renderMetrics();renderAlerts();renderTasks();renderAgent();
   $('[data-ct-handoff-status]').textContent='Colaboração representativa · consulte os registros para confirmar ações';
   workbench?.setCompany();
   load();
