@@ -90,9 +90,10 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
   }
  }
  function setSelected(id){room.querySelectorAll('.ct-person').forEach(p=>p.classList.toggle('ct-person-selected',p.dataset.ctPerson===id));}
- function setCompany(){idx=0;clear();setMode('ambient');}
+ function stop(){clear();setMode('ambient');}
+ function setCompany(){idx=0;stop();}
  function destroy(){alive=false;window.clearInterval(ticker);clear();layer.remove();}
  ticker=window.setInterval(demoTick,14500);
  onDispose?.(destroy);
- return {visit,setEvents,setSelected,setCompany,destroy,demoTick};
+ return {visit,setEvents,setSelected,setCompany,stop,destroy,demoTick};
 }
