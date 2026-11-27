@@ -46,3 +46,19 @@ export function exportTowerCsv(tasks=[],company='',agent=''){
  return '\uFEFF'+header.map(sanitizeCsv).join(';')+'\r\n'+rows.join('\r\n');
 }
 export function agentById(id){return TOWER_AGENTS.find(a=>a.id===id)||null;}
+
+export const TOWER_CYCLE_AGENT_MAP=Object.freeze({
+ doquita:'doquita',marca_passo:'precos',radar_digital:'radar',radar_fisico:'radar',
+ estoque:'estoque',compras:'compras',transferencias:'logistica',
+ produtos:'analista',campanhas:'marketing',caderninho:'experiencia_cliente',
+ vendas_b2b:'comercial',gamificacao:'estrategico'
+});
+export function towerAgentCycleInsight(agentId,cycle){
+ const sourceId=TOWER_CYCLE_AGENT_MAP[agentId];
+ const item=cycle?.report?.agents?.find(a=>a.agent_id===sourceId);
+ if(!item||!cycle.created_at||!sourceId)return null;
+ return {analysis:String(item.analysis||''),state:String(item.state||'unknown'),
+  metric:String(item.metric||''),source:String(item.source||''),stale:item.stale===true,
+  created_at:cycle.created_at,trigger_kind:String(cycle.trigger_kind||'unspecified'),
+  notice:String(cycle.report?.notice||'')};
+}
