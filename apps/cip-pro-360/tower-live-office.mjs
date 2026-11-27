@@ -21,79 +21,85 @@ export const officeModeLabel=(mode,source='')=>mode==='event'
  ?'REGISTRO REAL · '+source+' · movimento representativo'
  :mode==='demo'?'CENA ILUSTRATIVA · não executa ações no CIP'
  :'ESCRITÓRIO DIGITAL · atividades reais exigem evidência';
+// Three stable workstreams: each specialist appears exactly once.
+export const OFFICE_GROUPS=Object.freeze([
+ {title:'Mercado e crescimento',ids:['radar_digital','radar_fisico','vendas_b2b','campanhas']},
+ {title:'Estoque e abastecimento',ids:['estoque','compras','transferencias','produtos']},
+ {title:'Estratégia e execução',ids:['doquita','marca_passo','caderninho','gamificacao']}
+]);
+export function officeGroups(agents){
+ return OFFICE_GROUPS.map(g=>({title:g.title,people:g.ids.map(id=>officePeople(agents).find(a=>a.id===id)).filter(Boolean)}));
+}
+export function portrait(p){
+ const [skin,hair,outfit]=p.appearance;
+ const tone={tan:'#ce9774',brown:'#936044',light:'#edbfa4'}[skin];
+ const shade={tan:'#ad7658',brown:'#72462f',light:'#ca957c'}[skin];
+ const jacket={navy:'#263e57',slate:'#526476',black:'#303740',blue:'#3575a4'}[outfit];
+ const h=hair==='silver'?'#c5cbd1':'#312b2b';
+ const long=hair==='long'?'<path d="M27 26Q25 8 46 8Q69 6 69 30L73 61H25Z" fill="'+h+'"/>':'';
+ const curls=hair==='curly'?'<path d="M27 32Q17 23 28 18Q25 7 38 9Q45 1 52 9Q66 3 69 18Q79 23 69 33L62 23 36 23Z" fill="'+h+'"/>':'<path d="M29 33Q23 9 47 8Q70 8 68 32L62 23Q47 29 34 20L34 34Z" fill="'+h+'"/>';
+ const glasses=p.id==='doquita'?'<path d="M34 34h12v7H34zM51 34h12v7H51zM46 36h5" fill="#26313c" stroke="#26313c" stroke-width="2" stroke-linejoin="round"/>':'';
+ return '<svg class="ct-portrait" viewBox="0 0 96 96" aria-hidden="true" focusable="false"><circle cx="48" cy="48" r="45" fill="#e8edf2"/><path d="M11 88Q13 69 36 62H60Q83 69 85 88Z" fill="'+jacket+'"/>'+long+'<path d="M39 51h18v18l-9 9-9-9z" fill="'+shade+'"/><path d="M35 64l13 12 13-12 7 25H28Z" fill="#f5f7fa"/><path d="M34 64l14 25H16l6-20zM62 64L48 89h32l-6-20z" fill="'+jacket+'"/><path d="M30 28Q31 13 48 13Q65 13 66 28v14Q65 55 48 61Q31 55 30 42Z" fill="'+tone+'"/><path d="M48 29l-3 14h6M42 49q6 5 12 0" fill="none" stroke="'+shade+'" stroke-width="1.5" stroke-linecap="round"/><path d="M36 34h7M53 34h7" stroke="#3b3030" stroke-width="1.8" stroke-linecap="round"/>'+curls+glasses+'</svg>';
+}
 export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  const room=root.querySelector('.ct-office-visual');
- if(!room)return {visit:()=>{},setSelected:()=>{},setEvents:()=>{},setCompany:()=>{},destroy:()=>{}};
- const people=officePeople(agents),steps=scenes.filter(s=>s.from!==s.to&&people.some(a=>a.id===s.from)&&people.some(a=>a.id===s.to));
- let alive=true,idx=0,motion=null,hiddenActor=null,ticker=null,mode='ambient',talkTimeout=null;
- const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
- const html=`<div class="ct-live-room" data-ct-live-room aria-label="Escritório digital com agentes profissionais ilustrativos">
- <div class="ct-live-architecture" aria-hidden="true"><div class="ct-live-ceiling"></div><div class="ct-live-glass"></div><div class="ct-live-floor"></div></div>
- <div class="ct-live-board"><small>GRUPO PROHOSPITAL · CIP360</small><b>INTELIGÊNCIA EM MOVIMENTO</b><span data-ct-live-time>Consultando análise...</span></div>
- <div class="ct-live-people">
- ${people.map((p,i)=>`<div class="ct-person" data-ct-person="${esc(p.id)}" data-skin="${p.appearance[0]}" data-hair="${p.appearance[1]}" data-outfit="${p.appearance[2]}" style="--px:${p.x}%;--py:${p.y}%;--delay:${-i%4}s" aria-hidden="true">
- <div class="ct-person-shadow"></div><div class="ct-person-figure"><div class="ct-person-hair"></div><div class="ct-person-face"></div><div class="ct-person-neck"></div><div class="ct-person-jacket"><span class="ct-person-shirt"></span></div><div class="ct-person-legs"><i></i><i></i></div></div><span class="ct-person-worklight"></span></div>`).join('')}
- </div>
- <div class="ct-live-walker" data-ct-walker hidden aria-hidden="true"></div><div class="ct-live-talk" data-ct-talk hidden aria-hidden="true"><i></i><span>Colaboração</span></div>
- <div class="ct-live-caption"><span class="ct-live-dot"></span><span data-ct-live-mode>${officeModeLabel('ambient')}</span></div></div>`;
- room.insertAdjacentHTML('afterbegin',html);
- const layer=room.querySelector('[data-ct-live-room]'),walker=room.querySelector('[data-ct-walker]'),talk=room.querySelector('[data-ct-talk]'),label=room.querySelector('[data-ct-live-mode]');
- const byId=id=>people.find(x=>x.id===id);
- const person=id=>room.querySelector('[data-ct-person="'+id+'"]');
- const live=()=>alive&&root.isConnected;
- function clear(){
-  if(motion){try{motion.cancel()}catch{}motion=null;}
-  if(hiddenActor){hiddenActor.classList.remove('ct-person-absent');hiddenActor=null;}
-  if(talkTimeout){window.clearTimeout(talkTimeout);talkTimeout=null;}
-  walker.hidden=true;talk.hidden=true;talk.classList.remove('ct-live-talk-visible');
-  room.querySelectorAll('.ct-agent-hotspot').forEach(x=>x.classList.remove('ct-visit-origin','ct-visit-destination'));
+ if(!room)return {visit:()=>false,setSelected:()=>{},setEvents:()=>{},setCompany:()=>{},stop:()=>{},destroy:()=>{}};
+ let alive=true,timer=null,selected='';
+ const people=officePeople(agents),byId=id=>people.find(p=>p.id===id);
+ const buttons=new Map([...room.querySelectorAll('.ct-agent-hotspot')].map(b=>[b.dataset.ctAgent,b]));
+ const oldLogo=room.querySelector('.ct-office-official');oldLogo?.remove();
+ room.classList.add('ct-studio');
+ const layer=document.createElement('div');layer.className='ct-live-room';
+ layer.innerHTML='<div class="ct-studio-intro"><div><small>CONSELHO DE INTELIGÊNCIA</small><h2>Especialistas do CIP360</h2><p data-ct-live-time>Consultando último ciclo…</p></div><span class="ct-studio-total">'+people.length+' especialistas</span></div><div class="ct-studio-groups"></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient"><small data-ct-live-mode>'+officeModeLabel('ambient')+'</small><strong data-ct-flow-title>Inteligência conectada</strong><span data-ct-flow-detail>Selecione um especialista para consultar suas evidências e encaminhamentos.</span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
+ const groups=layer.querySelector('.ct-studio-groups');
+ for(const group of officeGroups(agents)){
+  const section=document.createElement('section');section.className='ct-studio-group';
+  const heading=document.createElement('h3');heading.textContent=group.title;section.append(heading);
+  const grid=document.createElement('div');grid.className='ct-studio-grid';
+  for(const p of group.people){
+   const button=buttons.get(p.id);if(!button)continue;
+   button.removeAttribute('style');button.setAttribute('aria-pressed','false');
+   button.innerHTML=portrait(p)+'<span class="ct-studio-name"><strong>'+esc(p.name)+'</strong><small>'+esc(p.area)+'</small></span><span class="ct-studio-records" data-ct-records>—</span>';
+   grid.append(button);
+  }
+  section.append(grid);groups.append(section);
  }
- function setMode(next,source=''){mode=next;label.textContent=officeModeLabel(next,source);layer.dataset.mode=next;}
+ room.prepend(layer);
+ const flow=layer.querySelector('[data-ct-flow]'),label=layer.querySelector('[data-ct-live-mode]'),title=layer.querySelector('[data-ct-flow-title]'),detail=layer.querySelector('[data-ct-flow-detail]');
+ const live=()=>alive&&root.isConnected;
+ function stop(){
+  window.clearTimeout(timer);timer=null;
+  for(const b of buttons.values())b.classList.remove('ct-visit-origin','ct-visit-destination');
+  flow.dataset.mode='ambient';label.textContent=officeModeLabel('ambient');title.textContent='Inteligência conectada';
+  detail.textContent='Selecione um especialista para consultar suas evidências e encaminhamentos.';
+ }
  function visit(from,to,{real=false,source=''}={}){
   if(!live()||!from||!to||from.id===to.id||!byId(from.id)||!byId(to.id))return false;
-  clear();setMode(real?'event':'demo',source);
-  room.querySelectorAll('.ct-agent-hotspot').forEach(b=>{
-   b.classList.toggle('ct-visit-origin',b.dataset.ctAgent===from.id);
-   b.classList.toggle('ct-visit-destination',b.dataset.ctAgent===to.id);
-  });
-  const original=person(from.id),target=person(to.id);
-  if(!original||!target)return false;
-  const finish=()=>{if(!live())return;clear();setMode('ambient');};
-  talk.style.left=to.x+'%';talk.style.top=(to.y-15)+'%';
-  talk.querySelector('span').textContent=real?'Encaminhamento auditado':from.name+' ↔ '+to.name;
-  if(reduced||!walker.animate){
-   talk.hidden=false;talk.classList.add('ct-live-talk-visible');talkTimeout=window.setTimeout(finish,3000);return true;
-  }
-  original.classList.add('ct-person-absent');hiddenActor=original;
-  walker.innerHTML=original.querySelector('.ct-person-figure').outerHTML;
-  for(const a of ['skin','hair','outfit'])walker.dataset[a]=original.dataset[a];
-  walker.hidden=false;walker.style.left=from.x+'%';walker.style.top=from.y+'%';
-  const frames=movementWaypoints(from,to).map(p=>({left:p.x+'%',top:p.y+'%',offset:p.offset,opacity:1}));
-  const anim=walker.animate(frames,{duration:6200,fill:'forwards',easing:'ease-in-out'});motion=anim;
-  talkTimeout=window.setTimeout(()=>{if(motion===anim){talk.hidden=false;talk.classList.add('ct-live-talk-visible');}},2300);
-  anim.onfinish=()=>{if(motion===anim)finish();};
-  return true;
- }
- function demoTick(){
-  if(!live()||reduced||document.visibilityState!=='visible'||motion||!steps.length)return;
-  const scene=steps[idx++%steps.length],from=byId(scene.from),to=byId(scene.to);
-  if(from&&to)visit(from,to,{real:false});
+  stop();const mode=real?'event':'demo';flow.dataset.mode=mode;label.textContent=officeModeLabel(mode,source);
+  title.textContent=from.name+' → '+to.name;
+  detail.textContent=real?'Encaminhamento registrado na Central de Ações.':'Colaboração ilustrativa entre os especialistas.';
+  buttons.get(from.id)?.classList.add('ct-visit-origin');buttons.get(to.id)?.classList.add('ct-visit-destination');
+  timer=window.setTimeout(stop,6000);return true;
  }
  function setEvents({tasks=[],cycle=null}={}){
-  const t=room.querySelector('[data-ct-live-time]');
-  t.textContent=cycle?.created_at?'Último ciclo registrado: '+new Date(cycle.created_at).toLocaleString('pt-BR'):'Nenhum ciclo recente informado';
+  layer.querySelector('[data-ct-live-time]').textContent=cycle?.created_at?'Último ciclo registrado: '+new Date(cycle.created_at).toLocaleString('pt-BR'):'Nenhum ciclo consultável';
+  for(const [id,b] of buttons){
+   const n=tasks.filter(t=>t.agent_code===id&&!['concluida','descartada'].includes(t.status)).length;
+   b.querySelector('[data-ct-records]').textContent=n?n+' em aberto':'Sem pendência na amostra';
+  }
   const feed=root.querySelector('[data-ct-live-events]');
   if(feed){
    const rows=tasks.filter(x=>x.source_module==='command_center').slice(0,4);
-   feed.innerHTML=rows.length?rows.map(x=>`<button type="button" class="ct-live-event" data-ct-live-event="${esc(x.agent_code)}"><b>${esc(x.title||'Encaminhamento')}</b><small>${esc(x.owner_name||'Responsável não atribuído')} · ${esc(x.status)}</small></button>`).join('')
-     :'<p>Sem encaminhamentos novos nesta empresa. O escritório segue em ambientação ilustrativa.</p>';
+   feed.innerHTML=rows.length?rows.map(x=>'<button type="button" class="ct-live-event" data-ct-live-event="'+esc(x.agent_code)+'"><b>'+esc(x.title||'Encaminhamento')+'</b><small>'+esc(x.owner_name||'Responsável não atribuído')+' · '+esc(x.status)+'</small></button>').join(''):'<p>Nenhum encaminhamento consultável na amostra.</p>';
   }
  }
- function setSelected(id){room.querySelectorAll('.ct-person').forEach(p=>p.classList.toggle('ct-person-selected',p.dataset.ctPerson===id));}
- function stop(){clear();setMode('ambient');}
- function setCompany(){idx=0;stop();}
- function destroy(){alive=false;window.clearInterval(ticker);clear();layer.remove();}
- ticker=window.setInterval(demoTick,14500);
+ function setSelected(id){
+  selected=id;
+  for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}
+ }
+ function setCompany(){stop();for(const b of buttons.values())b.querySelector('[data-ct-records]').textContent='—';layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';const feed=root.querySelector('[data-ct-live-events]');if(feed)feed.textContent='Consultando encaminhamentos…';}
+ function destroy(){alive=false;stop();layer.remove();}
  onDispose?.(destroy);
- return {visit,setEvents,setSelected,setCompany,stop,destroy,demoTick};
+ // No autonomous scenes: the existing Simular rotina control explicitly starts them.
+ return {visit,setEvents,setSelected,setCompany,stop,destroy,demoTick:()=>false};
 }
