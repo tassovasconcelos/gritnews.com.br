@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {OFFICE_PEOPLE,officePeople,movementWaypoints,officeModeLabel} from './tower-live-office.mjs';
+import {OFFICE_PEOPLE,officePeople,movementWaypoints,officeModeLabel,officeGroups,portrait} from './tower-live-office.mjs';
 import {TOWER_AGENTS,OFFICE_SCENARIO} from './tower-engine.mjs';
 
 test('all twelve specialist desks have a consistent professional operator and coordinate',()=>{
@@ -34,4 +34,22 @@ test('no fake event should ever be presented as confirmed business automation',(
  assert.match(officeModeLabel('event','Central de Ações'),/REGISTRO REAL/);
  assert.match(officeModeLabel('event','Central de Ações'),/movimento representativo/);
  assert.deepEqual(movementWaypoints(TOWER_AGENTS[0],TOWER_AGENTS[0]),[]);
+});
+
+test('executive studio has three balanced groups and no duplicated specialists',()=>{
+ const groups=officeGroups(TOWER_AGENTS);
+ assert.equal(groups.length,3);
+ assert.deepEqual(groups.map(g=>g.people.length),[4,4,4]);
+ const ids=groups.flatMap(g=>g.people.map(p=>p.id));
+ assert.equal(new Set(ids).size,12);
+ assert.deepEqual([...ids].sort(),TOWER_AGENTS.map(p=>p.id).sort());
+});
+test('every portrait is local, decorative and does not make a network request',()=>{
+ for(const p of officePeople(TOWER_AGENTS)){
+  const svg=portrait(p);
+  assert.match(svg,/^<svg class="ct-portrait"/);
+  assert.match(svg,/aria-hidden="true"/);
+  assert.match(svg,/<\/svg>$/);
+  assert.doesNotMatch(svg,/https?:|<script|<image|undefined/);
+ }
 });
