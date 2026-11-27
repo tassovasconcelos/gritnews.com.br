@@ -118,6 +118,8 @@ jobs:
           if(html.includes('onclick="showPreview()"'))throw Error('Public unauthenticated preview must be disabled');
           console.log('CIP static app checks passed');
           NODE
+      - name: Diagnose CIP external DNS and HTTPS (advisory only)
+        run: node apps/cip-pro-360/deploy/https-diagnostics.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: cip-pro360-static
@@ -172,6 +174,8 @@ jobs:
               ;;
             *) echo "::error::Refusing to deploy: directory not CIP-specific." ; exit 1;;
           esac
+      - name: Report CIP HTTPS status without bypassing security checks
+        run: node apps/cip-pro-360/deploy/https-diagnostics.mjs
       - name: Verify CIP HTTPS before uploading
         shell: bash
         run: node apps/cip-pro-360/release-check.mjs preflight
