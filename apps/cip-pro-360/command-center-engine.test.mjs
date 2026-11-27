@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {COMMAND_KINDS,DECISION_STATES,availableActions,evidenceStatus,freshness,rankFeed,insightCounters,safeCsv,safeExternalUrl} from './command-center-engine.mjs';
+import {COMMAND_KINDS,DECISION_STATES,availableActions,evidenceStatus,freshness,rankFeed,insightCounters,safeCsv,safeExternalUrl,faroHealth} from './command-center-engine.mjs';
 test('freshness and source age are explicit, not invented',()=>{
  const now=new Date('2026-11-27T14:00:00Z');
  assert.equal(freshness({source_kind:'radar',source_at:'2026-10-29T12:00:00Z'},now).fresh,false);
@@ -43,4 +43,14 @@ test('CSV export escapes formula injection and quotes',()=>{
 test('named source and decision taxonomy stays explicit',()=>{
  assert.equal(Object.keys(COMMAND_KINDS).length,4);
  assert.equal(DECISION_STATES.resultado_declarado,'Resultado declarado (não conciliado)');
+});
+
+test('Faro safety reflects real circuit state and does not equate cron to collected offers',()=>{
+ const now=new Date('2026-11-27T15:00:00Z');
+ const blocked=faroHealth({enabled:true,failure_streak:1864,circuit_until:'2026-11-27T16:00:00Z'},'2026-10-29T13:55:00Z',now);
+ assert.equal(blocked.state,'blocked');
+ assert.match(blocked.detail,/protec|última oferta|dia\(s\)/i);
+ assert.equal(faroHealth({enabled:false,failure_streak:0},null,now).state,'disabled');
+ assert.equal(faroHealth({enabled:true,failure_streak:5,circuit_until:null},null,now).state,'degraded');
+ assert.equal(faroHealth({enabled:true,failure_streak:0,circuit_until:null},'2026-10-29T13:55:00Z',now).state,'stale');
 });
