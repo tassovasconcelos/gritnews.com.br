@@ -19,7 +19,7 @@ export function abcWorkbenchFrame(){
  <div class="ct-abc-pane" data-abc-pane="sim">
   <div class="ct-abc-workspace">
    <section class="ct-abc-product-panel"><h3>1 · Encontre o produto</h3>
-    <form data-abc-find class="ct-abc-find"><input name="q" maxlength="100" placeholder="SKU ou nome do produto (mín. 2 letras)" aria-label="SKU ou produto" required><button class="btn" type="submit">Pesquisar</button></form>
+    <form data-abc-find class="ct-abc-find"><input name="q" maxlength="100" placeholder="SKU ou produto (mín. 2 letras)" aria-label="SKU ou produto" required><input name="category" maxlength="80" placeholder="Categoria (opcional)" aria-label="Filtrar categoria"><select name="curve" aria-label="Filtrar curva"><option value="">ABC</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select><button class="btn" type="submit">Pesquisar</button></form>
     <p class="ct-hint" data-abc-search-note>Base de estoque autorizada; pesquisar não consulta marketplace automaticamente.</p>
     <div data-abc-products class="ct-abc-products"><div class="ct-none">Pesquise um produto para ver custos e preços da última carga disponível.</div></div>
     <div data-abc-product-tag></div>
@@ -122,19 +122,32 @@ export function mountAbcWorkbench({root,db,user,companies,getCompany,getCanWrite
  function productCard(p,i){
   return `<button type="button" class="ct-abc-product-item" data-abc-pick="${i}"><strong>${esc(p.sku)} · ${esc(p.description)}</strong><span>Loja ${esc(p.store_code||'—')} · Curva ${esc(p.curve||'—')} · ${esc(p.product_group||'categoria pendente')}</span><small>Preço da carga ${cash(p.sale_price)} · Custo ${cash(p.unit_cost)} · Saldo ${num(p.quantity)} un. · Fonte ${esc(p.as_of||'sem data')}</small></button>`;
  }
- async function search(q){
+ async function search(filters){
   const token=++request;
-  const term=String(q||'').trim().slice(0,100);
+  const term=String(filters?.term||'').trim().slice(0,100);
+  const category=String(filters?.category||'').trim().replace(/[%_]/g,'').slice(0,80);
+  const curve=['A','B','C'].includes(filters?.curve)?filters.curve:'';
   if(term.length<2){status('Informe no mínimo 2 caracteres.','[data-abc-search-note]');return;}
-  const base=db.from('cip_shopping_stock_rows').select('sku,description,store_code,curve,product_group,unit_cost,sale_price,quantity,as_of,company_id')
+  let base=db.from('cip_shopping_stock_rows').select('sku,description,store_code,curve,product_group,unit_cost,sale_price,quantity,as_of,company_id')
    .eq('company_id',company).order('quantity',{ascending:false}).limit(18);
+  if(category)base=base.ilike('product_group','%'+category+'%');
+  if(curve)base=base.eq('curve',curve);
   const query=/^\d{2,30}$/.test(term)?base.eq('sku',term):base.ilike('description','%'+term.replace(/[%_]/g,'')+'%');
   status('Consultando registro histórico por SKU/categoria...','[data-abc-search-note]');
   const {data,error}=await query;
   if(!live()||token!==request)return;
   if(error){products=[];status('Consulta indisponível: '+error.message,'[data-abc-search-note]');return;}
   products=data||[];
-  $('[data-abc-products]').innerHTML=products.length?products.map(productCard).join(''):'<div class="ct-none">Nenhum SKU encontrado na base autorizada; é possível preencher cenário manual.</div>';
+  if(!products.length&&batch){
+    let fallback=db.from('cip_abc_products').select('sku,product_name,curve').eq('company_id',company).eq('import_id',batch.id).limit(18);
+    if(curve)fallback=fallback.eq('curve',curve);
+    fallback=/^\d{2,30}$/.test(term)?fallback.eq('sku',term):fallback.ilike('product_name','%'+term.replace(/[%_]/g,'')+'%');
+    const found=await fallback;
+    if(!live()||token!==request)return;
+    if(!found.error)products=(found.data||[]).map(p=>({sku:p.sku,description:p.product_name,curve:p.curve,store_code:null,
+      product_group:null,unit_cost:null,sale_price:null,quantity:null,as_of:null,sourceOrigin:'abc_import'}));
+  }
+  $('[data-abc-products]').innerHTML=products.length?products.map(productCard).join(''):'<div class="ct-none">Nenhum SKU encontrado nesta empresa na fonte consultável.</div>';
   status(products.length+' registros da posição histórica. Consulte também o Marca-passo original para regras aprovadas.','[data-abc-search-note]');
  }
  async function choose(index){
@@ -270,7 +283,7 @@ export function mountAbcWorkbench({root,db,user,companies,getCompany,getCanWrite
   if(e.target.closest('[data-abc-import]'))importFile();
  });
  root.addEventListener('submit',e=>{
-  if(e.target.matches('[data-abc-find]')){e.preventDefault();search(new FormData(e.target).get('q'));}
+  if(e.target.matches('[data-abc-find]')){e.preventDefault();const form=new FormData(e.target);search({term:form.get('q'),category:form.get('category'),curve:form.get('curve')});}
   if(e.target.matches('[data-abc-calc]')){e.preventDefault();compute();}
  });
  loadContext();
