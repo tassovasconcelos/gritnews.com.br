@@ -9,6 +9,7 @@ export function consumptionFrame(){
  '<header class="ops-head"><div class="ops-brand"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial Grupo Prohospital"><div><small>CIP360 · CONSELHO DE INTELIGÊNCIA OPERACIONAL</small><h1>Central de Consumo e Continuidade</h1><p>IA, agentes, pesquisa, créditos, infraestrutura e execução 24/7.</p></div></div><div class="ops-controls"><label>Empresa<select data-ops-company></select></label><label>Período<select data-ops-period><option value="7">7 dias</option><option value="30">30 dias</option><option selected value="90">90 dias</option><option value="120">120 dias</option></select></label><button class="btn secondary" data-ops-refresh>Atualizar</button></div></header>'+
  '<p class="ops-status" role="status" data-ops-status>Conferindo dados...</p><div class="ops-kpis" data-ops-kpis></div>'+
  '<div class="ops-continuity"><div><small>CONTINUIDADE OPERACIONAL</small><h2>Observabilidade, eficiência e fallback seguro</h2><p>O monitor opera sem IA. Provedores alternativos exigem acesso e homologação; não há troca automática de contas neste estágio.</p></div><div class="ops-lights" data-ops-health></div></div>'+
+ '<section class="ops-org"><div class="ops-section-head"><div><small>CIP GUARDIAN · AUDITORIA CONTÍNUA</small><h2>Saúde da operação</h2><p>Verificações determinísticas a cada 10 minutos. Sem dados recentes, o estado é desconhecido.</p></div></div><div data-guardian role="status" aria-live="polite">Consultando...</div></section>'+ 
  '<section class="ops-org" data-ops-org hidden><div class="ops-section-head"><div><small>CONCILIAÇÃO FINANCEIRA GLOBAL</small><h2>Contas administrativas dos provedores</h2><p>Custos desta seção pertencem à organização. Nunca são duplicados entre Shopping e Distribuidora sem atribuição por projeto homologada.</p></div></div><div data-ops-org-cards></div></section>'+ 
  '<div class="ops-columns"><section class="ops-main"><div class="ops-section-head"><div><small>CONSUMO POR SERVIÇO</small><h2>Mapa de provedores e plataformas</h2><p>O financeiro acompanha gastos reais; a operação acompanha tokens, falhas e disponibilidade.</p></div><button class="btn secondary" data-ops-export>Exportar CSV</button></div><div data-ops-services></div></section>'+
  '<aside class="ops-sidebar"><h2>Alertas de continuidade</h2><div data-ops-alerts></div><div class="ops-governance"><strong>Política de responsabilidade</strong><p>Tokens observados não equivalem a cobrança. Orçamento registrado não altera o limite contratado. Saldo informado manualmente é identificado. Não armazenamos chaves, prompts nem respostas.</p></div><div class="ops-fallback"><strong>Sequência de economia</strong><p>1. Regras e cache sem tokens</p><p>2. Coleta direta autorizada e feeds</p><p>3. IA apenas nas análises relevantes</p><p>4. Circuit breaker e alertas por fornecedor</p><p>5. Alternativa habilitada após homologação</p></div></aside></div>'+
@@ -20,7 +21,7 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
  const $=s=>root.querySelector(s);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
  let active=true,requestId=0,company=scope.includes('shopping_prohospital')?'shopping_prohospital':scope[0],period=90,busy=false;
- let providers=[],daily=[],billing=[],alerts=[],history=[],faro=null,cycles=[],globalSnapshots=[],globalStates=[],globalFailed=false;
+ let providers=[],daily=[],billing=[],alerts=[],history=[],faro=null,cycles=[],globalSnapshots=[],globalStates=[],globalFailed=false,guardian=[],guardianFailed=false;
  const notice=t=>{if(live())$('[data-ops-status]').textContent=t;};
  const statement=p=>billing.find(b=>b.provider===p);
  $('[data-ops-company]').innerHTML=scope.map(c=>'<option value="'+esc(c)+'">'+esc(companyNames[c]||c)+'</option>').join('');
@@ -47,8 +48,32 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
      '<p class="ops-note">Conta organizacional · sem rateio automático e sem inferência de saldo ausente.</p></article>';
    }).join('')+'</div>';
  }
+ function renderGuardian(){
+  const host=$('[data-guardian]');if(!host)return;
+  if(guardianFailed||!guardian.length){host.textContent='Verificações indisponíveis ou não autorizadas. Nenhum estado saudável inferido.';return;}
+  const titles={faro:'Radar Faro',queue:'Fila de pesquisa',agents:'Ciclos de agentes',erp:'ERP conciliado',stock:'Atualidade do estoque',execution:'Decisões e tarefas',billing:'Custos e créditos',results:'Comprovação financeira',procfit_source:'Origem Procfit · locações'};
+  const labels={critical:'Crítico',warning:'Atenção',ok:'Dentro do critério',unknown:'Indeterminado',paused:'Pausado'};
+  const fmt=n=>n==null?'N/D':formatCount(n);
+  const details=x=>{const d=x.detail||{};switch(x.check_code){
+    case 'faro':return 'Última conclusão: '+date(d.last_completed)+' · últimas 24h: '+fmt(d.completed_24h)+' concluídas / '+fmt(d.failed_24h)+' falhas · limite diário '+fmt(d.daily_limit)+(d.circuit_until?' · proteção até '+date(d.circuit_until):'');
+    case 'queue':return fmt(d.queued_over_1h)+' tarefas aguardando há mais de 1 hora';
+    case 'agents':return 'Último ciclo: '+date(d.last_run)+' · não comprova resultado';
+    case 'erp':return 'Última base conciliada: '+date(d.last_approved_snapshot);
+    case 'stock':return 'Referência: '+(d.reference_date||'N/D')+' · '+fmt(d.suggested_actions)+' sugestões';
+    case 'execution':return fmt(d.suggested_stock_actions)+' sugestões de estoque · '+fmt(d.decision_records)+' decisões · '+fmt(d.tower_task_records)+' tarefas';
+    case 'billing':return 'Última referência de custo: '+date(d.last_company_billing_snapshot)+' · '+fmt(d.unknown_cost_events_24h)+' eventos sem custo em 24h';
+    case 'results':return fmt(d.financial_approval_records)+' registros de aprovação; não equivalem a benefício realizado';
+    case 'procfit_source':return 'Estado da origem: '+(d.status||'N/D')+' · último recebimento '+date(d.last_received);
+    default:return 'Sem interpretação definida';
+  }};
+  const rank={critical:0,warning:1,unknown:2,paused:3,ok:4};
+  const fresh=x=>{const t=Date.parse(x.checked_at);return Number.isFinite(t)&&t<=Date.now()+60000&&Date.now()-t<=25*60000;};
+  const state=x=>fresh(x)&&Object.hasOwn(labels,x.severity)?x.severity:'unknown';
+  host.innerHTML='<div class="ops-org-grid">'+[...guardian].sort((a,b)=>rank[state(a)]-rank[state(b)]).map(x=>'<article class="ops-service"><div class="ops-service-top"><strong>'+esc(titles[x.check_code]||x.check_code)+'</strong><span>'+esc(labels[state(x)])+'</span></div><p>'+esc(fresh(x)?details(x):'Verificação vencida; dados anteriores não confirmam estado atual.')+'</p><small>Verificado: '+esc(date(x.checked_at))+'</small></article>').join('')+'</div>';
+ }
  function render(){
   renderGlobal();
+  renderGuardian();
   const totals=metricTotals(daily),totalsByProvider=groupByProvider(daily),official=billing.filter(b=>b.source==='provider_api'&&b.month_spend_usd!==null);
   const known=official.length?formatUSD(official.reduce((x,b)=>x+Number(b.month_spend_usd),0)):'Não conectado';
   const kpis=[['Tokens de entrada',formatCount(totals.input),'Medições registradas'],['Tokens de saída',formatCount(totals.output),'Não inclui solicitações sem métricas'],['Pesquisas web',formatCount(totals.searches),'Chamadas contabilizadas nos resultados'],['Falhas registradas',formatCount(totals.failed),'Investigar sem repetir em excesso'],['Custo confirmado',known,'Somente relatórios administrativos'],['Eventos auditados',formatCount(totals.events),'Histórico, não cobrança']];
@@ -90,6 +115,7 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
  }
  async function load(){
   if(!live()||!company)return;const stamp=++requestId;
+  $('[data-guardian]').textContent='Consultando a empresa selecionada...';
   notice('Consultando agentes, custos, créditos e riscos...');
   const dateStart=new Date(Date.now()-period*86400000);
   const fetches=[
@@ -106,6 +132,8 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
    fetches.push(db.from('cip_ops_global_billing_current').select('provider,account_ref,observed_at,period_month,month_spend_usd,credit_balance,credit_currency,credit_available,cost_basis,report_through,source').order('observed_at',{ascending:false}));
    fetches.push(db.from('cip_ops_global_provider_sync').select('provider,state,last_attempt_at,last_success_at,last_error_code,next_retry_at').order('provider'));
   }
+  const guardianIndex=fetches.length;
+  fetches.push(db.from('cip_guardian_status').select('check_code,severity,detail,checked_at,changed_at').eq('company_id',company));
   const results=await Promise.allSettled(fetches);if(!live()||stamp!==requestId)return;
   const got=i=>results[i].status==='fulfilled'?results[i].value:{error:{message:'indisponível'}};
   const [a,b,c,d,e,f,g]=[0,1,2,3,4,5,6].map(got);
@@ -116,7 +144,8 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
   globalSnapshots=h&&!h.error?h.data||[]:[];
   globalStates=i&&!i.error?i.data||[]:[];
   globalFailed=isAdmin&&!!(h?.error||i?.error);
-  render();const failed=[a,b,c,d,e,f,g,...(isAdmin?[h,i]:[])].filter(x=>x?.error).length;
+  const guardianResponse=got(guardianIndex);guardianFailed=!!guardianResponse.error;guardian=guardianFailed?[]:guardianResponse.data||[];
+  render();const failed=[a,b,c,d,e,f,g,...(isAdmin?[h,i]:[]),guardianResponse].filter(x=>x?.error).length;
   notice(failed?'Falha em '+failed+' fonte(s). Não interpretar dados ausentes como saldo zero.':
    'Dados consultados às '+new Date().toLocaleTimeString('pt-BR')+'. O banco registra novos eventos sem consumir tokens.');
  }
