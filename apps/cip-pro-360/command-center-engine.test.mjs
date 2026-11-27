@@ -5,6 +5,8 @@ test('freshness and source age are explicit, not invented',()=>{
  const now=new Date('2026-11-27T14:00:00Z');
  assert.equal(freshness({source_kind:'radar',source_at:'2026-10-29T12:00:00Z'},now).fresh,false);
  assert.equal(freshness({source_kind:'estoque',source_at:'2026-11-27T12:00:00Z'},now).fresh,true);
+ assert.equal(freshness({source_kind:'radar',source_at:'2026-11-24T14:00:00Z'},now).fresh,false);
+ assert.equal(freshness({source_kind:'missao',source_at:'2026-11-25T13:00:00Z'},now).fresh,false);
  assert.equal(freshness({source_kind:'estoque',source_at:null},now).fresh,false);
 });
 test('manager only approvals, current evidence required for a planning approval',()=>{
