@@ -47,6 +47,15 @@ export function exportTowerCsv(tasks=[],company='',agent=''){
 }
 export function agentById(id){return TOWER_AGENTS.find(a=>a.id===id)||null;}
 
+export function towerHandoff(tasks, company, previous, now=Date.now()){
+ const current=tasks.filter(task=>task.company_id===company&&task.source_module==='command_center'&&
+  task.id&&task.source_reference&&agentById(task.agent_code));
+ const latest=current.filter(task=>previous&&!previous.has(task.id)&&
+  Date.parse(task.created_at)<=now&&Date.parse(task.created_at)>=now-180000)
+  .sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at))[0];
+ return {seen:new Set(current.map(task=>task.id)),latest};
+}
+
 export const TOWER_CYCLE_AGENT_MAP=Object.freeze({
  doquita:'doquita',marca_passo:'precos',radar_digital:'radar',radar_fisico:'radar',
  estoque:'estoque',compras:'compras',transferencias:'logistica',

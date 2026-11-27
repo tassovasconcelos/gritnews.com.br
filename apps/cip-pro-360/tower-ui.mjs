@@ -1,5 +1,5 @@
 import {abcWorkbenchFrame,mountAbcWorkbench} from './tower-abc-ui.mjs';
-import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight} from './tower-engine.mjs';
+import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight,towerHandoff} from './tower-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const companyNames={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
 const statusName=s=>TOWER_ACTION_STATUSES.find(x=>x[0]===s)?.[1]||s;
@@ -14,7 +14,8 @@ export function towerFrame(){
   <section class="ct-office"><div class="ct-office-top"><div><span>INTELIGÊNCIA COMERCIAL, ESTOQUE E PRECIFICAÇÃO</span><h1>Torre de Comando</h1><p>Clique em cada agente para abrir responsabilidades, tarefas e relatórios.</p></div><small>SHOPPING + DISTRIBUIDORA</small></div>
    <div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" style="--left:${a.x}%;--top:${a.y}%" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
-   </div><div class="ct-room-foot"><span>Salão ilustrativo · ações e indicadores consultados em fontes autorizadas</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div><div class="ct-command-pipeline"><div><b>01</b><strong>Detectar</strong><small>Fontes e sinais</small></div><div><b>02</b><strong>Simular</strong><small>Preço e margem</small></div><div><b>03</b><strong>Coordenar</strong><small>Tarefas humanas</small></div><div><b>04</b><strong>Medir</strong><small>Resultado validado</small></div></div>
+     <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
+   </div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Escritório ilustrativo · movimento sinaliza um encaminhamento registrado</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div>
   </section><aside class="ct-agent-info" data-ct-detail aria-live="polite">Selecione um agente.</aside>
  </div>
  <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Carregando dados...</section>
@@ -29,9 +30,10 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipTower');if(!root)return;
  let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='marca_passo';
  let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null;
+ let seenHandoffs, handoffAnimation;
  const $=sel=>root.querySelector(sel);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
- if(onDispose)onDispose(()=>{active=false;stamp++;});
+ if(onDispose)onDispose(()=>{active=false;stamp++;handoffAnimation?.cancel();});
  $('[data-ct-company]').innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(companyNames[c]||c)}</option>`).join('');
  $('[data-ct-company]').value=company;
  const unavailable='<div class="ct-none">Nenhuma evidência consultável nesta fonte, ou acesso indisponível.</div>';
@@ -78,6 +80,27 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   root.querySelectorAll('.ct-agent-hotspot').forEach(el=>el.classList.toggle('ct-selected',el.dataset.ctAgent===selected));
  }
  function render(){renderMetrics();renderAlerts();renderTasks();renderAgent();}
+ function showHandoff(task){
+  const agent=agentById(task.agent_code);
+  $('[data-ct-handoff-status]').textContent='Encaminhamento humano registrado para '+agent.name+' · '+date(task.created_at)+'. Movimento ilustrativo.';
+  if(agent.id==='doquita'||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const origin=agentById('doquita');
+  const room=$('.ct-office-visual');
+  const marker=$('[data-ct-handoff-marker]');
+  if(!marker.animate)return;
+  handoffAnimation?.cancel();
+  marker.textContent=agent.icon;
+  marker.hidden=false;
+  const distanceX=room.clientWidth*(agent.x-origin.x)/100;
+  const distanceY=room.clientHeight*(agent.y-origin.y)/100;
+  const animation=marker.animate([
+   {transform:'translate(0, 0)'},
+   {transform:'translate('+distanceX+'px, '+distanceY+'px)',offset:.8},
+   {transform:'translate('+distanceX+'px, '+distanceY+'px)',opacity:0}
+  ],{duration:1900,easing:'ease-in-out'});
+  handoffAnimation=animation;
+  animation.onfinish=()=>{if(handoffAnimation===animation)marker.hidden=true;};
+ }
  async function count(kind){
   const {count,error}=await db.from(TOWER_SOURCE_TABLES[kind]).select('*',{count:'exact',head:true}).eq('company_id',company);
   return {kind,value:error?null:count,error:error?.message||''};
@@ -90,7 +113,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   const kinds=['stock_actions','market_offers','faro_signals','directory','price_plans','campaigns','demands','quotes','missions','tower_tasks'];
   const results=await Promise.allSettled([
    ...kinds.map(count),
-   db.from('cip_tower_tasks').select('id,version,company_id,agent_code,title,description,status,priority,owner_name,evidence_note,created_at,updated_at').eq('company_id',company).order('updated_at',{ascending:false}).limit(100),
+   db.from('cip_tower_tasks').select('id,version,company_id,agent_code,title,description,status,priority,owner_name,evidence_note,source_module,source_reference,created_at,updated_at').eq('company_id',company).order('updated_at',{ascending:false}).limit(100),
    db.from('cip_stock_actions').select('action_id,sku,kind,description,state,priority,updated_at').eq('company_id',company).order('priority',{ascending:false}).limit(5),
    db.from('cip_market_offers').select('id,sku,state,created_at').eq('company_id',company).order('created_at',{ascending:false}).limit(5),
    db.from('cip_agent_cycles').select('created_at,trigger_kind,engine_version,report').eq('company_id',company).order('created_at',{ascending:false}).limit(1),
@@ -102,7 +125,12 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
    else{counts[k]=null;loadErrors.push(k);}
   });
   const j=kinds.length;
-  if(results[j].status==='fulfilled'&&!results[j].value.error)tasks=results[j].value.data||[];else loadErrors.push('tarefas');
+  if(results[j].status==='fulfilled'&&!results[j].value.error){
+   tasks=results[j].value.data||[];
+   const {seen,latest}=towerHandoff(tasks,company,seenHandoffs);
+   seenHandoffs=seen;
+   if(latest)showHandoff(latest);
+  }else loadErrors.push('tarefas');
   if(results[j+1].status==='fulfilled'&&!results[j+1].value.error)stocks=results[j+1].value.data||[];
   if(results[j+2].status==='fulfilled'&&!results[j+2].value.error)offers=results[j+2].value.data||[];
   if(results[j+3].status==='fulfilled'&&!results[j+3].value.error)lastCycle=results[j+3].value.data?.[0]||null;
@@ -150,7 +178,16 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   const save=e.target.closest('[data-ct-task-save]');if(save)saveTask(save.dataset.ctTaskSave);
  });
  root.addEventListener('submit',e=>{if(e.target.matches('[data-ct-create]')){e.preventDefault();createTask(e.target);}});
- $('[data-ct-company]').addEventListener('change',e=>{if(!companies.includes(e.target.value))return;company=e.target.value;workbench?.setCompany();load();});
+ $('[data-ct-company]').addEventListener('change',e=>{
+  if(!companies.includes(e.target.value)||company===e.target.value)return;
+  company=e.target.value;
+  seenHandoffs=undefined;
+  handoffAnimation?.cancel();
+  $('[data-ct-handoff-marker]').hidden=true;
+  $('[data-ct-handoff-status]').textContent='Escritório ilustrativo · movimento sinaliza um encaminhamento registrado';
+  workbench?.setCompany();
+  load();
+ });
  const workbench=mountAbcWorkbench({root,db,user,companies,getCompany:()=>company,getCanWrite:()=>canWrite,onDispose});
  const poll=window.setInterval(()=>{if(live()&&document.visibilityState==='visible')load();},90000);
  if(onDispose)onDispose(()=>window.clearInterval(poll));

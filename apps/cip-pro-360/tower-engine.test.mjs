@@ -1,6 +1,24 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {towerAgentCycleInsight,ABC_REFERENCE,TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,exportTowerCsv,agentById} from './tower-engine.mjs';
+import {towerAgentCycleInsight,ABC_REFERENCE,TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,exportTowerCsv,agentById,towerHandoff} from './tower-engine.mjs';
+
+test('office signals only unseen recent Central handoffs for the selected company',()=>{
+ const now=Date.parse('2026-11-27T15:00:00Z');
+ const company='shopping_prohospital';
+ const task={id:'handoff',company_id:company,source_module:'command_center',source_reference:'estoque:123',agent_code:'estoque',created_at:new Date(now-1000).toISOString()};
+ assert.equal(towerHandoff([task],company,undefined,now).latest,undefined);
+ const first=towerHandoff([task],company,new Set(),now);
+ assert.equal(first.latest,task);
+ assert.equal(towerHandoff([task],company,first.seen,now).latest,undefined);
+ const invalid=[
+  {...task,company_id:'distribuidora_prohospital'},
+  {...task,source_module:'manual'},
+  {...task,agent_code:'desconhecido'},
+  {...task,created_at:new Date(now-180001).toISOString()},
+  {...task,created_at:new Date(now+1).toISOString()}
+ ];
+ assert.equal(towerHandoff(invalid,company,new Set(),now).latest,undefined);
+});
 
 test('ABC workbook is reference-only and preserves original columns',()=>{
  assert.equal(ABC_REFERENCE.status,'referencia_nao_homologada');
