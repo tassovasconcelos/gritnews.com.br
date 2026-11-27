@@ -1,8 +1,8 @@
 // CIP360 · decisões sobre evidências reais, sem comandos automáticos ao ERP.
 export const COMMAND_KINDS=Object.freeze({
  estoque:{label:'Estoque e preço',icon:'▣',route:'estoque',expiresHours:48},
- radar:{label:'Radar de concorrência',icon:'⌖',route:'radar-mercado',expiresHours:168},
- missao:{label:'Missões dos agentes',icon:'✺',route:'quartel',expiresHours:72},
+ radar:{label:'Radar de concorrência',icon:'⌖',route:'radar-mercado',expiresHours:48},
+ missao:{label:'Missões dos agentes',icon:'✺',route:'quartel',expiresHours:48},
  campanha:{label:'Campanhas comerciais',icon:'✦',route:'precos',expiresHours:48}
 });
 export const DECISION_STATES=Object.freeze({
