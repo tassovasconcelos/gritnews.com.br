@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {OFFICE_PEOPLE,officePeople,movementWaypoints,officeModeLabel,officeGroups,portrait} from './tower-live-office.mjs';
+import {OFFICE_PEOPLE,officePeople,movementWaypoints,officeModeLabel,officeGroups,portrait,workstation} from './tower-live-office.mjs';
 import {TOWER_AGENTS,OFFICE_SCENARIO} from './tower-engine.mjs';
 
 test('all twelve specialist desks have a consistent professional operator and coordinate',()=>{
@@ -51,5 +51,18 @@ test('every portrait is local, decorative and does not make a network request',(
   assert.match(svg,/aria-hidden="true"/);
   assert.match(svg,/<\/svg>$/);
   assert.doesNotMatch(svg,/https?:|<script|<image|undefined/);
+ }
+});
+
+test('each specialist has a local architectural workstation with person, desk and monitor',()=>{
+ for(const p of officePeople(TOWER_AGENTS)){
+  const art=workstation(p);
+  assert.match(art,/^<svg class="ct-workstation-art" viewBox="0 0 300 166"/);
+  assert.match(art,/class="ct-office-human"/);
+  assert.match(art,/class="ct-office-monitor"/);
+  assert.match(art,/aria-hidden="true"/);
+  assert.doesNotMatch(art,/https?:|<script|<image|undefined/);
+  assert.equal((art.match(/<svg\b/g)||[]).length,2);
+  assert.equal((art.match(/<\/svg>/g)||[]).length,2);
  }
 });
