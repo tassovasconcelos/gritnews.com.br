@@ -83,25 +83,25 @@ export const PHOTO_MOTION_REGIONS=Object.freeze([
 export function motionOffset(region,t,activeIds=[],ambient=true){
  const active=activeIds.includes(region.id);
  const phase=t*(region.kind==='hands'?2.7:1.4)+region.phase;
- const envelope=active?1:ambient?.42:0;
+ const envelope=active?1:(ambient ? .42 : 0);
  const wave=Math.sin(phase),nod=Math.sin(phase*.73+region.phase);
  return {dx:envelope*(region.kind==='hands'?2.3:1.5)*wave,dy:envelope*(region.kind==='hands'?1.1:1.25)*nod};
 }
 function mountPhotoMotion({stage,photo,canvas,button,status}){
- const context=canvas.getContext?.('2d');
+ let context=null;try{context=canvas.getContext?.('2d');}catch{}
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
  let enabled=!reduced?.matches,ready=false,visible=true,alive=true,raf=0,last=0,activeIds=[];
  const base=document.createElement('canvas');base.width=1221;base.height=542;
- const source=base.getContext('2d');
+ let source=null;try{source=base.getContext('2d');}catch{}
  const patches=PHOTO_MOTION_REGIONS.map(region=>{
   const patch=document.createElement('canvas');patch.width=region.w;patch.height=region.h;
-  const ctx=patch.getContext('2d');return {region,patch,ctx};
+  let ctx=null;try{ctx=patch.getContext('2d');}catch{}return {region,patch,ctx};
  });
  canvas.width=1221;canvas.height=542;
  function clear(){context?.clearRect(0,0,1221,542);}
  function cancel(){if(raf)window.cancelAnimationFrame(raf);raf=0;clear();}
  function refreshControl(){
-  button.setAttribute('aria-pressed',String(enabled));button.textContent=enabled?'Pausar movimentos':'Ativar movimentos';
+  button.setAttribute('aria-pressed',String(ready&&enabled));button.textContent=enabled?'Pausar movimentos':'Ativar movimentos';
   button.disabled=!ready;status.textContent=!ready?'Cenário estático':enabled?'Movimentos ilustrativos ativados':'Movimentos pausados';
  }
  const canRun=()=>alive&&ready&&enabled&&visible&&document.visibilityState==='visible'&&stage.isConnected&&stage.getClientRects().length>0;
@@ -136,10 +136,10 @@ function mountPhotoMotion({stage,photo,canvas,button,status}){
  const preference=()=>{enabled=!reduced.matches;sync();};
  const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting===true;sync();},{threshold:.05}):null;
  observer?.observe(stage);
- photo.addEventListener('load',init);button.addEventListener('click',toggle);
+ photo.addEventListener('load',init);photo.addEventListener('error',refreshControl);button.addEventListener('click',toggle);
  document.addEventListener('visibilitychange',sync);reduced?.addEventListener?.('change',preference);
  if(photo.complete)init();else refreshControl();
- return {setActive(ids){activeIds=ids.filter(Boolean);},refresh:sync,destroy(){alive=false;cancel();observer?.disconnect();photo.removeEventListener('load',init);button.removeEventListener('click',toggle);document.removeEventListener('visibilitychange',sync);reduced?.removeEventListener?.('change',preference);}};
+ return {setActive(ids){activeIds=ids.filter(Boolean);},refresh:sync,destroy(){alive=false;cancel();observer?.disconnect();photo.removeEventListener('load',init);photo.removeEventListener('error',refreshControl);button.removeEventListener('click',toggle);document.removeEventListener('visibilitychange',sync);reduced?.removeEventListener?.('change',preference);}};
 }
 export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  const room=root.querySelector('.ct-office-visual');
@@ -165,17 +165,17 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  const flow=layer.querySelector('[data-ct-flow]'),label=layer.querySelector('[data-ct-live-mode]'),title=layer.querySelector('[data-ct-flow-title]'),detail=layer.querySelector('[data-ct-flow-detail]');
  const live=()=>alive&&root.isConnected;
  function stop(){
-  flow.hidden=true;window.clearTimeout(timer);timer=null;motion.setActive([]);
+  flow.hidden=true;window.clearTimeout(timer);timer=null;motion.setActive(selected?[selected]:[]);
   for(const b of buttons.values())b.classList.remove('ct-visit-origin','ct-visit-destination');
   flow.dataset.mode='ambient';
  }
- function visit(from,to,{real=false,source=''}={}){
+ function visit(from,to,{real=false,source='',recordTitle=''}={}){
   if(!live()||!from||!to||!byId(to.id)||!byId(from.id))return false;
   stop();flow.hidden=false;flow.dataset.mode=real?'event':'demo';label.textContent=officeModeLabel(real?'event':'demo',source);
-  title.textContent=from.name+' → '+to.name;
+  title.textContent=real?'Encaminhamento para '+to.name:from.name+' → '+to.name;
   layer.querySelector('[data-ct-meeting-from]').innerHTML=portrait(byId(from.id));layer.querySelector('[data-ct-meeting-to]').innerHTML=portrait(byId(to.id));
   const scenario=scenes?.find(s=>s.from===from.id&&s.to===to.id);
-  detail.textContent=real?'Encaminhamento registrado na Central de Ações.':scenario?.description||'Demonstração de colaboração.';
+  detail.textContent=real?(recordTitle||'Encaminhamento registrado na Central de Ações.')+' · Cena representativa, não comprova reunião.':scenario?.description||'Demonstração de colaboração.';
   motion.setActive([from.id,to.id]);
   buttons.get(from.id)?.classList.add('ct-visit-origin');buttons.get(to.id)?.classList.add('ct-visit-destination');
   if(real)timer=window.setTimeout(stop,7000);return true;
@@ -190,8 +190,8 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
    b.dataset.pending=String(taskSourceReady&&n>0);
   }
  }
- function setSelected(id){selected=id;for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}}
- function setCompany(){stop();for(const b of buttons.values()){b.querySelector('[data-ct-records]').textContent='Consultando registros';b.dataset.pending='false';b.title=byId(b.dataset.ctAgent).area;}layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';}
+ function setSelected(id){selected=id;if(flow.hidden)motion.setActive([id]);for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}}
+ function setCompany(){stop();motion.setActive([]);for(const b of buttons.values()){b.querySelector('[data-ct-records]').textContent='Consultando registros';b.dataset.pending='false';b.title=byId(b.dataset.ctAgent).area;}layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';}
  function destroy(){alive=false;stop();motion.destroy();layer.remove();}
  onDispose?.(destroy);
  return {visit,setEvents,setSelected,setCompany,stop,destroy,refreshMotion:motion.refresh,demoTick:()=>false};
