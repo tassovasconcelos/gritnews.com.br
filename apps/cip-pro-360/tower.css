@@ -1,4 +1,9 @@
 
+.ct-abc{border:1px solid #f3d69c;background:#fffbf0;border-radius:10px;padding:10px;margin:12px 0;font-size:11px}
+.ct-abc strong{display:block;color:#8c4814;margin-bottom:6px}
+.ct-abc div{display:grid;gap:3px}
+.ct-abc span{display:block;color:#633b23}
+.ct-abc small{display:block;margin-top:8px;color:#805e3e;line-height:1.4}
 /* CIP360 · Torre de Comando: mantém a marca oficial como imagem inalterada. */
 .ct{--ct-red:#ed1737;--ct-red-dark:#9c1029;--ct-gold:#ffbb29;--ct-dark:#25232a;--ct-gray:#5d6470;color:#272a32;max-width:1600px;margin:0 auto;font-family:inherit;display:grid;gap:13px}
 .ct *{box-sizing:border-box}
