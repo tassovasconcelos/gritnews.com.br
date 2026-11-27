@@ -6,7 +6,7 @@ const month=()=>new Date().toISOString().slice(0,7)+'-01';
 const numberOrNull=s=>s===null||String(s).trim()===''?null:Number(s);
 export function consumptionFrame(){
  return '<section class="ops" id="cipConsumption">'+
- '<header class="ops-head"><div class="ops-brand"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial Grupo Prohospital"><div><small>CIP360 · CONSELHO DE INTELIGÊNCIA OPERACIONAL</small><h1>Central de Consumo e Continuidade</h1><p>IA, agentes, pesquisa, créditos, infraestrutura e execução 24/7.</p></div></div><div class="ops-controls"><label>Empresa<select data-ops-company></select></label><label>Período<select data-ops-period><option value="7">7 dias</option><option value="30">30 dias</option><option selected value="90">90 dias</option><option value="120">120 dias</option></select></label><button class="btn secondary" data-ops-refresh>Atualizar</button></div></header>'+
+ '<header class="ops-head"><div class="ops-brand"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial Grupo Prohospital"><div><small>CIP360 · CONSELHO DE INTELIGÊNCIA OPERACIONAL</small><h1>Central de Consumo e Continuidade</h1><p>IA, agentes, pesquisa, créditos, infraestrutura e saúde das rotinas e gastos operacionais.</p></div></div><div class="ops-controls"><label>Empresa<select data-ops-company></select></label><label>Período<select data-ops-period><option value="7">7 dias</option><option value="30">30 dias</option><option selected value="90">90 dias</option><option value="120">120 dias</option></select></label><button class="btn secondary" data-ops-refresh>Atualizar</button></div></header>'+
  '<p class="ops-status" role="status" data-ops-status>Conferindo dados...</p><div class="ops-kpis" data-ops-kpis></div>'+
  '<div class="ops-continuity"><div><small>CONTINUIDADE OPERACIONAL</small><h2>Observabilidade, eficiência e fallback seguro</h2><p>O monitor opera sem IA. Provedores alternativos exigem acesso e homologação; não há troca automática de contas neste estágio.</p></div><div class="ops-lights" data-ops-health></div></div>'+
  '<div class="ops-columns"><section class="ops-main"><div class="ops-section-head"><div><small>CONSUMO POR SERVIÇO</small><h2>Mapa de provedores e plataformas</h2><p>O financeiro acompanha gastos reais; a operação acompanha tokens, falhas e disponibilidade.</p></div><button class="btn secondary" data-ops-export>Exportar CSV</button></div><div data-ops-services></div></section>'+
@@ -19,15 +19,18 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
  const $=s=>root.querySelector(s);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
  let active=true,requestId=0,company=scope.includes('shopping_prohospital')?'shopping_prohospital':scope[0],period=90,busy=false;
- let providers=[],daily=[],billing=[],alerts=[],history=[],faro=null,cycles=[];
+ let providers=[],daily=[],billing=[],verified=[],alerts=[],history=[],faro=null,cycles=[];
  const notice=t=>{if(live())$('[data-ops-status]').textContent=t;};
  const statement=p=>billing.find(b=>b.provider===p);
  $('[data-ops-company]').innerHTML=scope.map(c=>'<option value="'+esc(c)+'">'+esc(companyNames[c]||c)+'</option>').join('');
  $('[data-ops-company]').value=company;
  function render(){
-  const totals=metricTotals(daily),totalsByProvider=groupByProvider(daily),official=billing.filter(b=>b.source==='provider_api'&&b.month_spend_usd!==null);
-  const known=official.length?formatUSD(official.reduce((x,b)=>x+Number(b.month_spend_usd),0)):'Não conectado';
-  const kpis=[['Tokens de entrada',formatCount(totals.input),'Medições registradas'],['Tokens de saída',formatCount(totals.output),'Não inclui solicitações sem métricas'],['Pesquisas web',formatCount(totals.searches),'Chamadas contabilizadas nos resultados'],['Falhas registradas',formatCount(totals.failed),'Investigar sem repetir em excesso'],['Custo confirmado',known,'Somente relatórios administrativos'],['Eventos auditados',formatCount(totals.events),'Histórico, não cobrança']];
+  const totals=metricTotals(daily),totalsByProvider=groupByProvider(daily);
+  const reported = source => {
+   const rows = verified.filter(b => b.source === source);
+   return rows.length ? formatUSD(rows.reduce((sum,b) => sum + Number(b.month_spend_usd),0)) : 'Não informado';
+  };
+  const kpis=[['Tokens de entrada',formatCount(totals.input),'Medições registradas'],['Tokens de saída',formatCount(totals.output),'Não inclui solicitações sem métricas'],['Pesquisas web',formatCount(totals.searches),'Chamadas contabilizadas nos resultados'],['Falhas registradas',formatCount(totals.failed),'Investigar sem repetir em excesso'],['Custo reportado por API',reported('provider_api'),'Parcial no mês UTC · escopos vinculados'],['Faturas conciliadas',reported('invoice'),'Total dos documentos do mês'],['Eventos auditados',formatCount(totals.events),'Histórico, não cobrança']];
   $('[data-ops-kpis]').innerHTML=kpis.map(([label,value,sub],i)=>'<article class="ops-kpi '+(i===3&&totals.failed?'ops-risk':'')+'"><small>'+esc(label)+'</small><strong>'+esc(value)+'</strong><span>'+esc(sub)+'</span></article>').join('');
   const health=opsHealth(faro,totals,cycles[0]?.created_at);
   $('[data-ops-health]').innerHTML='<div class="ops-health" data-health="'+esc(health.kind)+'"><b>Radar Faro</b><span>'+esc(health.label)+'</span></div>'+
@@ -36,11 +39,13 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
   const categories=[...new Set(providers.map(p=>p.category))];
   $('[data-ops-services]').innerHTML=categories.map(category=>'<div class="ops-category"><h3>'+esc(OPS_GROUPS[category]||category)+'</h3><div class="ops-cards">'+providers.filter(p=>p.category===category).map(p=>{
    const usage=totalsByProvider.get(p.provider)||{input:0,output:0,failed:0,searches:0},bill=statement(p.provider);
-   const signal=budgetSignal(p,bill),credit=creditSignal(bill),link=OPS_PROVIDER_LINKS[p.provider];
+   const cost=verified.find(b=>b.provider===p.provider&&b.source==='provider_api');
+   const signal=budgetSignal(p,cost??bill),credit=creditSignal(bill),link=OPS_PROVIDER_LINKS[p.provider];
    const budgetValue=p.monthly_budget_usd===null?'Não definido':formatUSD(p.monthly_budget_usd);
    return '<article class="ops-service"><div class="ops-service-top"><strong>'+esc(p.display_name)+'</strong><span>'+esc(OPS_READINESS[p.readiness]||p.readiness)+'</span></div>'+
     '<div class="ops-service-stats"><div><small>Tokens entrada / saída</small><b>'+formatCount(usage.input)+' / '+formatCount(usage.output)+'</b></div><div><small>Falhas</small><b>'+formatCount(usage.failed)+'</b></div></div>'+
     '<div class="ops-service-stats"><div><small>Despesa informada</small><b>'+esc(bill?.month_spend_usd===null||!bill?'N/D':formatUSD(bill.month_spend_usd))+'</b></div><div><small>Crédito conhecido</small><b>'+esc(bill?.credit_balance_usd===null||!bill?'N/D':formatUSD(bill.credit_balance_usd))+'</b></div></div>'+
+    (cost?'<p class="ops-provenance">'+esc(formatUSD(cost.month_spend_usd))+' · '+esc(cost.reference_label)+' · consultado '+esc(date(cost.observed_at))+'</p>':'')+
     '<p class="ops-provenance">'+esc(credit.label)+(bill?' · '+esc(date(bill.observed_at)):'')+'</p>'+
     '<p class="ops-budget-status" data-status="'+esc(signal.kind)+'">'+esc(signal.label)+'</p>'+
     '<details><summary>Orçamento, saldo e conexão</summary><p class="ops-note">'+esc(p.notes||'Integração pendente')+'</p>'+
@@ -60,8 +65,9 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
   }).join('')+'</div></div>').join('')||'<p>Sem fornecedores autorizados.</p>';
   $('[data-ops-alerts]').innerHTML=alerts.filter(a=>!a.resolved_at).slice(0,12).map(a=>'<article class="ops-alert" data-level="'+esc(a.severity)+'"><b>'+esc(a.provider)+' · '+esc(a.severity)+'</b><p>'+esc(a.message)+'</p><small>'+esc(date(a.last_seen_at))+'</small></article>').join('')||
    '<p class="ops-note">Sem novos alertas. Ausência de dados não significa serviço saudável.</p>';
-  $('[data-ops-history]').innerHTML=history.length?'<div class="ops-table-scroll"><table><thead><tr><th>Quando</th><th>Agente</th><th>Provedor</th><th>Modelo</th><th>Entrada</th><th>Saída</th><th>Estado</th><th>Custo</th></tr></thead><tbody>'+
-   history.map(e=>'<tr><td>'+esc(date(e.occurred_at))+'</td><td>'+esc(e.agent)+'</td><td>'+esc(e.provider)+'</td><td>'+esc(e.model||'N/D')+'</td><td>'+esc(e.input_tokens===null?'N/D':formatCount(e.input_tokens))+'</td><td>'+esc(e.output_tokens===null?'N/D':formatCount(e.output_tokens))+'</td><td>'+esc(e.status)+'</td><td>'+esc(formatUSD(e.cost_usd))+'</td></tr>').join('')+'</tbody></table></div>':
+  const cell = value => value == null ? 'N/D' : formatCount(value);
+  $('[data-ops-history]').innerHTML=history.length?'<div class="ops-table-scroll"><table><thead><tr><th>Quando</th><th>Agente</th><th>Provedor</th><th>Modelo</th><th>Entrada</th><th>Saída</th><th>Cache</th><th>Raciocínio</th><th>Busca</th><th>Latência</th><th>Estado</th><th>Custo</th><th>Origem</th></tr></thead><tbody>'+
+   history.map(e=>'<tr><td>'+esc(date(e.occurred_at))+'</td><td>'+esc(e.agent)+'</td><td>'+esc(e.provider)+'</td><td>'+esc(e.model||'N/D')+'</td><td>'+esc(e.input_tokens===null?'N/D':formatCount(e.input_tokens))+'</td><td>'+esc(e.output_tokens===null?'N/D':formatCount(e.output_tokens))+'</td><td>'+cell(e.cached_input_tokens)+'</td><td>'+cell(e.reasoning_tokens)+'</td><td>'+cell(e.search_calls)+'</td><td>'+cell(e.latency_ms)+'</td><td>'+esc(e.failure_code||e.status)+'</td><td>'+esc(e.cost_usd==null?'N/D':formatUSD(e.cost_usd)+' · '+e.cost_kind)+'</td><td>'+esc(e.source_kind)+' · '+esc(e.source_ref)+'</td></tr>').join('')+'</tbody></table></div>':
     '<p class="ops-note">Sem registros no período.</p>';
  }
  async function load(){
@@ -73,17 +79,19 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
    db.from('cip_ops_daily_usage').select('*').eq('company_id',company).gte('day',dateStart.toISOString().slice(0,10)).order('day',{ascending:false}).limit(500),
    db.from('cip_ops_billing_current').select('*').eq('company_id',company),
    db.from('cip_ops_alerts').select('provider,severity,message,last_seen_at,resolved_at').eq('company_id',company).order('last_seen_at',{ascending:false}).limit(40),
-   db.from('cip_ops_usage_events').select('agent,provider,model,occurred_at,input_tokens,output_tokens,status,cost_usd').eq('company_id',company).gte('occurred_at',dateStart.toISOString()).order('occurred_at',{ascending:false}).limit(40),
+   db.from('cip_ops_usage_events').select('agent,provider,model,occurred_at,input_tokens,output_tokens,cached_input_tokens,reasoning_tokens,search_calls,latency_ms,status,failure_code,cost_usd,cost_kind,source_kind,source_ref').eq('company_id',company).gte('occurred_at',dateStart.toISOString()).order('occurred_at',{ascending:false}).limit(40),
    db.from('cip_faro_config').select('enabled,failure_streak,circuit_until').eq('company_id',company).maybeSingle(),
-   db.from('cip_agent_cycles').select('created_at').eq('company_id',company).order('created_at',{ascending:false}).limit(1)
+   db.from('cip_agent_cycles').select('created_at').eq('company_id',company).order('created_at',{ascending:false}).limit(1),
+   db.from('cip_ops_verified_monthly_spend').select('*').eq('company_id',company).eq('period_month',month())
   ];
   const results=await Promise.allSettled(fetches);if(!live()||stamp!==requestId)return;
   const got=i=>results[i].status==='fulfilled'?results[i].value:{error:{message:'indisponível'}};
-  const [a,b,c,d,e,f,g]=[0,1,2,3,4,5,6].map(got);
+  const [a,b,c,d,e,f,g,h]=[0,1,2,3,4,5,6,7].map(got);
+  verified=h.error?[]:h.data||[];
   providers=a.error?[]:a.data||[];daily=b.error?[]:b.data||[];
   billing=c.error?[]:c.data||[];alerts=d.error?[]:d.data||[];
   history=e.error?[]:e.data||[];faro=f.error?null:f.data||null;cycles=g.error?[]:g.data||[];
-  render();const failed=[a,b,c,d,e,f,g].filter(x=>x.error).length;
+  render();const failed=[a,b,c,d,e,f,g,h].filter(x=>x.error).length;
   notice(failed?'Falha em '+failed+' fonte(s). Não interpretar dados ausentes como saldo zero.':
    'Dados consultados às '+new Date().toLocaleTimeString('pt-BR')+'. O banco registra novos eventos sem consumir tokens.');
  }
@@ -117,7 +125,7 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
  }
  root.addEventListener('submit',e=>{const f=e.target.closest('form[data-ops-budget],form[data-ops-manual]');if(!f)return;e.preventDefault();if(f.dataset.opsBudget)saveBudget(f);else saveManual(f);});
  root.addEventListener('click',e=>{if(e.target.closest('[data-ops-refresh]'))load();if(e.target.closest('[data-ops-export]'))exportCsv();});
- $('[data-ops-company]').addEventListener('change',e=>{if(scope.includes(e.target.value)){company=e.target.value;load();}});
+ $('[data-ops-company]').addEventListener('change',e=>{if(scope.includes(e.target.value)){company=e.target.value;providers=[];daily=[];billing=[];verified=[];alerts=[];history=[];faro=null;cycles=[];render();load();}});
  $('[data-ops-period]').addEventListener('change',e=>{const days=Number(e.target.value);if([7,30,90,120].includes(days)){period=days;load();}});
  const timer=setInterval(()=>{if(live()&&document.visibilityState==='visible')load();},90000);
  onDispose?.(()=>{active=false;requestId++;clearInterval(timer);});
