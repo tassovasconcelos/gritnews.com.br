@@ -1,5 +1,5 @@
 import {abcWorkbenchFrame,mountAbcWorkbench} from './tower-abc-ui.mjs';
-import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById} from './tower-engine.mjs';
+import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight} from './tower-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const companyNames={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
 const statusName=s=>TOWER_ACTION_STATUSES.find(x=>x[0]===s)?.[1]||s;
@@ -28,7 +28,7 @@ export function towerFrame(){
 export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipTower');if(!root)return;
  let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='marca_passo';
- let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[];
+ let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null;
  const $=sel=>root.querySelector(sel);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
  if(onDispose)onDispose(()=>{active=false;stamp++;});
@@ -52,11 +52,14 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   const a=agentById(selected);if(!a)return;
   const count=counts[a.source],numberText=Number.isInteger(count)?number(count)+' registros':'Fonte indisponível';
   const ownTasks=tasks.filter(t=>t.agent_code===selected),allowed=allowedRoutes.includes(a.route);
+  const insight=towerAgentCycleInsight(selected,lastCycle);
+  const analysisMarkup=insight?'<div class="ct-agent-intelligence"><small>ANÁLISE REGISTRADA · '+esc(new Date(insight.created_at).toLocaleString('pt-BR'))+'</small><p>'+esc(insight.analysis)+'</p><span>'+esc(insight.state)+' · '+(insight.stale?'fonte histórica/desatualizada':'fonte declarada pelo ciclo')+'</span></div>':'<div class="ct-agent-intelligence"><small>ANÁLISE NÃO DISPONÍVEL</small><p>Este especialista ainda não possui um ciclo consultável nesta empresa.</p></div>';
   const abcMarkup=selected==='marca_passo'
     ?'<div class="ct-abc"><strong>Planilha ABC de referência · '+ABC_REFERENCE.total.toLocaleString('pt-BR')+' SKUs</strong><div>'+ABC_REFERENCE.curves.map(c=>'<span>Curva '+esc(c.curve)+': '+c.products.toLocaleString('pt-BR')+' itens · LUCRO '+c.lucro+' · DESPESA '+c.despesa+' · COMISSÃO '+c.comissao+'</span>').join('')+'</div><small>Campos do arquivo original; regras de margem mínima ainda não homologadas para precificação.</small></div>'
     :'';
   $('[data-ct-detail]').innerHTML=`<div class="ct-agent-header"><div class="ct-agent-icon">${esc(a.icon)}</div><div><small>AGENTE ESPECIALISTA</small><h2>${esc(a.name)}</h2><p>${esc(a.area)}</p></div></div>
    <div class="ct-agent-source">${esc(numberText)}<small>Origem: ${esc(TOWER_SOURCE_TABLES[a.source])}; registros não significam decisões já executadas.</small></div>
+   ${analysisMarkup}
    ${abcMarkup}
    <h3>Funções e responsabilidades</h3><ul>${a.functions.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
    <div class="ct-agent-buttons"><button class="btn" type="button" data-ct-go="${esc(a.route)}" ${!allowed?'disabled':''}>Abrir módulo</button><button class="btn secondary" type="button" data-ct-report>Exportar relatório</button></div>
@@ -82,7 +85,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  async function load(){
   if(!live()||!company)return;
   const token=++stamp;
-  counts={};tasks=[];stocks=[];offers=[];canWrite=false;loadErrors=[];
+  counts={};tasks=[];stocks=[];offers=[];canWrite=false;loadErrors=[];lastCycle=null;
   $('[data-ct-metrics]').textContent='Consultando fontes...';
   const kinds=['stock_actions','market_offers','faro_signals','directory','price_plans','campaigns','demands','quotes','missions','tower_tasks'];
   const results=await Promise.allSettled([
@@ -90,6 +93,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
    db.from('cip_tower_tasks').select('id,version,company_id,agent_code,title,description,status,priority,owner_name,evidence_note,created_at,updated_at').eq('company_id',company).order('updated_at',{ascending:false}).limit(100),
    db.from('cip_stock_actions').select('action_id,sku,kind,description,state,priority,updated_at').eq('company_id',company).order('priority',{ascending:false}).limit(5),
    db.from('cip_market_offers').select('id,sku,state,created_at').eq('company_id',company).order('created_at',{ascending:false}).limit(5),
+   db.from('cip_agent_cycles').select('created_at,trigger_kind,engine_version,report').eq('company_id',company).order('created_at',{ascending:false}).limit(1),
    db.rpc('cip_can_access',{p_company:company,p_write:true})
   ]);
   if(!live()||token!==stamp)return;
@@ -101,7 +105,8 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   if(results[j].status==='fulfilled'&&!results[j].value.error)tasks=results[j].value.data||[];else loadErrors.push('tarefas');
   if(results[j+1].status==='fulfilled'&&!results[j+1].value.error)stocks=results[j+1].value.data||[];
   if(results[j+2].status==='fulfilled'&&!results[j+2].value.error)offers=results[j+2].value.data||[];
-  if(results[j+3].status==='fulfilled'&&!results[j+3].value.error)canWrite=results[j+3].value.data===true;
+  if(results[j+3].status==='fulfilled'&&!results[j+3].value.error)lastCycle=results[j+3].value.data?.[0]||null;
+  if(results[j+4].status==='fulfilled'&&!results[j+4].value.error)canWrite=results[j+4].value.data===true;
   const time=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   $('.ct-banner').textContent=(loadErrors.length?'Algumas fontes estão indisponíveis; dados ausentes não são estimados.':'Fontes CIP consultadas. Candidatos, planos e registros precisam de revisão humana antes de decisões.')+' Consulta atualizada às '+time+'; novas coletas dependem da rotina de cada agente.';
   render();
