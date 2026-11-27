@@ -32,6 +32,18 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Verify FinOps migration on disposable PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --detach --rm --name cip-finops-db --env POSTGRES_HOST_AUTH_METHOD=trust postgres:17
+          trap 'docker stop cip-finops-db' EXIT
+          for attempt in {1..30}; do
+            if docker exec cip-finops-db pg_isready -h 127.0.0.1 -U postgres; then break; fi
+            sleep 1
+          done
+          docker cp apps/cip-pro-360/schema cip-finops-db:/tmp/cip-schema
+          docker exec cip-finops-db psql -U postgres -f /tmp/cip-schema/central-consumo-faturamento-v2.test.sql
       - name: Prepare isolated static app
         shell: bash
         run: |
