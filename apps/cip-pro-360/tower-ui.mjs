@@ -18,7 +18,7 @@ export function towerFrame(){
  </section>
  <section data-ct-pane="agents" class="ct-view-pane">
  <div class="ct-layout">
-  <section class="ct-office"><div class="ct-office-top"><div><small class="ct-office-eyebrow">INTELIGÊNCIA QUE APROXIMA</small><h1>Torre de Comando <span class="ct-title-brand">Prohospital</span></h1><p>Inteligência comercial, precificação e performance da operação.</p></div><button class="ct-small-button" type="button" data-ct-view="overview">Ver decisões e indicadores</button></div>
+  <section class="ct-office"><div class="ct-office-top"><div><h1>Torre de Comando <span class="ct-title-brand">Prohospital</span></h1><p>Selecione uma estação para consultar o especialista, suas fontes e pendências.</p></div><button class="ct-small-button" type="button" data-ct-view="overview">Ver decisões e indicadores</button></div>
    <div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
      <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
