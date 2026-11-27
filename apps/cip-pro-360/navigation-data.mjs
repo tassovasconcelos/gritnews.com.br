@@ -1,6 +1,7 @@
 export const SOLUTIONS=[
- ['acoes','Central de Ações e Aprovações','Comece por aqui','Sugestões do Estoque, Radar, agentes e campanhas, com evidências, responsáveis e aprovação auditável.','activity','central acoes aprovacao inteligencia recomendacoes alertas concorrentes pesquisa promocoes campanhas workflow decisao'],
- ['torre','Torre de Comando CIP360','Comece por aqui','Sala visual dos agentes: marque prioridades, analise fontes autorizadas, acompanhe ações e gere relatórios.','team','torre comando cip360 painel agentes marca passo estoque compras radar preco inteligencia relatorio'],
+ ['consumo','Central de Consumo','Comece por aqui','Acompanhe tokens, créditos e custos dos agentes.','activity','consumo tokens creditos api ia custos alertas'],
+ ['acoes','Central de Ações e Aprovações','Comece por aqui','Priorize e aprove sugestões fundamentadas.','activity','central acoes aprovacao evidencia campanha'],
+ ['torre','Torre de Comando CIP360','Comece por aqui','Acompanhe ações e evidências dos agentes.','team','torre comando cip360 agentes inteligencia'],
  ['inicio','Visão geral','Comece por aqui','Uma visão do ambiente e dos seus atalhos.','home','inicio painel dashboard resumo'],
  ['solucoes','Todas as soluções','Comece por aqui','Encontre um módulo pelo objetivo que você quer resolver.','search','buscar pesquisar encontrar menu ferramentas modulos'],
  ['doquita','Doquita','Comece por aqui','Consulte prioridades e a inteligência executiva autorizada.','spark','assistente inteligencia ia analise resumo'],
@@ -11,7 +12,7 @@ export const SOLUTIONS=[
  ['cotacoes','Cotações e conversão','Distribuidora','Registre cotações e acompanhe oportunidades.','document','cotacoes propostas vendas orcamentos funil conversao'],
  ['caderninho','Caderninho inteligente','Distribuidora','Registre produtos procurados e demanda não atendida.','book','faltas procura oportunidades demanda nao atendida'],
  ['concorrentes','Concorrentes do Brasil','Comercial','Acesse lojas por região, estado e cidade, sites e evidências rastreáveis.','store','concorrentes lojas estados cidades diretorio regional sites marcas'],
- ['radar-mercado','Radar B2B2C · Faro','Inteligência e equipe','Pesquise ofertas, confira similaridade e leve evidências ao Marca-passo.','radar','concorrentes concorrencia precos b2b2c radar mercado livre magalu amazon marketplaces atacado distribuidores similaridade marca modelo gtin de para'],
+ ['radar-mercado','Radar B2B2C · Faro','Inteligência e equipe','Pesquise ofertas, confira similaridade e leve evidências ao Marca-passo.','radar','concorrentes precos radar b2b2c marketplace gtin ean'],
  ['radar-b2g','Radar B2G · Íris','Inteligência e equipe','Pesquise licitações, itens e evidências de mercado.','radar','licitacoes editais pregao pncp governo concorrencia pesquisa iris b2g'],
  ['quartel','Quartel dos agentes','Inteligência e equipe','Acompanhe análises automáticas, missões, metas e aprendizado dos 14 agentes.','team','agentes robos missoes tarefas equipe responsaveis metas resultados rotina conselho coordenacao'],
  ['escola','Escola dos agentes','Inteligência e equipe','Organize materiais, conhecimento e desenvolvimento de habilidades.','school','escola treinamento skills conhecimento documentos links aprendizado'],
