@@ -57,6 +57,7 @@ window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPos
 window.cipRenderPricing=()=>pricingFrame();
 window.cipRenderMarket=()=>'<section data-market-loading><h1>Radar B2B2C · Faro</h1><p role="status">Carregando o radar…</p></section>';
 window.cipRenderPresentation=()=>'<section data-presentation-loading><h1>Apresentação executiva</h1><p role="status">Carregando a apresentação…</p></section>';
+// CIP credentials stay in this tab. Never fall back to persistent localStorage.
 window.cipRenderConsumption=()=>'<i data-ops-loading></i>';
 window.cipRenderCommandCenter=()=>'<section data-command-loading role="status">Carregando ações...</section>';
 window.cipRenderTower=()=>'<section data-tower-loading role="status"><h1>Torre de Comando CIP360</h1><p>Carregando os especialistas...</p></section>';
