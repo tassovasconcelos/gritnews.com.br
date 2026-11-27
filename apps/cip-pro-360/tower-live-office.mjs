@@ -65,19 +65,19 @@ export const PANORAMA_STATIONS=Object.freeze({
 // Photo-local motion: no new faces, no camera movement, no deformation of labels or monitors.
 // Coordinates match the exact 1221x542 approved panorama.
 export const PHOTO_MOTION_REGIONS=Object.freeze([
- {id:'radar_digital',kind:'head',x:225,y:220,w:53,h:48,phase:.2},
+ {id:'radar_digital',kind:'head',x:225,y:224,w:53,h:44,phase:.2},
  {id:'compras',kind:'head',x:312,y:274,w:49,h:29,phase:1.4},
  {id:'doquita',kind:'head',x:573,y:218,w:49,h:49,phase:2.7},
- {id:'marca_passo',kind:'hands',x:563,y:283,w:65,h:21,phase:.9},
+ {id:'marca_passo',kind:'hands',x:563,y:283,w:65,h:19,phase:.9},
  {id:'transferencias',kind:'head',x:746,y:221,w:44,h:45,phase:3.1},
  {id:'transferencias',kind:'hands',x:751,y:276,w:58,h:23,phase:1.8},
  {id:'produtos',kind:'head',x:850,y:235,w:48,h:55,phase:.6},
  {id:'radar_fisico',kind:'head',x:976,y:240,w:53,h:55,phase:2.1},
  {id:'produtos',kind:'hands',x:908,y:308,w:63,h:36,phase:3.5},
  {id:'campanhas',kind:'head',x:218,y:350,w:80,h:87,phase:4.4},
- {id:'vendas_b2b',kind:'head',x:616,y:350,w:72,h:83,phase:5.3},
+ {id:'vendas_b2b',kind:'head',x:616,y:353,w:72,h:80,phase:5.3},
  {id:'vendas_b2b',kind:'hands',x:571,y:512,w:66,h:27,phase:2.9},
- {id:'gamificacao',kind:'head',x:918,y:351,w:85,h:91,phase:1.1},
+ {id:'gamificacao',kind:'head',x:918,y:353,w:85,h:89,phase:1.1},
  {id:'gamificacao',kind:'hands',x:950,y:508,w:70,h:31,phase:5.8}
 ]);
 export function motionOffset(region,t,activeIds=[],ambient=true){
@@ -128,7 +128,7 @@ function mountPhotoMotion({stage,photo,canvas,button,status}){
  }
  function sync(){cancel();if(canRun())raf=window.requestAnimationFrame(draw);refreshControl();}
  function init(){
-  if(!alive||!context||!source||!photo.naturalWidth)return;
+  if(!alive)return;if(!context||!source||!photo.naturalWidth){refreshControl();return;}
   try{source.drawImage(photo,0,0,1221,542);ready=true;}catch{ready=false;}
   sync();
  }
