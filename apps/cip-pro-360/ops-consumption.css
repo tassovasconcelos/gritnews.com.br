@@ -79,3 +79,18 @@
 @media(max-width:900px){.ops-head{align-items:stretch;flex-direction:column}.ops-lights{grid-template-columns:1fr 1fr}.ops-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.ops-head{padding:14px}.ops-brand{gap:7px}.ops-brand img{width:94px;height:65px}.ops-brand>div{padding-left:10px}.ops-brand h1{font-size:23px}.ops-controls{flex-wrap:wrap}.ops-controls label{flex:1}.ops-cards,.ops-provider-grid{grid-template-columns:1fr}.ops-lights{grid-template-columns:1fr}.ops-continuity,.ops-main,.ops-sidebar,.ops-history{padding:14px}.ops-kpi{padding:13px}.ops-kpi strong{font-size:22px}}
 @media(prefers-reduced-motion:reduce){.ops *{animation:none!important;transition:none!important}}
+
+/* Org-scope figures are separate from company costs; never sum across the two ledgers. */
+.ops-org{border:1px solid #e4e7ed;background:#fff;border-radius:14px;padding:20px}
+.ops-org[hidden]{display:none!important}
+.ops-org-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ops-org-card{border:1px solid #dbe2eb;border-top:3px solid #b82146;border-radius:11px;padding:14px;display:grid;gap:11px;min-width:0}
+.ops-org-card-top{display:flex;justify-content:space-between;align-items:start;gap:8px}
+.ops-org-card-top b{font-size:13px}
+.ops-org-card-top span{background:#f3f5f7;color:#65707e;font-size:10px;padding:4px 8px;border-radius:20px;max-width:145px;overflow-wrap:anywhere}
+.ops-org-card div:not(.ops-org-card-top){display:grid;gap:3px}
+.ops-org-card small{font-size:10px;color:#75808d}
+.ops-org-card strong{font-size:16px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ops-org-error{font-size:11px;color:#a82b42;font-weight:700}
+@media(max-width:1100px){.ops-org-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.ops-org{padding:14px}.ops-org-grid{grid-template-columns:1fr}}
