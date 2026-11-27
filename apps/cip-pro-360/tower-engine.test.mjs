@@ -1,6 +1,13 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,exportTowerCsv,agentById} from './tower-engine.mjs';
+import {ABC_REFERENCE,TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,exportTowerCsv,agentById} from './tower-engine.mjs';
+
+test('ABC workbook is reference-only and preserves original columns',()=>{
+ assert.equal(ABC_REFERENCE.status,'referencia_nao_homologada');
+ assert.equal(ABC_REFERENCE.total,6514);
+ assert.equal(ABC_REFERENCE.curves.reduce((n,r)=>n+r.products,0),6514);
+ assert.deepEqual(ABC_REFERENCE.curves.map(r=>[r.curve,r.lucro,r.despesa,r.comissao]),[['A',3,17,2],['B',5,17,2],['C',9,17,3]]);
+});
 
 test('twelve clickable specialists have unique IDs and known destinations',()=>{
  assert.equal(TOWER_AGENTS.length,12);
