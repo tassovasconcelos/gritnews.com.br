@@ -35,10 +35,43 @@ export function parseResearch(response,context){
  }
  return {offers:offers.sort((a,b)=>b.match.score-a.match.score),meta:{sources,observed_domains:domains.slice(0,40),region:context.region??null,discovery:context.discovery===true,excluded,search_calls:calls.length,limitations:String(raw.limitations??'Amostra indexada; disponibilidade e preços exigem conferência.').slice(0,1500),model:RADAR_MODEL,usage:{input_tokens:Math.max(0,Number(response.usage?.input_tokens)||0),output_tokens:Math.max(0,Number(response.usage?.output_tokens)||0)},coverage:'sample',collected_at:new Date().toISOString()}};
 }
+
+// Provider HTTP status alone is ambiguous: 429 can mean throttling, billing exhaustion,
+// project spending limits or a missing entitlement. Never store the raw provider body.
+export async function classifyResearchProviderError(response){
+ const status=Number(response?.status)||0;
+ let providerCode='',providerType='';
+ try{
+  if(!response?.body?.getReader)throw Error('no_body');
+  const reader=response.body.getReader(),decoder=new TextDecoder();let body='',n=0;
+  while(true){
+   const chunk=await reader.read();if(chunk.done)break;
+   n+=chunk.value.byteLength;
+   if(n>8192){await reader.cancel();break;}
+   body+=decoder.decode(chunk.value,{stream:true});
+  }
+  if(n<=8192){const error=JSON.parse(body)?.error??{};
+   providerCode=typeof error.code==='string'?error.code:'';
+   providerType=typeof error.type==='string'?error.type:'';
+  }
+ }catch{}
+ const billing=new Set(['insufficient_quota','credit_balance_exhausted','organization_spend_limit_exceeded',
+  'project_spend_limit_exceeded','organization_usage_limit_exceeded','billing_hard_limit_reached',
+  'billing_not_active','payment_required']);
+ const limit=new Set(['rate_limit_exceeded','rate_limit_error','slow_down','requests']);
+ const rateWait=Number(response?.headers?.get?.('retry-after'));
+ const retryAfterSeconds=Number.isFinite(rateWait)&&rateWait>=0?Math.min(86400,Math.ceil(rateWait)):null;
+ const billingIssue=billing.has(providerCode)||billing.has(providerType);
+ const throttled=limit.has(providerCode)||limit.has(providerType);
+ return {error:status===429?billingIssue?'provider_quota_exhausted':throttled?'provider_rate_limit':'provider_429_unclassified':
+  status===503?'provider_capacity_unavailable':'research_unavailable',
+  retryAfterSeconds};
+}
+
 export async function requestResearch(context,{key,fetcher=fetch,limits}={}){
  if(!key)throw Error('ai_not_configured');const payload=researchRequest(context,limits);
  const r=await fetcher('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(payload),signal:AbortSignal.timeout(65000)});
- if(!r.ok)throw Error(r.status===429?'provider_rate_limit':'research_unavailable');
+ if(!r.ok){const failure=await classifyResearchProviderError(r);throw Error(failure.error);}
  const reader=r.body?.getReader();if(!reader)throw Error('invalid_search_output');let text='',size=0;const decoder=new TextDecoder();while(true){const x=await reader.read();if(x.done)break;size+=x.value.length;if(size>2000000){await reader.cancel();throw Error('invalid_search_output');}text+=decoder.decode(x.value,{stream:true});}
  return parseResearch(JSON.parse(text+decoder.decode()),context);
 }
