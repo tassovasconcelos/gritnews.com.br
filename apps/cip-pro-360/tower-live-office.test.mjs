@@ -134,3 +134,13 @@ test('guided collaboration is opt-in and keeps the original station and data pan
  assert.equal((html.match(/class="ct-agent-hotspot"/g)||[]).length,12);
  assert.equal((html.match(/data-ct-metrics/g)||[]).length,1);
 });
+
+test('additional specialists use a responsive dock and override the generic full-width hotspot',()=>{
+ const css=readFileSync(new URL('./tower-live-office.css',import.meta.url),'utf8');
+ const module=readFileSync(new URL('./tower-live-office.mjs',import.meta.url),'utf8');
+ assert.match(module,/ct-panorama-dock/);
+ assert.match(module,/width="1221" height="542"/);
+ assert.match(css,/\.ct-panorama-shortcuts\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(css,/\.ct \.ct-panorama-office \.ct-agent-hotspot\.ct-panorama-extra\{\s*position:relative/);
+ assert.match(css,/@media\(max-width:480px\)\{\s*\.ct-panorama-shortcuts\{grid-template-columns:1fr\}/);
+});

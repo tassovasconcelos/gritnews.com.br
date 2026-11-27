@@ -200,13 +200,27 @@
 @keyframes ctPanoramaSignal{50%{box-shadow:0 0 0 7px #ff972a33,0 0 32px #ffba42}}
 .ct-panorama-lights{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 49% 5%,#ffbb632b,transparent 28%);mix-blend-mode:screen;animation:ctAmbientLight 5s ease-in-out 3}
 @keyframes ctAmbientLight{50%{opacity:.15}}
-.ct-panorama-shortcuts{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;padding:12px 14px;background:linear-gradient(90deg,#3a201c,#231e20)}
-.ct .ct-panorama-office .ct-panorama-extra{position:relative;inset:auto;transform:none;display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;min-width:0;max-width:none;flex:0 1 auto;border:1px solid #c57c5455;border-radius:999px;background:#fff8ef;color:#362a29;padding:7px 12px;box-shadow:none;white-space:normal;font-size:12px}
-.ct .ct-panorama-office .ct-panorama-extra b{width:23px;height:23px;background:#bc1728;color:#fff;font-size:14px}
-.ct .ct-panorama-office .ct-panorama-extra span{max-width:none;overflow:visible}
-.ct .ct-panorama-office .ct-panorama-extra:hover,.ct .ct-panorama-office .ct-panorama-extra.ct-selected{background:#ffe3a3;border-color:#f9ac3b;transform:none}
-.ct .ct-panorama-office .ct-panorama-extra[data-pending="true"]{box-shadow:inset 0 -3px #c22232}
-.ct-panorama-status{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px 14px;padding:9px 15px;background:#fffaf6;color:#665b58;font-size:11px;line-height:1.4}
+.ct-panorama-dock{padding:15px clamp(12px,2vw,24px) 17px;background:#211b1b;color:#fff;border-top:1px solid #68483a}
+.ct-panorama-dock h2{font-size:12px;font-weight:750;margin:0 0 9px;color:#efded5}
+.ct-panorama-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-extra{
+ position:relative;inset:auto;transform:none;display:grid;grid-template-columns:36px minmax(0,1fr);
+ align-items:center;gap:11px;min-height:62px;min-width:0;max-width:none;border:1px solid #624d45;
+ border-radius:10px;background:#302725;color:#fcf2e9;padding:10px 12px;box-shadow:none;
+ text-align:left;white-space:normal;font-size:13px;
+}
+.ct .ct-panorama-office .ct-panorama-extra b{width:34px;height:34px;border-radius:9px;background:#8f222e;color:#fff;font-size:18px}
+.ct .ct-panorama-office .ct-panorama-extra>span{display:grid;gap:3px;max-width:none;overflow:visible}
+.ct .ct-panorama-office .ct-panorama-extra small:not(.ct-sr-only){color:#e3cfc2;font-size:11px;line-height:1.3;font-weight:500}
+.ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-extra:hover,
+.ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-extra.ct-selected{background:#4c3328;border-color:#f1ae6a;transform:none}
+.ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-extra[data-pending="true"]{border-inline-start:3px solid #f19176}
+@media(max-width:480px){
+ .ct-panorama-shortcuts{grid-template-columns:1fr}
+ .ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-extra{min-height:48px}
+}
+.ct-panorama-status{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;padding:10px clamp(12px,2vw,24px);background:#fffaf6;color:#554747;font-size:12px;line-height:1.4}
+.ct-panorama-status [data-ct-live-time]{margin-inline-end:auto}
 .ct .ct-panorama-office .ct-studio-flow{margin:12px;background:#39282b}
 .ct .ct-panorama-office .ct-studio-flow[data-mode="event"]{background:#21463f}
 .ct-agent-drawer{border:1px solid #e6d7d3;border-radius:13px;background:#fff;min-width:0;scroll-margin-top:16px}
@@ -226,7 +240,7 @@
 .ct-brief-note p{font-size:12px;line-height:1.6;color:#40322a}
 .ct-brief .ct-small-button{margin-top:10px}
 @media(max-width:1150px){.ct .ct-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ct .ct-lower{grid-template-columns:repeat(2,minmax(0,1fr))}.ct .ct-brief{grid-column:1/-1}}
-@media(max-width:760px){.ct-panorama-stage{aspect-ratio:auto}.ct-panorama-image{height:auto;aspect-ratio:1221/542}.ct-panorama-controls{position:relative;inset:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;background:#362521;padding:9px}.ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-pin{position:relative;inset:auto;width:100%;height:auto;min-height:42px;transform:none;display:flex;gap:6px;justify-content:center;align-items:center;padding:7px 5px;border-radius:9px;background:#fff8ef;color:#392a28;border:1px solid #cba98e;white-space:normal;font-size:11px}.ct .ct-panorama-office .ct-panorama-pin b,.ct .ct-panorama-office .ct-panorama-pin>span{position:static!important;width:auto!important;height:auto!important;clip-path:none!important;white-space:normal!important;overflow:visible!important}.ct .ct-panorama-office .ct-panorama-pin b{display:grid;width:23px!important;height:23px!important;background:#bd1728;font-size:13px;flex:none}.ct .ct-panorama-office .ct-panorama-pin:hover,.ct .ct-panorama-office .ct-panorama-pin.ct-selected,.ct .ct-panorama-office .ct-panorama-pin:focus-visible{transform:none;background:#ffe2a6;box-shadow:none;border-color:#f5bd51}.ct .ct-lower{grid-template-columns:minmax(0,1fr)}.ct .ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-panorama-shortcuts{gap:6px;padding:9px}.ct .ct-panorama-office .ct-panorama-extra{flex:1 1 110px;font-size:11px;padding:6px}.ct-panorama-status{font-size:10px}}
+@media(max-width:760px){.ct-panorama-stage{aspect-ratio:auto}.ct-panorama-image{height:auto;aspect-ratio:1221/542}.ct-panorama-controls{position:relative;inset:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;background:#362521;padding:9px}.ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-pin{position:relative;inset:auto;width:100%;height:auto;min-height:42px;transform:none;display:flex;gap:6px;justify-content:center;align-items:center;padding:7px 5px;border-radius:9px;background:#fff8ef;color:#392a28;border:1px solid #cba98e;white-space:normal;font-size:11px}.ct .ct-panorama-office .ct-panorama-pin b,.ct .ct-panorama-office .ct-panorama-pin>span{position:static!important;width:auto!important;height:auto!important;clip-path:none!important;white-space:normal!important;overflow:visible!important}.ct .ct-panorama-office .ct-panorama-pin b{display:grid;width:23px!important;height:23px!important;background:#bd1728;font-size:13px;flex:none}.ct .ct-panorama-office .ct-panorama-pin:hover,.ct .ct-panorama-office .ct-panorama-pin.ct-selected,.ct .ct-panorama-office .ct-panorama-pin:focus-visible{transform:none;background:#ffe2a6;box-shadow:none;border-color:#f5bd51}.ct .ct-lower{grid-template-columns:minmax(0,1fr)}.ct .ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-panorama-status{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.ct-panorama-lights,.ct .ct-panorama-office .ct-panorama-pin.ct-visit-origin,.ct .ct-panorama-office .ct-panorama-pin.ct-visit-destination{animation:none!important}}
 
 /* Subtle photographic micro-motion; the approved panorama and all controls remain fixed. */
