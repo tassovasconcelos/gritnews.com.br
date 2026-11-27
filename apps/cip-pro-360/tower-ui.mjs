@@ -102,7 +102,8 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   if(results[j+1].status==='fulfilled'&&!results[j+1].value.error)stocks=results[j+1].value.data||[];
   if(results[j+2].status==='fulfilled'&&!results[j+2].value.error)offers=results[j+2].value.data||[];
   if(results[j+3].status==='fulfilled'&&!results[j+3].value.error)canWrite=results[j+3].value.data===true;
-  $('.ct-banner').textContent=loadErrors.length?'Algumas fontes estão indisponíveis; dados ausentes não são estimados.':'Fontes CIP consultadas. Candidatos, planos e registros precisam de revisão humana antes de decisões.';
+  const time=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  $('.ct-banner').textContent=(loadErrors.length?'Algumas fontes estão indisponíveis; dados ausentes não são estimados.':'Fontes CIP consultadas. Candidatos, planos e registros precisam de revisão humana antes de decisões.')+' Consulta atualizada às '+time+'; novas coletas dependem da rotina de cada agente.';
   render();
  }
  function report(){
@@ -145,5 +146,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  root.addEventListener('submit',e=>{if(e.target.matches('[data-ct-create]')){e.preventDefault();createTask(e.target);}});
  $('[data-ct-company]').addEventListener('change',e=>{if(!companies.includes(e.target.value))return;company=e.target.value;workbench?.setCompany();load();});
  const workbench=mountAbcWorkbench({root,db,user,companies,getCompany:()=>company,getCanWrite:()=>canWrite,onDispose});
+ const poll=window.setInterval(()=>{if(live()&&document.visibilityState==='visible')load();},90000);
+ if(onDispose)onDispose(()=>window.clearInterval(poll));
  load();
 }
