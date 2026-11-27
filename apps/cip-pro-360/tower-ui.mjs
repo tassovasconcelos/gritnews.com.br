@@ -14,7 +14,7 @@ export function towerFrame(){
   <section class="ct-office"><div class="ct-office-top"><div><span>INTELIGÊNCIA COMERCIAL, ESTOQUE E PRECIFICAÇÃO</span><h1>Torre de Comando</h1><p>Clique em cada agente para abrir responsabilidades, tarefas e relatórios.</p></div><small>SHOPPING + DISTRIBUIDORA</small></div>
    <div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" style="--left:${a.x}%;--top:${a.y}%" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
-   </div><div class="ct-room-foot"><span>Salão ilustrativo · ações e indicadores consultados em fontes autorizadas</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button></div><div class="ct-command-pipeline"><div><b>01</b><strong>Detectar</strong><small>Fontes e sinais</small></div><div><b>02</b><strong>Simular</strong><small>Preço e margem</small></div><div><b>03</b><strong>Coordenar</strong><small>Tarefas humanas</small></div><div><b>04</b><strong>Medir</strong><small>Resultado validado</small></div></div>
+   </div><div class="ct-room-foot"><span>Salão ilustrativo · ações e indicadores consultados em fontes autorizadas</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div><div class="ct-command-pipeline"><div><b>01</b><strong>Detectar</strong><small>Fontes e sinais</small></div><div><b>02</b><strong>Simular</strong><small>Preço e margem</small></div><div><b>03</b><strong>Coordenar</strong><small>Tarefas humanas</small></div><div><b>04</b><strong>Medir</strong><small>Resultado validado</small></div></div>
   </section><aside class="ct-agent-info" data-ct-detail aria-live="polite">Selecione um agente.</aside>
  </div>
  <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Carregando dados...</section>
@@ -145,6 +145,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   const hit=e.target.closest('[data-ct-agent]');if(hit){selected=hit.dataset.ctAgent;renderAgent();return;}
   const nav=e.target.closest('[data-ct-go]');if(nav){const r=nav.dataset.ctGo;if(allowedRoutes.includes(r))window.navigate(r);return;}
   if(e.target.closest('[data-ct-report]')){report();return;}
+  if(e.target.closest('[data-ct-command]')&&allowedRoutes.includes('acoes')){window.navigate('acoes');return;}
   if(e.target.closest('[data-ct-open-desk]')){workbench?.open();return;}
   const save=e.target.closest('[data-ct-task-save]');if(save)saveTask(save.dataset.ctTaskSave);
  });
