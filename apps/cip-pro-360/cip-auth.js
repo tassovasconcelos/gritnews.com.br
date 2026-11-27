@@ -376,6 +376,7 @@ window.cipLoadPage=(page)=>{
  if(page==='torre'&&window.cipAuth?.allowedRoutes?.includes(page)){
   const host=document.getElementById('content'),pending=host?.querySelector('[data-tower-loading]'),actor=user?.id;
   if(!document.querySelector('link[data-cip-tower-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href='./tower.css';style.dataset.cipTowerStyle='';document.head.append(style);}
+  if(!document.querySelector('link[data-cip-live-style]')){const liveStyle=document.createElement('link');liveStyle.rel='stylesheet';liveStyle.href='./tower-live-office.css';liveStyle.dataset.cipLiveStyle='';document.head.append(liveStyle);}
   import('./tower-ui.mjs').then(mod=>{if(user?.id!==actor||!pending?.isConnected||!window.cipAuth?.allowedRoutes?.includes(page))return;host.innerHTML=mod.towerFrame();mod.mountTower({db:supabase,user,companies:[...companies],allowedRoutes:window.cipAuth.allowedRoutes,onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});}).catch(()=>{if(pending?.isConnected)pending.textContent='Torre indisponível. Verifique a conexão e tente novamente.';});
  }
  if(!user)return;

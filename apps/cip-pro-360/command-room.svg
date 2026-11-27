@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="530" viewBox="0 0 1200 530" role="img" aria-label="Ilustração do escritório operacional com agentes trabalhando em uma sala de comando">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="530" viewBox="0 0 1200 530" role="img" aria-label="Cenário arquitetônico do escritório de inteligência; personagens profissionais são renderizados em camada acessível no CIP">
 <style>
 @keyframes cipOperatorMotion{0%,100%{transform:translateY(0)}40%{transform:translateY(-2.6px)}60%{transform:translateY(-1.1px)}}
 @keyframes cipMonitorGlow{0%,100%{opacity:.97}50%{opacity:.85}}
-.ct-room-operator{animation:cipOperatorMotion 3.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}
+.ct-room-operator{display:none} /* People are rendered once as interactive live-office characters, never duplicated in the backdrop. */
 .ct-room-operator:nth-of-type(2n){animation-delay:-1.5s}
 .ct-room-operator:nth-of-type(3n){animation-delay:-.7s}
 .ct-room-monitor{animation:cipMonitorGlow 5.2s ease-in-out infinite}

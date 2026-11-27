@@ -1,4 +1,5 @@
 import {abcWorkbenchFrame,mountAbcWorkbench} from './tower-abc-ui.mjs';
+import {mountLiveOffice} from './tower-live-office.mjs';
 import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight,towerHandoff,OFFICE_SCENARIO} from './tower-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const companyNames={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
@@ -11,11 +12,11 @@ export function towerFrame(){
  <header class="ct-head"><div class="ct-logo"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial Grupo Prohospital"><div><strong>CIP<span>360</span></strong><small>Torre de Comando Prohospital</small></div></div><div class="ct-head-control"><label>Operação <select data-ct-company></select></label><span>SESSÃO AUTENTICADA</span></div></header>
  <div class="ct-banner" role="status">Carregando registros de origem do CIP. Não há valores financeiros demonstrativos neste painel.</div>
  <div class="ct-layout">
-  <section class="ct-office"><div class="ct-office-top"><div><span>INTELIGÊNCIA COMERCIAL, ESTOQUE E PRECIFICAÇÃO</span><h1>Torre de Comando</h1><p>Clique em cada agente para abrir responsabilidades, tarefas e relatórios.</p></div><small>SHOPPING + DISTRIBUIDORA</small></div>
+  <section class="ct-office"><div class="ct-office-top"><div><span>INTELIGÊNCIA COMERCIAL, ESTOQUE E PRECIFICAÇÃO</span><h1>Torre de Comando</h1><p>Escritório vivo com profissionais digitais: toque em uma mesa, acompanhe interações e abra evidências reais.</p></div><small>SHOPPING + DISTRIBUIDORA</small></div>
    <div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" style="--left:${a.x}%;--top:${a.y}%" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
      <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
-   </div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Escritório ilustrativo · movimento sinaliza um encaminhamento registrado</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div>
+   </div><div class="ct-live-event-panel"><div><small>PAINEL DE COLABORAÇÃO</small><h3>Atividades registradas</h3><p>Interações cenográficas são identificadas. Apenas registros do CIP comprovam ações.</p></div><div class="ct-live-events" data-ct-live-events><p>Consultando eventos...</p></div></div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Escritório ilustrativo · movimento sinaliza um encaminhamento registrado</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div>
    <div class="ct-office-simulation">
     <button type="button" class="ct-small-button" data-ct-simulate aria-pressed="false">Simular rotina</button>
     <button type="button" class="ct-small-button" data-ct-sim-step hidden>Próxima interação</button>
@@ -35,7 +36,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipTower');if(!root)return;
  let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='marca_passo';
  let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null;
- let seenHandoffs, handoffAnimation, simulationTimer, simulationStep=0, simulating=false;
+ let seenHandoffs, handoffAnimation, simulationTimer, simulationStep=0, simulating=false,officeController;
  const $=sel=>root.querySelector(sel);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
  if(onDispose)onDispose(()=>{active=false;stamp++;stopSimulation();});
@@ -83,12 +84,13 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
    <div class="ct-agent-history"><h3>Encaminhamentos: ${ownTasks.length}</h3>${ownTasks.length?ownTasks.slice(0,4).map(t=>`<p><strong>${esc(t.title)}</strong><br><small>${esc(statusName(t.status))}</small></p>`).join(''):'<p>Nenhuma ação registrada para este agente.</p>'}</div>
    <p data-ct-message role="status" aria-live="polite"></p>`;
   root.querySelectorAll('.ct-agent-hotspot').forEach(el=>el.classList.toggle('ct-selected',el.dataset.ctAgent===selected));
+  officeController?.setSelected(selected);
  }
- function render(){renderMetrics();renderAlerts();renderTasks();renderAgent();}
+ function render(){renderMetrics();renderAlerts();renderTasks();renderAgent();officeController?.setEvents({tasks,cycle:lastCycle});}
  function showHandoff(task){
   const agent=agentById(task.agent_code);
   $('[data-ct-handoff-status]').textContent='Encaminhamento humano registrado para '+agent.name+' · '+date(task.created_at)+'. Movimento ilustrativo.';
-  if(!simulating)animateVisit(agentById('doquita'),agent);
+  if(!simulating)officeController?.visit(agentById('doquita'),agent,{real:true,source:'Central de Ações'});
  }
  function highlightDesks(origin,destination){
   for(const desk of root.querySelectorAll('.ct-agent-hotspot')){
@@ -97,6 +99,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   }
  }
  function animateVisit(origin,agent,roundTrip=false){
+  if(officeController){officeController.visit(origin,agent,{real:false});return;}
   if(origin.id===agent.id||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const room=$('.ct-office-visual');
   const marker=$('[data-ct-handoff-marker]');
@@ -121,6 +124,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  function stopSimulation(message='Demonstração de colaboração sem alterações nos registros do CIP.'){
   window.clearTimeout(simulationTimer);
   handoffAnimation?.cancel();
+  officeController?.stop?.();
   simulating=false;
   $('[data-ct-handoff-marker]').hidden=true;
   highlightDesks();
@@ -213,7 +217,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   await load();
  }
  root.addEventListener('click',e=>{
-  const hit=e.target.closest('[data-ct-agent]');if(hit){selected=hit.dataset.ctAgent;renderAgent();return;}
+  const hit=e.target.closest('[data-ct-agent],[data-ct-live-event]');if(hit){const agent=hit.dataset.ctAgent||hit.dataset.ctLiveEvent;if(agentById(agent)){selected=agent;renderAgent();}return;}
   const nav=e.target.closest('[data-ct-go]');if(nav){const r=nav.dataset.ctGo;if(allowedRoutes.includes(r))window.navigate(r);return;}
   if(e.target.closest('[data-ct-report]')){report();return;}
   if(e.target.closest('[data-ct-command]')&&allowedRoutes.includes('acoes')){window.navigate('acoes');return;}
@@ -237,10 +241,12 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   company=e.target.value;
   seenHandoffs=undefined;
   stopSimulation();
+  officeController?.setCompany();
   $('[data-ct-handoff-status]').textContent='Escritório ilustrativo · movimento sinaliza um encaminhamento registrado';
   workbench?.setCompany();
   load();
  });
+ officeController=mountLiveOffice({root,agents:TOWER_AGENTS,scenes:OFFICE_SCENARIO,onDispose,onSelect:id=>{selected=id;renderAgent();}});
  const workbench=mountAbcWorkbench({root,db,user,companies,getCompany:()=>company,getCanWrite:()=>canWrite,onDispose});
  const poll=window.setInterval(()=>{if(live()&&document.visibilityState==='visible')load();},90000);
  if(onDispose)onDispose(()=>window.clearInterval(poll));
