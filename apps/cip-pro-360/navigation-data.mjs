@@ -1,4 +1,5 @@
 export const SOLUTIONS=[
+ ['torre','Torre de Comando CIP360','Comece por aqui','Sala visual dos agentes: marque prioridades, analise fontes autorizadas, acompanhe ações e gere relatórios.','team','torre comando cip360 painel agentes marca passo estoque compras radar preco inteligencia relatorio'],
  ['inicio','Visão geral','Comece por aqui','Uma visão do ambiente e dos seus atalhos.','home','inicio painel dashboard resumo'],
  ['solucoes','Todas as soluções','Comece por aqui','Encontre um módulo pelo objetivo que você quer resolver.','search','buscar pesquisar encontrar menu ferramentas modulos'],
  ['doquita','Doquita','Comece por aqui','Consulte prioridades e a inteligência executiva autorizada.','spark','assistente inteligencia ia analise resumo'],
