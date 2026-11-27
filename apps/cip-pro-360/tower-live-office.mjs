@@ -54,73 +54,64 @@ export function workstation(p){
  '<path d="M225 105l-3-13h15l-3 13z" fill="#f4eee1"/><path d="M229 92q-12-8-7-16 8 2 9 12 3-14 10-14 4 8-8 18" fill="#688c72"/>'+
  '</svg>';
 }
+// Aligned to the approved panorama (1221 × 542). Nine native labels plus three accessible shortcuts.
+export const PANORAMA_STATIONS=Object.freeze({
+ radar_digital:{x:29.9,y:36.6,w:15.3},radar_fisico:{x:80.8,y:36.6,w:14.7},
+ compras:{x:14.3,y:59.1,w:13.2},marca_passo:{x:40.1,y:60.4,w:17.2},
+ transferencias:{x:62.0,y:60.4,w:16.4},produtos:{x:86.7,y:60.4,w:13.8},
+ campanhas:{x:19.6,y:88.0,w:16.1},vendas_b2b:{x:53.5,y:88.0,w:18.7},
+ gamificacao:{x:85.3,y:88.0,w:17.3}
+});
 export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  const room=root.querySelector('.ct-office-visual');
  if(!room)return {visit:()=>false,setSelected:()=>{},setEvents:()=>{},setCompany:()=>{},stop:()=>{},destroy:()=>{}};
  let alive=true,timer=null,selected='';
  const people=officePeople(agents),byId=id=>people.find(p=>p.id===id);
  const buttons=new Map([...room.querySelectorAll('.ct-agent-hotspot')].map(b=>[b.dataset.ctAgent,b]));
- const oldLogo=room.querySelector('.ct-office-official');oldLogo?.remove();
- room.classList.add('ct-studio','ct-immersive-office');
+ room.querySelector('.ct-office-official')?.remove();
+ room.classList.add('ct-studio','ct-panorama-office');
  const layer=document.createElement('div');layer.className='ct-live-room';
- layer.innerHTML='<div class="ct-office-lobby"><div><small>CIP360 · SEDE DIGITAL</small><h3>Bem-vindo ao nosso escritório</h3><p data-ct-live-time>Consultando último ciclo…</p></div><span class="ct-office-lobby-mark">12 especialistas</span></div><label class="ct-group-label">Visitar departamento<select data-ct-group></select></label><div class="ct-studio-groups"></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient" role="status"><small data-ct-live-mode>'+officeModeLabel('ambient')+'</small><div class="ct-meeting-visual" aria-hidden="true"><span data-ct-meeting-from></span><i></i><span data-ct-meeting-to></span></div><strong data-ct-flow-title>Inteligência conectada</strong><span data-ct-flow-detail>Selecione um especialista para consultar suas evidências.</span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
- const groups=layer.querySelector('.ct-studio-groups'),groupSelect=layer.querySelector('[data-ct-group]');
- const grouped=officeGroups(agents);
- grouped.forEach((group,index)=>{const opt=document.createElement('option');opt.value=String(index);opt.textContent=group.title;groupSelect.append(opt);});
- function showGroup(index){groupSelect.value=String(index);[...groups.children].forEach((g,i)=>g.hidden=i!==index);}
- groupSelect.addEventListener('change',()=>{const index=Number(groupSelect.value);showGroup(index);const first=grouped[index]?.people[0];if(first)onSelect?.(first.id);});
- for(const group of grouped){
-  const section=document.createElement('section');section.className='ct-studio-group';section.dataset.department=String(grouped.indexOf(group));
-  const heading=document.createElement('h3');heading.textContent=group.title;section.append(heading);const wall=document.createElement('div');wall.className='ct-office-wall';wall.setAttribute('aria-hidden','true');wall.innerHTML='<div class="ct-office-window"><i></i><i></i><i></i></div><div class="ct-office-wallboard"><small>CIP360</small><span>'+esc(group.title)+'</span></div><div class="ct-office-window ct-office-window-right"><i></i><i></i><i></i></div>';section.append(wall);
-  const grid=document.createElement('div');grid.className='ct-studio-grid';
-  for(const p of group.people){
-   const button=buttons.get(p.id);if(!button)continue;
-   button.removeAttribute('style');button.setAttribute('aria-pressed','false');
-   button.innerHTML=workstation(p)+'<span class="ct-desk-label"><strong>'+esc(p.name)+'</strong><small data-ct-records>—</small></span>';button.setAttribute('aria-label','Consultar '+p.name+' — '+p.area);
-   grid.append(button);
-  }
-  section.append(grid);groups.append(section);
+ layer.innerHTML='<div class="ct-panorama-stage"><img class="ct-panorama-image" src="./command-room.svg" alt="Escritório ilustrativo da Torre de Comando Prohospital, profissionais e estações de trabalho"><div class="ct-panorama-lights" aria-hidden="true"></div><div class="ct-panorama-controls" aria-label="Estações do escritório"></div></div><div class="ct-panorama-shortcuts" aria-label="Mais especialistas"></div><div class="ct-panorama-status"><span data-ct-live-time>Consultando último ciclo…</span><span>Cenário ilustrativo · clique para consultar os dados</span></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient" role="status" hidden><small data-ct-live-mode></small><div class="ct-meeting-visual" aria-hidden="true"><span data-ct-meeting-from></span><i></i><span data-ct-meeting-to></span></div><strong data-ct-flow-title></strong><span data-ct-flow-detail></span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
+ const controls=layer.querySelector('.ct-panorama-controls'),shortcuts=layer.querySelector('.ct-panorama-shortcuts');
+ for(const p of people){
+  const button=buttons.get(p.id);if(!button)continue;
+  const station=PANORAMA_STATIONS[p.id];button.setAttribute('aria-pressed','false');
+  button.setAttribute('aria-label','Consultar '+p.name+' — '+p.area);
+  button.innerHTML='<b aria-hidden="true">'+esc(p.icon)+'</b><span>'+esc(p.name)+'</span><small data-ct-records class="ct-sr-only">Consultando registros</small>';
+  if(station){button.classList.add('ct-panorama-pin');button.style.cssText='--pin-x:'+station.x+'%;--pin-y:'+station.y+'%;--pin-width:'+station.w+'%';controls.append(button);}
+  else{button.classList.add('ct-panorama-extra');button.removeAttribute('style');shortcuts.append(button);}
  }
- room.prepend(layer);showGroup(2);
+ room.prepend(layer);
  const flow=layer.querySelector('[data-ct-flow]'),label=layer.querySelector('[data-ct-live-mode]'),title=layer.querySelector('[data-ct-flow-title]'),detail=layer.querySelector('[data-ct-flow-detail]');
- flow.hidden=true;
  const live=()=>alive&&root.isConnected;
  function stop(){
-  flow.hidden=true;
-  window.clearTimeout(timer);timer=null;
+  flow.hidden=true;window.clearTimeout(timer);timer=null;
   for(const b of buttons.values())b.classList.remove('ct-visit-origin','ct-visit-destination');
-  flow.dataset.mode='ambient';label.textContent=officeModeLabel('ambient');title.textContent='Inteligência conectada';
-  detail.textContent='Selecione um especialista para consultar suas evidências e encaminhamentos.';
+  flow.dataset.mode='ambient';
  }
  function visit(from,to,{real=false,source=''}={}){
-  if(!live()||!from||!to||from.id===to.id||!byId(from.id)||!byId(to.id))return false;
-  stop();flow.hidden=false;const mode=real?'event':'demo';flow.dataset.mode=mode;label.textContent=officeModeLabel(mode,source);
+  if(!live()||!from||!to||!byId(to.id)||!byId(from.id))return false;
+  stop();flow.hidden=false;flow.dataset.mode=real?'event':'demo';label.textContent=officeModeLabel(real?'event':'demo',source);
   title.textContent=from.name+' → '+to.name;
   layer.querySelector('[data-ct-meeting-from]').innerHTML=portrait(byId(from.id));layer.querySelector('[data-ct-meeting-to]').innerHTML=portrait(byId(to.id));
-  detail.textContent=real?'Encaminhamento registrado na Central de Ações.':'Colaboração ilustrativa entre os especialistas.';
+  const scenario=scenes?.find(s=>s.from===from.id&&s.to===to.id);
+  detail.textContent=real?'Encaminhamento registrado na Central de Ações.':scenario?.description||'Demonstração de colaboração.';
   buttons.get(from.id)?.classList.add('ct-visit-origin');buttons.get(to.id)?.classList.add('ct-visit-destination');
-  if(real)timer=window.setTimeout(stop,6000);return true;
+  if(real)timer=window.setTimeout(stop,7000);return true;
  }
  function setEvents({tasks=[],cycle=null,taskSourceReady=false}={}){
   layer.querySelector('[data-ct-live-time]').textContent=cycle?.created_at?'Último ciclo registrado: '+new Date(cycle.created_at).toLocaleString('pt-BR'):'Nenhum ciclo consultável';
   for(const [id,b] of buttons){
    const n=tasks.filter(t=>t.agent_code===id&&!['concluida','descartada'].includes(t.status)).length;
-   b.querySelector('[data-ct-records]').textContent=!taskSourceReady?'Fonte indisponível':n?n+' em aberto na amostra':'Sem pendência na amostra';
-  }
-  const feed=root.querySelector('[data-ct-live-events]');
-  if(feed){
-   const rows=tasks.filter(x=>x.source_module==='command_center').slice(0,4);
-   feed.innerHTML=rows.length?rows.map(x=>'<button type="button" class="ct-live-event" data-ct-live-event="'+esc(x.agent_code)+'"><b>'+esc(x.title||'Encaminhamento')+'</b><small>'+esc(x.owner_name||'Responsável não atribuído')+' · '+esc(x.status)+'</small></button>').join(''):'<p>Nenhum encaminhamento consultável na amostra.</p>';
+   const msg=!taskSourceReady?'Fonte indisponível':n?n+' pendência(s) na amostra':'Sem pendência na amostra';
+   b.querySelector('[data-ct-records]').textContent=msg;
+   b.title=byId(id).area+' · '+msg;
+   b.dataset.pending=String(taskSourceReady&&n>0);
   }
  }
- function setSelected(id){
-  if(selected!==id){const index=grouped.findIndex(g=>g.people.some(p=>p.id===id));if(index>=0)showGroup(index);}
-  selected=id;
-  for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}
- }
- function setCompany(){stop();for(const b of buttons.values())b.querySelector('[data-ct-records]').textContent='—';layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';const feed=root.querySelector('[data-ct-live-events]');if(feed)feed.textContent='Consultando encaminhamentos…';}
+ function setSelected(id){selected=id;for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}}
+ function setCompany(){stop();for(const b of buttons.values()){b.querySelector('[data-ct-records]').textContent='Consultando registros';b.dataset.pending='false';b.title=byId(b.dataset.ctAgent).area;}layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';}
  function destroy(){alive=false;stop();layer.remove();}
  onDispose?.(destroy);
- // No autonomous scenes: the existing Simular rotina control explicitly starts them.
  return {visit,setEvents,setSelected,setCompany,stop,destroy,demoTick:()=>false};
 }
