@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {ABC_REFERENCE,TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,exportTowerCsv,agentById} from './tower-engine.mjs';
+import {towerAgentCycleInsight,ABC_REFERENCE,TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,towerMetrics,sanitizeCsv,exportTowerCsv,agentById} from './tower-engine.mjs';
 
 test('ABC workbook is reference-only and preserves original columns',()=>{
  assert.equal(ABC_REFERENCE.status,'referencia_nao_homologada');
@@ -45,4 +45,14 @@ test('CSV export is scoped and escapes newlines, injection strings, and quotes',
  assert.ok(!csv.includes('B2B'));
  assert.ok(!csv.includes('distribuidora_prohospital'));
  assert.equal(sanitizeCsv('=2+2'),"\"'=2+2\"");
+});
+
+test('recorded agent insights remain sourced and disclose stale data',()=>{
+ const cycle={created_at:'2026-11-27T07:17:00Z',trigger_kind:'scheduled',
+  report:{agents:[{agent_id:'precos',state:'analyzed',stale:true,metric:'Contribuição',source:'Estoque 19/10',analysis:'Conferir preço e custo antes de agir.'}]}};
+ const insight=towerAgentCycleInsight('marca_passo',cycle);
+ assert.equal(insight.stale,true);
+ assert.equal(insight.trigger_kind,'scheduled');
+ assert.match(insight.analysis,/Conferir/);
+ assert.equal(towerAgentCycleInsight('caderninho',cycle),null);
 });
