@@ -60,7 +60,7 @@ window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPos
 window.cipRenderPricing=()=>pricingFrame();
 window.cipRenderMarket=()=>'<section data-market-loading><h1>Radar B2B2C · Faro</h1><p role="status">Carregando o radar…</p></section>';
 window.cipRenderPresentation=()=>'<section data-presentation-loading><h1>Apresentação executiva</h1><p role="status">Carregando a apresentação…</p></section>';
-window.cipRenderCommandCenter=()=>'<section data-command-loading role="status"><h1>Central de Ações CIP360</h1><p>Consultando dados autorizados...</p></section>';
+window.cipRenderCommandCenter=()=>'<section data-command-loading role="status">Carregando ações...</section>';
 window.cipRenderTower=()=>'<section data-tower-loading role="status"><h1>Torre de Comando CIP360</h1><p>Carregando os especialistas...</p></section>';
 window.cipHomeFrame=()=>homeFrame();window.cipSolutionsFrame=()=>solutionsFrame();window.cipPreferencesFrame=()=>preferencesFrame();window.cipNavigationChanged=(...args)=>navigationChanged(...args);
 const routes={ [V]:["varejo","estoque","precos"], [B]:["b2b","cotacoes","caderninho","radar-b2g","precos"] };
