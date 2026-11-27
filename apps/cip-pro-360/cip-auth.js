@@ -7,7 +7,6 @@ import {pricingFrame,mountPricing} from './pricing-ui.mjs';
 import {erpFrame,mountERP} from './erp-ui.mjs';
 import {processFrame,mountProcesses} from './process-ui.mjs';
 import {botFrame,mountBot} from './bot-ui.mjs';
-// CIP PRO 360° authentication and business data client.
 // Public publishable key only; permissions and segregation enforced by Supabase RLS.
 import { createClient } from "./supabase-js-2.57.0.mjs";
 import {adminFrame,mountAdmin} from "./admin-ui.mjs";
@@ -306,8 +305,6 @@ window.cipSavePriceReview=async()=>{
  reloadPriceReviews();
 };
 
-// Doquita interpreta APENAS registros manuais aos quais o usuário já tem acesso.
- // Não liga Procfit, não aciona comunicação ou altera propostas.
 async function doquitaSource(table,company,columns){
  const {data,error,count}=await supabase.from(table).select(columns,{count:"exact"})
    .eq("company_id",company).order("created_at",{ascending:false}).limit(150);
