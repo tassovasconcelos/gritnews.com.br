@@ -201,3 +201,10 @@
 .ct-agent-intelligence small{display:block;color:#8462a2;font-size:10px;font-weight:900;letter-spacing:.7px}
 .ct-agent-intelligence p{line-height:1.45;margin:7px 0;color:#3e3c4a}
 .ct-agent-intelligence span{color:#857c92;font-size:10px}
+
+.ct-command-pipeline{margin-top:auto;padding:13px 16px;border-top:1px solid #f0e6e6;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;background:linear-gradient(180deg,#fff,#fff7f8)}
+.ct-command-pipeline>div{display:grid;grid-template-columns:auto 1fr;gap:1px 7px;align-items:center}
+.ct-command-pipeline b{border-radius:50%;background:#c21b38;color:#fff;width:25px;height:25px;display:grid;place-items:center;font-size:10px;grid-row:span 2}
+.ct-command-pipeline strong{font-size:11px}
+.ct-command-pipeline small{font-size:10px;color:#73808a}
+@media(max-width:650px){.ct-command-pipeline{grid-template-columns:repeat(2,minmax(0,1fr))}}
