@@ -46,6 +46,9 @@ jobs:
           node --check apps/cip-pro-360/tower-pricing-engine.mjs
           node --test apps/cip-pro-360/tower-pricing-engine.test.mjs
           node --test apps/cip-pro-360/command-center-engine.test.mjs
+          node --test apps/cip-pro-360/ops-consumption-engine.test.mjs
+          node --check apps/cip-pro-360/ops-consumption-engine.mjs
+          node --check apps/cip-pro-360/ops-consumption-ui.mjs
           node --check apps/cip-pro-360/command-center-ui.mjs
           node --check apps/cip-pro-360/command-center-engine.mjs
           node --test apps/cip-pro-360/readiness.test.mjs
