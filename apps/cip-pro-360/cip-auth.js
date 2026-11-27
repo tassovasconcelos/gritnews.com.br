@@ -59,6 +59,7 @@ window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPos
 window.cipRenderPricing=()=>pricingFrame();
 window.cipRenderMarket=()=>'<section data-market-loading><h1>Radar B2B2C · Faro</h1><p role="status">Carregando o radar…</p></section>';
 window.cipRenderPresentation=()=>'<section data-presentation-loading><h1>Apresentação executiva</h1><p role="status">Carregando a apresentação…</p></section>';
+window.cipRenderConsumption=()=>'<section data-ops-loading role="status">Carregando...</section>';
 window.cipRenderCommandCenter=()=>'<section data-command-loading role="status">Carregando ações...</section>';
 window.cipRenderTower=()=>'<section data-tower-loading role="status"><h1>Torre de Comando CIP360</h1><p>Carregando os especialistas...</p></section>';
 window.cipHomeFrame=()=>homeFrame();window.cipSolutionsFrame=()=>solutionsFrame();window.cipPreferencesFrame=()=>preferencesFrame();window.cipNavigationChanged=(...args)=>navigationChanged(...args);
@@ -99,7 +100,7 @@ async function enter(){
   }
   if(!startClock()){await closeSession("Sessão encerrada por tempo de uso ou inatividade. Entre novamente.");return;}
   lastAccessCheck=Date.now();
-  const allowedRoutes=[...(companies.size?["acoes"]:[]),"torre","inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro","concorrentes","radar-mercado",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
+  const allowedRoutes=[...(companies.size?["acoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["consumo"]:[]),"torre","inicio","solucoes","preferencias","cronograma","doquita","quartel","escola","processos","mensageiro","concorrentes","radar-mercado",...(profile.role==="superadm"?["integracoes"]:[]),...(["superadm","diretoria"].includes(profile.role)?["procfit","apresentacao"]:[]),...[...companies].flatMap(x=>routes[x]||[])];
   window.cipAuth={email:user.email,role:profile.role,allowedRoutes,companies:[...companies]};
   document.querySelector('[data-presentation-menu]')?.classList.toggle('hide',!PRESENTATION_ROLES.includes(profile.role));
   document.querySelectorAll("[data-route]").forEach(b=>b.classList.toggle("hide",!allowedRoutes.includes(b.dataset.route)));
@@ -363,6 +364,11 @@ window.cipRefreshDoquita=()=>{if(window.cipAuth?.allowedRoutes?.includes("doquit
 
 window.cipLoadPage=(page)=>{
  disposeSquad();disposeSquad=()=>{};
+ if(page==='consumo'&&window.cipAuth?.allowedRoutes?.includes(page)){
+  const host=document.getElementById('content'),pending=host?.querySelector('[data-ops-loading]'),actor=user?.id;
+  if(!document.querySelector('link[data-cip-ops-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href='./ops-consumption.css';style.dataset.cipOpsStyle='';document.head.append(style);}
+  import('./ops-consumption-ui.mjs').then(mod=>{if(user?.id!==actor||!pending?.isConnected||!window.cipAuth?.allowedRoutes?.includes(page))return;host.innerHTML=mod.consumptionFrame();mod.mountConsumption({db:supabase,user,companies:[...companies],onDispose:fn=>{const previous=disposeSquad;disposeSquad=()=>{previous();fn();};}});}).catch(()=>{if(pending?.isConnected)pending.textContent='Centro de consumo indisponível. Refaça o acesso.';});
+ }
  if(page==='acoes'&&window.cipAuth?.allowedRoutes?.includes(page)){
   const host=document.getElementById('content'),pending=host?.querySelector('[data-command-loading]'),actor=user?.id;
   if(!document.querySelector('link[data-cip-command-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href='./command-center.css';style.dataset.cipCommandStyle='';document.head.append(style);}
