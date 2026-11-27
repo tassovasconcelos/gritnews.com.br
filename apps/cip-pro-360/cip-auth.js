@@ -7,13 +7,11 @@ import {pricingFrame,mountPricing} from './pricing-ui.mjs';
 import {erpFrame,mountERP} from './erp-ui.mjs';
 import {processFrame,mountProcesses} from './process-ui.mjs';
 import {botFrame,mountBot} from './bot-ui.mjs';
-// Public publishable key only; permissions and segregation enforced by Supabase RLS.
 import { createClient } from "./supabase-js-2.57.0.mjs";
 import {adminFrame,mountAdmin} from "./admin-ui.mjs";
 import {knowledgeContext} from "./academy-engine.mjs";
 import {summarizeDoquita} from "./doquita-insights.mjs";
 import {renderSquadPage,mountSquad} from "./agents-ui.mjs";
-// CIP credentials stay in this tab. Never fall back to persistent localStorage.
 const authMemory=new Map();
 const authStorage={
  getItem(key){try{return globalThis.sessionStorage?.getItem(key)??authMemory.get(key)??null;}catch{return authMemory.get(key)??null;}},
@@ -59,7 +57,7 @@ window.cipRenderStock=compact=>stockActionsFrame()+(companies.has(V)?shoppingPos
 window.cipRenderPricing=()=>pricingFrame();
 window.cipRenderMarket=()=>'<section data-market-loading><h1>Radar B2B2C · Faro</h1><p role="status">Carregando o radar…</p></section>';
 window.cipRenderPresentation=()=>'<section data-presentation-loading><h1>Apresentação executiva</h1><p role="status">Carregando a apresentação…</p></section>';
-window.cipRenderConsumption=()=>'<section data-ops-loading role="status">Carregando...</section>';
+window.cipRenderConsumption=()=>'<i data-ops-loading></i>';
 window.cipRenderCommandCenter=()=>'<section data-command-loading role="status">Carregando ações...</section>';
 window.cipRenderTower=()=>'<section data-tower-loading role="status"><h1>Torre de Comando CIP360</h1><p>Carregando os especialistas...</p></section>';
 window.cipHomeFrame=()=>homeFrame();window.cipSolutionsFrame=()=>solutionsFrame();window.cipPreferencesFrame=()=>preferencesFrame();window.cipNavigationChanged=(...args)=>navigationChanged(...args);
