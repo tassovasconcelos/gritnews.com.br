@@ -46,6 +46,14 @@ Comparação de concorrentes, localização e preço dinâmico só pode ser clas
 - Relatórios exportáveis com linhas de origem, filtros por período/loja e pareceres antes de reconhecimento de ganhos.
 - Homologar perfis reais, mobile, permissões, concorrência de atualização e operação em Hostinger.
 
+## Referência ABC recebida e conferida
+O arquivo `ABC produtos.xlsx` (SHA-256 `c0964b6ba423b229c81b129b8d527da047fa56243e29b78d6c49a3d69d8f5c58`) contém **6.514 produtos com código individual sem duplicidade**:
+- Curva A: 3.545 itens; colunas originais `LUCRO=3`, `DESPESA=17`, `COMISSAO=2`.
+- Curva B: 1.803 itens; `LUCRO=5`, `DESPESA=17`, `COMISSAO=2`.
+- Curva C: 1.166 itens; `LUCRO=9`, `DESPESA=17`, `COMISSAO=3`.
+
+Esses nomes de coluna e números são preservados **sem reinterpretar automaticamente LUCRO como piso de margem**; o significado econômico, a empresa de origem e a vigência da planilha requerem homologação. O cockpit exibe somente a referência agregada, sem importar automaticamente regras para o ERP, sem tabelar preço ou calcular resultado financeiro como realizado. Para seguir, realizar conciliação de códigos com o cadastro Procfit, fonte de custo/tributo e alçadas comerciais.
+
 ## Segurança e publicação
 A migração `cip360_torre_de_comando_v1` foi aplicada ao projeto Supabase do CIP. A tabela está isolada por empresa, sem acesso anônimo; escrita depende da função `cip_can_access(company_id,true)`. Registros criados e alterados são auditados por `cip_track_change`. O login principal mantém `gritsolucoes@gmail.com` como superadm no provedor existente — sem repetir senhas.
 
