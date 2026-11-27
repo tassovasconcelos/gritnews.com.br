@@ -53,7 +53,7 @@ test('competitor reference requires equivalent, available, active and recent',()
 
 test('competition reference can alter suggestion but never becomes ERP command',()=>{
  const recent=new Date().toISOString().slice(0,10);
- const x=priceScenarios({...input,competitor:{normalized_price:85,observed_on:recent,equivalent:true,active:true,availability:'available'}});
+ const x=priceScenarios({...input,competitor:{normalized_price:85,observed_on:recent,equivalent:true,active:true,availability:'available',source_url:'https://exemplo.com/sku'}});
  const c=x.scenarios.find(s=>s.kind==='competitivo');
  assert.equal(c.available,true);
  assert.equal(c.suggestedPrice,85);
@@ -72,4 +72,13 @@ test('CSV parser requires original 6514 product count and curve distribution',()
  assert.equal(parsed.items[0].product_name,'PRODUTO; COM PONTO E VIRGULA 0');
  assert.throws(()=>parseABCcsv(header+'\r\n'+values.slice(0,6513).join('\r\n')),/6\.514/);
  assert.throws(()=>parseABCcsv(header+'\r\n'+values.map((v,i)=>i===1?values[0]:v).join('\r\n')),/SKU repetido/);
+});
+
+test('competition under floor and campaign with zero stock remain blocked',()=>{
+ const today=new Date().toISOString().slice(0,10);
+ const low=priceScenarios({...input,competitor:{normalized_price:70,observed_on:today,equivalent:true,active:true,availability:'available',source_url:'https://exemplo.com/item'}});
+ assert.equal(low.scenarios.find(x=>x.kind==='competitivo').available,false);
+ const none=priceScenarios({...input,availableUnits:0});
+ assert.equal(none.scenarios.find(x=>x.kind==='campanha').available,false);
+ assert.equal(none.scenarios.find(x=>x.kind==='promocao').available,false);
 });
