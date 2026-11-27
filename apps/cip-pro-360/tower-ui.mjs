@@ -1,3 +1,4 @@
+import {abcWorkbenchFrame,mountAbcWorkbench} from './tower-abc-ui.mjs';
 import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById} from './tower-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const companyNames={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
@@ -17,6 +18,7 @@ export function towerFrame(){
   </section><aside class="ct-agent-info" data-ct-detail aria-live="polite">Selecione um agente.</aside>
  </div>
  <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Carregando dados...</section>
+ ${abcWorkbenchFrame()}
  <div class="ct-lower">
   <section class="ct-box"><div class="ct-box-head"><div><h2>Alertas e oportunidades</h2><p>Registros de estoque e mercado — conferir fonte, equivalência e data antes de executar.</p></div><span>FONTES CIP</span></div><div data-ct-alerts>Buscando...</div></section>
   <section class="ct-box"><div class="ct-box-head"><div><h2>Encaminhamentos registrados</h2><p>Tarefas humanas com evidências e trilha de auditoria.</p></div><span data-ct-count>—</span></div><div data-ct-tasks>Buscando...</div></section>
@@ -58,6 +60,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
    ${abcMarkup}
    <h3>Funções e responsabilidades</h3><ul>${a.functions.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
    <div class="ct-agent-buttons"><button class="btn" type="button" data-ct-go="${esc(a.route)}" ${!allowed?'disabled':''}>Abrir módulo</button><button class="btn secondary" type="button" data-ct-report>Exportar relatório</button></div>
+   ${['marca_passo','campanhas','radar_digital','produtos'].includes(selected)?'<button class="ct-open-desk" type="button" data-ct-open-desk>Explorar margem, ABC e campanhas</button>':''}
    ${allowed?'':'<p class="ct-hint">Seu perfil não tem permissão para o módulo de destino.</p>'}
    <details class="ct-new-task"><summary>+ Encaminhar nova ação</summary>${canWrite?`<form data-ct-create>
     <label>Título<input name="title" minlength="6" maxlength="160" placeholder="Ação necessária" required></label>
@@ -136,9 +139,11 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   const hit=e.target.closest('[data-ct-agent]');if(hit){selected=hit.dataset.ctAgent;renderAgent();return;}
   const nav=e.target.closest('[data-ct-go]');if(nav){const r=nav.dataset.ctGo;if(allowedRoutes.includes(r))window.navigate(r);return;}
   if(e.target.closest('[data-ct-report]')){report();return;}
+  if(e.target.closest('[data-ct-open-desk]')){workbench?.open();return;}
   const save=e.target.closest('[data-ct-task-save]');if(save)saveTask(save.dataset.ctTaskSave);
  });
  root.addEventListener('submit',e=>{if(e.target.matches('[data-ct-create]')){e.preventDefault();createTask(e.target);}});
- $('[data-ct-company]').addEventListener('change',e=>{if(!companies.includes(e.target.value))return;company=e.target.value;load();});
+ $('[data-ct-company]').addEventListener('change',e=>{if(!companies.includes(e.target.value))return;company=e.target.value;workbench?.setCompany();load();});
+ const workbench=mountAbcWorkbench({root,db,user,companies,getCompany:()=>company,getCanWrite:()=>canWrite,onDispose});
  load();
 }
