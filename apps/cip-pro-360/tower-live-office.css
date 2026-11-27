@@ -175,3 +175,56 @@
 @media(max-width:1250px){.ct .ct-layout{grid-template-columns:1fr}}
 @media(max-width:600px){.ct .ct-immersive-office .ct-live-room{padding:10px}.ct-office-lobby{padding:10px}.ct-office-lobby-mark{display:none}.ct-office-wall{height:74px;padding:9px 7px;gap:5px}.ct-office-window{height:47px}.ct-office-wallboard{padding:4px 3px}.ct-office-wallboard span{font-size:10px}.ct-office-wallboard small{font-size:8px}.ct .ct-immersive-office .ct-studio-grid{padding:6px 5px 11px;gap:3px 5px}.ct .ct-immersive-office .ct-agent-hotspot{padding:2px 2px 5px}.ct-desk-label{min-width:0;padding:6px 3px;width:100%}.ct-desk-label strong{font-size:11px}.ct-desk-label small{font-size:9px}.ct .ct-office-top{flex-wrap:wrap;padding:16px}.ct .ct-office-top h1{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.ct-immersive-office .ct-office-human,.ct-immersive-office .ct-office-monitor,.ct-meeting-visual>i:after{animation:none!important}.ct .ct-immersive-office .ct-agent-hotspot:hover{transform:none}}
+
+/* Approved panorama — full-width single office, functional stations, executive KPIs. */
+.ct{--studio-accent:#bd1226;--studio-ink:#262329;--studio-muted:#67616a;--studio-line:#e8e1df}
+.ct [data-ct-shared][hidden],.ct [data-ct-drawer][hidden]{display:none!important}
+.ct .ct-head{border-bottom:3px solid #b81726;border-radius:12px;background:linear-gradient(110deg,#fff,#fff9f5)}
+.ct .ct-logo strong span,.ct-title-brand{color:#bb1228}
+.ct .ct-view-nav button[aria-pressed="true"]{background:linear-gradient(120deg,#a60f20,#d31b31);color:#fff}
+.ct .ct-layout{grid-template-columns:minmax(0,1fr)}
+.ct .ct-office{border-color:#e4d9d4;box-shadow:0 6px 20px #38201c10}
+.ct .ct-office-top{background:#fff;align-items:center;flex-wrap:wrap}
+.ct .ct-office-top h1{font-size:clamp(23px,2.9vw,35px);letter-spacing:-.8px;color:#29252a}
+.ct .ct-office-top p{font-size:13px;color:#655e62}
+.ct .ct-office-visual.ct-panorama-office{height:auto;min-height:0;background:#231916;overflow:visible}
+.ct .ct-panorama-office .ct-live-room{display:grid;gap:0;padding:0;position:relative}
+.ct-panorama-stage{position:relative;isolation:isolate;overflow:hidden;background:#38261e;aspect-ratio:1221/542}
+.ct-panorama-image{display:block;width:100%;height:100%;object-fit:contain;user-select:none}
+.ct-panorama-controls{position:absolute;inset:0}
+.ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-pin{position:absolute;inset:auto;left:var(--pin-x);top:var(--pin-y);width:var(--pin-width);height:9.1%;min-height:0;max-width:none;min-width:0;transform:translate(-50%,-50%);border-radius:999px;background:transparent;border:2px solid transparent;box-shadow:none;display:grid;place-items:center;padding:0;cursor:pointer;z-index:3;overflow:visible}
+.ct .ct-panorama-office .ct-panorama-pin b,.ct .ct-panorama-office .ct-panorama-pin>span,.ct .ct-sr-only{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;pointer-events:none}
+.ct .ct-panorama-office .ct-panorama-pin:hover,.ct .ct-panorama-office .ct-panorama-pin:focus-visible,.ct .ct-panorama-office .ct-panorama-pin.ct-selected{border-color:#fff2be;box-shadow:0 0 0 3px #d95322dd,0 0 20px #ffbb34d9;background:#ffca4930;transform:translate(-50%,-50%);outline-offset:3px}
+.ct .ct-panorama-office .ct-panorama-pin[data-pending="true"]::after{content:"";position:absolute;top:0;right:1px;width:11px;height:11px;border:2px solid #fff;background:#c22232;border-radius:50%;box-shadow:0 0 6px #ff5034}
+.ct .ct-panorama-office .ct-panorama-pin.ct-visit-origin,.ct .ct-panorama-office .ct-panorama-pin.ct-visit-destination{border-color:#ffdc83;box-shadow:0 0 0 4px #ff972a88,0 0 26px #ffb742;animation:ctPanoramaSignal 1.2s ease-in-out 4}
+@keyframes ctPanoramaSignal{50%{box-shadow:0 0 0 7px #ff972a33,0 0 32px #ffba42}}
+.ct-panorama-lights{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 49% 5%,#ffbb632b,transparent 28%);mix-blend-mode:screen;animation:ctAmbientLight 5s ease-in-out 3}
+@keyframes ctAmbientLight{50%{opacity:.15}}
+.ct-panorama-shortcuts{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;padding:12px 14px;background:linear-gradient(90deg,#3a201c,#231e20)}
+.ct .ct-panorama-office .ct-panorama-extra{position:relative;inset:auto;transform:none;display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;min-width:0;max-width:none;flex:0 1 auto;border:1px solid #c57c5455;border-radius:999px;background:#fff8ef;color:#362a29;padding:7px 12px;box-shadow:none;white-space:normal;font-size:12px}
+.ct .ct-panorama-office .ct-panorama-extra b{width:23px;height:23px;background:#bc1728;color:#fff;font-size:14px}
+.ct .ct-panorama-office .ct-panorama-extra span{max-width:none;overflow:visible}
+.ct .ct-panorama-office .ct-panorama-extra:hover,.ct .ct-panorama-office .ct-panorama-extra.ct-selected{background:#ffe3a3;border-color:#f9ac3b;transform:none}
+.ct .ct-panorama-office .ct-panorama-extra[data-pending="true"]{box-shadow:inset 0 -3px #c22232}
+.ct-panorama-status{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px 14px;padding:9px 15px;background:#fffaf6;color:#665b58;font-size:11px;line-height:1.4}
+.ct .ct-panorama-office .ct-studio-flow{margin:12px;background:#39282b}
+.ct .ct-panorama-office .ct-studio-flow[data-mode="event"]{background:#21463f}
+.ct-agent-drawer{border:1px solid #e6d7d3;border-radius:13px;background:#fff;min-width:0;scroll-margin-top:16px}
+.ct-drawer-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:#4d3437;font-size:13px;gap:8px}
+.ct .ct-agent-drawer .ct-agent-info{margin:0;border:0;box-shadow:none;border-radius:0 0 13px 13px;max-height:none;overflow:visible}
+.ct .ct-agent-drawer .ct-agent-header{background:linear-gradient(115deg,#8b1926,#b71c31)}
+.ct .ct-kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.ct .ct-kpi{border:1px solid #e8deda;border-left:3px solid #c72032;box-shadow:0 3px 10px #4e302009;padding:12px 10px;min-height:112px}
+.ct .ct-kpi small{font-size:11px;min-height:30px}
+.ct .ct-kpi strong{font-size:26px;color:#292429}
+.ct .ct-kpi span{font-size:10px}
+.ct .ct-lower{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.85fr);gap:12px;align-items:start}
+.ct .ct-box{border:1px solid #e7dcd7;box-shadow:0 3px 12px #50331e09;padding:15px}
+.ct .ct-box-head h2{font-size:17px}
+.ct-brief-note{padding:12px;background:#fff6e8;border-radius:9px;border:1px solid #f3d5a7;overflow-wrap:anywhere}
+.ct-brief-note small{font-size:10px;font-weight:750;color:#805324}
+.ct-brief-note p{font-size:12px;line-height:1.6;color:#40322a}
+.ct-brief .ct-small-button{margin-top:10px}
+@media(max-width:1150px){.ct .ct-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ct .ct-lower{grid-template-columns:repeat(2,minmax(0,1fr))}.ct .ct-brief{grid-column:1/-1}}
+@media(max-width:760px){.ct-panorama-stage{aspect-ratio:auto}.ct-panorama-image{height:auto;aspect-ratio:1221/542}.ct-panorama-controls{position:relative;inset:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;background:#362521;padding:9px}.ct .ct-panorama-office .ct-agent-hotspot.ct-panorama-pin{position:relative;inset:auto;width:100%;height:auto;min-height:42px;transform:none;display:flex;gap:6px;justify-content:center;align-items:center;padding:7px 5px;border-radius:9px;background:#fff8ef;color:#392a28;border:1px solid #cba98e;white-space:normal;font-size:11px}.ct .ct-panorama-office .ct-panorama-pin b,.ct .ct-panorama-office .ct-panorama-pin>span{position:static!important;width:auto!important;height:auto!important;clip-path:none!important;white-space:normal!important;overflow:visible!important}.ct .ct-panorama-office .ct-panorama-pin b{display:grid;width:23px!important;height:23px!important;background:#bd1728;font-size:13px;flex:none}.ct .ct-panorama-office .ct-panorama-pin:hover,.ct .ct-panorama-office .ct-panorama-pin.ct-selected,.ct .ct-panorama-office .ct-panorama-pin:focus-visible{transform:none;background:#ffe2a6;box-shadow:none;border-color:#f5bd51}.ct .ct-lower{grid-template-columns:minmax(0,1fr)}.ct .ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-panorama-shortcuts{gap:6px;padding:9px}.ct .ct-panorama-office .ct-panorama-extra{flex:1 1 110px;font-size:11px;padding:6px}.ct-panorama-status{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.ct-panorama-lights,.ct .ct-panorama-office .ct-panorama-pin.ct-visit-origin,.ct .ct-panorama-office .ct-panorama-pin.ct-visit-destination{animation:none!important}}
