@@ -11,12 +11,13 @@ export function towerFrame(){
  return `<div id="cipTower" class="ct">
  <header class="ct-head"><div class="ct-logo"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial Grupo Prohospital"><div><strong>CIP<span>360</span></strong><small>Torre de Comando Prohospital</small></div></div><div class="ct-head-control"><label>Operação <select data-ct-company></select></label><span>SESSÃO AUTENTICADA</span></div></header>
  <div class="ct-banner" role="status">Carregando registros de origem do CIP. Não há valores financeiros demonstrativos neste painel.</div>
+ <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Carregando dados...</section>
  <div class="ct-layout">
-  <section class="ct-office"><div class="ct-office-top"><div><span>INTELIGÊNCIA COMERCIAL, ESTOQUE E PRECIFICAÇÃO</span><h1>Torre de Comando</h1><p>Escritório vivo com profissionais digitais: toque em uma mesa, acompanhe interações e abra evidências reais.</p></div><small>SHOPPING + DISTRIBUIDORA</small></div>
+  <section class="ct-office"><div class="ct-office-top"><div><span>INTELIGÊNCIA COMERCIAL, ESTOQUE E PRECIFICAÇÃO</span><h1>Torre de Comando</h1><p>Visão executiva para transformar dados em decisões. Escolha um especialista e acompanhe as evidências.</p></div><small>SHOPPING + DISTRIBUIDORA</small></div>
    <div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" style="--left:${a.x}%;--top:${a.y}%" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
      <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
-   </div><div class="ct-live-event-panel"><div><small>PAINEL DE COLABORAÇÃO</small><h3>Atividades registradas</h3><p>Interações cenográficas são identificadas. Apenas registros do CIP comprovam ações.</p></div><div class="ct-live-events" data-ct-live-events><p>Consultando eventos...</p></div></div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Escritório ilustrativo · movimento sinaliza um encaminhamento registrado</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div>
+   </div><div class="ct-live-event-panel"><div><small>CENTRAL DE ENCAMINHAMENTOS</small><h3>Atividades registradas</h3><p>Últimos encaminhamentos registrados na Central.</p></div><div class="ct-live-events" data-ct-live-events><p>Consultando eventos...</p></div></div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Colaboração representativa · consulte os registros para confirmar ações</span><button type="button" class="ct-small-button" data-ct-report>Relatório do agente (.csv)</button><button type="button" class="ct-small-button" data-ct-command>Central de Ações e Aprovações</button></div>
    <div class="ct-office-simulation">
     <button type="button" class="ct-small-button" data-ct-simulate aria-pressed="false">Simular rotina</button>
     <button type="button" class="ct-small-button" data-ct-sim-step hidden>Próxima interação</button>
@@ -24,7 +25,7 @@ export function towerFrame(){
    </div>
   </section><aside class="ct-agent-info" data-ct-detail aria-live="polite">Selecione um agente.</aside>
  </div>
- <section class="ct-kpis" data-ct-metrics aria-label="Indicadores da Torre">Carregando dados...</section>
+
  ${abcWorkbenchFrame()}
  <div class="ct-lower">
   <section class="ct-box"><div class="ct-box-head"><div><h2>Alertas e oportunidades</h2><p>Registros de estoque e mercado — conferir fonte, equivalência e data antes de executar.</p></div><span>FONTES CIP</span></div><div data-ct-alerts>Buscando...</div></section>
@@ -34,7 +35,7 @@ export function towerFrame(){
 }
 export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipTower');if(!root)return;
- let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='marca_passo';
+ let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='doquita';
  let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null;
  let seenHandoffs, handoffAnimation, simulationTimer, simulationStep=0, simulating=false,officeController;
  const $=sel=>root.querySelector(sel);
@@ -217,7 +218,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   await load();
  }
  root.addEventListener('click',e=>{
-  const hit=e.target.closest('[data-ct-agent],[data-ct-live-event]');if(hit){const agent=hit.dataset.ctAgent||hit.dataset.ctLiveEvent;if(agentById(agent)){selected=agent;renderAgent();}return;}
+  const hit=e.target.closest('[data-ct-agent],[data-ct-live-event]');if(hit){const agent=hit.dataset.ctAgent||hit.dataset.ctLiveEvent;if(agentById(agent)){selected=agent;renderAgent();if(window.matchMedia('(max-width: 1180px)').matches)$('[data-ct-detail]').scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}return;}
   const nav=e.target.closest('[data-ct-go]');if(nav){const r=nav.dataset.ctGo;if(allowedRoutes.includes(r))window.navigate(r);return;}
   if(e.target.closest('[data-ct-report]')){report();return;}
   if(e.target.closest('[data-ct-command]')&&allowedRoutes.includes('acoes')){window.navigate('acoes');return;}
@@ -242,7 +243,8 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   seenHandoffs=undefined;
   stopSimulation();
   officeController?.setCompany();
-  $('[data-ct-handoff-status]').textContent='Escritório ilustrativo · movimento sinaliza um encaminhamento registrado';
+  counts={};tasks=[];stocks=[];offers=[];canWrite=false;lastCycle=null;renderMetrics();renderAlerts();renderTasks();renderAgent();
+  $('[data-ct-handoff-status]').textContent='Colaboração representativa · consulte os registros para confirmar ações';
   workbench?.setCompany();
   load();
  });
