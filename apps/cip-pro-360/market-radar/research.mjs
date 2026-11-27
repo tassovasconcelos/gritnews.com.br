@@ -72,7 +72,7 @@ export async function classifyResearchProviderError(response){
 export async function requestResearch(context,{key,fetcher=fetch,limits}={}){
  if(!key)throw Error('ai_not_configured');const payload=researchRequest(context,limits);
  const r=await fetcher('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(payload),signal:AbortSignal.timeout(65000)});
- if(!r.ok){const failure=await classifyResearchProviderError(r);throw Error(failure.error);}
+ if(!r.ok){const failure=await classifyResearchProviderError(r);const error=new Error(failure.error);error.retryAfterSeconds=failure.retryAfterSeconds;throw error;}
  const reader=r.body?.getReader();if(!reader)throw Error('invalid_search_output');let text='',size=0;const decoder=new TextDecoder();while(true){const x=await reader.read();if(x.done)break;size+=x.value.length;if(size>2000000){await reader.cancel();throw Error('invalid_search_output');}text+=decoder.decode(x.value,{stream:true});}
  return parseResearch(JSON.parse(text+decoder.decode()),context);
 }
