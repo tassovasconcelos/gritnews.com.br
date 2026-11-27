@@ -66,3 +66,18 @@ export function safeCsv(rows){
   return '"'+s.replace(/"/g,'""')+'"';};
  return '\uFEFF'+rows.map(r=>r.map(escape).join(';')).join('\r\n');
 }
+
+export function faroHealth(config,lastRadarDate,now=new Date()){
+ const last=lastRadarDate?new Date(lastRadarDate):null;
+ const radarAge=last&&Number.isFinite(last.getTime())?(now.getTime()-last.getTime())/3600000:null;
+ const since=radarAge===null?'sem registro recente':Math.round(radarAge/24)+' dia(s) da última oferta';
+ if(!config)return {state:'unavailable',label:'Saúde do Radar indisponível',detail:'Não há configuração acessível para esta operação.'};
+ if(!config.enabled)return {state:'disabled',label:'Radar desativado nesta empresa',detail:'A pesquisa automática requer configuração e autorização próprias. '+since+'.'};
+ const until=Date.parse(config.circuit_until||'');
+ if(Number.isFinite(until)&&until>now.getTime())
+  return {state:'blocked',label:'Radar em proteção contra falhas',detail:'Execução limitada após falhas do provedor. Nova tentativa permitida após '+new Date(until).toLocaleString('pt-BR')+'. '+since+'.'};
+ const failures=Number(config.failure_streak)||0;
+ if(failures>0)return {state:'degraded',label:'Radar com falhas recentes',detail:'Falhas consecutivas registradas: '+failures+'. Conferir quota e fontes externas. '+since+'.'};
+ if(radarAge===null||radarAge>48)return {state:'stale',label:'Radar sem ofertas recentes homologadas',detail:'Revalidar anúncios, frete e equivalência antes de aprovar campanhas. '+since+'.'};
+ return {state:'monitoring',label:'Radar com registros recentes',detail:'Verificar qualidade e equivalência das fontes antes de qualquer aprovação.'};
+}
