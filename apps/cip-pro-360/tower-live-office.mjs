@@ -62,6 +62,85 @@ export const PANORAMA_STATIONS=Object.freeze({
  campanhas:{x:19.6,y:88.0,w:16.1},vendas_b2b:{x:53.5,y:88.0,w:18.7},
  gamificacao:{x:85.3,y:88.0,w:17.3}
 });
+// Photo-local motion: no new faces, no camera movement, no deformation of labels or monitors.
+// Coordinates match the exact 1221x542 approved panorama.
+export const PHOTO_MOTION_REGIONS=Object.freeze([
+ {id:'radar_digital',kind:'head',x:225,y:220,w:53,h:48,phase:.2},
+ {id:'compras',kind:'head',x:312,y:274,w:49,h:29,phase:1.4},
+ {id:'doquita',kind:'head',x:573,y:218,w:49,h:49,phase:2.7},
+ {id:'marca_passo',kind:'hands',x:563,y:283,w:65,h:21,phase:.9},
+ {id:'transferencias',kind:'head',x:746,y:221,w:44,h:45,phase:3.1},
+ {id:'transferencias',kind:'hands',x:751,y:276,w:58,h:23,phase:1.8},
+ {id:'produtos',kind:'head',x:850,y:235,w:48,h:55,phase:.6},
+ {id:'radar_fisico',kind:'head',x:976,y:240,w:53,h:55,phase:2.1},
+ {id:'produtos',kind:'hands',x:908,y:308,w:63,h:36,phase:3.5},
+ {id:'campanhas',kind:'head',x:218,y:350,w:80,h:87,phase:4.4},
+ {id:'vendas_b2b',kind:'head',x:616,y:350,w:72,h:83,phase:5.3},
+ {id:'vendas_b2b',kind:'hands',x:571,y:512,w:66,h:27,phase:2.9},
+ {id:'gamificacao',kind:'head',x:918,y:351,w:85,h:91,phase:1.1},
+ {id:'gamificacao',kind:'hands',x:950,y:508,w:70,h:31,phase:5.8}
+]);
+export function motionOffset(region,t,activeIds=[],ambient=true){
+ const active=activeIds.includes(region.id);
+ const phase=t*(region.kind==='hands'?2.7:1.4)+region.phase;
+ const envelope=active?1:ambient?.42:0;
+ const wave=Math.sin(phase),nod=Math.sin(phase*.73+region.phase);
+ return {dx:envelope*(region.kind==='hands'?2.3:1.5)*wave,dy:envelope*(region.kind==='hands'?1.1:1.25)*nod};
+}
+function mountPhotoMotion({stage,photo,canvas,button,status}){
+ const context=canvas.getContext?.('2d');
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
+ let enabled=!reduced?.matches,ready=false,visible=true,alive=true,raf=0,last=0,activeIds=[];
+ const base=document.createElement('canvas');base.width=1221;base.height=542;
+ const source=base.getContext('2d');
+ const patches=PHOTO_MOTION_REGIONS.map(region=>{
+  const patch=document.createElement('canvas');patch.width=region.w;patch.height=region.h;
+  const ctx=patch.getContext('2d');return {region,patch,ctx};
+ });
+ canvas.width=1221;canvas.height=542;
+ function clear(){context?.clearRect(0,0,1221,542);}
+ function cancel(){if(raf)window.cancelAnimationFrame(raf);raf=0;clear();}
+ function refreshControl(){
+  button.setAttribute('aria-pressed',String(enabled));button.textContent=enabled?'Pausar movimentos':'Ativar movimentos';
+  button.disabled=!ready;status.textContent=!ready?'Cenário estático':enabled?'Movimentos ilustrativos ativados':'Movimentos pausados';
+ }
+ const canRun=()=>alive&&ready&&enabled&&visible&&document.visibilityState==='visible'&&stage.isConnected&&stage.getClientRects().length>0;
+ function draw(now){
+  raf=0;if(!canRun()){clear();return;}
+  if(now-last>=45){
+   last=now;clear();
+   for(const {region:r,patch,ctx} of patches){
+    if(!ctx)continue;
+    const {dx,dy}=motionOffset(r,now/1000,activeIds,true);
+    // Warp a tiny photographic patch using feathered edges; preserve the original background.
+    ctx.clearRect(0,0,r.w,r.h);
+    ctx.globalCompositeOperation='source-over';
+    ctx.drawImage(base,r.x,r.y,r.w,r.h,dx,dy,r.w,r.h);
+    ctx.globalCompositeOperation='destination-in';
+    const gradient=ctx.createRadialGradient(r.w/2,r.h/2,0,r.w/2,r.h/2,Math.min(r.w,r.h)*.5);
+    gradient.addColorStop(0,1);gradient.addColorStop(.53,1);gradient.addColorStop(1,0);
+    ctx.fillStyle=gradient;ctx.fillRect(0,0,r.w,r.h);
+    ctx.globalCompositeOperation='source-over';
+    context.drawImage(patch,r.x,r.y);
+   }
+  }
+  raf=window.requestAnimationFrame(draw);
+ }
+ function sync(){cancel();if(canRun())raf=window.requestAnimationFrame(draw);refreshControl();}
+ function init(){
+  if(!alive||!context||!source||!photo.naturalWidth)return;
+  try{source.drawImage(photo,0,0,1221,542);ready=true;}catch{ready=false;}
+  sync();
+ }
+ const toggle=()=>{if(!ready)return;enabled=!enabled;sync();};
+ const preference=()=>{enabled=!reduced.matches;sync();};
+ const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting===true;sync();},{threshold:.05}):null;
+ observer?.observe(stage);
+ photo.addEventListener('load',init);button.addEventListener('click',toggle);
+ document.addEventListener('visibilitychange',sync);reduced?.addEventListener?.('change',preference);
+ if(photo.complete)init();else refreshControl();
+ return {setActive(ids){activeIds=ids.filter(Boolean);},refresh:sync,destroy(){alive=false;cancel();observer?.disconnect();photo.removeEventListener('load',init);button.removeEventListener('click',toggle);document.removeEventListener('visibilitychange',sync);reduced?.removeEventListener?.('change',preference);}};
+}
 export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  const room=root.querySelector('.ct-office-visual');
  if(!room)return {visit:()=>false,setSelected:()=>{},setEvents:()=>{},setCompany:()=>{},stop:()=>{},destroy:()=>{}};
@@ -71,7 +150,7 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  room.querySelector('.ct-office-official')?.remove();
  room.classList.add('ct-studio','ct-panorama-office');
  const layer=document.createElement('div');layer.className='ct-live-room';
- layer.innerHTML='<div class="ct-panorama-stage"><img class="ct-panorama-image" src="./command-room.svg" alt="Escritório ilustrativo da Torre de Comando Prohospital, profissionais e estações de trabalho"><div class="ct-panorama-lights" aria-hidden="true"></div><div class="ct-panorama-controls" aria-label="Estações do escritório"></div></div><div class="ct-panorama-shortcuts" aria-label="Mais especialistas"></div><div class="ct-panorama-status"><span data-ct-live-time>Consultando último ciclo…</span><span>Cenário ilustrativo · clique para consultar os dados</span></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient" role="status" hidden><small data-ct-live-mode></small><div class="ct-meeting-visual" aria-hidden="true"><span data-ct-meeting-from></span><i></i><span data-ct-meeting-to></span></div><strong data-ct-flow-title></strong><span data-ct-flow-detail></span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
+ layer.innerHTML='<div class="ct-panorama-stage"><img class="ct-panorama-image" src="./command-room.svg" alt="Escritório ilustrativo da Torre de Comando Prohospital, profissionais e estações de trabalho"><canvas class="ct-photo-motion" aria-hidden="true"></canvas><div class="ct-panorama-lights" aria-hidden="true"></div><div class="ct-panorama-controls" aria-label="Estações do escritório"></div></div><div class="ct-panorama-shortcuts" aria-label="Mais especialistas"></div><div class="ct-panorama-status"><span data-ct-live-time>Consultando último ciclo…</span><span data-ct-motion-status>Cenário ilustrativo</span><button type="button" class="ct-motion-toggle" data-ct-motion-toggle aria-pressed="false">Ativar movimentos</button></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient" role="status" hidden><small data-ct-live-mode></small><div class="ct-meeting-visual" aria-hidden="true"><span data-ct-meeting-from></span><i></i><span data-ct-meeting-to></span></div><strong data-ct-flow-title></strong><span data-ct-flow-detail></span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
  const controls=layer.querySelector('.ct-panorama-controls'),shortcuts=layer.querySelector('.ct-panorama-shortcuts');
  for(const p of people){
   const button=buttons.get(p.id);if(!button)continue;
@@ -82,10 +161,11 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
   else{button.classList.add('ct-panorama-extra');button.removeAttribute('style');shortcuts.append(button);}
  }
  room.prepend(layer);
+ const motion=mountPhotoMotion({stage:layer.querySelector('.ct-panorama-stage'),photo:layer.querySelector('.ct-panorama-image'),canvas:layer.querySelector('.ct-photo-motion'),button:layer.querySelector('[data-ct-motion-toggle]'),status:layer.querySelector('[data-ct-motion-status]')});
  const flow=layer.querySelector('[data-ct-flow]'),label=layer.querySelector('[data-ct-live-mode]'),title=layer.querySelector('[data-ct-flow-title]'),detail=layer.querySelector('[data-ct-flow-detail]');
  const live=()=>alive&&root.isConnected;
  function stop(){
-  flow.hidden=true;window.clearTimeout(timer);timer=null;
+  flow.hidden=true;window.clearTimeout(timer);timer=null;motion.setActive([]);
   for(const b of buttons.values())b.classList.remove('ct-visit-origin','ct-visit-destination');
   flow.dataset.mode='ambient';
  }
@@ -96,6 +176,7 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
   layer.querySelector('[data-ct-meeting-from]').innerHTML=portrait(byId(from.id));layer.querySelector('[data-ct-meeting-to]').innerHTML=portrait(byId(to.id));
   const scenario=scenes?.find(s=>s.from===from.id&&s.to===to.id);
   detail.textContent=real?'Encaminhamento registrado na Central de Ações.':scenario?.description||'Demonstração de colaboração.';
+  motion.setActive([from.id,to.id]);
   buttons.get(from.id)?.classList.add('ct-visit-origin');buttons.get(to.id)?.classList.add('ct-visit-destination');
   if(real)timer=window.setTimeout(stop,7000);return true;
  }
@@ -111,7 +192,7 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  }
  function setSelected(id){selected=id;for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}}
  function setCompany(){stop();for(const b of buttons.values()){b.querySelector('[data-ct-records]').textContent='Consultando registros';b.dataset.pending='false';b.title=byId(b.dataset.ctAgent).area;}layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';}
- function destroy(){alive=false;stop();layer.remove();}
+ function destroy(){alive=false;stop();motion.destroy();layer.remove();}
  onDispose?.(destroy);
- return {visit,setEvents,setSelected,setCompany,stop,destroy,demoTick:()=>false};
+ return {visit,setEvents,setSelected,setCompany,stop,destroy,refreshMotion:motion.refresh,demoTick:()=>false};
 }
