@@ -88,60 +88,6 @@ export function motionOffset(region,t,activeIds=[],ambient=true){
  const wave=Math.sin(phase),nod=Math.sin(phase*.73+region.phase);
  return {dx:envelope*(region.kind==='hands'?2.3:1.5)*wave,dy:envelope*(region.kind==='hands'?1.1:1.25)*nod};
 }
-function mountPhotoMotion({stage,photo,canvas,button,status}){
- let context=null;try{context=canvas.getContext?.('2d');}catch{}
- const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
- let enabled=false,ready=false,visible=true,alive=true,raf=0,last=0,activeIds=[];
- const base=document.createElement('canvas');base.width=1221;base.height=542;
- let source=null;try{source=base.getContext('2d');}catch{}
- const patches=PHOTO_MOTION_REGIONS.map(region=>{
-  const patch=document.createElement('canvas');patch.width=region.w;patch.height=region.h;
-  let ctx=null;try{ctx=patch.getContext('2d');}catch{}return {region,patch,ctx};
- });
- canvas.width=1221;canvas.height=542;
- function clear(){context?.clearRect(0,0,1221,542);}
- function cancel(){if(raf)window.cancelAnimationFrame(raf);raf=0;clear();}
- function refreshControl(){
-  button.setAttribute('aria-pressed',String(ready&&enabled));button.textContent=enabled?'Pausar movimentos':'Ativar movimentos';
-  button.disabled=!ready;status.textContent=!ready?'Cenário estático':enabled?'Movimentos ilustrativos ativados':'Movimentos pausados';
- }
- const canRun=()=>alive&&ready&&enabled&&visible&&document.visibilityState==='visible'&&stage.isConnected&&stage.getClientRects().length>0&&!stage.closest('.ct-model-active');
- function draw(now){
-  raf=0;if(!canRun()){clear();return;}
-  if(now-last>=45){
-   last=now;clear();
-   for(const {region:r,patch,ctx} of patches){
-    if(!ctx)continue;
-    const {dx,dy}=motionOffset(r,now/1000,activeIds,true);
-    // Warp a tiny photographic patch using feathered edges; preserve the original background.
-    ctx.clearRect(0,0,r.w,r.h);
-    ctx.globalCompositeOperation='source-over';
-    ctx.drawImage(base,r.x,r.y,r.w,r.h,dx,dy,r.w,r.h);
-    ctx.globalCompositeOperation='destination-in';
-    const gradient=ctx.createRadialGradient(r.w/2,r.h/2,0,r.w/2,r.h/2,Math.min(r.w,r.h)*.5);
-    gradient.addColorStop(0,1);gradient.addColorStop(.53,1);gradient.addColorStop(1,0);
-    ctx.fillStyle=gradient;ctx.fillRect(0,0,r.w,r.h);
-    ctx.globalCompositeOperation='source-over';
-    context.drawImage(patch,r.x,r.y);
-   }
-  }
-  raf=window.requestAnimationFrame(draw);
- }
- function sync(){cancel();if(canRun())raf=window.requestAnimationFrame(draw);refreshControl();}
- function init(){
-  if(!alive)return;if(!context||!source||!photo.naturalWidth){refreshControl();return;}
-  try{source.drawImage(photo,0,0,1221,542);ready=true;}catch{ready=false;}
-  sync();
- }
- const toggle=()=>{if(!ready)return;enabled=!enabled;sync();};
- const preference=()=>{if(reduced.matches)enabled=false;sync();};
- const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting===true;sync();},{threshold:.05}):null;
- observer?.observe(stage);
- photo.addEventListener('load',init);photo.addEventListener('error',refreshControl);button.addEventListener('click',toggle);
- document.addEventListener('visibilitychange',sync);reduced?.addEventListener?.('change',preference);
- if(photo.complete)init();else refreshControl();
- return {setActive(ids){activeIds=ids.filter(Boolean);},refresh:sync,destroy(){alive=false;cancel();observer?.disconnect();photo.removeEventListener('load',init);photo.removeEventListener('error',refreshControl);button.removeEventListener('click',toggle);document.removeEventListener('visibilitychange',sync);reduced?.removeEventListener?.('change',preference);}};
-}
 export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  const room=root.querySelector('.ct-office-visual');
  if(!room)return {visit:()=>false,setSelected:()=>{},setEvents:()=>{},setCompany:()=>{},stop:()=>{},destroy:()=>{}};
@@ -149,20 +95,18 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  const people=officePeople(agents),byId=id=>people.find(p=>p.id===id);
  const buttons=new Map([...room.querySelectorAll('.ct-agent-hotspot')].map(b=>[b.dataset.ctAgent,b]));
  room.querySelector('.ct-office-official')?.remove();
- room.classList.add('ct-studio','ct-panorama-office');
+ room.classList.add('ct-studio','ct-panorama-office','ct-photographic-office');
  const layer=document.createElement('div');layer.className='ct-live-room';
- layer.innerHTML='<div class="ct-room-mode"><span class="ct-room-caption">ESCRITÓRIO PROHOSPITAL · selecione um especialista</span><button type="button" data-ct-scene-toggle aria-pressed="false">Explorar sala 3D</button><div data-ct-camera hidden><button type="button" data-ct-camera-left aria-label="Girar para a esquerda">←</button><button type="button" data-ct-camera-reset>Centralizar</button><button type="button" data-ct-camera-right aria-label="Girar para a direita">→</button><button type="button" data-ct-camera-zoom-out aria-label="Afastar câmera">−</button><button type="button" data-ct-camera-zoom-in aria-label="Aproximar câmera">+</button><button type="button" data-ct-camera-motion aria-pressed="false">Ativar movimentos 3D</button></div></div><div class="ct-panorama-stage"><canvas class="ct-room-3d" aria-label="Modelo ilustrativo do escritório. Toque uma estação ou use os botões abaixo para selecionar especialistas." hidden></canvas><p class="ct-3d-guide" data-ct-3d-guide hidden>Arraste com o mouse para girar. Toque uma estação para consultar o agente. Movimentos e reuniões são representativos.</p><img class="ct-panorama-image" src="./command-room.svg" alt="Escritório ilustrativo da Torre de Comando Prohospital, profissionais e estações de trabalho"><canvas class="ct-photo-motion" aria-hidden="true"></canvas><div class="ct-panorama-lights" aria-hidden="true"></div><div class="ct-panorama-controls" aria-label="Estações do escritório"></div></div><div class="ct-panorama-shortcuts" aria-label="Mais especialistas"></div><div class="ct-panorama-status"><span data-ct-live-time>Consultando último ciclo…</span><span data-ct-motion-status>Cenário ilustrativo</span><button type="button" class="ct-motion-toggle" data-ct-motion-toggle aria-pressed="false">Ativar movimentos</button></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient" role="status" hidden><small data-ct-live-mode></small><div class="ct-meeting-visual" aria-hidden="true"><span data-ct-meeting-from></span><i></i><span data-ct-meeting-to></span></div><strong data-ct-flow-title></strong><span data-ct-flow-detail></span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
- const controls=layer.querySelector('.ct-panorama-controls'),shortcuts=layer.querySelector('.ct-panorama-shortcuts');
+ layer.innerHTML='<div class="ct-room-mode"><span class="ct-room-caption">ESCRITÓRIO PROHOSPITAL · selecione um especialista</span><button type="button" data-ct-scene-toggle aria-pressed="false">Explorar sala 3D</button><div data-ct-camera hidden><button type="button" data-ct-camera-left aria-label="Girar para a esquerda">←</button><button type="button" data-ct-camera-reset>Centralizar</button><button type="button" data-ct-camera-right aria-label="Girar para a direita">→</button><button type="button" data-ct-camera-zoom-out aria-label="Afastar câmera">−</button><button type="button" data-ct-camera-zoom-in aria-label="Aproximar câmera">+</button><button type="button" data-ct-camera-motion aria-pressed="false">Ativar movimentos 3D</button></div></div><div class="ct-panorama-stage"><canvas class="ct-room-3d" aria-label="Modelo ilustrativo do escritório. Toque uma estação ou use os botões abaixo para selecionar especialistas." hidden></canvas><p class="ct-3d-guide" data-ct-3d-guide hidden>Arraste com o mouse para girar. Toque uma estação para consultar o agente. Movimentos e reuniões são representativos.</p><img class="ct-panorama-image" src="./escritorio-prohospital.png" alt="Escritório corporativo com estações de análise e sala de reunião envidraçada" decoding="async"></div><div class="ct-panorama-shortcuts" aria-label="Estações do escritório"></div><div class="ct-panorama-status"><span data-ct-live-time>Consultando último ciclo…</span></div><div class="ct-studio-flow" data-ct-flow data-mode="ambient" role="status" hidden><small data-ct-live-mode></small><div class="ct-meeting-visual" aria-hidden="true"><span data-ct-meeting-from></span><i></i><span data-ct-meeting-to></span></div><strong data-ct-flow-title></strong><span data-ct-flow-detail></span><div class="ct-flow-track" aria-hidden="true"><i></i></div></div>';
+ const shortcuts=layer.querySelector('.ct-panorama-shortcuts');
  for(const p of people){
   const button=buttons.get(p.id);if(!button)continue;
-  const station=PANORAMA_STATIONS[p.id];button.setAttribute('aria-pressed','false');
+  button.setAttribute('aria-pressed','false');
   button.setAttribute('aria-label','Consultar '+p.name+' — '+p.area);
   button.innerHTML='<b aria-hidden="true">'+esc(p.icon)+'</b><span>'+esc(p.name)+'</span><small data-ct-records class="ct-sr-only">Consultando registros</small>';
-  if(station){button.classList.add('ct-panorama-pin');button.style.cssText='--pin-x:'+station.x+'%;--pin-y:'+station.y+'%;--pin-width:'+station.w+'%';controls.append(button);}
-  else{button.classList.add('ct-panorama-extra');button.removeAttribute('style');shortcuts.append(button);}
+  button.classList.add('ct-panorama-extra');button.removeAttribute('style');shortcuts.append(button);
  }
  room.prepend(layer);
- const motion=mountPhotoMotion({stage:layer.querySelector('.ct-panorama-stage'),photo:layer.querySelector('.ct-panorama-image'),canvas:layer.querySelector('.ct-photo-motion'),button:layer.querySelector('[data-ct-motion-toggle]'),status:layer.querySelector('[data-ct-motion-status]')});
  const sceneCanvas=layer.querySelector('.ct-room-3d');
  const sceneToggle=layer.querySelector('[data-ct-scene-toggle]');
  const camera=layer.querySelector('[data-ct-camera]');
@@ -183,7 +127,7 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
   sceneToggle.setAttribute('aria-pressed',String(enabled));
   sceneToggle.textContent=enabled?'Voltar ao panorama':'Explorar sala 3D';
   if(enabled){model.select(selected);model.setPriorities(guardian);if(sceneExchange)model.showExchange(sceneExchange);}
-  refresh3D();motion.refresh();
+  refresh3D();
  });
  layer.querySelector('[data-ct-camera-left]').addEventListener('click',()=>model?.turn(-.12));
  layer.querySelector('[data-ct-camera-right]').addEventListener('click',()=>model?.turn(.12));
@@ -197,7 +141,7 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
  const flow=layer.querySelector('[data-ct-flow]'),label=layer.querySelector('[data-ct-live-mode]'),title=layer.querySelector('[data-ct-flow-title]'),detail=layer.querySelector('[data-ct-flow-detail]');
  const live=()=>alive&&root.isConnected;
  function stop(){
-  flow.hidden=true;sceneExchange=null;model?.showExchange(null);window.clearTimeout(timer);timer=null;motion.setActive(selected?[selected]:[]);
+  flow.hidden=true;sceneExchange=null;model?.showExchange(null);window.clearTimeout(timer);timer=null;
   for(const b of buttons.values())b.classList.remove('ct-visit-origin','ct-visit-destination');
   flow.dataset.mode='ambient';
  }
@@ -205,10 +149,10 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
   if(!live()||!from||!to||!byId(to.id)||!byId(from.id))return false;
   stop();flow.hidden=false;flow.dataset.mode=real?'event':'demo';label.textContent=officeModeLabel(real?'event':'demo',source);
   title.textContent=real?'Encaminhamento para '+to.name:from.name+' → '+to.name;
-  layer.querySelector('[data-ct-meeting-from]').innerHTML=portrait(byId(from.id));layer.querySelector('[data-ct-meeting-to]').innerHTML=portrait(byId(to.id));
+  layer.querySelector('[data-ct-meeting-from]').textContent=from.name;layer.querySelector('[data-ct-meeting-to]').textContent=to.name;
   const scenario=scenes?.find(s=>s.from===from.id&&s.to===to.id);
   detail.textContent=real?(recordTitle||'Encaminhamento registrado na Central de Ações.')+' · Cena representativa, não comprova reunião.':scenario?.description||'Demonstração de colaboração.';
-  motion.setActive([from.id,to.id]);sceneExchange={from:from.id,to:to.id,real};model?.showExchange(sceneExchange);
+  sceneExchange={from:from.id,to:to.id,real};model?.showExchange(sceneExchange);
   buttons.get(from.id)?.classList.add('ct-visit-origin');buttons.get(to.id)?.classList.add('ct-visit-destination');
   if(real)timer=window.setTimeout(stop,7000);return true;
  }
@@ -224,10 +168,10 @@ export function mountLiveOffice({root,agents,scenes,onSelect,onDispose}){
    b.dataset.pending=String(taskSourceReady&&n>0);
   }
  }
- function setSelected(id){selected=id;model?.select(id);if(flow.hidden)motion.setActive([id]);for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}}
- function setCompany(){stop();guardian=[];model?.setPriorities([]);motion.setActive([]);for(const b of buttons.values()){b.querySelector('[data-ct-records]').textContent='Consultando registros';b.dataset.pending='false';b.dataset.guardian='none';b.title=byId(b.dataset.ctAgent).area;}layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';}
- function destroy(){alive=false;stop();model?.destroy();visibilityObserver?.disconnect();document.removeEventListener('visibilitychange',refresh3D);preference?.removeEventListener?.('change',refresh3D);motion.destroy();layer.remove();}
+ function setSelected(id){selected=id;model?.select(id);for(const [key,b] of buttons){b.classList.toggle('ct-selected',key===id);b.setAttribute('aria-pressed',String(key===id));}}
+ function setCompany(){stop();guardian=[];model?.setPriorities([]);for(const b of buttons.values()){b.querySelector('[data-ct-records]').textContent='Consultando registros';b.dataset.pending='false';b.dataset.guardian='none';b.title=byId(b.dataset.ctAgent).area;}layer.querySelector('[data-ct-live-time]').textContent='Consultando último ciclo…';}
+ function destroy(){alive=false;stop();model?.destroy();visibilityObserver?.disconnect();document.removeEventListener('visibilitychange',refresh3D);preference?.removeEventListener?.('change',refresh3D);layer.remove();}
  // The approved photographic office is the default; 3D remains explicitly selectable.
  onDispose?.(destroy);
- return {visit,setEvents,setSelected,setCompany,stop,destroy,refreshMotion:()=>{motion.refresh();refresh3D();},demoTick:()=>false};
+ return {visit,setEvents,setSelected,setCompany,stop,destroy,refreshMotion:()=>{refresh3D();},demoTick:()=>false};
 }
