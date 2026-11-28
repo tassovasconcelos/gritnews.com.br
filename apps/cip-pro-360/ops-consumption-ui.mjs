@@ -10,6 +10,7 @@ export function consumptionFrame(){
  '<p class="ops-status" role="status" data-ops-status>Conferindo dados...</p><div class="ops-kpis" data-ops-kpis></div>'+
  '<div class="ops-continuity"><div><small>CONTINUIDADE OPERACIONAL</small><h2>Observabilidade, eficiência e fallback seguro</h2><p>O monitor opera sem IA. Provedores alternativos exigem acesso e homologação; não há troca automática de contas neste estágio.</p></div><div class="ops-lights" data-ops-health></div></div>'+
  '<section class="ops-org"><div class="ops-section-head"><div><small>CIP GUARDIAN · AUDITORIA CONTÍNUA</small><h2>Saúde da operação</h2><p>Verificações determinísticas a cada 10 minutos. Sem dados recentes, o estado é desconhecido.</p></div></div><div data-guardian role="status" aria-live="polite">Consultando...</div></section>'+ 
+ '<section class="ops-org"><div class="ops-section-head"><div><small>GUARDIAN · PLANO DE AÇÃO</small><h2>Incidentes e responsáveis</h2><p>O diagnóstico abre incidentes sem duplicação. Somente nova verificação regular encerra a ocorrência.</p></div></div><div data-guardian-incidents>Consultando...</div><p role="status" data-incident-message></p></section>'+ 
  '<section class="ops-org" data-ops-org hidden><div class="ops-section-head"><div><small>CONCILIAÇÃO FINANCEIRA GLOBAL</small><h2>Contas administrativas dos provedores</h2><p>Custos desta seção pertencem à organização. Nunca são duplicados entre Shopping e Distribuidora sem atribuição por projeto homologada.</p></div></div><div data-ops-org-cards></div></section>'+ 
  '<div class="ops-columns"><section class="ops-main"><div class="ops-section-head"><div><small>CONSUMO POR SERVIÇO</small><h2>Mapa de provedores e plataformas</h2><p>O financeiro acompanha gastos reais; a operação acompanha tokens, falhas e disponibilidade.</p></div><button class="btn secondary" data-ops-export>Exportar CSV</button></div><div data-ops-services></div></section>'+
  '<aside class="ops-sidebar"><h2>Alertas de continuidade</h2><div data-ops-alerts></div><div class="ops-governance"><strong>Política de responsabilidade</strong><p>Tokens observados não equivalem a cobrança. Orçamento registrado não altera o limite contratado. Saldo informado manualmente é identificado. Não armazenamos chaves, prompts nem respostas.</p></div><div class="ops-fallback"><strong>Sequência de economia</strong><p>1. Regras e cache sem tokens</p><p>2. Coleta direta autorizada e feeds</p><p>3. IA apenas nas análises relevantes</p><p>4. Circuit breaker e alertas por fornecedor</p><p>5. Alternativa habilitada após homologação</p></div></aside></div>'+
@@ -21,7 +22,7 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
  const $=s=>root.querySelector(s);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
  let active=true,requestId=0,company=scope.includes('shopping_prohospital')?'shopping_prohospital':scope[0],period=90,busy=false;
- let providers=[],daily=[],billing=[],alerts=[],history=[],faro=null,cycles=[],globalSnapshots=[],globalStates=[],globalFailed=false,guardian=[],guardianFailed=false;
+ let providers=[],daily=[],billing=[],alerts=[],history=[],faro=null,cycles=[],globalSnapshots=[],globalStates=[],globalFailed=false,guardian=[],guardianFailed=false,incidents=[],incidentEvents=new Map(),incidentFailed=false;
  const notice=t=>{if(live())$('[data-ops-status]').textContent=t;};
  const statement=p=>billing.find(b=>b.provider===p);
  $('[data-ops-company]').innerHTML=scope.map(c=>'<option value="'+esc(c)+'">'+esc(companyNames[c]||c)+'</option>').join('');
@@ -71,9 +72,38 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
   const state=x=>fresh(x)&&Object.hasOwn(labels,x.severity)?x.severity:'unknown';
   host.innerHTML='<div class="ops-org-grid">'+[...guardian].sort((a,b)=>rank[state(a)]-rank[state(b)]).map(x=>'<article class="ops-service"><div class="ops-service-top"><strong>'+esc(titles[x.check_code]||x.check_code)+'</strong><span>'+esc(labels[state(x)])+'</span></div><p>'+esc(fresh(x)?details(x):'Verificação vencida; dados anteriores não confirmam estado atual.')+'</p><small>Verificado: '+esc(date(x.checked_at))+'</small></article>').join('')+'</div>';
  }
+ function renderIncidents(){
+  const host=$('[data-guardian-incidents]');
+  if(incidentFailed){host.textContent='Incidentes indisponíveis ou sem autorização.';return;}
+  if(!incidents.length){host.textContent='Nenhum incidente aberto visível para este perfil. Consulte a saúde das fontes.';return;}
+  const labels={faro:'Radar Faro',queue:'Fila de pesquisa',agents:'Ciclos de agentes',erp:'ERP conciliado',stock:'Estoque',execution:'Decisões e tarefas',billing:'Custos e créditos',results:'Resultados financeiros',procfit_source:'Origem Procfit'};
+  const stages={triagem:'Triagem',em_tratamento:'Em tratamento',aguardando_validacao:'Aguardando validação'};
+  const nextStep={faro:'Validar cota e fontes antes de retomar.',queue:'Revisar fila e circuito sem reprocessar tarefas antigas automaticamente.',erp:'Obter e conciliar a base ERP.',stock:'Atualizar referência e conciliar saldo.',execution:'Revisar sugestões com responsável comercial.',billing:'Conciliar custos com comprovantes.',results:'Registrar evidências financeiras.',procfit_source:'Verificar serviço VM, acesso de leitura e contrato da view.'};
+  const sorted=[...incidents].sort((a,b)=>Number(b.severity==='critical')-Number(a.severity==='critical')||Date.parse(a.opened_at)-Date.parse(b.opened_at));
+  host.innerHTML='<p><b>'+sorted.length+' incidentes abertos</b> · '+sorted.filter(x=>x.severity==='critical').length+' críticos</p><div class="ops-org-grid">'+sorted.map(i=>{
+   const logs=incidentEvents.get(i.id),last=logs?.[0],overdue=last&&Date.parse(last.due_at)<Date.now();
+   return '<article class="ops-service"><div class="ops-service-top"><strong>'+esc(labels[i.check_code]||i.check_code)+'</strong><span>'+esc(i.severity==='critical'?'Crítico':'Atenção')+'</span></div><p>'+esc(nextStep[i.check_code]||'Investigar diagnóstico.')+'</p><p><b>'+esc(logs===null?'Histórico indisponível':last?stages[last.stage]:'Sem responsável')+'</b>'+ (last?' · '+esc(last.owner_name)+' · '+esc(date(last.due_at))+(overdue?' · PRAZO VENCIDO':''):'')+'</p><small>Aberto em '+esc(date(i.opened_at))+' · visto '+esc(date(i.last_seen_at))+'</small>'+
+    '<details><summary>Tratar incidente e consultar histórico</summary><form data-guardian-incident="'+esc(i.id)+'"><label>Responsável<input name="owner" required minlength="3" maxlength="120" value="'+esc(last?.owner_name||'')+'"></label><label>Etapa<select name="stage">'+Object.entries(stages).map(([k,v])=>'<option value="'+esc(k)+'"'+(last?.stage===k?' selected':'')+'>'+esc(v)+'</option>').join('')+'</select></label><label>Prazo (horário do dispositivo)<input type="datetime-local" name="due" required></label><label class="ops-full">Ação e evidência<textarea name="note" required minlength="10" maxlength="2000" rows="3"></textarea></label><button type="submit" class="btn">Registrar tratamento</button></form>'+
+    '<p>Últimos cinco registros</p>'+(logs===null?'<p>Não foi possível consultar o histórico.</p>':logs?.length?logs.map(e=>'<p><b>'+esc(stages[e.stage])+'</b> · '+esc(e.owner_name)+' · '+esc(date(e.created_at))+'<br>'+esc(e.note)+'</p>').join(''):'<p>Sem histórico de tratamento.</p>')+'</details></article>';
+  }).join('')+'</div>';
+ }
+ async function saveIncident(form){
+  if(busy||!live())return;
+  const item=incidents.find(i=>i.id===form.dataset.guardianIncident&&i.company_id===company);if(!item)return;
+  const f=new FormData(form),due=new Date(String(f.get('due')||'')),owner=String(f.get('owner')||'').trim(),note=String(f.get('note')||'').trim(),stage=String(f.get('stage'));
+  const msg=$('[data-incident-message]');if(!Number.isFinite(due.getTime())||due.getTime()<=Date.now()||due.getTime()>Date.now()+365*86400000||owner.length<3||note.length<10||!['triagem','em_tratamento','aguardando_validacao'].includes(stage)){msg.textContent='Confira responsável, etapa, prazo futuro e evidência de pelo menos dez caracteres.';return;}
+  busy=true;const button=form.querySelector('button[type=submit]');button.disabled=true;
+  try{const result=await db.from('cip_guardian_incident_events').insert({incident_id:item.id,company_id:item.company_id,stage,owner_name:owner,due_at:due.toISOString(),note});
+   if(!live()||company!==item.company_id)return;
+   if(result.error){msg.textContent='Registro recusado. Verifique acesso, prazo e se o incidente continua aberto.';return;}
+   await load();if(live()&&company===item.company_id)$('[data-incident-message]').textContent='Tratamento registrado e auditado. A resolução depende de nova verificação.';
+  }catch{if(live()&&company===item.company_id)msg.textContent='Falha ao registrar. Confira a conexão e o histórico antes de tentar novamente.';}
+  finally{busy=false;button.disabled=false;}
+ }
  function render(){
   renderGlobal();
   renderGuardian();
+  renderIncidents();
   const totals=metricTotals(daily),totalsByProvider=groupByProvider(daily),official=billing.filter(b=>b.source==='provider_api'&&b.month_spend_usd!==null);
   const known=official.length?formatUSD(official.reduce((x,b)=>x+Number(b.month_spend_usd),0)):'Não conectado';
   const kpis=[['Tokens de entrada',formatCount(totals.input),'Medições registradas'],['Tokens de saída',formatCount(totals.output),'Não inclui solicitações sem métricas'],['Pesquisas web',formatCount(totals.searches),'Chamadas contabilizadas nos resultados'],['Falhas registradas',formatCount(totals.failed),'Investigar sem repetir em excesso'],['Custo confirmado',known,'Somente relatórios administrativos'],['Eventos auditados',formatCount(totals.events),'Histórico, não cobrança']];
@@ -116,6 +146,7 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
  async function load(){
   if(!live()||!company)return;const stamp=++requestId;
   $('[data-guardian]').textContent='Consultando a empresa selecionada...';
+  $('[data-guardian-incidents]').textContent='Consultando incidentes...';$('[data-incident-message]').textContent='';
   notice('Consultando agentes, custos, créditos e riscos...');
   const dateStart=new Date(Date.now()-period*86400000);
   const fetches=[
@@ -134,6 +165,8 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
   }
   const guardianIndex=fetches.length;
   fetches.push(db.from('cip_guardian_status').select('check_code,severity,detail,checked_at,changed_at').eq('company_id',company));
+  const incidentIndex=fetches.length;
+  fetches.push(db.from('cip_guardian_incidents').select('id,company_id,check_code,severity,opened_at,last_seen_at,resolved_at').eq('company_id',company).is('resolved_at',null).order('opened_at'));
   const results=await Promise.allSettled(fetches);if(!live()||stamp!==requestId)return;
   const got=i=>results[i].status==='fulfilled'?results[i].value:{error:{message:'indisponível'}};
   const [a,b,c,d,e,f,g]=[0,1,2,3,4,5,6].map(got);
@@ -145,7 +178,11 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
   globalStates=i&&!i.error?i.data||[]:[];
   globalFailed=isAdmin&&!!(h?.error||i?.error);
   const guardianResponse=got(guardianIndex);guardianFailed=!!guardianResponse.error;guardian=guardianFailed?[]:guardianResponse.data||[];
-  render();const failed=[a,b,c,d,e,f,g,...(isAdmin?[h,i]:[]),guardianResponse].filter(x=>x?.error).length;
+  const ir=got(incidentIndex);incidentFailed=!!ir.error;incidents=incidentFailed?[]:ir.data||[];
+  const eventResponses=await Promise.allSettled(incidents.map(i=>db.from('cip_guardian_incident_events').select('stage,owner_name,due_at,note,created_at').eq('company_id',company).eq('incident_id',i.id).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(5)));
+  if(!live()||stamp!==requestId)return;
+  incidentEvents=new Map(incidents.map((i,n)=>[i.id,eventResponses[n].status==='fulfilled'&&!eventResponses[n].value.error?eventResponses[n].value.data||[]:null]));
+  render();const failed=[a,b,c,d,e,f,g,...(isAdmin?[h,i]:[]),guardianResponse,ir].filter(x=>x?.error).length;
   notice(failed?'Falha em '+failed+' fonte(s). Não interpretar dados ausentes como saldo zero.':
    'Dados consultados às '+new Date().toLocaleTimeString('pt-BR')+'. O banco registra novos eventos sem consumir tokens.');
  }
@@ -177,11 +214,11 @@ export function mountConsumption({db,user,companies:scope=[],onDispose}){
   for(const p of providers){const b=statement(p.provider);rows.push([company,p.provider,p.category,p.readiness,p.monthly_budget_usd,b?.month_spend_usd,b?.credit_balance_usd,b?.source,b?.observed_at]);}
   const url=URL.createObjectURL(new Blob([cleanCsv(rows)],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='CIP360_Consumo_'+company+'.csv';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
  }
- root.addEventListener('submit',e=>{const f=e.target.closest('form[data-ops-budget],form[data-ops-manual]');if(!f)return;e.preventDefault();if(f.dataset.opsBudget)saveBudget(f);else saveManual(f);});
+ root.addEventListener('submit',e=>{const f=e.target.closest('form[data-ops-budget],form[data-ops-manual],form[data-guardian-incident]');if(!f)return;e.preventDefault();if(f.dataset.guardianIncident)saveIncident(f);else if(f.dataset.opsBudget)saveBudget(f);else saveManual(f);});
  root.addEventListener('click',e=>{if(e.target.closest('[data-ops-refresh]'))load();if(e.target.closest('[data-ops-export]'))exportCsv();});
  $('[data-ops-company]').addEventListener('change',e=>{if(scope.includes(e.target.value)){company=e.target.value;load();}});
  $('[data-ops-period]').addEventListener('change',e=>{const days=Number(e.target.value);if([7,30,90,120].includes(days)){period=days;load();}});
- const timer=setInterval(()=>{if(live()&&document.visibilityState==='visible')load();},90000);
+ const timer=setInterval(()=>{if(live()&&!busy&&document.visibilityState==='visible'&&!root.querySelector('[data-guardian-incidents] details[open]'))load();},90000);
  onDispose?.(()=>{active=false;requestId++;clearInterval(timer);});
  load();
 }
