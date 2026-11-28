@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import sys
+from pathlib import Path
 from datetime import datetime, timezone
 from urllib.parse import urlencode
 from urllib.request import Request, build_opener, HTTPRedirectHandler
@@ -99,6 +100,8 @@ def main():
         + "\nAplique somente aos fatos presentes. Se faltarem dados, indique precisamente o que verificar."
         " Não calcule indicadores nem invente valores sem insumos; mantenha ações como recomendações supervisionadas."
     )
+    academy_prompt = Path(__file__).with_name("PROMPT_MESTRE_ACADEMIA.md").read_text(encoding="utf-8")
+    prompt += "\n\n" + academy_prompt.partition("\n## Acionamento no CIP")[0]
     result=request(HERMES+"/v1/chat/completions",{"Authorization":"Bearer "+os.environ["HERMES_API_KEY"]},{"model":os.environ.get("HERMES_MODEL","hermes-agent"),"messages":[{"role":"system","content":prompt},{"role":"user","content":json.dumps({"context":data,"allowed_refs":refs},ensure_ascii=False)}],"stream":False},timeout=180)
     choice=result["choices"][0]
     if choice.get("finish_reason")!="stop": raise ValueError("hermes_incomplete")
