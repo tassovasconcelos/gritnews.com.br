@@ -50,6 +50,8 @@ def main():
     args=ap.parse_args()
     if args.agent=="b2g" and args.company!="distribuidora_prohospital": raise ValueError("invalid_company_agent")
     headers={"apikey":os.environ["CIP_PUBLISHABLE_KEY"],"Authorization":"Bearer "+os.environ["CIP_ACCESS_TOKEN"]}
+    config=rest("cip_agent_controls",headers,{"company_id":"eq."+args.company,"select":"enabled","limit":"1"})
+    if len(config)!=1 or config[0].get("enabled") is not True: raise ValueError("company_paused_or_inaccessible")
     filters={"company_id":"eq."+args.company,"agent_id":"eq."+args.agent}
     rows=rest("cip_agent_learning_context",headers,{**filters,"select":"company_id,agent_id,cycle_id,role_name,next_action,evidence,approved_skill_count,reviewed_case_count,updated_at","limit":"1"})
     if len(rows)!=1 or not fresh(rows[0]): raise ValueError("context_missing_or_stale")
