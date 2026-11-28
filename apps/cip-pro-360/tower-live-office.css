@@ -300,3 +300,24 @@
 .ct-room-mode [data-ct-camera-motion]{background:#355870}
 .ct-room-mode [data-ct-camera-motion]:disabled{opacity:.65;cursor:default}
 @media(max-width:600px){.ct-room-mode{padding:9px}.ct-room-mode [data-ct-camera]{width:100%;gap:5px}.ct-room-mode [data-ct-camera] button{font-size:11px;padding:6px 8px}.ct-3d-guide{font-size:11px;padding:8px 10px}}
+
+/* The photograph remains the focal point and the operational feed has its own column. */
+.ct .ct-office-floor{display:grid;grid-template-columns:minmax(0,2.7fr) minmax(245px,1fr);gap:16px;padding:16px;background:#edf2f5;align-items:start}
+.ct .ct-office-floor .ct-office-visual{min-width:0;border:1px solid #d8e0e6;border-radius:14px;overflow:hidden;background:#fff}
+.ct .ct-office-floor .ct-panorama-stage{background:#24323e}
+.ct .ct-office-floor .ct-room-mode,.ct .ct-office-floor .ct-panorama-status,.ct .ct-office-floor .ct-panorama-shortcuts{background:#fff;color:#26394a;border-color:#e1e8ec}
+.ct .ct-office-floor .ct-room-caption{color:#26394a}
+.ct .ct-office-floor .ct-panorama-lights{display:none}
+.ct .ct-office-feed{min-width:0;background:#fff;color:#223649;border:1px solid #d8e0e6;border-radius:14px;overflow:hidden}
+.ct .ct-office-feed header{padding:16px;border-bottom:1px solid #e8edf0}
+.ct .ct-office-feed h2{font-size:17px;line-height:1.3;margin:0 0 5px}
+.ct .ct-office-feed header p{font-size:12px;color:#526677;margin:0;line-height:1.45}
+.ct .ct-office-feed ol{padding:0 16px;margin:0;list-style:none}
+.ct .ct-office-feed li{display:grid;gap:4px;padding:11px 0;border-bottom:1px solid #e8edf0;overflow-wrap:anywhere}
+.ct .ct-office-feed li strong{font-size:13px;line-height:1.35;font-weight:650}
+.ct .ct-office-feed-type{color:#175950;font-size:11px;font-weight:700}
+.ct .ct-office-feed time{color:#526677;font-size:11px}
+.ct .ct-office-feed a{display:flex;justify-content:space-between;gap:8px;padding:13px 16px;color:#174f50;font-size:12px;font-weight:700}
+.ct .ct-office-feed a:focus-visible{outline:2px solid #175950;outline-offset:-3px}
+@media(max-width:1030px){.ct .ct-office-floor{grid-template-columns:minmax(0,1fr)}.ct .ct-office-feed ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}}
+@media(max-width:560px){.ct .ct-office-floor{padding:9px;gap:9px}.ct .ct-office-feed ol{grid-template-columns:minmax(0,1fr)}}
