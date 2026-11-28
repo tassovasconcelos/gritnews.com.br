@@ -262,3 +262,41 @@
 .ct .ct-model-active .ct-panorama-pin.ct-selected,.ct .ct-model-active .ct-panorama-pin.ct-visit-destination{border-color:#ffca86;background:#394c65}
 .ct .ct-model-active .ct-panorama-shortcuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr));background:#172235}
 .ct .ct-model-active .ct-agent-hotspot.ct-panorama-extra{min-height:42px}
+
+/* Executive control desk — high contrast, restrained palette and responsive priorities. */
+.ct .ct-control-desk{background:#fff;border:1px solid #e3e7eb;border-radius:14px;padding:18px;display:grid;gap:14px;box-shadow:0 4px 16px #182b4110}
+.ct-control-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ct-control-head small{font-size:10px;letter-spacing:1.1px;font-weight:800;color:#50677d}
+.ct-control-head h2{font-size:clamp(19px,2.4vw,26px);color:#21344a;margin:4px 0}
+.ct-control-head p{font-size:12px;color:#536476;margin:0}
+.ct-control-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.ct-control-summary>div{padding:10px 13px;border:1px solid #e3e8ee;background:#f7f9fb;border-radius:9px;display:grid;gap:4px;min-width:0}
+.ct-control-summary small{font-size:11px;color:#536476;font-weight:650}
+.ct-control-summary strong{font-size:27px;font-variant-numeric:tabular-nums;color:#21344a}
+.ct-control-summary .ct-critical-count{color:#a91f36}
+.ct-control-priorities{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.ct-control-priority{display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:12px;border:1px solid #e0e5eb;border-left:3px solid #bd8b38;border-radius:9px;min-width:0}
+.ct-control-priority[data-severity=critical]{border-left-color:#b6233b}
+.ct-control-priority small{font-size:10px;font-weight:800;color:#80561b;letter-spacing:.5px}
+.ct-control-priority[data-severity=critical] small{color:#a91f36}
+.ct-control-priority strong{font-size:14px;color:#21344a}
+.ct-control-priority p{font-size:12px;line-height:1.5;margin:0 0 6px;color:#536476;overflow-wrap:anywhere}
+.ct-control-priority button{margin-top:auto;min-height:42px;white-space:normal;text-align:left}
+.ct-room-caption{font-size:11px;font-weight:700;letter-spacing:.6px;color:#ecf1f6;align-self:center}
+.ct .ct-panorama-office .ct-agent-hotspot[data-guardian=critical]{outline:2px solid #e65263;outline-offset:1px}
+.ct .ct-panorama-office .ct-agent-hotspot[data-guardian=warning]{outline:2px solid #e9b858;outline-offset:1px}
+.ct .ct-panorama-office .ct-agent-hotspot:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media(max-width:1000px){.ct-control-priorities{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.ct .ct-control-desk{padding:12px}.ct-control-summary{gap:5px}.ct-control-summary>div{padding:8px 6px}.ct-control-summary small{font-size:10px}.ct-control-summary strong{font-size:23px}.ct-control-priorities{grid-template-columns:minmax(0,1fr)}.ct-control-priority{padding:10px}}
+
+/* Architectural 3D workspace: camera controls remain visible and keyboard operable. */
+.ct .ct-model-active .ct-panorama-stage{background:#dce6eb}
+.ct-room-3d{cursor:grab;touch-action:pan-y;user-select:none}
+.ct-room-3d:active{cursor:grabbing}
+.ct-3d-guide{margin:0;padding:10px 15px;font-size:12px;line-height:1.5;color:#3c5266;background:#edf3f6;border-top:1px solid #c7d4df}
+.ct-3d-guide[hidden]{display:none!important}
+.ct-room-mode [data-ct-camera]{flex-wrap:wrap;align-items:center}
+.ct-room-mode [data-ct-camera] button{min-width:44px}
+.ct-room-mode [data-ct-camera-motion]{background:#355870}
+.ct-room-mode [data-ct-camera-motion]:disabled{opacity:.65;cursor:default}
+@media(max-width:600px){.ct-room-mode{padding:9px}.ct-room-mode [data-ct-camera]{width:100%;gap:5px}.ct-room-mode [data-ct-camera] button{font-size:11px;padding:6px 8px}.ct-3d-guide{font-size:11px;padding:8px 10px}}

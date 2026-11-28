@@ -135,7 +135,7 @@ test('guided collaboration is opt-in and keeps the original station and data pan
  assert.equal((html.match(/data-ct-metrics/g)||[]).length,1);
 });
 
-import {officeProjection,mountOffice3D} from './tower-office-3d.mjs';
+import {officeProjection,mountOffice3D,OFFICE_STATIONS,officeMeetingPath} from './tower-office-3d.mjs';
 
 test('room projection rotates depth and lifts taller geometry',()=>{
  const a=officeProjection(0,[3,0,2]);
@@ -167,4 +167,59 @@ test('model draws twelve selectable stations and represents real and guided hand
  assert.deepEqual(fills.slice(0,3),['AÇÕES E DECISÕES','APRENDIZADO','SUGESTÕES']);
  assert.ok(strokes.includes('#ffc68d'));
  assert.ok(strokes.includes('#70eee0'));
+});
+
+import {towerGuardianBrief} from './tower-engine.mjs';
+test('Guardian uses real fresh company checks, prioritizes critical and does not infer assignments',()=>{
+ const now=Date.parse('2026-11-28T09:00:00Z'),checked_at='2026-11-28T08:55:00Z';
+ const rows=[{check_code:'billing',severity:'warning',checked_at},{check_code:'stock',severity:'critical',checked_at},{check_code:'faro',severity:'paused',checked_at}];
+ const out=towerGuardianBrief(rows,[{id:'i1',check_code:'stock',severity:'critical',resolved_at:null}],now);
+ assert.equal(out.ready,true);assert.equal(out.critical,1);assert.equal(out.open,1);
+ assert.deepEqual(out.priorities.map(p=>p.code),['stock','billing']);
+ assert.equal(out.priorities[0].agent,'estoque');assert.equal(out.priorities[0].incidentId,'i1');
+ assert.equal(out.priorities[1].incidentId,null);
+ assert.equal(towerGuardianBrief(rows,null,now).ready,false);
+ assert.equal(towerGuardianBrief(rows,[],now+3600000).critical,null);
+ assert.equal(towerGuardianBrief([],[],now).ready,false);
+ assert.equal(towerGuardianBrief([{...rows[0],checked_at:'invalid'}],[],now).ready,false);
+});
+test('executive control and approved photographic office are primary, 3D remains selectable',()=>{
+ const html=towerFrame();
+ assert.match(html,/data-ct-guardian-time/);assert.match(html,/data-ct-go="consumo"/);
+ assert.ok(html.indexOf('ct-control-desk')<html.indexOf('ct-office-visual'));
+ const js=readFileSync(new URL('./tower-live-office.mjs',import.meta.url),'utf8');
+ assert.doesNotMatch(js,/sceneToggle\.click\(\)/);
+ assert.match(js,/Explorar sala 3D/);
+ assert.match(js,/guardianPriorities/);
+});
+
+test('architectural room has twelve unique specialist stations, bounded camera and central meeting path',()=>{
+ assert.deepEqual(Object.keys(OFFICE_STATIONS).sort(),TOWER_AGENTS.map(a=>a.id).sort());
+ assert.equal(new Set(Object.values(OFFICE_STATIONS).map(p=>p.join(','))).size,12);
+ for(const angle of [-.64,-.27,0,.64])for(const [x,z] of Object.values(OFFICE_STATIONS)){
+  const p=officeProjection(angle,[x,1.4,z]);assert.ok(p[0]>0&&p[0]<1100&&p[1]>0&&p[1]<560);
+ }
+ assert.deepEqual(officeMeetingPath([-6.2,1.75],[-.72,4.65],0),[-6.2,1.75]);
+ const end=officeMeetingPath([-6.2,1.75],[-.72,4.65],1);
+ assert.ok(Math.abs(end[0]+.72)<1e-8&&Math.abs(end[1]-4.65)<1e-8);
+ assert.ok(officeProjection(0,[3,0,2],1.2)[0]>officeProjection(0,[3,0,2])[0]);
+});
+test('camera hit testing, critical indicators and motion lifecycle operate without external libraries',()=>{
+ const colors=[],labels=[];
+ const ctx={beginPath(){},closePath(){},moveTo(){},lineTo(){},quadraticCurveTo(){},arc(){},fillRect(){},fill(){colors.push(this.fillStyle);},fillText(x){labels.push(x);},setLineDash(){},stroke(){},createLinearGradient(){return {addColorStop(){}};}};
+ const model=mountOffice3D({getContext:()=>ctx},officePeople(TOWER_AGENTS));
+ const [x,z]=OFFICE_STATIONS.doquita;
+ const point=officeProjection(-.27,[x,1.05,z]);
+ assert.equal(model.hitTest(point[0],point[1]),'doquita');
+ assert.equal(model.hitTest(-100,-100),null);
+ model.setPriorities([{agent:'estoque',severity:'critical'}]);assert.ok(colors.includes('#b72b42'));
+ model.select('doquita');assert.ok(labels.includes('Doquita 360'));
+ model.zoom(.12);model.turn(.12);model.reset();
+ model.showExchange({from:'doquita',to:'estoque',real:false});
+ model.setRunning(false);model.destroy();
+});
+test('3D controls expose zoom, selection, pause, and cleanup, while panorama stays default',()=>{
+ const js=readFileSync(new URL('./tower-live-office.mjs',import.meta.url),'utf8');
+ for(const v of ['data-ct-camera-zoom-in','data-ct-camera-zoom-out','data-ct-camera-motion','pointerup','hitTest','visibilitychange','model?.destroy()'])assert.ok(js.includes(v),v);
+ assert.doesNotMatch(js,/sceneToggle\.click\(\)/);
 });

@@ -1,6 +1,6 @@
 import {abcWorkbenchFrame,mountAbcWorkbench} from './tower-abc-ui.mjs';
 import {mountLiveOffice,officePeople,portrait} from './tower-live-office.mjs';
-import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight,towerHandoff,OFFICE_SCENARIO} from './tower-engine.mjs';
+import {TOWER_AGENTS,TOWER_SOURCE_TABLES,TOWER_ACTION_STATUSES,ABC_REFERENCE,towerMetrics,sanitizeCsv,agentById,towerAgentCycleInsight,towerHandoff,towerGuardianBrief,OFFICE_SCENARIO} from './tower-engine.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const companyNames={shopping_prohospital:'Shopping Prohospital',distribuidora_prohospital:'Distribuidora Prohospital'};
 const statusName=s=>TOWER_ACTION_STATUSES.find(x=>x[0]===s)?.[1]||s;
@@ -12,6 +12,7 @@ export function towerFrame(){
  <header class="ct-head"><div class="ct-logo"><img src="./logo-grupo-prohospital.jpg" alt="Logo oficial Grupo Prohospital"><div><strong>CIP<span>360</span></strong><small>Torre de Comando Prohospital · Inteligência comercial</small></div></div><div class="ct-head-control"><label>Operação <select data-ct-company></select></label><span>SESSÃO AUTENTICADA</span></div></header>
  <div class="ct-banner" role="status">Consultando fontes do CIP...</div>
  <nav class="ct-view-nav" aria-label="Áreas da Torre"><button type="button" data-ct-view="agents" aria-pressed="true">Escritório vivo</button><button type="button" data-ct-view="overview" aria-pressed="false">Visão gerencial</button><button type="button" data-ct-view="pricing" aria-pressed="false">Preços e margem</button></nav>
+ <section class="ct-control-desk" aria-label="Prioridades operacionais"><div class="ct-control-head"><div><small>GUARDIAN · CONTROLE EXECUTIVO</small><h2>O que precisa de atenção agora?</h2><p data-ct-guardian-time role="status">Consultando diagnósticos da empresa...</p></div><button type="button" class="ct-small-button" data-ct-go="consumo">Gerenciar incidentes</button></div><div data-ct-guardian></div></section>
  <section data-ct-pane="overview" class="ct-view-pane" hidden>
   <div class="ct-executive-hero"><div class="ct-hero-content"><small>CIP360 · GESTÃO COMERCIAL</small><h1>Torre de Comando</h1><p>O que precisa de atenção agora?</p><p class="ct-hero-meta" data-ct-summary role="status">Consultando encaminhamentos e alertas...</p><div class="ct-hero-actions"><button type="button" class="ct-hero-primary" data-ct-command>Abrir Central de Ações</button><button type="button" class="ct-hero-secondary" data-ct-agent="doquita">Consultar Doquita 360</button></div></div><div class="ct-hero-portrait" aria-hidden="true">${portrait(officePeople(TOWER_AGENTS).find(p=>p.id==='doquita'))}<span>Doquita 360</span></div></div>
 
@@ -46,16 +47,22 @@ export function towerFrame(){
 export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  const root=document.getElementById('cipTower');if(!root)return;
  let active=true,stamp=0,company=companies.includes('shopping_prohospital')?'shopping_prohospital':companies[0],selected='doquita';
- let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null,taskSourceReady=false,taskFilter='open',view='agents';
+ let counts={},tasks=[],stocks=[],offers=[],canWrite=false,loadErrors=[],lastCycle=null,taskSourceReady=false,taskFilter='open',view='agents',guardian=towerGuardianBrief(null,null);
  let seenHandoffs, handoffAnimation, simulationTimer, simulationStep=0, simulating=false,officeController;
  const $=sel=>root.querySelector(sel);
  const live=()=>active&&root.isConnected&&window.cipAuth?.email===user.email;
  if(onDispose)onDispose(()=>{active=false;stamp++;stopSimulation();});
  $('[data-ct-company]').innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(companyNames[c]||c)}</option>`).join('');
  $('[data-ct-company]').value=company;
- const central=$('[data-ct-command]');central.disabled=!allowedRoutes.includes('acoes');
+ const central=$('[data-ct-command]');central.disabled=!allowedRoutes.includes('acoes');$('[data-ct-go="consumo"]').disabled=!allowedRoutes.includes('consumo');
  function showView(next){if(!['overview','agents','pricing'].includes(next))return; if(view==='agents'&&next!=='agents')stopSimulation();view=next;root.querySelectorAll('[data-ct-pane]').forEach(p=>p.hidden=p.dataset.ctPane!==next);root.querySelectorAll('[data-ct-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ctView===next)));$('[data-ct-shared]').hidden=next==='pricing';if(next!=='agents')$('[data-ct-drawer]').hidden=true;officeController?.refreshMotion?.();}
  const unavailable='<div class="ct-none">Nenhuma evidência consultável nesta fonte, ou acesso indisponível.</div>';
+ function renderGuardian(){
+ const host=$('[data-ct-guardian]'),time=$('[data-ct-guardian-time]');
+ if(!guardian.ready){host.innerHTML='<p class="ct-none">Diagnóstico indisponível, vencido ou não autorizado. Não significa operação saudável.</p>';time.textContent='Sem diagnóstico recente consultável';return;}
+ time.textContent='Verificação: '+date(guardian.checkedAt)+' · áreas sugeridas, não atribuições automáticas';
+ host.innerHTML='<div class="ct-control-summary"><div><small>Condições críticas</small><strong class="ct-critical-count">'+number(guardian.critical)+'</strong></div><div><small>Incidentes abertos</small><strong>'+number(guardian.open)+'</strong></div><div><small>Em atenção</small><strong>'+number(guardian.priorities.length-guardian.critical)+'</strong></div></div><div class="ct-control-priorities">'+(guardian.priorities.length?guardian.priorities.slice(0,4).map(p=>'<article class="ct-control-priority" data-severity="'+esc(p.severity)+'"><small>'+esc(p.severity==='critical'?'CRÍTICO':'ATENÇÃO')+'</small><strong>'+esc(p.title)+'</strong><p>'+esc(p.next)+'</p><button type="button" class="ct-small-button" data-ct-agent="'+esc(p.agent)+'">Consultar '+esc(agentById(p.agent)?.name||'Doquita')+'</button></article>').join(''):'<p class="ct-none">Nenhuma condição crítica ou de atenção nos critérios consultados.</p>')+'</div>'+(guardian.priorities.length>4?'<p class="ct-hint">Mais '+(guardian.priorities.length-4)+' condições na Central de Consumo. Selecione a mesma empresa ao abrir.</p>':'');
+ }
  function renderMetrics(){
    $('[data-ct-metrics]').innerHTML=towerMetrics(counts,tasks).map(m=>m.id==='tower_tasks'?{...m,label:'Pendências na amostra',value:taskSourceReady?tasks.filter(t=>!['concluida','descartada'].includes(t.status)).length:null,unit:'até 100 registros consultados'}:m).map(m=>`<article class="ct-kpi"><small>${esc(m.label)}</small><strong>${number(m.value)}</strong><span>${esc(m.unit)}</span></article>`).join('');
  }
@@ -84,6 +91,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
     :'';
   $('[data-ct-detail]').innerHTML=`<div class="ct-agent-header"><div class="ct-agent-icon">${esc(a.icon)}</div><div><small>AGENTE ESPECIALISTA</small><h2>${esc(a.name)}</h2><p>${esc(a.area)}</p></div></div>
    <div class="ct-agent-source">${esc(numberText)}<small>Origem: ${esc(TOWER_SOURCE_TABLES[a.source])}; registros não significam decisões já executadas.</small></div>
+   ${guardian.ready&&guardian.priorities.some(p=>p.agent===selected)?'<div class="ct-agent-intelligence"><small>GUARDIAN · PRIORIDADES DA ÁREA</small>'+guardian.priorities.filter(p=>p.agent===selected).map(p=>'<p><b>'+esc(p.title)+'</b> · '+esc(p.next)+'</p>').join('')+'<p>Encaminhamento sugerido, não missão executada.</p></div>':''}
    ${analysisMarkup}
    ${abcMarkup}
    <details class="ct-agent-functions"><summary>Funções e responsabilidades</summary><ul>${a.functions.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></details>
@@ -104,7 +112,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   officeController?.setSelected(selected);
  }
  function renderBrief(){const insight=towerAgentCycleInsight('doquita',lastCycle);$('[data-ct-brief]').innerHTML=insight?'<div class="ct-brief-note"><small>'+esc(date(insight.created_at))+' · '+(insight.stale?'Fonte desatualizada':'Ciclo registrado')+'</small><p>'+esc(insight.analysis||'Nenhuma recomendação textual registrada.')+'</p></div><p class="ct-hint">Impacto financeiro: aguardando validação e conciliação.</p>':'<p class="ct-none">Nenhuma recomendação consultável nesta empresa. Impacto financeiro não validado.</p>';}
- function render(){renderMetrics();renderAlerts();renderTasks();renderBrief();renderAgent();officeController?.setEvents({tasks,cycle:lastCycle,taskSourceReady});}
+ function render(){renderGuardian();renderMetrics();renderAlerts();renderTasks();renderBrief();renderAgent();officeController?.setEvents({tasks,cycle:lastCycle,taskSourceReady,guardianPriorities:guardian.ready?guardian.priorities:[]});}
  function showHandoff(task){
   const agent=agentById(task.agent_code);
   $('[data-ct-handoff-status]').textContent='Encaminhamento humano registrado para '+agent.name+' · '+date(task.created_at)+'. Movimento ilustrativo.';
@@ -181,7 +189,9 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
    db.from('cip_stock_actions').select('action_id,sku,kind,description,state,priority,updated_at').eq('company_id',company).order('priority',{ascending:false}).limit(5),
    db.from('cip_market_offers').select('id,sku,state,created_at').eq('company_id',company).order('created_at',{ascending:false}).limit(5),
    db.from('cip_agent_cycles').select('created_at,trigger_kind,engine_version,report').eq('company_id',company).order('created_at',{ascending:false}).limit(1),
-   db.rpc('cip_can_access',{p_company:company,p_write:true})
+   db.rpc('cip_can_access',{p_company:company,p_write:true}),
+   db.from('cip_guardian_status').select('check_code,severity,checked_at').eq('company_id',company),
+   db.from('cip_guardian_incidents').select('id,check_code,severity,resolved_at').eq('company_id',company).is('resolved_at',null)
   ]);
   if(!live()||token!==stamp)return;
   kinds.forEach((k,i)=>{
@@ -199,6 +209,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   if(results[j+2].status==='fulfilled'&&!results[j+2].value.error)offers=results[j+2].value.data||[];
   if(results[j+3].status==='fulfilled'&&!results[j+3].value.error)lastCycle=results[j+3].value.data?.[0]||null;
   if(results[j+4].status==='fulfilled'&&!results[j+4].value.error)canWrite=results[j+4].value.data===true;
+  const gs=results[j+5],gi=results[j+6];guardian=towerGuardianBrief(gs?.status==='fulfilled'&&!gs.value.error?gs.value.data:null,gi?.status==='fulfilled'&&!gi.value.error?gi.value.data:null);
   const time=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   $('.ct-banner').textContent=(loadErrors.length?'Algumas fontes estão indisponíveis; dados ausentes não são estimados.':'Fontes CIP consultadas. Candidatos, planos e registros precisam de revisão humana antes de decisões.')+' Consulta atualizada às '+time+'; novas coletas dependem da rotina de cada agente.';
   render();
@@ -263,7 +274,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   seenHandoffs=undefined;
   stopSimulation();
   officeController?.setCompany();
-  counts={};tasks=[];stocks=[];offers=[];canWrite=false;lastCycle=null;taskSourceReady=false;renderMetrics();renderAlerts();renderTasks();renderBrief();renderAgent();$('[data-ct-drawer]').hidden=true;
+  counts={};tasks=[];stocks=[];offers=[];canWrite=false;lastCycle=null;taskSourceReady=false;guardian=towerGuardianBrief(null,null);renderGuardian();renderMetrics();renderAlerts();renderTasks();renderBrief();renderAgent();$('[data-ct-drawer]').hidden=true;
   $('[data-ct-handoff-status]').textContent='Colaboração representativa · consulte os registros para confirmar ações';
   workbench?.setCompany();
   load();
