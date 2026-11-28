@@ -91,7 +91,7 @@ export function motionOffset(region,t,activeIds=[],ambient=true){
 function mountPhotoMotion({stage,photo,canvas,button,status}){
  let context=null;try{context=canvas.getContext?.('2d');}catch{}
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
- let enabled=!reduced?.matches,ready=false,visible=true,alive=true,raf=0,last=0,activeIds=[];
+ let enabled=false,ready=false,visible=true,alive=true,raf=0,last=0,activeIds=[];
  const base=document.createElement('canvas');base.width=1221;base.height=542;
  let source=null;try{source=base.getContext('2d');}catch{}
  const patches=PHOTO_MOTION_REGIONS.map(region=>{
@@ -134,7 +134,7 @@ function mountPhotoMotion({stage,photo,canvas,button,status}){
   sync();
  }
  const toggle=()=>{if(!ready)return;enabled=!enabled;sync();};
- const preference=()=>{enabled=!reduced.matches;sync();};
+ const preference=()=>{if(reduced.matches)enabled=false;sync();};
  const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting===true;sync();},{threshold:.05}):null;
  observer?.observe(stage);
  photo.addEventListener('load',init);photo.addEventListener('error',refreshControl);button.addEventListener('click',toggle);
