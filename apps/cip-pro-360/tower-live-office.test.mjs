@@ -168,3 +168,27 @@ test('model draws twelve selectable stations and represents real and guided hand
  assert.ok(strokes.includes('#ffc68d'));
  assert.ok(strokes.includes('#70eee0'));
 });
+
+import {towerGuardianBrief} from './tower-engine.mjs';
+test('Guardian uses real fresh company checks, prioritizes critical and does not infer assignments',()=>{
+ const now=Date.parse('2026-11-28T09:00:00Z'),checked_at='2026-11-28T08:55:00Z';
+ const rows=[{check_code:'billing',severity:'warning',checked_at},{check_code:'stock',severity:'critical',checked_at},{check_code:'faro',severity:'paused',checked_at}];
+ const out=towerGuardianBrief(rows,[{id:'i1',check_code:'stock',severity:'critical',resolved_at:null}],now);
+ assert.equal(out.ready,true);assert.equal(out.critical,1);assert.equal(out.open,1);
+ assert.deepEqual(out.priorities.map(p=>p.code),['stock','billing']);
+ assert.equal(out.priorities[0].agent,'estoque');assert.equal(out.priorities[0].incidentId,'i1');
+ assert.equal(out.priorities[1].incidentId,null);
+ assert.equal(towerGuardianBrief(rows,null,now).ready,false);
+ assert.equal(towerGuardianBrief(rows,[],now+3600000).critical,null);
+ assert.equal(towerGuardianBrief([],[],now).ready,false);
+ assert.equal(towerGuardianBrief([{...rows[0],checked_at:'invalid'}],[],now).ready,false);
+});
+test('executive control and approved photographic office are primary, 3D remains selectable',()=>{
+ const html=towerFrame();
+ assert.match(html,/data-ct-guardian-time/);assert.match(html,/data-ct-go="consumo"/);
+ assert.ok(html.indexOf('ct-control-desk')<html.indexOf('ct-office-visual'));
+ const js=readFileSync(new URL('./tower-live-office.mjs',import.meta.url),'utf8');
+ assert.doesNotMatch(js,/sceneToggle\.click\(\)/);
+ assert.match(js,/Explorar sala 3D/);
+ assert.match(js,/guardianPriorities/);
+});
