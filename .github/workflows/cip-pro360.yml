@@ -64,6 +64,7 @@ jobs:
           node apps/cip-pro-360/agents.test.mjs
           node --test apps/cip-pro-360/agent-operations.test.mjs
           node --check apps/cip-pro-360/agent-operations-ui.mjs
+          python3 -m unittest discover -s apps/cip-pro-360/auditoria/hermes -p 'test_*.py'
           node --test apps/cip-pro-360/academy.test.mjs
           node --test apps/cip-pro-360/admin.test.mjs
           node --test apps/cip-pro-360/erp-engine.test.mjs
