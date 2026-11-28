@@ -19,8 +19,9 @@ test('creates deterministic manifest with commit, byte sizes and hashes', t => {
   const {source, output} = fixture(t);
   const manifest = prepareRelease(source, output, COMMIT);
   assert.equal(manifest.commit_sha, COMMIT);
-  assert.equal(Object.keys(manifest.files).length, 85);
+  assert.equal(Object.keys(manifest.files).length, 86);
   assert.match(manifest.files['index.html'].sha256, /^[a-f0-9]{64}$/);
+  assert.match(manifest.files['escritorio-prohospital.png'].sha256, /^[a-f0-9]{64}$/);
   const publishedWorker = fs.readFileSync(path.join(output, 'sw.js'), 'utf8');
   assert.ok(publishedWorker.includes(COMMIT));
   assert.ok(!publishedWorker.includes('__CIP_RELEASE_ID__'));
