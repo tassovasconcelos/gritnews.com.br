@@ -38,3 +38,24 @@ test('external sources require completed extraction and context uses the approve
  const ctx=knowledgeContext({materials:[external],skills:[skill],company,now,extractions:[{id:'e1',material_id:'m1',complete:true,text_content:'Texto integral aprovado.'},{id:'e2',material_id:'m1',complete:true,text_content:'Texto não aprovado.'}]});
  assert.equal(ctx.skills[0].sources[0].content,'Texto integral aprovado.');
 });
+
+import {academyFrame} from './academy-ui.mjs';
+test('explicit review history is conservative: latest passing evaluation must follow source review',()=>{
+ const m={...material,reviewed_at:'2026-10-18T10:00:00Z'};
+ const e={id:'e1',company_id:company,skill_id:'s1',source_valid:true,scenario_passed:true,limits_passed:true,created_at:'2026-10-18T12:00:00Z'};
+ assert.equal(learningState([m],[skill],now,[]).skills.length,0);
+ assert.equal(learningState([m],[skill],now,[e]).skills.length,1);
+ assert.equal(learningState([{...m,reviewed_at:'2026-10-19T10:00:00Z'}],[skill],now,[e]).skills.length,0);
+ assert.equal(learningState([m],[skill],now,[e,{...e,id:'e2',created_at:'2026-10-19T10:00:00Z',limits_passed:false}]).skills.length,0);
+ assert.equal(knowledgeContext({materials:[m],skills:[skill],evaluations:[],company,now}).skills.length,0);
+});
+test('intelligence central exposes persistent origin and state filters while preserving the original academy',()=>{
+ const html=academyFrame();
+ assert.match(html,/data-tab="flow" aria-pressed="true"/);
+ assert.match(html,/id="academyFlowKind"/);
+ assert.match(html,/id="academyFlowState"/);
+ assert.match(html,/value="hermes_proposal"/);
+ assert.match(html,/value="superseded"/);
+ assert.match(html,/data-tab="library"/);
+ assert.match(html,/data-tab="skills"/);
+});
