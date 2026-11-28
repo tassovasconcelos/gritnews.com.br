@@ -10,7 +10,7 @@ const SHELL=[
  './b2g-radar.mjs','./b2g-research.mjs','./b2g-research-ui.mjs','./b2g-discovery.mjs','./b2g-discovery-ui.mjs','./b2g-sources.mjs','./b2g-vocabulary.mjs'
 ];
 // Branding artwork and nonessential modules are cached on demand; login retains its text identity offline.
-const OPTIONAL=['./logo-cip-512.jpg','./tower-engine.mjs','./tower-ui.mjs','./tower-abc-ui.mjs','./tower-pricing-engine.mjs','./tower.css','./tower-live-office.mjs','./tower-office-3d.mjs','./tower-live-office.css','./command-room.svg','./faro-hourly-ui.mjs','./faro-hourly.css','./icon-192.png','./market-radar-ui.mjs','./market-directory-ui.mjs','./market-watch-ui.mjs','./market-specialties.mjs','./market-radar-engine.mjs','./market-radar.css','./icon-512.png','./presentation.mjs','./presentation.css','./pricing-desk-ui.mjs','./pricing-evidence-view.mjs','./pricing-desk-engine.mjs','./pricing-desk.css'];
+const OPTIONAL=['./logo-cip-512.jpg','./tower-engine.mjs','./tower-ui.mjs','./tower-abc-ui.mjs','./tower-pricing-engine.mjs','./tower.css','./tower-live-office.mjs','./tower-office-3d.mjs','./tower-live-office.css','./escritorio-prohospital.png','./faro-hourly-ui.mjs','./faro-hourly.css','./icon-192.png','./market-radar-ui.mjs','./market-directory-ui.mjs','./market-watch-ui.mjs','./market-specialties.mjs','./market-radar-engine.mjs','./market-radar.css','./icon-512.png','./presentation.mjs','./presentation.css','./pricing-desk-ui.mjs','./pricing-evidence-view.mjs','./pricing-desk-engine.mjs','./pricing-desk.css'];
 const shellPaths=new Set([...SHELL,...OPTIONAL].map(path=>new URL(path,self.location).pathname));
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{

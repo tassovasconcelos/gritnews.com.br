@@ -19,11 +19,15 @@ export function towerFrame(){
  </section>
  <section data-ct-pane="agents" class="ct-view-pane">
  <div class="ct-layout">
-  <section class="ct-office"><div class="ct-office-top"><div><small class="ct-office-eyebrow">INTELIGÊNCIA QUE APROXIMA</small><h1>Torre de Comando <span class="ct-title-brand">Prohospital</span></h1><p>Inteligência comercial, precificação e performance da operação.</p></div><button class="ct-small-button" type="button" data-ct-view="overview">Ver decisões e indicadores</button></div>
-   <div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
+  <section class="ct-office"><div class="ct-office-top"><div><h1>Escritório Vivo</h1><p>Selecione uma estação para consultar o especialista e acompanhe os registros da Academia.</p></div><button class="ct-small-button" type="button" data-ct-view="overview">Ver decisões e indicadores</button></div>
+   <div class="ct-office-floor"><div class="ct-office-visual"><div class="ct-office-official"><img src="./logo-grupo-prohospital.jpg" alt="Marca oficial do Grupo Prohospital"></div>
      ${TOWER_AGENTS.map(a=>`<button class="ct-agent-hotspot" type="button" data-ct-agent="${esc(a.id)}" title="${esc(a.area)}"><b>${esc(a.icon)}</b><span>${esc(a.name)}</span></button>`).join('')}
      <span class="ct-handoff-marker" data-ct-handoff-marker aria-hidden="true" hidden></span>
-   </div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Encaminhamentos registrados aparecem na visão geral.</span></div>
+   </div><aside class="ct-office-feed" aria-labelledby="ct-office-feed-heading">
+    <header><h2 id="ct-office-feed-heading">Atividade dos agentes</h2><p data-ct-feed-status role="status">Consultando a Academia…</p></header>
+    <ol data-ct-feed-list></ol>
+    <a href="#/escola">Abrir Academia de Inteligência <span aria-hidden="true">→</span></a>
+   </aside></div><div class="ct-room-foot"><span data-ct-handoff-status role="status">Encaminhamentos registrados aparecem na visão geral.</span></div>
    <details class="ct-demo"><summary>Sala de reuniões · colaboração guiada</summary><div class="ct-office-simulation">
     <button type="button" class="ct-small-button" data-ct-simulate aria-pressed="false">Iniciar visita guiada</button>
     <button type="button" class="ct-small-button" data-ct-sim-step hidden>Próxima interação</button>
@@ -55,7 +59,7 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  $('[data-ct-company]').innerHTML=companies.map(c=>`<option value="${esc(c)}">${esc(companyNames[c]||c)}</option>`).join('');
  $('[data-ct-company]').value=company;
  const central=$('[data-ct-command]');central.disabled=!allowedRoutes.includes('acoes');$('[data-ct-go="consumo"]').disabled=!allowedRoutes.includes('consumo');
- function showView(next){if(!['overview','agents','pricing'].includes(next))return; if(view==='agents'&&next!=='agents')stopSimulation();view=next;root.querySelectorAll('[data-ct-pane]').forEach(p=>p.hidden=p.dataset.ctPane!==next);root.querySelectorAll('[data-ct-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ctView===next)));$('[data-ct-shared]').hidden=next==='pricing';if(next!=='agents')$('[data-ct-drawer]').hidden=true;officeController?.refreshMotion?.();}
+ function showView(next){if(!['overview','agents','pricing'].includes(next))return; if(view==='agents'&&next!=='agents')stopSimulation();if(view!==next&&next==='agents'){view=next;loadOfficeFeed();}else view=next;root.querySelectorAll('[data-ct-pane]').forEach(p=>p.hidden=p.dataset.ctPane!==next);root.querySelectorAll('[data-ct-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ctView===next)));$('[data-ct-shared]').hidden=next==='pricing';if(next!=='agents')$('[data-ct-drawer]').hidden=true;officeController?.refreshMotion?.();}
  const unavailable='<div class="ct-none">Nenhuma evidência consultável nesta fonte, ou acesso indisponível.</div>';
  function renderGuardian(){
  const host=$('[data-ct-guardian]'),time=$('[data-ct-guardian-time]');
@@ -177,6 +181,31 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   const {count,error}=await db.from(TOWER_SOURCE_TABLES[kind]).select('*',{count:'exact',head:true}).eq('company_id',company);
   return {kind,value:error?null:count,error:error?.message||''};
  }
+ let officeFeedRequest=0;
+ const activityLabels={
+  hermes_context:{waiting_runtime:'Contexto preparado · aguarda Hermes'},
+  hermes_proposal:{review:'Proposta Hermes · em revisão'},
+  material:{done:'Material disponível',review:'Fonte em revisão'},
+  skill:{done:'Habilidade liberada',review:'Habilidade em avaliação'},
+  mission:{action:'Missão em acompanhamento'},
+  incident:{blocked:'Integração requer atenção'}
+ };
+ const officeDate=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+ async function loadOfficeFeed(){
+  if(!live()||!company||view!=='agents')return;
+  const request=++officeFeedRequest,scope=company;
+  const {data,error}=await Promise.resolve().then(()=>db.from('cip_academy_flow_items')
+   .select('title,source_kind,state,changed_at').eq('company_id',scope)
+   .neq('state','superseded').gte('changed_at',new Date(Date.now()-86400000).toISOString())
+   .order('changed_at',{ascending:false}).order('id',{ascending:false}).limit(20))
+   .catch(()=>({error:true}));
+  if(!live()||request!==officeFeedRequest||scope!==company)return;
+  const status=$('[data-ct-feed-status]'),list=$('[data-ct-feed-list]');
+  if(error||!Array.isArray(data)){status.textContent='Consulta indisponível. Aguardando nova tentativa.';list.replaceChildren();return;}
+  const recent=data.filter(item=>activityLabels[item.source_kind]?.[item.state]&&Number.isFinite(Date.parse(item.changed_at))).slice(0,6);
+  status.textContent=recent.length?'Últimas 24 h · consultado às '+officeDate.format(new Date()).split(', ').at(-1):'Nenhum registro elegível nas últimas 24 h.';
+  list.innerHTML=recent.map(item=>'<li><span class="ct-office-feed-type">'+esc(activityLabels[item.source_kind][item.state])+'</span><strong>'+esc(item.title)+'</strong><time datetime="'+esc(item.changed_at)+'">'+esc(officeDate.format(new Date(item.changed_at)))+' · Brasília</time></li>').join('');
+ }
  async function load(){
   if(!live()||!company)return;
   const token=++stamp;
@@ -274,6 +303,8 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
   seenHandoffs=undefined;
   stopSimulation();
   officeController?.setCompany();
+  officeFeedRequest++;$("[data-ct-feed-list]").replaceChildren();$("[data-ct-feed-status]").textContent="Consultando a Academia…";
+  loadOfficeFeed();
   counts={};tasks=[];stocks=[];offers=[];canWrite=false;lastCycle=null;taskSourceReady=false;guardian=towerGuardianBrief(null,null);renderGuardian();renderMetrics();renderAlerts();renderTasks();renderBrief();renderAgent();$('[data-ct-drawer]').hidden=true;
   $('[data-ct-handoff-status]').textContent='Colaboração representativa · consulte os registros para confirmar ações';
   workbench?.setCompany();
@@ -281,6 +312,9 @@ export function mountTower({db,user,companies=[],allowedRoutes=[],onDispose}){
  });
  officeController=mountLiveOffice({root,agents:TOWER_AGENTS,scenes:OFFICE_SCENARIO,onDispose,onSelect:id=>{selected=id;renderAgent();}});
  const workbench=mountAbcWorkbench({root,db,user,companies,getCompany:()=>company,getCanWrite:()=>canWrite,onDispose});
+ const officeFeedPoll=window.setInterval(()=>{if(document.visibilityState==='visible')loadOfficeFeed();},30000);
+ if(onDispose)onDispose(()=>{officeFeedRequest++;window.clearInterval(officeFeedPoll);});
+ loadOfficeFeed();
  const poll=window.setInterval(()=>{if(live()&&document.visibilityState==='visible'&&!root.querySelector('.ct-task-edit[open],.ct-new-task[open]')&&!root.contains(document.activeElement?.closest('input,textarea,select')))load();},90000);
  if(onDispose)onDispose(()=>window.clearInterval(poll));
  load();
