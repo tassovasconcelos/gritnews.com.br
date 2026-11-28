@@ -288,3 +288,15 @@
 .ct .ct-panorama-office .ct-agent-hotspot:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media(max-width:1000px){.ct-control-priorities{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.ct .ct-control-desk{padding:12px}.ct-control-summary{gap:5px}.ct-control-summary>div{padding:8px 6px}.ct-control-summary small{font-size:10px}.ct-control-summary strong{font-size:23px}.ct-control-priorities{grid-template-columns:minmax(0,1fr)}.ct-control-priority{padding:10px}}
+
+/* Architectural 3D workspace: camera controls remain visible and keyboard operable. */
+.ct .ct-model-active .ct-panorama-stage{background:#dce6eb}
+.ct-room-3d{cursor:grab;touch-action:pan-y;user-select:none}
+.ct-room-3d:active{cursor:grabbing}
+.ct-3d-guide{margin:0;padding:10px 15px;font-size:12px;line-height:1.5;color:#3c5266;background:#edf3f6;border-top:1px solid #c7d4df}
+.ct-3d-guide[hidden]{display:none!important}
+.ct-room-mode [data-ct-camera]{flex-wrap:wrap;align-items:center}
+.ct-room-mode [data-ct-camera] button{min-width:44px}
+.ct-room-mode [data-ct-camera-motion]{background:#355870}
+.ct-room-mode [data-ct-camera-motion]:disabled{opacity:.65;cursor:default}
+@media(max-width:600px){.ct-room-mode{padding:9px}.ct-room-mode [data-ct-camera]{width:100%;gap:5px}.ct-room-mode [data-ct-camera] button{font-size:11px;padding:6px 8px}.ct-3d-guide{font-size:11px;padding:8px 10px}}
