@@ -35,12 +35,12 @@ export function mountOffice3D(canvas,agents){
   ctx.fillStyle=background;ctx.fillRect(0,0,WIDTH,HEIGHT);
   const faces=[];
   const polygon=(points,color,offset=0)=>{const p=points.map(project);faces.push({p,color,depth:p.reduce((s,v)=>s+v[2],0)/p.length+offset});};
-  const box=(x,y,z,w,h,d,colors)=>{
+  const box=(x,y,z,w,h,d,colors,offset=0)=>{
    const X=x+w,Y=y+h,Z=z+d;
-   polygon([[x,y,Z],[X,y,Z],[X,Y,Z],[x,Y,Z]],colors[0]);
-   polygon([[x,Y,z],[X,Y,z],[X,Y,Z],[x,Y,Z]],colors[1]);
+   polygon([[x,y,Z],[X,y,Z],[X,Y,Z],[x,Y,Z]],colors[0],offset);
+   polygon([[x,Y,z],[X,Y,z],[X,Y,Z],[x,Y,Z]],colors[1],offset);
    const edge=angle<0?x:X;
-   polygon([[edge,y,z],[edge,y,Z],[edge,Y,Z],[edge,Y,z]],colors[2]);
+   polygon([[edge,y,z],[edge,y,Z],[edge,Y,Z],[edge,Y,z]],colors[2],offset);
   };
   const disc=(x,y,z,rx,rz,color,offset=0)=>polygon(Array.from({length:20},(_,i)=>{const a=i*Math.PI/10;return [x+Math.cos(a)*rx,y,z+Math.sin(a)*rz];}),color,offset);
   // Smooth shaded low-poly volumes, instead of rectangular heads and bodies.
@@ -58,7 +58,7 @@ export function mountOffice3D(canvas,agents){
   }
   const limb=(a,b,r,colors)=>{const dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2];const n=Math.hypot(dx,dy,dz)||.001;const ux=-dy/n,uy=dx/n;const p=[a[0]+ux*r,a[1]+uy*r,a[2]],q=[a[0]-ux*r,a[1]-uy*r,a[2]],u=[b[0]-ux*r,b[1]-uy*r,b[2]],v=[b[0]+ux*r,b[1]+uy*r,b[2]];polygon([p,q,u,v],colors[0]);polygon([p,v,[v[0],v[1],v[2]-.09],[p[0],p[1],p[2]-.09]],colors[1]);};
   // Architectural platform, oak floor with seams, windows and glass meeting room.
-  box(-9,-.27,-7.7,18,.25,13.8,['#798c99','#e0d5c6','#9aabb3']);
+  box(-9,-.27,-7.7,18,.25,13.8,['#798c99','#e0d5c6','#9aabb3'],-110);
   for(let x=-9;x<9;x+=1.5)for(let z=-7.7;z<6.1;z+=1.15){
    const color=(Math.round((x+9)/1.5)+Math.round((z+7.7)/1.15))%2?'#dccab4':'#e4d4c0';
    polygon([[x,.001,z],[Math.min(x+1.48,9),.001,z],[Math.min(x+1.48,9),.001,Math.min(z+1.13,6.1)],[x,.001,Math.min(z+1.13,6.1)]],color,-100);
