@@ -80,3 +80,30 @@ export function towerAgentCycleInsight(agentId,cycle){
   created_at:cycle.created_at,trigger_kind:String(cycle.trigger_kind||'unspecified'),
   notice:String(cycle.report?.notice||'')};
 }
+
+/* Guardian priorities are read-only, attributed to an area, not automatically assigned to an agent. */
+export const TOWER_GUARDIAN_AREAS=Object.freeze({
+ procfit_source:{title:'Origem Procfit',agent:'doquita',next:'TI: conferir serviço, acesso de leitura e contrato da origem.'},
+ erp:{title:'ERP conciliado',agent:'doquita',next:'Obter base atual e conciliar antes de decidir.'},
+ stock:{title:'Estoque atualizado',agent:'estoque',next:'Atualizar posição e verificar saldos por unidade.'},
+ faro:{title:'Radar Faro',agent:'radar_digital',next:'Validar fontes, cota e evidências antes de retomar.'},
+ queue:{title:'Fila de pesquisa',agent:'radar_digital',next:'Revisar fila e proteção; não repetir tarefas antigas indiscriminadamente.'},
+ agents:{title:'Ciclos dos agentes',agent:'doquita',next:'Verificar execução e disponibilidade dos ciclos.'},
+ execution:{title:'Decisões e tarefas',agent:'doquita',next:'Priorizar sugestões válidas com responsáveis.'},
+ billing:{title:'Custos e créditos',agent:'doquita',next:'Conciliar custo e crédito com fontes oficiais.'},
+ results:{title:'Resultados financeiros',agent:'doquita',next:'Registrar evidências e validação financeira.'}
+});
+export function towerGuardianBrief(status,incidents,now=Date.now()){
+ const rows=Array.isArray(status)?status:[];
+ const fresh=rows.length>0&&rows.every(r=>{const at=Date.parse(r.checked_at);return Number.isFinite(at)&&at<=now+60000&&now-at<=25*60000;});
+ const readable=fresh&&Array.isArray(incidents);
+ if(!readable)return {ready:false,critical:null,open:null,priorities:[],checkedAt:null};
+ const checks=new Map(rows.map(r=>[r.check_code,r]));
+ const open=incidents.filter(i=>!i.resolved_at&&['critical','warning'].includes(i.severity));
+ const priorities=rows.filter(r=>['critical','warning'].includes(r.severity)).map(r=>{
+ const area=TOWER_GUARDIAN_AREAS[r.check_code]||{title:r.check_code,agent:'doquita',next:'Investigar origem.'};
+ const incident=open.find(i=>i.check_code===r.check_code);
+ return {...area,code:r.check_code,severity:r.severity,incidentId:incident?.id||null};
+ }).sort((a,b)=>Number(b.severity==='critical')-Number(a.severity==='critical')||a.title.localeCompare(b.title,'pt-BR'));
+ return {ready:true,critical:priorities.filter(p=>p.severity==='critical').length,open:open.length,priorities,checkedAt:rows.map(r=>r.checked_at).sort()[0]};
+}
